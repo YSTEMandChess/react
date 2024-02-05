@@ -1,0 +1,23 @@
+.nav-bar{
+    display: flex;
+    margin: 0 auto;
+    background-color: white;
+    width: 100%;
+    align-items: center;
+}
+a{
+    text-decoration: none;
+}
+.nav-bar .nav-links{
+    margin-left: auto;
+    margin-right: 20px;
+}
+.nav-bar .nav-links .links{
+    margin-left: 16px;
+    text-decoration: none;
+    color: black;
+    font-size: 20px;
+}
+.nav-links .links:hover{
+    color: rgb(22, 216, 87);
+}
