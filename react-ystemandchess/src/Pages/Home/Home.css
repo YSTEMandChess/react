@@ -1,0 +1,58 @@
+*{
+    font-family: sans-serif;
+}
+.home-container{
+    width: 100%;
+    height: auto;
+    margin-top: 10px;
+}
+
+/* FIRST SECTOR OF LANDING PAGE*/
+.home-content1{
+    width: 85%;
+    height: 460px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    gap: 2em;
+    margin-bottom: 50px;
+}
+.info{
+    width: 50%;
+    height: 100%;
+}
+.info h1{
+    padding-top: 5%;
+    font-size: 30px;
+    text-align: left;
+}
+.info p{
+    font-size: 25px;
+    padding-top: 40px;
+    text-align: left;
+
+}
+.donate-button{
+    text-align: center;
+    margin-right: 30%;
+    margin-top: 5%;
+    width: 25%;
+    font-size: 140%;
+    border: none;
+    border-radius: 20px;
+    height: 10%;
+    background-color: rgb(182, 180, 180);
+    box-shadow: 5px 5px 1px greenyellow;
+}
+.donate-button:hover{
+    background-color: rgb(211, 209, 209);
+    cursor: pointer;
+}
+#tree-group-img{
+    width: 110%;
+}
+/* ------------------------------------- */
+
+.logo-break{
+    width: 85%;
+}
