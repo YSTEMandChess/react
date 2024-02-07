@@ -56,3 +56,39 @@
 .logo-break{
     width: 85%;
 }
+
+#floating-h1{
+    text-align: left;
+    margin-left: 8%;
+    font-size: 24px;
+    margin-bottom: -10px;
+}
+
+.home-content2{
+    width: 85%;
+    height: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10em;
+    justify-content: center;
+}
+
+.card1{
+    width: 35%;
+    height: 600px;
+    background-color: rgb(115, 179, 19);
+    border-radius: 20px;
+    box-shadow: 20px 20px 1px rgb(225, 243, 64);
+}
+.card2{
+    width: 35%;
+    height: 600px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 20px;
+    border: 3px solid rgb(115, 179, 19);
+    box-shadow: 20px 20px 1px rgb(115, 179, 19);
+
+}
