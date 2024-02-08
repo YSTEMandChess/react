@@ -6,15 +6,15 @@ const NavBar = () => {
     return ( 
        <header className="nav-bar">
 
-        <Link to='#'>
+        <Link to='/'>
             <img src={FullLogo}></img>
         </Link>
 
         <div className="nav-links">
-            <Link to='#' className='links'>Programs</Link>
+            <Link to='/programs' className='links'>Programs</Link>
             <Link to='#' className='links'>About us </Link>
             <Link to='#' className='links'>Lessons/Play</Link>
-            <Link to='#' className='links'>Login</Link>
+            <Link to='/login' className='links'>Login</Link>
         </div>
        </header>
      );
