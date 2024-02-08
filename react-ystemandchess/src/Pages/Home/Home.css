@@ -47,6 +47,7 @@
 .donate-button:hover{
     background-color: rgb(211, 209, 209);
     cursor: pointer;
+    transform: scale(1.05);
 }
 #tree-group-img{
     width: 110%;
@@ -64,6 +65,7 @@
     margin-bottom: -10px;
 }
 
+/* CARD SECTOR 2 */
 .home-content2{
     width: 85%;
     height: 700px;
@@ -81,7 +83,30 @@
     height: 600px;
     background-color: rgb(115, 179, 19);
     border-radius: 20px;
-    box-shadow: 20px 20px 1px rgb(225, 243, 64);
+    box-shadow: 20px 20px 1px rgb(209, 230, 28);
+}
+.card1 img{
+    width: 25%;
+    margin-bottom: -5%;
+    margin-top: 20%;
+}
+.card1 p{
+    font-size: 180%;
+    margin-top: 10%;
+}
+.card1 button{
+    width: 40%;
+    height: 10%;
+    font-size: 160%;
+    border: none;
+    border-radius: 20px;
+    background-color: rgb(209, 230, 28);
+    box-shadow: 5px 5px 1px rgb(255, 255, 255);
+}
+.card1 button:hover{
+  background-color: rgb(228, 243, 96);
+  transform: scale(1.1);
+  cursor: pointer;
 }
 .card2{
     width: 35%;
@@ -90,5 +115,37 @@
     border-radius: 20px;
     border: 3px solid rgb(115, 179, 19);
     box-shadow: 20px 20px 1px rgb(115, 179, 19);
-
 }
+.card2 img{
+    width: 25%;
+    margin-top: 20%;
+    margin-bottom: -5%;
+}
+.card2 h1{
+    margin-bottom: -7%;
+}
+.card2 p{
+    font-size: 180%;
+    margin-top: 10%;
+}
+.card2 button{
+    width: 40%;
+    height: 10%;
+    font-size: 160%;
+    border: none;
+    border-radius: 20px;
+    background-color: rgb(201, 200, 200);
+    box-shadow: 5px 5px 1px rgb(115, 179, 19);
+}
+.card2 button:hover{
+    background-color: rgb(238, 238, 238);
+    transform: scale(1.1);
+    cursor: pointer;
+  }
+
+  /* ------------------------------------------------------------*/
+
+  /* CARD SECTOR 3*/
+  .home-content3 img{
+    width: 90%;
+  }
