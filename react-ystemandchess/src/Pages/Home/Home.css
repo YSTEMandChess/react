@@ -48,6 +48,7 @@
     background-color: rgb(211, 209, 209);
     cursor: pointer;
     transform: scale(1.05);
+    transition: .2s;
 }
 #tree-group-img{
     width: 110%;
@@ -106,6 +107,7 @@
 .card1 button:hover{
   background-color: rgb(228, 243, 96);
   transform: scale(1.1);
+  transition: .2s;
   cursor: pointer;
 }
 .card2{
@@ -141,6 +143,7 @@
     background-color: rgb(238, 238, 238);
     transform: scale(1.1);
     cursor: pointer;
+    transition: .2s;
   }
 
   /* ------------------------------------------------------------*/
