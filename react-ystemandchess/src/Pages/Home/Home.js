@@ -33,22 +33,22 @@ const Home = () => {
           </button>
         </div>
         <div className="pic">
-          <img src={TreesGroup} id="tree-group-img"></img>
+          <img src={TreesGroup} id="tree-group-img" alt="ystemandchess mascot"></img>
         </div>
       </div>
-      <img src={LogoLineBr} className="logo-break"></img>
+      <img src={LogoLineBr} className="logo-break" alt="line break"></img>
       <h1 id="floating-h1">Everyone is included.</h1>
       <h1 id="floating-h1">Everyone is welcomed.</h1>
       <div className="home-content2">
         <div className="card1">
-            <img src={Heart}></img>
+            <img src={Heart} alt="heart"></img>
             <h1>Free</h1>
             <p>For students who qualify for <br></br> free and reduced lunch.<br></br>
             Our lessons are free.</p>
             <button><strong>Join Now!</strong></button>
         </div>
         <div className="card2">
-            <img src={Gem}></img>
+            <img src={Gem} alt="gem"></img>
             <h1>Premium</h1>
             <p>For students who don't qualify <br></br> for free and reduced lunch. <br></br>
             $25 / Week <br></br> First lesson is FREE. <br></br> Cancel anytime.</p>
@@ -56,7 +56,7 @@ const Home = () => {
         </div>
       </div>
       <div className="home-content3">
-        <img src={LargeInfo}></img>
+        <img src={LargeInfo} alt="mission statement"></img>
       </div>
     </div>
   );
