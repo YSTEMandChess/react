@@ -22,10 +22,10 @@ const Footer = () => {
                     <p>Copyright © 2023 YSTEMAndChess. PR. All rights reserved.</p>
                 </div>
                 <div className='footer-sponsors'>
-                    <h2>Sponsors</h2>
+                    <h2><u>Sponsors</u></h2>
                 </div>
                 <div className='footer-partners'>
-                    <h2>Partners</h2>
+                    <h2><u>Partners</u></h2>
                 </div>
             </div>
 
