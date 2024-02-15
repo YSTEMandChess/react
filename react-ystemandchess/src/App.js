@@ -4,6 +4,7 @@ import NavBar from "./NavBar/NavBar";
 import Home from "./Pages/Home/Home";
 import Programs from "./Pages/Programs/Programs";
 import Login from "./Pages/Login/Login";
+import Footer from "./Footer/Footer";
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
           
         </Routes>
       </div>
+
+      <Footer></Footer>
     </Router>
   );
 }
