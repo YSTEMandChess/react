@@ -88,9 +88,9 @@ const Home = () => {
       <div className="home-content4">
         <div className="home-content4-box">
           <img src={ChessGroup}></img>
-          <p>Chess strategy / Math skill/ Computer language concepts /<br/>
+          <p>Chess strategy / Math skills/ Computer language concepts /<br/>
             Mentoring /Advanced Learning Skills / Career Paths Preperation <br></br>
-            / all sessions access
+            / All sessions access
           </p>
           <button><strong>Join Now!</strong></button>
         </div>

@@ -1,0 +1,41 @@
+.footer-container{
+    margin-top: 25vh;
+    width: 100%;
+    height: 30vh;
+    background-color: rgb(168, 206, 102);
+    display: flex;
+    justify-content: center;
+    gap: 10em;
+}
+.footer-info{
+    width: 25%;
+    height: 100%;
+}
+.footer-info .footer-icons{
+    width: 100%;
+    height: 50px;
+    display: flex;
+    gap: 2em;
+    margin-top: 50px;
+
+}
+.footer-icons #twitter-icon{
+    width: 50%;
+}
+.footer-icons #insta-icon{
+    width: 50%;
+}.footer-icons #fb-icon{
+    width: 30%;
+}.footer-icons #google-icon{
+    width: 50%;
+}
+.footer-sponsors{
+    width: 20%;
+    height: 100%;
+    text-align: center;
+}
+.footer-partners{
+    width: 20%;
+    height: 100%;
+    text-align: center;
+}
