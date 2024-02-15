@@ -58,6 +58,15 @@ const Home = () => {
       <div className="home-content3">
         <img src={LargeInfo} alt="mission statement"></img>
       </div>
+
+      <div className="home-video-container">
+        <iframe className="home-video"width="560" height="315" src="https://www.youtube.com/embed/SBr0bGgddIc" frameborder="0" allowfullscreen></iframe>
+
+      </div>
+
+      <div className="home-content4">
+
+      </div>
     </div>
   );
 };

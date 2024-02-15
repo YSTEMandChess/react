@@ -152,3 +152,15 @@
   .home-content3 img{
     width: 90%;
   }
+
+  /* CARD SECTION 4 (Video)*/
+
+  .home-video-container{
+    width: 100%;
+    height: 700px;
+  }
+
+  .home-video{
+    width: 70%;
+    height: 100%;
+  }
