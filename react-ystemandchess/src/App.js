@@ -5,6 +5,7 @@ import Home from "./Pages/Home/Home";
 import Programs from "./Pages/Programs/Programs";
 import Login from "./Pages/Login/Login";
 import SignUp from "./Pages/SignUp/SignUp"
+import Footer from "./Footer/Footer";
 
 function App() {
   return (
