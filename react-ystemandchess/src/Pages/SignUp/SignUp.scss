@@ -1,0 +1,115 @@
+h2 {
+  margin-top: 5rem;
+}
+.input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+
+  .email-detail {
+    min-width: 41.5rem;
+
+    #email {
+      min-width: 41.5rem;
+    }
+  }
+
+  .terms-container {
+    font-size: 1.2rem;
+    display: flex;
+    gap: .5rem;
+    display: flex;
+    align-items: center;
+
+    input {
+      width: 1.2rem;
+      height: 1.2rem;
+
+    }
+  }
+  .account-details-container {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+
+    .account-type-container {
+      display: flex;
+      gap: .5rem;
+      font-size: 1.2rem;
+      align-items: center;
+      position: relative;
+
+      select {
+
+        border-radius: .5rem;
+        font-size: 1rem;
+        padding: .5rem;
+
+        option {
+
+          padding: .5rem;
+        }
+      }
+    }
+  }
+  .account-detail {
+    width: 100%;
+    height: 40px;
+    position: relative;
+    width: 20rem;
+    display: flex;
+    justify-content: center;
+
+
+    input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-bottom: 2px solid silver;
+      font-size: 1.1rem;
+      outline: none;
+    }
+
+    input:focus ~ label,
+    input:valid ~ label {
+      transform: translateY(-25px);
+      border: none;
+      color: black;
+    }
+
+    .underline {
+      position: absolute;
+      bottom: -2px;
+      height: 3px;
+      width: 100%;
+    }
+    .underline:before  {
+      position: absolute;
+      content: "";
+      height: 100%;
+      width: 100%;
+      background: black;
+      transform: scale(0);
+      bottom: -3px;
+      left: 2px;
+    }
+
+    input:focus ~ .underline:before,
+    input:valid ~ .underline:before {
+      width: 100%;
+      transform: scale(1.01);
+      transition: transform 0.4s ease;
+    }
+
+    label {
+      position: absolute;
+      bottom: 5px;
+      left: 1px;
+      color: grey;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+  }
+}
