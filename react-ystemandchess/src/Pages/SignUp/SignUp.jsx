@@ -1,10 +1,10 @@
 import React from 'react'
-
+import "./SignUp.scss"
 const SignUp = () => {
   return (
     <>
       <h2>Signup</h2>
-      <div className="input-container">
+      <form className="input-container">
         <div className="account-details-container">
           <div className="account-detail">
             <input type="text" name="firstName" id="firstName" required />
@@ -17,7 +17,7 @@ const SignUp = () => {
             <label htmlFor="lastName">Last name</label>
           </div>
         </div>
-        <div className="account-detail">
+        <div className="email-detail account-detail">
           <input type="email" name="email" id="email" required />
           <div className="underline"></div>
           <label htmlFor="email">Email</label>
@@ -47,19 +47,21 @@ const SignUp = () => {
             <div className="underline"></div>
             <label htmlFor="retype-password">Retype password</label>
           </div>
-          <div className="account-detail">
-            <label for="cars">Select Account Type</label>
+          <div className="account-type-container">
+            <label for="account-type">Select Account Type</label>
             <select name="account-type" id="account-type">
+              <option value="select">Select</option>
               <option value="mentor">Mentor</option>
               <option value="parent">Parent</option>
             </select>
           </div>
         </div>
-        <div className="account-detail">
+        <div className="terms-container">
           <input type="checkbox" name="terms" id="terms" />
           <label htmlFor="terms">I accept the terms and conditions</label>
         </div>
-      </div>
+        <button>Sign Up</button>
+      </form>
     </>
   );
 }
