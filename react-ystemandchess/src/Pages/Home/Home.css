@@ -81,7 +81,7 @@
 
 .card1{
     width: 35%;
-    height: 600px;
+    height: 700px;
     background-color: rgb(115, 179, 19);
     border-radius: 20px;
     box-shadow: 20px 20px 1px rgb(209, 230, 28);
@@ -112,7 +112,7 @@
 }
 .card2{
     width: 35%;
-    height: 600px;
+    height: 700px;
     background-color: rgb(255, 255, 255);
     border-radius: 20px;
     border: 3px solid rgb(115, 179, 19);
