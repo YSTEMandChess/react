@@ -1,0 +1,94 @@
+.nav-bar {
+  display: flex;
+  margin: 0 auto;
+  background-color: white;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+
+  a {
+      text-decoration: none;
+  }
+
+  .nav-links {
+    margin-right: 5rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    .dropdown-icon {
+      margin-left: .3rem;
+    }
+
+    .dropdown {
+      position: relative;
+
+      .dropdown-menu {
+        position: absolute;
+        left: -100%;
+
+        background-color: white;
+        padding: 1.5rem;
+        border-radius: .5rem;
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .2);
+        display: flex;
+        gap: 3rem;
+        width: 25rem;
+        flex: 1;
+
+        .education {
+          display: flex;
+          flex-direction: column;
+          gap: .8rem;
+        }
+
+        .what-we-do {
+          display: flex;
+          flex-direction: column;
+          gap: .8rem;
+        }
+      }
+      .dropdown-menu:active {
+        opacity: 1;
+      }
+
+      h3,h4 {
+        margin: 0;
+        letter-spacing: .5px;
+      }
+      h4 {
+        font-size: .9rem;
+        color: rgb(80, 52, 52);
+      }
+      a:hover {
+        transform: scale(1.1);
+        transition: .1s;
+      }
+    }
+  }
+
+  .links {
+    text-decoration: none;
+    color: black;
+    font-size: 20px;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    letter-spacing: .4px;
+  }
+
+  .links::after {
+    content: "";
+    position: absolute;
+    background-color: black;
+    height: 3px;
+    width: 0;
+    left: 0;
+    bottom: -5px;
+    transition: .4s;
+  }
+
+  .links:hover::after {
+    width: 100%;
+  }
+}
