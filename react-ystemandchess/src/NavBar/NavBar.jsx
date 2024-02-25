@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from "react"; // Import useEffect and useRef
+import React, { useState, useEffect, useRef } from "react"; 
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import FullLogo from "../images/full_logo.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import "./NavBar.scss";
 
 // animation variants from framer-motion
@@ -69,6 +71,11 @@ const NavBar = () => {
         <div className="dropdown" ref={dropdownRef}>
           <p onClick={toggleDropdown} className="links">
             About Us
+            {dropdown ? (
+              <FontAwesomeIcon icon={faCaretUp} className="dropdown-icon" />
+            ) : (
+              <FontAwesomeIcon icon={faCaretDown} className="dropdown-icon" />
+            )}
           </p>
           {dropdown && (
             <motion.div
