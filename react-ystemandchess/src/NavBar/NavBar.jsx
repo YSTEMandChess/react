@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import FullLogo from "../images/full_logo.png";
 import "./NavBar.scss";
 
+// animation variants from framer-motion
 const navbarVariants = {
   parentInitial: {
     opacity: 0,
@@ -26,7 +27,7 @@ const navbarVariants = {
     translateY: 0,
     transition: {
       duration: 0.3,
-      staggerChildren: 0.1,
+      staggerChildren: 0.125,
     },
   },
 };
@@ -35,10 +36,12 @@ const NavBar = () => {
   const [dropdown, setDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  const handleDropdown = () => {
+  // toggles dropdown menu
+  const toggleDropdown = () => {
     setDropdown((prevDropdown) => !prevDropdown);
   };
 
+  // close dropdown menu when user clicks outside of dropdown
   useEffect(() => {
     const closeDropdown = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -64,8 +67,7 @@ const NavBar = () => {
           Programs
         </Link>
         <div className="dropdown" ref={dropdownRef}>
-          {" "}
-          <p onClick={handleDropdown} className="links">
+          <p onClick={toggleDropdown} className="links">
             About Us
           </p>
           {dropdown && (
@@ -83,24 +85,22 @@ const NavBar = () => {
               >
                 <h3>Education</h3>
                 <Link to="/benefit-of-computer-science">
-                  <motion.h4 variants={navbarVariants}>
+                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Benefit of Computer Science
                   </motion.h4>
                 </Link>
                 <Link to="/benefit-of-chess">
-                  {" "}
-                  <motion.h4 variants={navbarVariants}>
+                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Benefit of Chess
                   </motion.h4>
                 </Link>
                 <Link to="/benefit-of-math-tutoring">
-                  <motion.h4 variants={navbarVariants}>
+                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Benefit of Math Tutoring
                   </motion.h4>
                 </Link>
                 <Link to="/benefit-of-mentoring">
-                  {" "}
-                  <motion.h4 variants={navbarVariants}>
+                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Benefit of Mentoring
                   </motion.h4>
                 </Link>
@@ -112,29 +112,29 @@ const NavBar = () => {
                 variants={navbarVariants}
               >
                 <h3>What We Do</h3>
-                <Link>
-                  <motion.h4 variants={navbarVariants}>
+                <Link to="/online-expansion">
+                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Online Expansion
                   </motion.h4>
                 </Link>
-                <Link>
-                  <motion.h4 variants={navbarVariants}>
-                    Online Expansion
+                <Link to="about-us">
+                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
+                    About Us
                   </motion.h4>
                 </Link>
-                <Link>
-                  <motion.h4 variants={navbarVariants}>
-                    Online Expansion
+                <Link to="/mission">
+                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
+                    Mission
                   </motion.h4>
                 </Link>
-                <Link>
-                  <motion.h4 variants={navbarVariants}>
-                    Online Expansion
+                <Link to="/financial">
+                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
+                    Financial
                   </motion.h4>
                 </Link>
-                <Link>
-                  <motion.h4 variants={navbarVariants}>
-                    Online Expansion
+                <Link to="/board">
+                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
+                    Board
                   </motion.h4>
                 </Link>
               </motion.div>
