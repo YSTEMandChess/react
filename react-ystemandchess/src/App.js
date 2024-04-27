@@ -10,6 +10,8 @@ import MentoringBenefitPage from "./Pages/About-Us/Benefit-of-Mentoring/Mentorin
 import Login from "./Pages/Login/Login";
 import SignUp from "./Pages/SignUp/SignUp"
 import Footer from "./Footer/Footer";
+import Mission from "./Pages/About-Us/Mission/Mission";
+
 
 function App() {
   return (
@@ -31,6 +33,7 @@ function App() {
           <Route path="/benefit-of-mentoring" element={<MentoringBenefitPage></MentoringBenefitPage>}></Route>
           <Route path="/login" element={<Login></Login>}></Route>
           <Route path="/signup" element={<SignUp />}></Route>
+          <Route path="/mission" element = {<Mission></Mission>}></Route>
         </Routes>
       </div>
 
