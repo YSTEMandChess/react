@@ -5,7 +5,6 @@ import Heart from "../../images/heart-regular.svg";
 import Gem from "../../images/gem-regular.svg";
 import LargeInfo from "../../images/large_info.png";
 import ChessGroup from "../../images/chessGroup.png"
-import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   // Sends the user to donate page, when donate button is clicked
@@ -76,6 +75,7 @@ const Home = () => {
 
       <div className="home-video-container">
         <iframe
+          title="home-video"
           className="home-video"
           width="560"
           height="315"
@@ -87,7 +87,7 @@ const Home = () => {
 
       <div className="home-content4">
         <div className="home-content4-box">
-          <img src={ChessGroup}></img>
+          <img src={ChessGroup} alt="ChessGroup"></img>
           <p>Chess strategy / Math skills/ Computer language concepts /<br/>
             Mentoring /Advanced Learning Skills / Career Paths Preperation <br></br>
             / All sessions access
