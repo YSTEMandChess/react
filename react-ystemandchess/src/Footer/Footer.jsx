@@ -22,10 +22,10 @@ const Footer = () => {
                     <h2 className='footer-email'>Info@ystemandchess.com</h2>
                     <h2 className='footer-phone'>+1 208.996.5071</h2>
                     <div className='footer-icons'>
-                        <a href='/'><img src={TwitterIcon} id='twitter-icon'/></a>
-                        <a href='/'><img src={InstagramIcon} id='insta-icon'/></a>
-                        <a href='/'><img src={FacebookIcon} id='fb-icon'/></a>
-                        <a href='/'><img src={GoogleIcon} id='google-icon'/></a>
+                        <a href='/'><img src={TwitterIcon} alt="twitter-icon" id='twitter-icon'/></a>
+                        <a href='/'><img src={InstagramIcon} alt="instagram-icon" id='instagram-icon'/></a>
+                        <a href='/'><img src={FacebookIcon} alt="facebook-icon" id='facebook-icon'/></a>
+                        <a href='/'><img src={GoogleIcon} alt="google-icon" id='google-icon'/></a>
 
                     </div>
                     <p className='footer-copyright'>Copyright © 2023 YSTEMAndChess. PR. All rights reserved.</p>
@@ -34,16 +34,16 @@ const Footer = () => {
                     <h2 className='sponsors-title'><u>Sponsors</u></h2>
                     <ul className='sponsors-list'>
                         <li>
-                            <img className='footer-ventive' src={Ventive}></img>
+                            <img className='footer-ventive' src={Ventive} alt="ventive-logo"></img>
                         </li>
                         <li>
-                            <img className='footer-kount' src={Kount}></img>
+                            <img className='footer-kount' src={Kount} alt="kount-logo"></img>
                         </li>
                         <li>
-                            <img className='footer-idahoCentral' src={IdahoCentral}></img>
+                            <img className='footer-idahoCentral' src={IdahoCentral} alt="idahoCentral-logo"></img>
                         </li>
                         <li>
-                            <img className='footer-PH' src={PH}></img>
+                            <img className='footer-PH' src={PH} alt="PH-logo"></img>
                         </li>
                     </ul>
                 </div>
@@ -51,19 +51,19 @@ const Footer = () => {
                     <h2 className='partners-title'><u>Partners</u></h2>
                     <ul className='partners-list-1'>
                         <li> 
-                            <img src={BoiseRescue}/>
+                            <img src={BoiseRescue} alt="boiseRescue-logo"/>
                         </li>
                         <li>
-                            <img src={BoysAndGirls}/>
+                            <img src={BoysAndGirls} alt="boysAndGirls-logo"/>
                         </li>
                         <li>
-                            <img src={Possible}></img>
+                            <img src={Possible} alt="possible-logo"></img>
                         </li>
                         <li>
-                            <img src={BoiseDistrict}></img>
+                            <img src={BoiseDistrict} alt="boiseDistrict-logo"></img>
                         </li>
                         <li>
-                            <img src={Rotary}></img>
+                            <img src={Rotary} alt="rotary-logo"></img>
                         </li>
                     </ul>
                     <ul>
@@ -73,7 +73,7 @@ const Footer = () => {
             </div>
 
         </footer>
-     );
+    );
 }
  
 export default Footer;
