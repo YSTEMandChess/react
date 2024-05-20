@@ -11,6 +11,7 @@ import Login from "./Pages/Login/Login";
 import SignUp from "./Pages/SignUp/SignUp"
 import Footer from "./Footer/Footer";
 import Mission from "./Pages/About-Us/Mission/Mission";
+import SponsorsPartners from "./Pages/About-Us/SponsorsPartners/SponsorsPartners";
 
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path="/login" element={<Login></Login>}></Route>
           <Route path="/signup" element={<SignUp />}></Route>
           <Route path="/mission" element = {<Mission></Mission>}></Route>
+          <Route path="/sponsors&partners" element = {<SponsorsPartners></SponsorsPartners>}></Route>
         </Routes>
       </div>
 
