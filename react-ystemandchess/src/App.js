@@ -12,6 +12,7 @@ import SignUp from "./Pages/SignUp/SignUp"
 import Footer from "./Footer/Footer";
 import Mission from "./Pages/About-Us/Mission/Mission";
 import SponsorsPartners from "./Pages/About-Us/SponsorsPartners/SponsorsPartners";
+import Board from "./Pages/About-Us/Board/Board";
 
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
           <Route path="/signup" element={<SignUp />}></Route>
           <Route path="/mission" element = {<Mission></Mission>}></Route>
           <Route path="/sponsors&partners" element = {<SponsorsPartners></SponsorsPartners>}></Route>
+          <Route path="/board" element = {<Board></Board>}></Route>
         </Routes>
       </div>
 
