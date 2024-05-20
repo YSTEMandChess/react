@@ -144,6 +144,11 @@ const NavBar = () => {
                     Board
                   </motion.h4>
                 </Link>
+                <Link to="/sponsors&partners">
+                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
+                    Sponsors & Partners
+                  </motion.h4>
+                </Link>
               </motion.div>
             </motion.div>
           )}
