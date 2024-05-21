@@ -1,0 +1,47 @@
+.financial-content {
+  font-family: Arial, sans-serif;
+  color: #333;
+  text-align: center;
+  padding: 20px;
+
+  h1 {
+    font-size: 2.5em;
+    color: #4caf50;
+    margin-bottom: 20px;
+  }
+
+  .financial-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+
+    .financial-item {
+      background: #f9f9f9;
+      border: 2px solid #4caf50;
+      border-radius: 10px;
+      padding: 20px;
+      width: 200px;
+      text-align: center;
+
+      h3 {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+      }
+
+      .view-button {
+        background-color: #ffeb3b;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &:hover {
+          background-color: #fdd835;
+        }
+      }
+    }
+  }
+}
