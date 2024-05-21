@@ -14,7 +14,7 @@ const SponsorsPartners = () => {
     <div className="sponsors-partners">
       <h1>Sponsors & Partners</h1>
 
-      <div className="section">
+      <div className="sponsors-partners-section">
         <h2>Sponsors</h2>
         <div className="logos">
           <img src={sponsor1} alt="Sponsor 1" />
@@ -23,7 +23,7 @@ const SponsorsPartners = () => {
         </div>
       </div>
 
-      <div className="section">
+      <div className="sponsors-partners-section">
         <h2>Partners</h2>
         <div className="logos">
           <img src={partner1} alt="Partner 1" />
