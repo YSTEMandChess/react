@@ -1,45 +1,66 @@
 .financial-content {
   font-family: Arial, sans-serif;
   color: #333;
-  text-align: center;
-  padding: 20px;
+  padding: 2px;
 
   h1 {
-    font-size: 2.5em;
-    color: #4caf50;
-    margin-bottom: 20px;
+    font-size: 30px;
+    color: #000;
+    text-align: left;
+    margin-bottom: 100px;
+    margin-left: 10%;
+  }
+
+  .line-break {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+
+    img {
+      width: 80%;
+      margin: 0 10px;
+    }
   }
 
   .financial-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(auto, 300px));
+    gap: 50px 275px;
     justify-content: center;
-    gap: 20px;
 
     .financial-item {
       background: #f9f9f9;
-      border: 2px solid #4caf50;
+      border: 2px solid #83ce31;
       border-radius: 10px;
-      padding: 20px;
+      padding: 30px 20px;  /* Adjusted padding to move text higher */
       width: 200px;
       text-align: center;
+      box-shadow: 8px 8px 0px 0px #83ce31;
+      transition: transform 0.2s;
 
       h3 {
-        font-size: 1.2em;
+        font-size: 20px;
         margin-bottom: 15px;
       }
 
       .view-button {
-        background-color: #ffeb3b;
+        background-color: #ead94c;
         border: none;
         border-radius: 5px;
         padding: 10px 20px;
         font-size: 1em;
         cursor: pointer;
-        transition: background-color 0.3s;
+        font-weight: bold;  /* Bold text */
+        transition: background-color 0.3s, transform 0.2s;
 
         &:hover {
           background-color: #fdd835;
+          transform: scale(1.05);
+        }
+
+        &:active {
+          background-color: #fbc02d;
+          transform: scale(1);
         }
       }
     }

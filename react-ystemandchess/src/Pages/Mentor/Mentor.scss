@@ -1,83 +1,58 @@
-.mentor-content {
-  font-family: Arial, sans-serif;
-  color: #333;
+.board-container {
   text-align: center;
-  padding: 20px;
-
+  
   h1 {
-    font-size: 2.5em;
-    color: #4caf50;
+    font-size: 2em;
+    color: #333;
     margin-bottom: 10px;
   }
-
+  
   p {
     font-size: 1.2em;
+    color: #666;
     margin-bottom: 20px;
   }
-
+  
   .apply-button {
-    background-color: #ffeb3b;
+    background-color: #ead94c; /* Same color as view-button */
     border: none;
     border-radius: 5px;
     padding: 10px 20px;
     font-size: 1em;
     cursor: pointer;
-    transition: background-color 0.3s;
-    margin-bottom: 20px;
-
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+    
     &:hover {
-      background-color: #fdd835;
+      background-color: #ffe066; /* Brighter yellow on hover */
+      transform: translateY(-1px); /* Slight push up on hover */
+    }
+    
+    &:active {
+      transform: translateY(1px); /* Slight push down on click */
     }
   }
-
-  .mentor-details {
-    background-color: #dff0d8;
-    padding: 20px;
-    border-radius: 10px;
+  
+  .line-break {
+    margin-top: 20px;
     margin-bottom: 20px;
-    text-align: left;
-
-    h2 {
-      font-size: 1.5em;
-      color: #4caf50;
-      margin-bottom: 10px;
-    }
-
-    p {
-      font-size: 1em;
-      margin-bottom: 10px;
-    }
   }
-
+  
+  .mentor-details img {
+    width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+  }
+  
   .mentor-roles {
     display: flex;
     justify-content: center;
-    gap: 20px;
-
-    .mentor-role {
-      background: #f9f9f9;
-      border: 2px solid #4caf50;
-      border-radius: 10px;
-      padding: 20px;
-      width: 300px;
-      text-align: center;
-
-      img {
-        border-radius: 50%;
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        margin-bottom: 10px;
-      }
-
-      h3 {
-        font-size: 1.2em;
-        margin-bottom: 15px;
-      }
-
-      p {
-        font-size: 1em;
-      }
+    margin-bottom: 20px;
+    
+    img {
+      width: 45%;
+      height: auto;
+      margin: 0 5px;
     }
   }
 }
