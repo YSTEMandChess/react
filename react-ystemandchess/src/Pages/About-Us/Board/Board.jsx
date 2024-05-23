@@ -10,7 +10,7 @@ const Board = () => {
         <img src={LogoLineBr} alt="Line Break" />
       </div>
       <div className="board-content">
-        <div className="section">
+        <div className="board-section">
           <h2>Officers</h2>
           <ul>
             <li>
@@ -31,7 +31,7 @@ const Board = () => {
             </li>
           </ul>
         </div>
-        <div className="section">
+        <div className="board-section">
           <h2>Board Members</h2>
           <ul>
             <li>
