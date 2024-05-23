@@ -1,0 +1,105 @@
+.lessons-page {
+    padding-top: 5%;
+    padding-bottom: 10%;
+    background-image: url('chess_background.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.grid-container {
+    background-color: #BFD99E;
+    display: grid;
+    margin-left: 7%;
+    margin-right: 7%;
+    grid-template-columns: 3fr 2fr;
+    grid-template-rows: auto 1fr auto;
+}
+
+.lesson-h1 {
+    font-size: 28px;
+    font-weight: bold;
+    text-align: left;
+    margin-top: 5%;
+    margin-bottom: 2.5%;
+    margin-left: 5%;
+    margin-right: 0;
+    line-height: 1.4;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.lesson-p1 {
+    font-size: 18px;
+    line-height: 1.6;
+    text-align: left;
+    margin-left: 7.5%;
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.lesson-ul {
+    line-height: 1.6;
+    text-align: left;
+    margin-left: 7.5%;
+    grid-column: 1;
+    grid-row: 3;
+}
+
+ul li {
+    margin-bottom: 1%;
+}
+
+.register-button {
+    grid-column: 2;
+    grid-row: 2;
+    width: 50%;
+    justify-self: center;
+    align-self: center;
+}
+
+.register-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    margin: auto;
+}
+
+.donate-h1 {
+    font-size: 28px;
+    font-weight: bold;
+    text-align: left;
+    margin-top: 5%;
+    margin-bottom: 2.5%;
+    margin-left: 5%;
+    margin-right: 0;
+    line-height: 1.4;
+    grid-column: 1;
+    grid-row: 4;
+}
+
+.donate-p1 {
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: left;
+    margin-left: 5%;
+    grid-column: 1;
+    grid-row: 5;
+}
+
+.donate-p2 {
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: left;
+    margin-left: 5%;
+    grid-column: 1;
+    grid-row: 6;
+}
+
+.donate-p3 {
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: left;
+    margin-left: 5%;
+    grid-column: 1;
+    grid-row: 7;
+}
