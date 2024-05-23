@@ -7,6 +7,7 @@ import CSBenefitPage from "./Pages/About-Us/Benefit-of-CS/CSBenefitPage";
 import ChessBenefitPage from "./Pages/About-Us/Benefit-of-Chess/ChessBenefitPage";
 import MathTutBenefitPage from "./Pages/About-Us/Benefit-of-Math-tut/MathTutBenefitPage";
 import MentoringBenefitPage from "./Pages/About-Us/Benefit-of-Mentoring/MentoringBenefitPage";
+import Lessons from "./Pages/Lessons/Lessons";
 import Login from "./Pages/Login/Login";
 import SignUp from "./Pages/SignUp/SignUp"
 import Footer from "./Footer/Footer";
@@ -39,6 +40,7 @@ function App() {
           <Route path="/mission" element = {<Mission></Mission>}></Route>
           <Route path="/mentor" element = {<Mentor></Mentor>}></Route>
           <Route path="/financial" element = {<Financial></Financial>}></Route>
+          <Route path="/lessons" element = {<Lessons></Lessons>}></Route>
           <Route path="/sponsors&partners" element = {<SponsorsPartners></SponsorsPartners>}></Route>
           <Route path="/board" element = {<Board></Board>}></Route>
         </Routes>

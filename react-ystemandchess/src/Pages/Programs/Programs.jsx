@@ -34,7 +34,7 @@ const Programs = () => {
             <li>Preparation for Advanced Learning and Career Paths</li>
           </ul>
           <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLSfVezPch0PtG29-3ePHVvpeQL5vMohL_Mqsu7p6zz2zoDKIWw/viewform?vc=0&c=0&w=1"
+            href="https://forms.gle/cvdJxrSRCg1kpWXP8"
             target="_blank"
             rel="noreferrer"
           >

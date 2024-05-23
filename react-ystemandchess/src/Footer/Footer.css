@@ -1,8 +1,7 @@
 .footer-container{
-    margin-top: 30%;
     width: 100%;
     height: auto;
-    background-color: rgb(168, 206, 102);
+    background-color: #BFD99E;
     display: flex;
     justify-content: center;
     gap: 10em;

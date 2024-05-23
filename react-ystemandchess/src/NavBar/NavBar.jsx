@@ -156,7 +156,7 @@ const NavBar = () => {
         <Link to="/mentor" className="links">
           Mentor
         </Link>
-        <Link to="#" className="links">
+        <Link to="/lessons" className="links">
           Lessons/Play
         </Link>
         <Link to="/login" className="links">

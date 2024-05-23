@@ -24,15 +24,14 @@
     margin-left: 0;
 }
 
-.section {
+.board-section {
     text-align: left;
     margin-bottom: 5%;
 }
 
-.section h2 {
+.board-section h2 {
     font-size: 24px;
     margin-bottom: 5%;
-    margin-left: -2%;
 }
 
 .name {
@@ -42,13 +41,14 @@
     margin-bottom: 5%;
 }
 
-.section ul {
+.board-section ul {
     list-style: none;
     padding: 0;
     margin-bottom: 10%;
-}
 
-.section li {
-    margin-bottom: 2%;
+    li {
+        margin-bottom: 3%;
+        list-style-type: none;
+    }
 }
 
