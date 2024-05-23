@@ -11,6 +11,7 @@
     display: grid;
     margin-left: 7%;
     margin-right: 7%;
+    padding-bottom: 10%;
     grid-template-columns: 3fr 2fr;
     grid-template-rows: auto 1fr auto;
 }
@@ -50,18 +51,33 @@ ul li {
 }
 
 .register-button {
+    text-decoration: none;
     grid-column: 2;
     grid-row: 2;
-    width: 50%;
-    justify-self: center;
-    align-self: center;
+    text-align: center;
+    place-self: center;
+    width: 40%;
+    font-size: 160%;
+    border: none;
+    border-radius: 10px;
+    height: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #EAD94C;
+    box-shadow: 5px 5px 1px #D4DDDD;
 }
 
-.register-button img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    margin: auto;
+.register-button:hover {
+    background-color: #ebe07d;
+    transform: scale(1.1);
+    cursor: pointer;
+    transition: .2s;
+}
+
+.register-button a {
+    text-decoration: none;
+    color: inherit;
 }
 
 .donate-h1 {

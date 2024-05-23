@@ -1,5 +1,4 @@
 import "./Lessons.scss";
-import registerButton from "./register_button.png";
 
 const Lessons = () => {
     return (
@@ -19,15 +18,18 @@ const Lessons = () => {
                     <li>Personal skills development</li>
                     <li>Preparation for Advanced Learning and Career Paths</li>
                 </ul>
-                <div className="register-button">
-                    <a href="https://forms.gle/cvdJxrSRCg1kpWXP8" className="register-button">
-                        <img src={registerButton} alt="Register Now" />
+                <button className="register-button">
+                    <a
+                        href="https://forms.gle/cvdJxrSRCg1kpWXP8"
+                        target="_blank"
+                        rel="noreferrer">
+                        <strong>Register Now!</strong>
                     </a>
-                </div>
+                </button>
 
                 <h1 className="donate-h1">Donate now</h1>
                 <p className="donate-p1">
-                    If you have no need for tutoring and just want to help our mission out, donate through our <a href="https://buy.stripe.com/8wMaF92c56FE7RKeUU">donation link</a> found on the right.
+                    If you have no need for tutoring and just want to help our mission out, donate through our <a href="https://buy.stripe.com/8wMaF92c56FE7RKeUU">donation link</a>.
                 </p>
                 <p className="donate-p2">
                     The tax deductible donation will be used to scale our program to underserved communities and students. Y STEM and Chess Inc. is a registered tax organization.
