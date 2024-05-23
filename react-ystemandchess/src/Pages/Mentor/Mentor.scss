@@ -1,0 +1,84 @@
+.board-container {
+  text-align: center;
+  padding: 20px;
+
+  .flex-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .text-content {
+      flex: 1;
+      text-align: left;
+
+      h1 {
+        font-size: 2em;
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      p {
+        font-size: 1.2em;
+        color: #666;
+        margin-bottom: 20px;
+      }
+
+      .apply-button {
+        @extend .apply-button; // Reuse the same button styling
+      }
+    }
+
+    .image-content {
+      flex: 1;
+      text-align: right;
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  }
+
+  .line-break {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  .mentor-details img {
+    width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+  }
+
+  .mentor-roles {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+
+    img {
+      width: 45%;
+      height: auto;
+      margin: 0 5px;
+    }
+  }
+}
+
+.apply-button {
+  background-color: #ead94c; /* Same color as view-button */
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.2s;
+
+  &:hover {
+    background-color: #ffe066; /* Brighter yellow on hover */
+    transform: translateY(-1px); /* Slight push up on hover */
+  }
+
+  &:active {
+    transform: translateY(1px); /* Slight push down on click */
+  }
+}

@@ -153,6 +153,9 @@ const NavBar = () => {
             </motion.div>
           )}
         </div>
+        <Link to="/mentor" className="links">
+          Mentor
+        </Link>
         <Link to="/lessons" className="links">
           Lessons/Play
         </Link>
