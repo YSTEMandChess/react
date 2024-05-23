@@ -1,7 +1,7 @@
 .financial-content {
   font-family: Arial, sans-serif;
   color: #333;
-  padding: 2px;
+  padding: 20px;
 
   h1 {
     font-size: 30px;
@@ -32,7 +32,7 @@
       background: #f9f9f9;
       border: 2px solid #83ce31;
       border-radius: 10px;
-      padding: 30px 20px;  /* Adjusted padding to move text higher */
+      padding: 30px 20px;
       width: 200px;
       text-align: center;
       box-shadow: 8px 8px 0px 0px #83ce31;
@@ -50,7 +50,7 @@
         padding: 10px 20px;
         font-size: 1em;
         cursor: pointer;
-        font-weight: bold;  /* Bold text */
+        font-weight: bold;
         transition: background-color 0.3s, transform 0.2s;
 
         &:hover {
@@ -63,6 +63,36 @@
           transform: scale(1);
         }
       }
+    }
+  }
+
+  @media (max-width: 1200px) {
+    .financial-grid {
+      gap: 40px 200px;
+    }
+  }
+
+  @media (max-width: 992px) {
+    .financial-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px 100px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .financial-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-left: 0;
+    }
+
+    .financial-item {
+      width: 100%;
+      margin: 0 auto;
     }
   }
 }
