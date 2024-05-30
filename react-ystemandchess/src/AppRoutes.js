@@ -15,6 +15,7 @@ import Board from "./Pages/About-Us/Board/Board";
 import Mentor from "./Pages/Mentor/Mentor";
 import Financial from "./Pages/About-Us/Financial/Financial";
 import StudentInventory from "./Pages/Student-Inventory/StudentInventory"
+import Student-Profile from "./Pages/Student-Profile/StudentProfile"
 
 // Variables and Mutable Data
 import userPortraitImg from "./images/user-portrait-placeholder.svg"
@@ -38,6 +39,7 @@ const AppRoutes = () => {
         <Route path="/lessons" element={<Lessons />} />
         <Route path="/sponsors&partners" element={<SponsorsPartners />} />
         <Route path="/board" element={<Board />} />
+        <Route path="/student-profile" element={<StudentInventory userName={userName} userPortraitSrc={userPortraitImg}/>} />
         <Route path="/student-inventory" element={<StudentInventory userName={userName} userPortraitSrc={userPortraitImg}/>} />
       </Routes>
     );
