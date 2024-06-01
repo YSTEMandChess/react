@@ -183,3 +183,6 @@ Once this is added to the database the lesson will be generated when a user reac
 # New Middleware Wiki
 
 This is an API used to commmuncate data betweent the database and front end. The API is written on NodeJS.
+
+# React
+To run the react frontend, run `npm start` in the react-ystemandchess directory
