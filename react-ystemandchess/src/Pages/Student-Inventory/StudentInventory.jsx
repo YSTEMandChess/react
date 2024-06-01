@@ -1,18 +1,6 @@
 import React from 'react';
 import './StudentInventory.scss';
-
-// Image Imports
-import userPortraitCamera from "../../images/camera.svg"
-import lineGraphPlaceholder from "../../images/line-graph-placeholder.png"
-import activityIcon from "../../images/StudentInventoryIcons/activity-icon.svg"
-import mentorIcon from "../../images/StudentInventoryIcons/mentor-icon.svg"
-import learningIcon from "../../images/StudentInventoryIcons/learning-icon.svg"
-import chessLessonsIcon from "../../images/StudentInventoryIcons/chess-lessons-icon.svg"
-import gamesIcon from "../../images/StudentInventoryIcons/games-icon.svg"
-import puzzlesIcon from "../../images/StudentInventoryIcons/puzzles-icon.svg"
-import playComputerIcon from "../../images/StudentInventoryIcons/play-computer-icon.svg"
-import recordingsIcon from "../../images/StudentInventoryIcons/recordings-icon.svg"
-import backpackIcon from "../../images/StudentInventoryIcons/backpack-icon.svg"
+import Images from '../../images/imageImporter'
 
 const StudentInventory = ({ userPortraitSrc, userName }) => {
   return (
@@ -20,7 +8,7 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
         <section className="inv-intro">
             <div className="inv-intro-portrait">
                 <img className="inv-intro-portrait-face" src={userPortraitSrc} alt="user portrait"></img>
-                <img className="inv-intro-portrait-camera" src={userPortraitCamera} alt="user portrait camera icon"></img>
+                <img className="inv-intro-portrait-camera" src={Images.userPortraitCamera} alt="user portrait camera icon"></img>
             </div>
             <div className="inv-intro-welcome">
                 <h1>Hello, {userName}!</h1>
@@ -32,7 +20,7 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
             </div>
             <div className="inv-inventory-analytics">
                 <div className="inv-inventory-analytics-graph">
-                    <img src={lineGraphPlaceholder} alt="progress graph" />
+                    <img src={Images.lineGraphPlaceholder} alt="progress graph" />
                 </div>
                 <div className="inv-inventory-analytics-metrics">
                     <h3>Time Spent</h3>
@@ -49,39 +37,39 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
                 <nav className="inv-inventory-content-tabs">
                     <ul>
                         <div className="inventory-tab active-tab">
-                            <img src={activityIcon} alt="activity icon"></img>
+                            <img src={Images.activityIcon} alt="activity icon"></img>
                             <li data-content="activity">Activity</li>
                         </div>
                         <div className="inventory-tab">
-                            <img src={mentorIcon} alt="mentor icon"></img>
+                            <img src={Images.mentorIcon} alt="mentor icon"></img>
                             <li data-content="mentor">Mentor Session</li>
                         </div>
                         <div className="inventory-tab">
-                            <img src={learningIcon} alt="learning icon"></img>
+                            <img src={Images.learningIcon} alt="learning icon"></img>
                             <li data-content="learning">Learning</li>
                         </div>
                         <div className="inventory-tab">
-                            <img src={chessLessonsIcon} alt="chess lessons icon"></img>
+                            <img src={Images.chessLessonsIcon} alt="chess lessons icon"></img>
                             <li data-content="lessons">Chess Lessons</li>
                         </div>
                         <div className="inventory-tab">
-                            <img src={gamesIcon} alt="games icon"></img>
+                            <img src={Images.gamesIcon} alt="games icon"></img>
                             <li data-content="games">Games</li>
                         </div>
                         <div className="inventory-tab">
-                            <img src={puzzlesIcon} alt="puzzles icon"></img>
+                            <img src={Images.puzzlesIcon} alt="puzzles icon"></img>
                             <li data-content="puzzles">Puzzles</li>
                         </div>
                         <div className="inventory-tab">
-                            <img src={playComputerIcon} alt="play with computer icon"></img>
+                            <img src={Images.playComputerIcon} alt="play with computer icon"></img>
                             <li data-content="computer">Play With Computer</li>
                         </div>
                         <div className="inventory-tab">
-                            <img src={recordingsIcon} alt="recordings icon"></img>
+                            <img src={Images.recordingsIcon} alt="recordings icon"></img>
                             <li data-content="recordings">Recordings</li>
                         </div>
                         <div className="inventory-tab">
-                            <img src={backpackIcon} alt="backpack icon"></img>
+                            <img src={Images.backpackIcon} alt="backpack icon"></img>
                             <li data-content="backpack">Backpack Inventory</li>
                         </div>
                     </ul>
@@ -162,7 +150,19 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
             </div>
         </section>
         <section className="inv-streaks">
-
+            <h2>Welcome to Your Streak Progress Page!</h2>
+            <div>
+                <h3>Streak Clock</h3>
+                <img src="" alt="streak clock graphic" />
+            </div>
+            <div>
+                <h3>Weekly Progress</h3>
+                <img src="" alt="weekly progress graphic" />
+            </div>
+            <div>
+                <h3>Calendar</h3>
+                <img src="" alt="calendar graphic" />
+            </div>
         </section>
         <section className="inv-growth-quest">
 
