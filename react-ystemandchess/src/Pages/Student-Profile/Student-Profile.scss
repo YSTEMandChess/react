@@ -46,6 +46,7 @@ body {
   background-color: #d8dcdc;
   padding: 20px;
   margin-top: 20px; /* Adjust margin-top to provide space for the bar */
+  border-radius: 10px; /* Add rounded edges */
 }
 
 .container::before {
@@ -75,7 +76,7 @@ body {
 .bottom-container {
   display: grid;
   grid-template-areas: "tabs tabcontent";
-  grid-template-columns: 1fr 100fr;
+  grid-template-columns: 1fr 10fr;
 }
 
 .chart {
@@ -119,6 +120,7 @@ body {
   display: flex;
   flex-direction: column;
   margin: 0; /* Ensure no margin around the tabs container */
+  background-color: transparent; /* Ensure the background is transparent */
 }
 
 .tab {
@@ -133,6 +135,7 @@ body {
   margin-bottom: 0; /* Remove margin between tab buttons */
   padding: 0; /* Ensure no padding for tab buttons */
   cursor: pointer;
+  border-radius: 0; /* Remove default border-radius */
 }
 
 .tab button img {
@@ -140,10 +143,19 @@ body {
   height: auto;
 }
 
+.tab button:first-child img {
+  border-radius: 10px 0 0 0; /* Rounded top-left corner for the first tab */
+}
+
+.tab button:last-child img {
+  border-radius: 0 0 0 10px; /* Rounded bottom-left corner for the last tab */
+}
+
 .tab-content-container {
   grid-area: tabcontent;
   background-color: #c8f2ae;
   width: 100%;
+  border-radius: 0 10px 10px 0; /* Rounded edges at top-right and bottom-right */
 }
 
 .tabcontent {
@@ -208,4 +220,25 @@ ul.rb li .timestamp {
 
 .item-title {
   color: #000;
+}
+
+.tab button.active img {
+  border: 5px solid;
+  border-image: linear-gradient(
+    90deg,
+    #ff4747 0%,
+    #3faeff 38%,
+    #7fff30 68%,
+    #a8ec16 100%
+  );
+  border-image-slice: 1;
+  border-radius: 0;
+}
+
+.tab button:first-child.active img {
+  border-radius: 10px 0 0 0;
+}
+
+.tab button:last-child.active img {
+  border-radius: 0 0 10px 0;
 }
