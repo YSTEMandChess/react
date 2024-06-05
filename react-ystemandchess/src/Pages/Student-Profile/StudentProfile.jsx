@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import "./User-Profile.scss";
+import "./StudentProfile.scss";
 
 // Import images
 import activityTab from "../../images/student/activity_tab.png";
@@ -13,7 +13,7 @@ import recordingsTab from "../../images/student/recordings_tab.PNG";
 import inventoryTab from "../../images/student/inventory_tab.png";
 import progressChart from "../../images/student/chart.PNG";
 
-const UserProfile = ({
+const StudentProfile = ({
   firstName = "Frist",
   lastName = "Last",
   accountCreatedAt = "N/A",
@@ -262,4 +262,4 @@ const UserProfile = ({
   );
 };
 
-export default UserProfile;
+export default StudentProfile;
