@@ -1,7 +1,6 @@
 import React from 'react';
 import "./ChessBenefitPage.scss";
-import ImageOne from "../../../images/mathArticle/computer.png";
-import ImageTwo from "../../../images/mathArticle/Junechamp 2.png"
+import Images from "../../../images/imageImporter"
 
 const ChessBenefitPage = () => {
     return (
@@ -12,7 +11,7 @@ const ChessBenefitPage = () => {
                 </div>
 
                 <figure>
-                    <img className="picture" src={ImageOne} alt="students practicing chess on computers"/>
+                    <img className="picture" src={Images.mathComputerImg} alt="students practicing chess on computers"/>
                     <figcaption className="text-caption txt-p">Students practicing their chess skills in the classroom</figcaption>
                 </figure>
 
@@ -56,7 +55,7 @@ const ChessBenefitPage = () => {
                 </div>
 
                 <figure>
-                    <img className="picture" src={ImageTwo} alt="A student standing and holding a trophy alongside their mentor."/>
+                    <img className="picture" src={Images.mathChampImg} alt="A student standing and holding a trophy alongside their mentor."/>
                     <figcaption className="text-caption txt-p">A student with their mentor after winning an award.</figcaption>
                 </figure>
 

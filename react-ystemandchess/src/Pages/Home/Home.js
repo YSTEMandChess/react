@@ -1,23 +1,15 @@
 import "./Home.css";
-import LogoLineBr from "../../images/LogoLineBreak.png";
-import TreesGroup from "../../images/Trees-Group.png";
-import Heart from "../../images/heart-regular.svg";
-import Gem from "../../images/gem-regular.svg";
-import LargeInfo from "../../images/large_info.png";
-import ChessGroup from "../../images/chessGroup.png"
-import Book1 from "../../images/book-howtostart.png";
-import Book2 from "../../images/book-thezerodollar.png";
-import BuyNow from "../../images/buy-now.png";
+import Images from "../../images/imageImporter";
 
 const books = [
   {
-    image: Book1,
+    image: Images.Book1,
     title: 'How to Start a Tech-Based Nonprofit',
     subtitle: 'Bridging the Opportunity Gap: Building a STEM Nonprofit to Change the Trajectory of Underserved Children\'s Lives',
     description: 'How to start tech-based Nonprofit details the steps of Devin Nakano as he builds Y STEM and Chess (YSC) Inc. The first in its series covers the first 4 years of YSC. Each chapter brings unique perspective of an entrepreneur building a nonprofit that uses technology to fulfill the Company Mission.',
   },
   {
-    image: Book2,
+    image: Images.Book2,
     title: 'The Zero Dollar Workforce',
     subtitle: 'Hire a Team, Run Your Company, and Don\'t Spend Any Money',
     description: 'It\'s easier to hire and manage 40 people than just 2... Someone can also hire and run this same team of 40 people completely for FREE... The above sounds like total nonsense. Like someone is crazy. Like it\'s some kind of miracle. But a lot of creations in our world don\'t make any sense until they\'re fully produced and studied...',
@@ -57,21 +49,21 @@ const Home = () => {
         </div>
         <div className="pic">
           <img
-            src={TreesGroup}
+            src={Images.TreesGroup}
             id="tree-group-img"
             alt="ystemandchess mascot"
           ></img>
         </div>
       </div>
 
-      <img src={LogoLineBr} className="logo-break" alt="line break"></img>
+      <img src={Images.LogoLineBr} className="logo-break" alt="line break"></img>
 
       <h1 id="floating-h1">Everyone is included.</h1>
       <h1 id="floating-h1">Everyone is welcomed.</h1>
 
       <div className="home-content2">
         <div className="card1">
-          <img src={Heart} alt="heart"></img>
+          <img src={Images.Heart} alt="heart"></img>
           <h1>Free</h1>
           <p>
             For students who qualify for <br></br> free and reduced lunch.
@@ -83,7 +75,7 @@ const Home = () => {
           </button>
         </div>
         <div className="card2">
-          <img src={Gem} alt="gem"></img>
+          <img src={Images.Gem} alt="gem"></img>
           <h1>Premium</h1>
           <p>
             For students who don't qualify <br></br> for free and reduced lunch.{" "}
@@ -97,7 +89,7 @@ const Home = () => {
       </div>
 
       <div className="home-content3">
-        <img src={LargeInfo} alt="mission statement"></img>
+        <img src={Images.LargeInfo} alt="mission statement"></img>
       </div>
 
       <div className="home-video-container">
@@ -114,7 +106,7 @@ const Home = () => {
 
       <div className="home-content4">
         <div className="home-content4-box">
-          <img src={ChessGroup} alt="ChessGroup"></img>
+          <img src={Images.ChessGroup} alt="ChessGroup"></img>
           <p>Chess strategy / Math skills/ Computer language concepts /<br/>
             Mentoring /Advanced Learning Skills / Career Paths Preperation <br></br>
             / All sessions access
@@ -123,7 +115,7 @@ const Home = () => {
         </div>
       </div>
 
-      <img src={LogoLineBr} className="logo-break" alt="line break"></img>
+      <img src={Images.LogoLineBr} className="logo-break" alt="line break"></img>
 
       <div className="home-content5">
         <h1>Books by Devin Nakano</h1>
@@ -132,7 +124,7 @@ const Home = () => {
             <div className="book-left">
               <img src={book.image} alt={`${book.title} cover`} className="book-image" />
               <button className="buy-now" onClick={handleBuyNow}>
-                <img src={BuyNow} alt="Buy Now" />
+                <img src={Images.BuyNow} alt="Buy Now" />
               </button>
             </div>
             <div className="book-details">

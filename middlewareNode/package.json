@@ -1,0 +1,29 @@
+{
+  "name": "middleware",
+  "version": "1.0.0",
+  "description": "API for Y STEM And Chess Inc",
+  "main": "server.js",
+  "dependencies": {
+    "aws-sdk": "^2.889.0",
+    "axios": "^0.21.1",
+    "config": "^3.3.3",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-validator": "^6.9.2",
+    "googleapis": "^107.0.0",
+    "mongoose": "^6.8.4",
+    "nodemailer": "^6.7.8",
+    "nodemon": "^2.0.7",
+    "passport": "^0.4.1",
+    "passport-jwt": "^4.0.0",
+    "request-ip": "^3.3.0",
+    "uuid": "^8.3.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "nodemon server"
+  },
+  "author": "",
+  "license": "ISC"
+}
