@@ -23,7 +23,7 @@ $brand-color-secondary: #ffffff;
     line-height: 26px;
     margin-top: 0;
     text-align: left;
-    padding-left: 0; // Ensure the paragraph aligns with the heading
+    padding-left: 0; 
     text-indent: 0;
      // Reset text indent if it's causing an offset
     padding-bottom:0;
@@ -71,36 +71,114 @@ $brand-color-secondary: #ffffff;
     margin-top: 10px;
 }
 
-.picture4 {
-    object-fit: contain;
-    width: max(100%, 25px);
+
+.video-container {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    width: 100%;  
+
+    .video-iframe {
+        width: 100%;
+        max-width: 800px;  
+        height: 450px;  
+        border: none;
+    }
+}
+
+
+.donate-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    width: 100%; 
+    margin: 10px 0;
+  }
+  
+  .donate-button {
+    text-align: center;
+    width: 200px;  
+    font-size: 1.2em;
+    border: none;
+    border-radius: 20px;
+    height: 50px;  
+    background-color: rgb(182, 180, 180);
+    box-shadow: 5px 5px 1px greenyellow;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  
+    &:hover {
+      background-color: darken(rgb(182, 180, 180), 10%);
+    }
+  }
+.card1, .card2 {
+    width: 25%; 
+    height: 500px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    box-shadow: 10px 10px 1px rgb(115, 179, 19); 
+    text-align: center;
+    padding: 20px;
+}
+
+.card1 {
+    background-color: rgb(115, 179, 19);
+    box-shadow: 10px 10px 1px rgb(209, 230, 28);
+}
+
+.card2 {
+    background-color: rgb(255, 255, 255);
+    border: 3px solid rgb(115, 179, 19);
+}
+
+.card1 img, .card2 img {
+    width: 30%; 
+    margin-bottom: 5px;
+}
+
+.card1 p, .card2 p {
+    font-size: 1.4rem; 
+    margin-top: 5%;
+}
+
+.card1 button, .card2 button {
+    width: 50%; 
     height: 50px; 
-    padding-right: 400px;
-    padding-top: 0px;
+    font-size: 1.2rem; 
+    border: none;
+    border-radius: 20px;
+    box-shadow: 5px 5px 1px rgb(255, 255, 255);
     margin-top: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
 }
 
-.picture5 {
-    object-fit: contain;
-    width: max(100%, 160px);
-    height: 240px; 
-    padding-left: -500px;
-    margin-left:-200px;
-    padding-top: 0px;
-    margin-top: 10px;
+.card1 button {
+    background-color: rgb(209, 230, 28);
 }
 
-.picture6 {
-    object-fit: contain;
-    width: max(100%, 160px);
-    height: 240px; 
-    padding-left: -500px;
-    margin-left:200px;
-    padding-top: -10px;
-    margin-top: -900px;
+.card1 button:hover, .card2 button:hover {
+    transform: scale(1.1);
 }
 
-.picture5, .picture6 {
-    padding: 0;
-    margin-bottom:10px
+.card1 button:hover {
+    background-color: rgb(228, 243, 96);
+}
+
+.card2 button {
+    background-color: rgb(201, 200, 200);
+}
+
+.card2 button:hover {
+    background-color: rgb(238, 238, 238);
+}
+
+.home-content2 {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 40px;
 }

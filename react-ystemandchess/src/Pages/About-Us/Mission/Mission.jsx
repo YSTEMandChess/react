@@ -3,13 +3,18 @@ import "./Mission.scss";
 import ImageOne from "../../../images/mission-image.png";
 import ImageTwo from "../../../images/LogoLineBreak.png";
 import ImageThree from "../../../images/founder-story.png";
-import ImageFour from "../../../images/donate.png";
-import ImageFive from "../../../images/free-lunch.png";
-import ImageSix from "../../../images/premium.png";
+import Heart from "../../../images/heart-regular.svg";
+import Gem from "../../../images/gem-regular.svg";
+//import ImageSix from "../../../images/premium.png";
 
 
 
 const Mission = () => {
+
+    const handleDonateButton = () => {
+        window.location.href =
+          "https://buy.stripe.com/8wMaF92c56FE7RKeUU";
+      };
     return (
         <main id='main-content'>
             <section className="container">
@@ -43,17 +48,58 @@ const Mission = () => {
                 <figure>
                     <img className="picture3" src={ImageThree} alt="mission-page"/>
                 </figure>
-                <figure>
-                    <img className="picture4" src={ImageFour} alt="mission-page"/>
-                </figure>
-                <figure>
-                    <img className="picture5" src={ImageFive} alt="mission-page"/>
-                </figure>
-                <figure>
-                    <img className="picture6" src={ImageSix} alt="mission-page"/>
-                </figure>
+                
+               
+                <div className="video-container">
+                    <iframe
+                        width="600"
+                        height="515"
+                        src="https://www.youtube.com/embed/SBr0bGgddIc?start=1"
+                        title="YouTube video player"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
+                </div>
+                <div className="donate-button-container">
+                <button className="donate-button" onClick={handleDonateButton}>
+                <strong>Donate</strong>
+                </button>
+                </div>
+                <div className="home-content2">
+                <div className="card1">
+                  <img src={Heart} alt="heart" />
+                  <h1>Free</h1>
+                    <p>
+                     For students who qualify for <br></br> free and reduced lunch.
+                    <br></br>
+                     Our lessons are free.
+                    </p>
+                <button>
+                    <strong>Join Now!</strong>
+                </button>
+                </div>
+                <div className="card2">
+                  <img src={Gem} alt="gem" />
+                  <h1>Premium</h1>
+                  <p>
+                    For students who don't qualify <br></br> for free and reduced lunch.{" "}
+                  <br></br>
+                    $25 / Week <br></br> First lesson is FREE. <br></br> Cancel anytime.
+                  </p>
+                <button>
+                  <strong>Join Now!</strong>
+                </button>
+                </div>
+                </div>
+                
                 </section>
                 </main>
                 )
+    
+
+
+      
 }
 export default Mission;
+
