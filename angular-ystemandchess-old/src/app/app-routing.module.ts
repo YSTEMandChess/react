@@ -44,7 +44,7 @@ import { MentorProfileComponent } from "./pages/mentor-profile/mentor-profile.co
 
 import { PuzzlesComponent } from './pages/puzzles/puzzles.component';
 
-import { PuzzlesComponent } from './pages/puzzles/puzzles.component';
+// import { PuzzlesComponent } from './pages/puzzles/puzzles.component';
 
 
 const routes: Routes = [
@@ -160,7 +160,7 @@ const routes: Routes = [
   { path: 'financial', component: FinancialsHifiComponent },
   { path: 'board', component: BoardHifiComponent },
   { path: 'puzzles', component: PuzzlesComponent },
-  
+
   {
     path: 'mentor-profile',
     component: MentorProfileComponent,
