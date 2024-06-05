@@ -15,7 +15,7 @@ const Login = () => {
     const httpGetAsync = (theUrl, callback) => {
         let xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            if (xmlHttp.readyState === 4 && xmlHttp.status === 200)
                 callback(xmlHttp.responseText);
         };
         xmlHttp.open('POST', theUrl, true); // true for asynchronous
@@ -55,7 +55,7 @@ const Login = () => {
         errorMessages()
         let url = `${environment.urls.middlewareURL}/auth/login?username=${username}&password=${password}`
         httpGetAsync(url, (response) => {
-            if (response == 'The username or password is incorrect.') {
+            if (response === 'The username or password is incorrect.') {
                 setLoginError('The username or password is incorrect.')
             } else {
                 console.log(response)
