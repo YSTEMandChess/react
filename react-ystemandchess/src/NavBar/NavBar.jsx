@@ -236,21 +236,11 @@ const NavBar = () => {
                     animate="childAnimate"
                     variants={navbarVariants}
                 >
-                  {role === "student" &&<Link to="/user-profile">
+                  <Link to= {"/" + role + "-profile"}>
                     <motion.h4 variants={navbarVariants} onClick={profileToggleDropdown}>
                       Profile
                     </motion.h4>
-                  </Link>}
-                  {role === "mentor" &&<Link to="/mentor-profile">
-                    <motion.h4 variants={navbarVariants} onClick={profileToggleDropdown}>
-                      Profile
-                    </motion.h4>
-                  </Link>}
-                  {role === "parent" &&<Link to="/parent-profile">
-                    <motion.h4 variants={navbarVariants} onClick={profileToggleDropdown}>
-                      Profile
-                    </motion.h4>
-                  </Link>}
+                  </Link>
                   {role === "parent" &&<Link to="/parent-add-student">
                     <motion.h4 variants={navbarVariants} onClick={profileToggleDropdown}>
                       Add Student
