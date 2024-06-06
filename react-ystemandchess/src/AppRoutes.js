@@ -14,8 +14,8 @@ import SponsorsPartners from "./Pages/About-Us/SponsorsPartners/SponsorsPartners
 import Board from "./Pages/About-Us/Board/Board";
 import Mentor from "./Pages/Mentor/Mentor";
 import Financial from "./Pages/About-Us/Financial/Financial";
-import StudentInventory from "./Pages/Student-Inventory/StudentInventory"
-import Student-Profile from "./Pages/Student-Profile/StudentProfile"
+import StudentInventory from "./Pages/Student-Inventory/StudentInventory";
+import StudentProfile from "./Pages/Student-Profile/StudentProfile"
 
 // Variables and Mutable Data
 import userPortraitImg from "./images/user-portrait-placeholder.svg"

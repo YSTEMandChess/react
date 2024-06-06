@@ -24,9 +24,17 @@ import playComputerIcon from "./StudentInventoryIcons/play-computer-icon.svg"
 import recordingsIcon from "./StudentInventoryIcons/recordings-icon.svg"
 import backpackIcon from "./StudentInventoryIcons/backpack-icon.svg"
 
-// Chess Benefit Page
-import mathComputerImg from "./mathArticle/computer.png";
+// Chess Benefits Page
+import mathComputerImg from "./mathArticle/computer.png"
 import mathChampImg from "./mathArticle/Junechamp 2.png"
+
+// Badges
+import badgeKnight from "./badges/badge-knight.png";
+import badgeQueen from "./badges/badge-knight.png";
+import badgeRook from "./badges/badge-knight.png";
+import badgeKing from "./badges/badge-knight.png";
+import badgePawn from "./badges/badge-knight.png";
+import badgeBishop from "./badges/badge-knight.png";
 
 // Global image object. Don't forget to place images here.
 const images = {
@@ -55,6 +63,13 @@ const images = {
     playComputerIcon,
     recordingsIcon,
     backpackIcon,
+    // Badges
+    badgeKnight,
+    badgeQueen,
+    badgeRook,
+    badgeKing,
+    badgePawn,
+    badgeBishop
 };
 
 export default images;
