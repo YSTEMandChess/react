@@ -1,6 +1,18 @@
 import React, { useEffect } from "react";
 import "./Mentor-Profile.scss";
 
+// Import images
+import activityTab from "../../images/student/activity_tab.png";
+import mentorTab from "../../images/student/mento_tab.PNG";
+import prodevTab from "../../images/student/prodev_tab.PNG";
+import chessTab from "../../images/student/chess_tab.PNG";
+import gamesTab from "../../images/student/games_tab.PNG";
+import puzzlesTab from "../../images/student/puzzles_tab.PNG";
+import playTab from "../../images/student/play_tab.PNG";
+import recordingsTab from "../../images/student/recordings_tab.PNG";
+import inventoryTab from "../../images/student/inventory_tab.png";
+import progressChart from "../../images/student/chart.PNG";
+
 const MentorProfile = ({
   firstName = "Frist",
   lastName = "Last",
@@ -53,10 +65,7 @@ const MentorProfile = ({
       <div className="mentor-container">
         <div className="top-container">
           <div className="chart">
-            <img
-              src="https://via.placeholder.com/400x300"
-              alt="Progress Chart"
-            />
+            <img src={progressChart} alt="Progress Chart" />
           </div>
 
           <div className="logged-times">
@@ -80,7 +89,7 @@ const MentorProfile = ({
                 id="ActivityBtn"
               >
                 <img
-                  src="https://via.placeholder.com/100"
+                  src={activityTab}
                   className="tab-image"
                   alt="Activity Tab"
                 />
@@ -91,7 +100,7 @@ const MentorProfile = ({
                 id="Mentor_SessionBtn"
               >
                 <img
-                  src="https://via.placeholder.com/100"
+                  src={mentorTab}
                   className="tab-image2"
                   alt="Mentor Session Tab"
                 />
@@ -102,7 +111,7 @@ const MentorProfile = ({
                 id="Professional_DevelopmentBtn"
               >
                 <img
-                  src="https://via.placeholder.com/100"
+                  src={prodevTab}
                   className="tab-image2"
                   alt="Professional Development Tab"
                 />
@@ -113,7 +122,7 @@ const MentorProfile = ({
                 id="Chess_LessonBtn"
               >
                 <img
-                  src="https://via.placeholder.com/100"
+                  src={chessTab}
                   className="tab-image2"
                   alt="Chess Lesson Tab"
                 />
@@ -123,11 +132,7 @@ const MentorProfile = ({
                 onClick={() => openTab("Games")}
                 id="GamesBtn"
               >
-                <img
-                  src="https://via.placeholder.com/100"
-                  className="tab-image2"
-                  alt="Games Tab"
-                />
+                <img src={gamesTab} className="tab-image2" alt="Games Tab" />
               </button>
               <button
                 className="tablinks"
@@ -135,7 +140,7 @@ const MentorProfile = ({
                 id="PuzzlesBtn"
               >
                 <img
-                  src="https://via.placeholder.com/100"
+                  src={puzzlesTab}
                   className="tab-image2"
                   alt="Puzzles Tab"
                 />
@@ -145,11 +150,7 @@ const MentorProfile = ({
                 onClick={() => openTab("computer")}
                 id="computerBtn"
               >
-                <img
-                  src="https://via.placeholder.com/100"
-                  className="tab-image2"
-                  alt="Computer Tab"
-                />
+                <img src={playTab} className="tab-image2" alt="Computer Tab" />
               </button>
               <button
                 className="tablinks"
@@ -157,7 +158,7 @@ const MentorProfile = ({
                 id="RecordingsBtn"
               >
                 <img
-                  src="https://via.placeholder.com/100"
+                  src={recordingsTab}
                   className="tab-image3"
                   alt="Recordings Tab"
                 />
@@ -169,7 +170,7 @@ const MentorProfile = ({
                 id="InventoryBtn"
               >
                 <img
-                  src="https://via.placeholder.com/100"
+                  src={inventoryTab}
                   className="tab-image4"
                   alt="Inventory Tab"
                 />
