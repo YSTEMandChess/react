@@ -58,10 +58,10 @@ const Login = () => {
             if (response === 'The username or password is incorrect.') {
                 setLoginError('The username or password is incorrect.')
             } else {
-                console.log(response)
                 const expires = new Date();
                 expires.setDate(expires.getDate() + 1);
                 setCookie('login', JSON.parse(response).token, {expires});
+                console.log(cookies)
                 let payload = JSON.parse(atob(response.split('.')[1]));
                 console.log(payload,true);
                 switch (payload['role']) {
@@ -88,6 +88,7 @@ const Login = () => {
       <>
         <h1>Login</h1>
         <h3>{loginError}</h3>
+          <p></p>
         <form className="input-container" onSubmit={(e) => submitLogin(username, password, e)}>
           <div className="input-field">
             <input type="text" name="username" id="username" value={username} onChange={(e) => setUsername(e.target.value)} required />
