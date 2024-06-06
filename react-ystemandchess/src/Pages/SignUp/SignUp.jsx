@@ -1,5 +1,5 @@
-import React from 'react'
-import "./SignUp.scss"
+import React from "react";
+import "./SignUp.scss";
 const SignUp = () => {
   return (
     <>
@@ -64,6 +64,6 @@ const SignUp = () => {
       </form>
     </>
   );
-}
+};
 
-export default SignUp
+export default SignUp;

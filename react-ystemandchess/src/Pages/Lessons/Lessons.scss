@@ -1,121 +1,121 @@
 .lessons-page {
-    padding-top: 5%;
-    padding-bottom: 10%;
-    background-image: url('chess_background.png');
-    background-repeat: no-repeat;
-    background-size: cover;
+  padding-top: 5%;
+  padding-bottom: 10%;
+  background-image: url("chess_background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .grid-container {
-    background-color: #BFD99E;
-    display: grid;
-    margin-left: 7%;
-    margin-right: 7%;
-    padding-bottom: 10%;
-    grid-template-columns: 3fr 2fr;
-    grid-template-rows: auto 1fr auto;
+  background-color: #bfd99e;
+  display: grid;
+  margin-left: 7%;
+  margin-right: 7%;
+  padding-bottom: 10%;
+  grid-template-columns: 3fr 2fr;
+  grid-template-rows: auto 1fr auto;
 }
 
 .lesson-h1 {
-    font-size: 28px;
-    font-weight: bold;
-    text-align: left;
-    margin-top: 5%;
-    margin-bottom: 2.5%;
-    margin-left: 5%;
-    margin-right: 0;
-    line-height: 1.4;
-    grid-column: 1;
-    grid-row: 1;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 5%;
+  margin-bottom: 2.5%;
+  margin-left: 5%;
+  margin-right: 0;
+  line-height: 1.4;
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .lesson-p1 {
-    font-size: 18px;
-    line-height: 1.6;
-    text-align: left;
-    margin-left: 7.5%;
-    grid-column: 1;
-    grid-row: 2;
+  font-size: 18px;
+  line-height: 1.6;
+  text-align: left;
+  margin-left: 7.5%;
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .lesson-ul {
-    line-height: 1.6;
-    text-align: left;
-    margin-left: 7.5%;
-    grid-column: 1;
-    grid-row: 3;
+  line-height: 1.6;
+  text-align: left;
+  margin-left: 7.5%;
+  grid-column: 1;
+  grid-row: 3;
 }
 
 ul li {
-    margin-bottom: 1%;
+  margin-bottom: 1%;
 }
 
 .register-button {
-    text-decoration: none;
-    grid-column: 2;
-    grid-row: 2;
-    text-align: center;
-    place-self: center;
-    width: 40%;
-    font-size: 160%;
-    border: none;
-    border-radius: 10px;
-    height: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #EAD94C;
-    box-shadow: 5px 5px 1px #D4DDDD;
+  text-decoration: none;
+  grid-column: 2;
+  grid-row: 2;
+  text-align: center;
+  place-self: center;
+  width: 40%;
+  font-size: 160%;
+  border: none;
+  border-radius: 10px;
+  height: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ead94c;
+  box-shadow: 5px 5px 1px #d4dddd;
 }
 
 .register-button:hover {
-    background-color: #ebe07d;
-    transform: scale(1.1);
-    cursor: pointer;
-    transition: .2s;
+  background-color: #ebe07d;
+  transform: scale(1.1);
+  cursor: pointer;
+  transition: 0.2s;
 }
 
 .register-button a {
-    text-decoration: none;
-    color: inherit;
+  text-decoration: none;
+  color: inherit;
 }
 
 .donate-h1 {
-    font-size: 28px;
-    font-weight: bold;
-    text-align: left;
-    margin-top: 5%;
-    margin-bottom: 2.5%;
-    margin-left: 5%;
-    margin-right: 0;
-    line-height: 1.4;
-    grid-column: 1;
-    grid-row: 4;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 5%;
+  margin-bottom: 2.5%;
+  margin-left: 5%;
+  margin-right: 0;
+  line-height: 1.4;
+  grid-column: 1;
+  grid-row: 4;
 }
 
 .donate-p1 {
-    font-size: 16px;
-    line-height: 1.6;
-    text-align: left;
-    margin-left: 5%;
-    grid-column: 1;
-    grid-row: 5;
+  font-size: 16px;
+  line-height: 1.6;
+  text-align: left;
+  margin-left: 5%;
+  grid-column: 1;
+  grid-row: 5;
 }
 
 .donate-p2 {
-    font-size: 16px;
-    line-height: 1.6;
-    text-align: left;
-    margin-left: 5%;
-    grid-column: 1;
-    grid-row: 6;
+  font-size: 16px;
+  line-height: 1.6;
+  text-align: left;
+  margin-left: 5%;
+  grid-column: 1;
+  grid-row: 6;
 }
 
 .donate-p3 {
-    font-size: 16px;
-    line-height: 1.6;
-    text-align: left;
-    margin-left: 5%;
-    grid-column: 1;
-    grid-row: 7;
+  font-size: 16px;
+  line-height: 1.6;
+  text-align: left;
+  margin-left: 5%;
+  grid-column: 1;
+  grid-row: 7;
 }

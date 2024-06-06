@@ -105,7 +105,7 @@ router.post(
                 timePlayed: 0,
               });
               await newStudent.save();
-            })
+            }),
           );
         }
       }
@@ -125,7 +125,7 @@ router.post(
       console.error(error.message);
       res.status(500).json("Server error");
     }
-  }
+  },
 );
 
 // @route   POST /user/children
@@ -181,7 +181,7 @@ router.post(
       console.error(error.message);
       res.status(500).json("Server error");
     }
-  }
+  },
 );
 // @route POST /user/sendMail
 // @desc sending the mail based on username and email
@@ -234,7 +234,7 @@ const updatePassword = async (body) => {
   const result = await users.findOneAndUpdate(
     { username: body.username, email: body.email },
     { password: body.password },
-    { new: true }
+    { new: true },
   );
   return result;
 };

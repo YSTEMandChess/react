@@ -13,7 +13,7 @@ const sendMail = async ({ email, subject, text, html }) => {
   const oAuth2Client = new google.auth.OAuth2(
     clientId,
     clientSecret,
-    redirectUri
+    redirectUri,
   );
   oAuth2Client.setCredentials({ refresh_token: refreshToken });
   try {

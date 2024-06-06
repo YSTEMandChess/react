@@ -11,19 +11,19 @@
   img {
     object-fit: contain;
     border-radius: 1rem;
-    box-shadow: .1rem .1rem .1rem black;
+    box-shadow: 0.1rem 0.1rem 0.1rem black;
   }
-  
+
   .programs-text {
     text-align: left;
     color: rgb(255, 250, 250);
     max-width: 65%;
     display: flex;
     flex-direction: column;
-    gap: .4rem;
+    gap: 0.4rem;
 
     p {
-      font-size: 1.2rem
+      font-size: 1.2rem;
     }
     ul {
       margin: 0;
@@ -43,20 +43,19 @@
   }
 
   a {
-    margin-top: .4rem;
+    margin-top: 0.4rem;
     button {
       border: none;
-      border-radius: .5rem;
+      border-radius: 0.5rem;
       background: transparent;
       width: 12rem;
       height: 3rem;
       cursor: pointer;
       font-size: 1.2rem;
-      background-color: #EEF36A;
-
+      background-color: #eef36a;
     }
     button:hover {
-      transition: .3s;
+      transition: 0.3s;
       transform: scale(1.1);
     }
   }
@@ -69,10 +68,10 @@
 
   .sub-terms-left {
     height: 80%;
-    
   }
 
-  .sub-terms-left, .sub-terms-right {
+  .sub-terms-left,
+  .sub-terms-right {
     text-align: left;
     background-color: #e2aa03;
     border-radius: 1rem;
@@ -82,7 +81,7 @@
     color: white;
     display: flex;
     flex-direction: column;
-    gap: .8rem;
+    gap: 0.8rem;
 
     p {
       margin: 0;
@@ -98,4 +97,3 @@
     margin: 0;
   }
 }
-

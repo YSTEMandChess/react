@@ -4,16 +4,19 @@ import Images from "../../images/imageImporter";
 const books = [
   {
     image: Images.Book1,
-    title: 'How to Start a Tech-Based Nonprofit',
-    subtitle: 'Bridging the Opportunity Gap: Building a STEM Nonprofit to Change the Trajectory of Underserved Children\'s Lives',
-    description: 'How to start tech-based Nonprofit details the steps of Devin Nakano as he builds Y STEM and Chess (YSC) Inc. The first in its series covers the first 4 years of YSC. Each chapter brings unique perspective of an entrepreneur building a nonprofit that uses technology to fulfill the Company Mission.',
+    title: "How to Start a Tech-Based Nonprofit",
+    subtitle:
+      "Bridging the Opportunity Gap: Building a STEM Nonprofit to Change the Trajectory of Underserved Children's Lives",
+    description:
+      "How to start tech-based Nonprofit details the steps of Devin Nakano as he builds Y STEM and Chess (YSC) Inc. The first in its series covers the first 4 years of YSC. Each chapter brings unique perspective of an entrepreneur building a nonprofit that uses technology to fulfill the Company Mission.",
   },
   {
     image: Images.Book2,
-    title: 'The Zero Dollar Workforce',
-    subtitle: 'Hire a Team, Run Your Company, and Don\'t Spend Any Money',
-    description: 'It\'s easier to hire and manage 40 people than just 2... Someone can also hire and run this same team of 40 people completely for FREE... The above sounds like total nonsense. Like someone is crazy. Like it\'s some kind of miracle. But a lot of creations in our world don\'t make any sense until they\'re fully produced and studied...',
-  }
+    title: "The Zero Dollar Workforce",
+    subtitle: "Hire a Team, Run Your Company, and Don't Spend Any Money",
+    description:
+      "It's easier to hire and manage 40 people than just 2... Someone can also hire and run this same team of 40 people completely for FREE... The above sounds like total nonsense. Like someone is crazy. Like it's some kind of miracle. But a lot of creations in our world don't make any sense until they're fully produced and studied...",
+  },
 ];
 
 const Home = () => {
@@ -25,7 +28,7 @@ const Home = () => {
 
   const handleBuyNow = () => {
     // Handle the Buy Now button click event
-    alert('Buy Now button clicked!');
+    alert("Buy Now button clicked!");
   };
 
   return (
@@ -56,7 +59,11 @@ const Home = () => {
         </div>
       </div>
 
-      <img src={Images.LogoLineBr} className="logo-break" alt="line break"></img>
+      <img
+        src={Images.LogoLineBr}
+        className="logo-break"
+        alt="line break"
+      ></img>
 
       <h1 id="floating-h1">Everyone is included.</h1>
       <h1 id="floating-h1">Everyone is welcomed.</h1>
@@ -107,22 +114,33 @@ const Home = () => {
       <div className="home-content4">
         <div className="home-content4-box">
           <img src={Images.ChessGroup} alt="ChessGroup"></img>
-          <p>Chess strategy / Math skills/ Computer language concepts /<br/>
-            Mentoring /Advanced Learning Skills / Career Paths Preperation <br></br>
-            / All sessions access
+          <p>
+            Chess strategy / Math skills/ Computer language concepts /<br />
+            Mentoring /Advanced Learning Skills / Career Paths Preperation{" "}
+            <br></br>/ All sessions access
           </p>
-          <button><strong>Join Now!</strong></button>
+          <button>
+            <strong>Join Now!</strong>
+          </button>
         </div>
       </div>
 
-      <img src={Images.LogoLineBr} className="logo-break" alt="line break"></img>
+      <img
+        src={Images.LogoLineBr}
+        className="logo-break"
+        alt="line break"
+      ></img>
 
       <div className="home-content5">
         <h1>Books by Devin Nakano</h1>
         {books.map((book, index) => (
           <div key={index} className="book">
             <div className="book-left">
-              <img src={book.image} alt={`${book.title} cover`} className="book-image" />
+              <img
+                src={book.image}
+                alt={`${book.title} cover`}
+                className="book-image"
+              />
               <button className="buy-now" onClick={handleBuyNow}>
                 <img src={Images.BuyNow} alt="Buy Now" />
               </button>

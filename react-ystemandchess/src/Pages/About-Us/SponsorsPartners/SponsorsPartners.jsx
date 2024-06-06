@@ -1,13 +1,13 @@
-import React from 'react';
-import './SponsorsPartners.scss';
-import sponsor1 from '../../../images/sponsors/ventive.png';
-import sponsor2 from '../../../images/sponsors/kount.png';
-import sponsor3 from '../../../images/sponsors/idahoCentral.png';
-import partner1 from '../../../images/partners/boiseRescue.png';
-import partner2 from '../../../images/partners/boiseDistrict.png';
-import partner3 from '../../../images/partners/boysAndGirls.png';
-import partner4 from '../../../images/partners/possible.png';
-import partner5 from '../../../images/partners/Rotary.png';
+import React from "react";
+import "./SponsorsPartners.scss";
+import sponsor1 from "../../../images/sponsors/ventive.png";
+import sponsor2 from "../../../images/sponsors/kount.png";
+import sponsor3 from "../../../images/sponsors/idahoCentral.png";
+import partner1 from "../../../images/partners/boiseRescue.png";
+import partner2 from "../../../images/partners/boiseDistrict.png";
+import partner3 from "../../../images/partners/boysAndGirls.png";
+import partner4 from "../../../images/partners/possible.png";
+import partner5 from "../../../images/partners/Rotary.png";
 
 const SponsorsPartners = () => {
   return (
@@ -34,7 +34,7 @@ const SponsorsPartners = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default SponsorsPartners;

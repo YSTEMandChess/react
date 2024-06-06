@@ -1,5 +1,5 @@
-import React from 'react';
-import './Mentor.scss';
+import React from "react";
+import "./Mentor.scss";
 import LogoLineBr from "../../images/LogoLineBreak.png";
 import cabbageImg from "../../images/mission-image.png";
 import volunteerImg from "../../images/volunteer.png";
@@ -12,7 +12,9 @@ const Mentor = () => {
       <div className="flex-container">
         <div className="text-content">
           <h1>Become a Mentor</h1>
-          <p>Your time and talent can make a real difference in people's lives.</p>
+          <p>
+            Your time and talent can make a real difference in people's lives.
+          </p>
           <button className="apply-button">Apply Now</button>
         </div>
         <div className="image-content">

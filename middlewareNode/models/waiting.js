@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-const { Schema, model } = mongoose
+const mongoose = require("mongoose");
+const { Schema, model } = mongoose;
 
 const waitingSchema = new mongoose.Schema(
   {
@@ -20,10 +20,14 @@ const waitingSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { versionKey: false }
-)
+  { versionKey: false },
+);
 
-var waitingStudents = model('waitingStudents', waitingSchema, 'waitingStudents')
-var waitingMentors = model('waitingMentors', waitingSchema, 'waitingMentors')
+var waitingStudents = model(
+  "waitingStudents",
+  waitingSchema,
+  "waitingStudents",
+);
+var waitingMentors = model("waitingMentors", waitingSchema, "waitingMentors");
 
-module.exports = { waitingStudents, waitingMentors }
+module.exports = { waitingStudents, waitingMentors };

@@ -1,9 +1,5 @@
-import "./AboutUs.css"
+import "./AboutUs.css";
 
 const AboutUs = () => {
-    return (
-        <div>
-
-        </div>
-    )
-}
+  return <div></div>;
+};

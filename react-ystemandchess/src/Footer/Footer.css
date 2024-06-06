@@ -1,57 +1,59 @@
-.footer-container{
-    width: 100%;
-    height: auto;
-    background-color: #BFD99E;
-    display: flex;
-    justify-content: center;
-    gap: 10em;
+.footer-container {
+  width: 100%;
+  height: auto;
+  background-color: #bfd99e;
+  display: flex;
+  justify-content: center;
+  gap: 10em;
 }
-.footer-info{
-    width: 25%;
-    height: 100%;
+.footer-info {
+  width: 25%;
+  height: 100%;
 }
-.footer-info .footer-icons{
-    width: 100%;
-    height: 50px;
-    display: flex;
-    gap: 2em;
-    margin-top: 50px;
+.footer-info .footer-icons {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  gap: 2em;
+  margin-top: 50px;
 }
-.footer-email{
-    margin-bottom: -7vh;
+.footer-email {
+  margin-bottom: -7vh;
 }
-.footer-phone{
-    margin-bottom: -4vh;
+.footer-phone {
+  margin-bottom: -4vh;
 }
-.footer-icons #twitter-icon{
-    width: 50%;
+.footer-icons #twitter-icon {
+  width: 50%;
 }
-.footer-icons #insta-icon{
-    width: 50%;
-}.footer-icons #fb-icon{
-    width: 30%;
-}.footer-icons #google-icon{
-    width: 50%;
+.footer-icons #insta-icon {
+  width: 50%;
 }
-.footer-sponsors{
-    width: 20%;
-    height: 100%;
-    text-align: center;
+.footer-icons #fb-icon {
+  width: 30%;
 }
-.sponsors-list{
-    list-style-type: none;
+.footer-icons #google-icon {
+  width: 50%;
 }
-.sponsors-list li{
-    margin-bottom: 1vh;
+.footer-sponsors {
+  width: 20%;
+  height: 100%;
+  text-align: center;
 }
-.footer-PH{
-    width: 30%;
+.sponsors-list {
+  list-style-type: none;
 }
-.footer-partners{
-    width: 20%;
-    height: 100%;
-    text-align: center;
+.sponsors-list li {
+  margin-bottom: 1vh;
 }
-.partners-list-1{
-    list-style-type: none;
+.footer-PH {
+  width: 30%;
+}
+.footer-partners {
+  width: 20%;
+  height: 100%;
+  text-align: center;
+}
+.partners-list-1 {
+  list-style-type: none;
 }

@@ -49,7 +49,7 @@ router.get(
       console.error(error.message);
       res.status(500).json("Server error");
     }
-  }
+  },
 );
 
 // @route   GET /meetings/recordings
@@ -120,7 +120,7 @@ router.get(
       console.error(error.message);
       res.status(500).json("Server error");
     }
-  }
+  },
 );
 // @route   GET /meetings/parents/recordings
 // @desc    GET all recordings available for the student from a parent account
@@ -170,7 +170,7 @@ router.get(
       console.error(error.message);
       res.status(500).json("Server error");
     }
-  }
+  },
 );
 
 // @route   GET /meetings/inMeeting
@@ -185,7 +185,7 @@ router.get("/inMeeting", passport.authenticate("jwt"), async (req, res) => {
   } catch (error) {
     console.error(
       "something went wrong while executing /inMeeting api",
-      error.message
+      error.message,
     );
     res.status(500).json("Server error");
   }
@@ -244,13 +244,13 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
       waitingQueue = await waitingMentors.findOne(
         {},
         {},
-        { sort: { created_at: 1 } }
+        { sort: { created_at: 1 } },
       );
     } else if (role === "mentor") {
       waitingQueue = await waitingStudents.findOne(
         {},
         {},
-        { sort: { created_at: 1 } }
+        { sort: { created_at: 1 } },
       );
     } else {
       return res
@@ -261,7 +261,7 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
       return res
         .status(200)
         .json(
-          "No one is available for matchmaking. Please wait for the next available person"
+          "No one is available for matchmaking. Please wait for the next available person",
         );
     }
 
@@ -270,7 +270,7 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
     //Check if the user waiting for a game is in a meeting already
     const secondResponse = await inMeeting(
       role === "student" ? "mentor" : "student",
-      waitingQueue.username
+      waitingQueue.username,
     );
 
     if (
@@ -366,7 +366,7 @@ router.put("/endMeeting", passport.authenticate("jwt"), async (req, res) => {
     const stopResponse = await stopRecording(
       currMeeting.meetingId,
       currMeeting.resourceId,
-      currMeeting.sid
+      currMeeting.sid,
     );
 
     //Error checking to ensure the recording was stopped
@@ -386,7 +386,7 @@ router.put("/endMeeting", passport.authenticate("jwt"), async (req, res) => {
           if (file?.fileName?.indexOf(".mp4") !== -1) {
             filesList.push(file.fileName);
           }
-        })
+        }),
       );
     }
 
@@ -400,8 +400,8 @@ router.put("/endMeeting", passport.authenticate("jwt"), async (req, res) => {
     const timePlayed = Math.floor(
       (currMeeting.meetingEndTime.getTime() -
         currMeeting.meetingStartTime.getTime()) /
-      1000 /
-      60
+        1000 /
+        60,
     );
 
     //Update the student timePlayed field
@@ -409,7 +409,7 @@ router.put("/endMeeting", passport.authenticate("jwt"), async (req, res) => {
       currMeeting.studentUsername,
       currMeeting.studentFirstName,
       currMeeting.studentLastName,
-      timePlayed
+      timePlayed,
     );
 
     //Error checking to make sure it updated the field
@@ -463,12 +463,12 @@ const inMeeting = async (role, username) => {
 // changes by riken start
 const deleteUser = async (role, username) => {
   if (role === "student") {
-    const user = await waitingStudents.findOne({ username: username })
+    const user = await waitingStudents.findOne({ username: username });
     if (user != null) {
       user.delete();
     }
   } else if (role === "mentor") {
-    const mentor = await waitingMentors.findOne({ username: username })
+    const mentor = await waitingMentors.findOne({ username: username });
     if (mentor != null) {
       mentor.delete();
     }
@@ -526,7 +526,7 @@ const getMoves = async (meetingId) => {
 const updateMoves = async (meetingId, oldMovesArr) => {
   const newdata = await meetings.findOneAndUpdate(
     { meetingId: meetingId },
-    { moves: oldMovesArr }
+    { moves: oldMovesArr },
   );
   return newdata;
 };
@@ -538,21 +538,20 @@ const updateUndoPermission = async (meetingId, value) => {
     if (!newdata) {
       await undoPermission.create({
         meetingId: meetingId,
-        permission: true
+        permission: true,
       });
     } else {
       await undoPermission.findOneAndUpdate(
         { meetingId: meetingId },
-        { permission: true }
+        { permission: true },
       );
     }
   } else {
     await undoPermission.findOneAndUpdate(
       { meetingId: meetingId },
-      { permission: false }
+      { permission: false },
     );
   }
-
 
   // return newdata;
 };
@@ -560,7 +559,7 @@ const updateUndoPermission = async (meetingId, value) => {
 router.post("/boardState", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { meetingId, fen, pos, image, role } = req.query;
-    if (pos == '') {
+    if (pos == "") {
       // do nothing
     } else {
       let meeting = await getMoves(meetingId);
@@ -618,7 +617,7 @@ router.post(
       console.error(error.message);
       res.status(500).json("Server error");
     }
-  }
+  },
 );
 
 router.post("/storeMoves", async (req, res) => {
@@ -699,7 +698,9 @@ router.get("/getStoreMoves", async (req, res) => {
 router.post("/checkUndoPermission", async (req, res) => {
   try {
     const { meetingId } = req.query;
-    const checkPermission = await undoPermission.findOne({ meetingId: meetingId });
+    const checkPermission = await undoPermission.findOne({
+      meetingId: meetingId,
+    });
     res.status(200).send(checkPermission);
   } catch (error) {
     console.error(error.message);
@@ -725,7 +726,7 @@ router.post("/undoMeetingMoves", async (req, res) => {
 const deleteMovesByMeetingId = async (meetingId, deletedData) => {
   const deletedMove = await meetings.findOneAndUpdate(
     { meetingId: meetingId },
-    { moves: deletedData }
+    { moves: deletedData },
   );
   return deletedMove;
 };
@@ -748,7 +749,7 @@ router.post("/undoMoves", async (req, res) => {
 const deleteMovesByGameId = async (gameId, deletedData) => {
   const deletedMove = await movesList.findOneAndUpdate(
     { gameId: gameId },
-    { moves: deletedData }
+    { moves: deletedData },
   );
   return deletedMove;
 };
@@ -761,7 +762,7 @@ const getMovesByGameId = async (gameId) => {
 const updateMoveByGameId = async (gameId, oldMovesArr) => {
   const getMoves = await movesList.findOneAndUpdate(
     { gameId: gameId },
-    { moves: oldMovesArr }
+    { moves: oldMovesArr },
   );
   return getMoves;
 };

@@ -19,14 +19,13 @@ h2 {
   .terms-container {
     font-size: 1.2rem;
     display: flex;
-    gap: .5rem;
+    gap: 0.5rem;
     display: flex;
     align-items: center;
 
     input {
       width: 1.2rem;
       height: 1.2rem;
-
     }
   }
   .account-details-container {
@@ -36,20 +35,18 @@ h2 {
 
     .account-type-container {
       display: flex;
-      gap: .5rem;
+      gap: 0.5rem;
       font-size: 1.2rem;
       align-items: center;
       position: relative;
 
       select {
-
-        border-radius: .5rem;
+        border-radius: 0.5rem;
         font-size: 1rem;
-        padding: .5rem;
+        padding: 0.5rem;
 
         option {
-
-          padding: .5rem;
+          padding: 0.5rem;
         }
       }
     }
@@ -61,7 +58,6 @@ h2 {
     width: 20rem;
     display: flex;
     justify-content: center;
-
 
     input {
       width: 100%;
@@ -85,7 +81,7 @@ h2 {
       height: 3px;
       width: 100%;
     }
-    .underline:before  {
+    .underline:before {
       position: absolute;
       content: "";
       height: 100%;

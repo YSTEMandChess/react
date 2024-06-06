@@ -1,6 +1,6 @@
-import React from 'react';
-import './Financial.scss';
-import LogoLineBr from '../../../images/LogoLineBreak.png';
+import React from "react";
+import "./Financial.scss";
+import LogoLineBr from "../../../images/LogoLineBreak.png";
 
 const Financial = () => {
   return (

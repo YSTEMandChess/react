@@ -1,18 +1,18 @@
-const mongoose = require('mongoose')
-const { Schema, model } = mongoose
+const mongoose = require("mongoose");
+const { Schema, model } = mongoose;
 
 const undoPermissionSchema = new mongoose.Schema(
-    {
-        meetingId: {
-            type: String,
-            required: false,
-        },
-        permission: {
-            type: Boolean,
-            required: false,
-        },
+  {
+    meetingId: {
+      type: String,
+      required: false,
     },
-    { versionKey: false }
-)
+    permission: {
+      type: Boolean,
+      required: false,
+    },
+  },
+  { versionKey: false },
+);
 
-module.exports = undoPermission = model('undoPermission', undoPermissionSchema)
+module.exports = undoPermission = model("undoPermission", undoPermissionSchema);

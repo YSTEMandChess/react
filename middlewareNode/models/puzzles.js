@@ -5,40 +5,40 @@ const { Schema, model } = mongoose;
 const puzzleSchema = new mongoose.Schema(
   {
     puzzleId: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     FEN: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     moves: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     rating: {
-        type: Number,
+      type: Number,
     },
     ratingDeviation: {
-        type: Number,
+      type: Number,
     },
     popularity: {
-        type: Number,
+      type: Number,
     },
     nbPlays: {
-        type: Number,
+      type: Number,
     },
     themes: {
-        type: String,
+      type: String,
     },
     gameUrl: {
-        type: String,
+      type: String,
     },
     openingTags: {
-        type: String,
+      type: String,
     },
   },
-  { versionKey: false }
+  { versionKey: false },
 );
 
 module.exports = puzzles = model("puzzles", puzzleSchema);

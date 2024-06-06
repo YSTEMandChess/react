@@ -18,7 +18,7 @@ const movesSchema = new mongoose.Schema(
       type: String,
     },
   },
-  { versionKey: false }
+  { versionKey: false },
 );
 
 module.exports = gameMoves = model("gameMoves", movesSchema, "gameMoves");
