@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import "./User-Profile.scss";
+import "./Student-Profile.scss";
 
 // Import images
 import activityTab from "../../images/student/activity_tab.png";
@@ -13,19 +13,14 @@ import recordingsTab from "../../images/student/recordings_tab.PNG";
 import inventoryTab from "../../images/student/inventory_tab.png";
 import progressChart from "../../images/student/chart.PNG";
 
-const UserProfile = ({
+const StudentProfile = ({
   firstName = "Frist",
   lastName = "Last",
   accountCreatedAt = "N/A",
   recordingList = [],
 }) => {
   useEffect(() => {
-    const defaultOpenBtn = document.getElementById("defaultOpen");
-    if (defaultOpenBtn) {
-      defaultOpenBtn.click();
-    } else {
-      console.error("defaultOpen button not found");
-    }
+    openTab("Activity");
   }, []);
 
   const openTab = (tabName) => {
@@ -84,9 +79,9 @@ const UserProfile = ({
             <div className="tabs-container">
               <div className="tab">
                 <button
-                  className="tablinks"
+                  className="tablinks active"
                   onClick={() => openTab("Activity")}
-                  id="defaultOpen"
+                  id="ActivityBtn"
                 >
                   <img
                     src={activityTab}
@@ -183,7 +178,7 @@ const UserProfile = ({
             </div>
 
             <div className="tab-content-container">
-              <div id="Activity" className="tabcontent">
+              <div id="Activity" className="tabcontent active">
                 <div className="rightbox">
                   <div className="rb-container">
                     <ul className="rb">
@@ -267,4 +262,4 @@ const UserProfile = ({
   );
 };
 
-export default UserProfile;
+export default StudentProfile;

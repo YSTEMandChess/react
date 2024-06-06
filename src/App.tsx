@@ -7,7 +7,8 @@ import CSBenefitPage from "./Pages/About-Us/Benefit-of-CS/CSBenefitPage";
 import ChessBenefitPage from "./Pages/About-Us/Benefit-of-Chess/ChessBenefitPage";
 import MathTutBenefitPage from "./Pages/About-Us/Benefit-of-Math-tut/MathTutBenefitPage";
 import MentoringBenefitPage from "./Pages/About-Us/Benefit-of-Mentoring/MentoringBenefitPage";
-import UserProfile from "./Pages/User-Profile/User-Profile";
+import StudentProfile from "./Pages/Student-Profile/Student-Profile";
+import MentorProfile from "./Pages/Mentor-Profile/Mentor-Profile";
 import Login from "./Pages/Login/Login";
 import SignUp from "./Pages/SignUp/SignUp";
 import Footer from "./Footer/Footer";
@@ -43,7 +44,8 @@ function App() {
           <Route path="/login" element={<Login></Login>}></Route>
           <Route path="/signup" element={<SignUp />}></Route>
           <Route path="/mission" element={<Mission></Mission>}></Route>
-          <Route path="/user-profile" element={<UserProfile />}></Route>
+          <Route path="/student-profile" element={<StudentProfile />}></Route>
+          <Route path="/mentor-profile" element={<MentorProfile />}></Route>
         </Routes>
       </div>
 
