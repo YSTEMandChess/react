@@ -24,10 +24,7 @@ Apache is a widely used web server software
 
 For Linux: sudo apt update && sudo apt install apache2
 
-For Windows
-1. Install Apache from https://httpd.apache.org/docs/2.4/platform/windows.html
-2. Once you are done downloading the `.zip` file to any location you want
-3. After extracting the file, set the environment variable for it by adding the location of `<Insert Path Here/Apache24/bin` to the PATH environment variable
+For Windows: https://httpd.apache.org/docs/2.4/platform/windows.html
 
 #### Environment Variables
 You should have been given access to a script named `create_dev_envs.sh`
