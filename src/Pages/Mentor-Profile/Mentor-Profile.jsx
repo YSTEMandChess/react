@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./Mentor-Profile.scss";
 
 // Import images
@@ -14,11 +14,13 @@ import inventoryTab from "../../images/student/inventory_tab.png";
 import progressChart from "../../images/student/chart.PNG";
 
 const MentorProfile = ({
-  firstName = "Frist",
+  firstName = "First",
   lastName = "Last",
   accountCreatedAt = "N/A",
   recordingList = [],
 }) => {
+  const [activeTopBarTab, setActiveTopBarTab] = useState("Student Name 1");
+
   useEffect(() => {
     openTab("Activity");
   }, []);
@@ -57,9 +59,24 @@ const MentorProfile = ({
       </header>
 
       <div className="top-bar">
-        <div className="student-column">Student Name 1</div>
-        <div className="student-column">Student Name 2</div>
-        <div className="student-column">Student Name 3</div>
+        <div
+          className={`student-column ${activeTopBarTab === "Student Name 1" ? "active" : ""}`}
+          onClick={() => setActiveTopBarTab("Student Name 1")}
+        >
+          Student Name 1
+        </div>
+        <div
+          className={`student-column ${activeTopBarTab === "Student Name 2" ? "active" : ""}`}
+          onClick={() => setActiveTopBarTab("Student Name 2")}
+        >
+          Student Name 2
+        </div>
+        <div
+          className={`student-column ${activeTopBarTab === "Student Name 3" ? "active" : ""}`}
+          onClick={() => setActiveTopBarTab("Student Name 3")}
+        >
+          Student Name 3
+        </div>
       </div>
 
       <div className="mentor-container">

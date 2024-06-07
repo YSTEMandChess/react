@@ -43,7 +43,7 @@ body {
   display: flex;
   justify-content: space-between;
   background-color: #7fcc26;
-  padding: 10px 20px;
+  padding: 0; // Remove padding to ensure the entire element is clickable
   border-radius: 10px 10px 0 0;
   margin-top: -10px; // Slight negative margin to overlap with container's top border-radius
 
@@ -52,6 +52,39 @@ body {
     text-align: center;
     font-weight: bold;
     color: #fff;
+    position: relative;
+    padding: 10px 0; // Add vertical padding to ensure the entire element is clickable
+
+    &:first-child {
+      border-radius: 10px 0 0 0;
+    }
+
+    &:last-child {
+      border-radius: 0 10px 0 0;
+    }
+
+    &:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: 1px;
+      background-color: #fff;
+    }
+
+    &.active {
+      background-color: #ead94c;
+      color: #000;
+
+      &:first-child {
+        border-radius: 10px 0 0 0;
+      }
+
+      &:last-child {
+        border-radius: 0 10px 0 0;
+      }
+    }
   }
 }
 
