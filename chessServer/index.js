@@ -3,7 +3,7 @@ var app = require("express")();
 var http = require("http")
   .createServer(app)
   .listen(process.env.PORT, () =>
-    console.log(`listening on ${process.env.PORT}`),
+    console.log(`listening on ${process.env.PORT}`)
   );
 var io = require("socket.io")(http, {
   cors: true,
@@ -37,7 +37,7 @@ io.sockets.on("connection", (socket) => {
 
         io.to(socket.id).emit(
           "boardState",
-          JSON.stringify({ boardState: element.boardState, color: color }),
+          JSON.stringify({ boardState: element.boardState, color: color })
         );
       }
     });
@@ -65,7 +65,7 @@ io.sockets.on("connection", (socket) => {
           JSON.stringify({
             boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
             color: colors[0],
-          }),
+          })
         );
       } else if (parsedmsg.role == "mentor") {
         ongoingGames.push({
@@ -82,7 +82,7 @@ io.sockets.on("connection", (socket) => {
           JSON.stringify({
             boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
             color: colors[1],
-          }),
+          })
         );
       }
       // Set client ids,
@@ -101,32 +101,50 @@ io.sockets.on("connection", (socket) => {
       }
       index++;
     });
-    io.emit("deleteCookies", JSON.stringify(msg));
+    io.emit(
+      "deleteCookies",
+      JSON.stringify(msg)
+    );
   });
 
   socket.on("undoMoves", (data) => {
     const moves = JSON.parse(data);
-    io.emit("undoMoves", JSON.stringify(moves));
+    io.emit(
+      "undoMoves",
+      JSON.stringify(moves)
+    );
   });
 
   socket.on("isStepLastUpdate", (data) => {
     const isStepLast = JSON.parse(data);
-    io.emit("isStepLastUpdate", isStepLast);
+    io.emit(
+      "isStepLastUpdate",
+      isStepLast
+    );
   });
 
   socket.on("isStepLast", (data) => {
     const isStepLast = JSON.parse(data);
-    io.emit("isStepLast", isStepLast);
+    io.emit(
+      "isStepLast",
+      isStepLast
+    );
   });
 
   socket.on("lastMoveInfo", (data) => {
     const moves = JSON.parse(data);
-    io.emit("lastMoveInfo", JSON.stringify(moves));
+    io.emit(
+      "lastMoveInfo",
+      JSON.stringify(moves)
+    );
   });
 
   socket.on("preventUndoAfterGameOver", (data) => {
     const info = JSON.parse(data);
-    io.emit("preventUndoAfterGameOver", JSON.stringify(info));
+    io.emit(
+      "preventUndoAfterGameOver",
+      JSON.stringify(info)
+    );
   });
 
   socket.on("newState", (msg) => {
@@ -141,7 +159,7 @@ io.sockets.on("connection", (socket) => {
           JSON.stringify({
             boardState: element.boardState,
             color: element.mentor.color,
-          }),
+          })
         );
       } else if (element.mentor.username == parsedmsg.username) {
         element.boardState = parsedmsg.boardState;
@@ -150,7 +168,7 @@ io.sockets.on("connection", (socket) => {
           JSON.stringify({
             boardState: element.boardState,
             color: element.student.color,
-          }),
+          })
         );
       }
     });
@@ -160,8 +178,14 @@ io.sockets.on("connection", (socket) => {
 
   socket.on("createNewGame", (msg) => {
     //msg contains boardstate, find boardstate
-    io.emit("gameOverMsg", JSON.stringify(msg));
-    io.emit("undoAfterGameOver", JSON.stringify(msg));
+    io.emit(
+      "gameOverMsg",
+      JSON.stringify(msg)
+    );
+    io.emit(
+      "undoAfterGameOver",
+      JSON.stringify(msg)
+    );
     let colors;
     if (Math.random() > 0.5) {
       colors = ["black", "white"];
@@ -181,14 +205,14 @@ io.sockets.on("connection", (socket) => {
           JSON.stringify({
             boardState: element.boardState,
             color: element.student.color,
-          }),
+          })
         );
         io.to(element.mentor.id).emit(
           "boardState",
           JSON.stringify({
             boardState: element.boardState,
             color: element.mentor.color,
-          }),
+          })
         );
       } else if (element.mentor.username == parsedmsg.username) {
         element.student.color = colors[0];
@@ -200,14 +224,14 @@ io.sockets.on("connection", (socket) => {
           JSON.stringify({
             boardState: element.boardState,
             color: element.mentor.color,
-          }),
+          })
         );
         io.to(element.student.id).emit(
           "boardState",
           JSON.stringify({
             boardState: element.boardState,
             color: element.student.color,
-          }),
+          })
         );
       }
     });
@@ -231,14 +255,14 @@ io.sockets.on("connection", (socket) => {
           JSON.stringify({
             boardState: element.boardState,
             color: element.student.color,
-          }),
+          })
         );
         io.to(element.mentor.id).emit(
           "boardState",
           JSON.stringify({
             boardState: element.boardState,
             color: element.mentor.color,
-          }),
+          })
         );
       }
     });
@@ -256,14 +280,14 @@ io.sockets.on("connection", (socket) => {
           JSON.stringify({
             boardState: element.boardState,
             color: element.student.color,
-          }),
+          })
         );
         io.to(element.mentor.id).emit(
           "gameOver",
           JSON.stringify({
             boardState: element.boardState,
             color: element.mentor.color,
-          }),
+          })
         );
       }
     });
