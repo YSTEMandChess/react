@@ -18,14 +18,48 @@ const MentorProfile = ({
   lastName = "Last",
   accountCreatedAt = "N/A",
   recordingList = [],
+  students = [
+    {
+      name: "Student Name 1",
+      statistics: {
+        website: "45 minutes",
+        lesson: "10 minutes",
+        puzzle: "5 minutes",
+        playing: "15 minutes",
+        mentoring: "15 minutes",
+      },
+    },
+    {
+      name: "Student Name 2",
+      statistics: {
+        website: "30 minutes",
+        lesson: "20 minutes",
+        puzzle: "10 minutes",
+        playing: "10 minutes",
+        mentoring: "10 minutes",
+      },
+    },
+    {
+      name: "Student Name 3",
+      statistics: {
+        website: "60 minutes",
+        lesson: "15 minutes",
+        puzzle: "15 minutes",
+        playing: "5 minutes",
+        mentoring: "25 minutes",
+      },
+    },
+  ],
 }) => {
-  const [activeTopBarTab, setActiveTopBarTab] = useState("Student Name 1");
+  const [activeTab, setActiveTab] = useState("Activity");
+  const [activeStudent, setActiveStudent] = useState(students[0].name);
 
   useEffect(() => {
-    openTab("Activity");
-  }, []);
+    openTab(activeTab);
+  }, [activeTab]);
 
   const openTab = (tabName) => {
+    setActiveTab(tabName);
     const tabcontent = document.getElementsByClassName("tabcontent");
     for (let i = 0; i < tabcontent.length; i++) {
       tabcontent[i].style.display = "none";
@@ -49,6 +83,18 @@ const MentorProfile = ({
     }
   };
 
+  const handleStudentClick = (studentName) => {
+    setActiveStudent(studentName);
+  };
+
+  const handleAddPoints = () => {
+    console.log(`Adding points for ${activeStudent}`);
+  };
+
+  const activeStudentStats = students.find(
+    (student) => student.name === activeStudent,
+  )?.statistics;
+
   return (
     <div className="userProfileDiv">
       <header className="header">
@@ -59,24 +105,17 @@ const MentorProfile = ({
       </header>
 
       <div className="top-bar">
-        <div
-          className={`student-column ${activeTopBarTab === "Student Name 1" ? "active" : ""}`}
-          onClick={() => setActiveTopBarTab("Student Name 1")}
-        >
-          Student Name 1
-        </div>
-        <div
-          className={`student-column ${activeTopBarTab === "Student Name 2" ? "active" : ""}`}
-          onClick={() => setActiveTopBarTab("Student Name 2")}
-        >
-          Student Name 2
-        </div>
-        <div
-          className={`student-column ${activeTopBarTab === "Student Name 3" ? "active" : ""}`}
-          onClick={() => setActiveTopBarTab("Student Name 3")}
-        >
-          Student Name 3
-        </div>
+        {students.map((student, index) => (
+          <div
+            key={index}
+            className={`student-column ${
+              activeStudent === student.name ? "active" : ""
+            }`}
+            onClick={() => handleStudentClick(student.name)}
+          >
+            {student.name}
+          </div>
+        ))}
       </div>
 
       <div className="mentor-container">
@@ -88,12 +127,15 @@ const MentorProfile = ({
           <div className="logged-times">
             <h3>Time Spent:</h3>
             <ul className="time-spent">
-              <li>Website: 45 minutes</li>
-              <li>Lesson: 10 minutes</li>
-              <li>Puzzle: 5 minutes</li>
-              <li>Playing: 15 minutes</li>
-              <li>Mentoring: 15 minutes</li>
+              <li>Website: {activeStudentStats.website}</li>
+              <li>Playing: {activeStudentStats.playing}</li>
+              <li>Lessons: {activeStudentStats.lesson}</li>
+              <li>Puzzle: {activeStudentStats.puzzle}</li>
+              <li>Mentoring: {activeStudentStats.mentoring}</li>
             </ul>
+            <button className="add-points-button" onClick={handleAddPoints}>
+              Add Points
+            </button>
           </div>
         </div>
 
