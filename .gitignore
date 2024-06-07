@@ -18,6 +18,7 @@ environment.php
 environment.*
 create_envs.sh
 create_env.sh
+create_dev_envs.sh
 default.json
 
 # profiling files
