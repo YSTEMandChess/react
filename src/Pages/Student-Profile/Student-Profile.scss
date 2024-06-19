@@ -3,8 +3,18 @@ body {
   text-align: center;
 }
 
+.background-wrapper {
+  min-height: 100vh; /* Ensure it covers the whole viewport */
+  margin: 0 auto;
+  text-align: center;
+  background-image: url("../../images/student/bg-image.png");
+  background-repeat: repeat; /* Options: repeat, repeat-x, repeat-y, no-repeat */
+  background-size: 100em; /* Set a specific size for the repeating image */
+  min-height: 100vh; /* Ensure it covers the whole viewport */
+}
+
 .userProfileDiv {
-  background-color: #e5f3d2;
+  background-color: #e5f3d200;
   text-align: left;
   padding: 40px;
 }
@@ -13,7 +23,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e5f3d2;
+  background-color: #e5f3d200;
   padding: 20px;
   margin-bottom: 20px;
 }
@@ -46,7 +56,7 @@ body {
   background-color: #d8dcdc;
   padding: 20px;
   margin-top: 20px; /* Adjust margin-top to provide space for the bar */
-  border-radius: 10px; /* Add rounded edges */
+  border-radius: 0 0 10px 10px; /* Add rounded edges */
 }
 
 .container::before {

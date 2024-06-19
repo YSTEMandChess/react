@@ -12,9 +12,10 @@ import playTab from "../../images/student/play_tab.PNG";
 import recordingsTab from "../../images/student/recordings_tab.PNG";
 import inventoryTab from "../../images/student/inventory_tab.png";
 import progressChart from "../../images/student/chart.PNG";
+import background from "../../images/student/bg-image.jpg";
 
 const StudentProfile = ({
-  firstName = "Frist",
+  firstName = "First",
   lastName = "Last",
   accountCreatedAt = "N/A",
   recordingList = [],
@@ -48,211 +49,217 @@ const StudentProfile = ({
   };
 
   return (
-    <div className="userProfileDiv">
-      <header className="header">
-        <div className="profile-image">
-          <img src="https://via.placeholder.com/100" alt="Profile" />
-          <h2>{`Hello, ${firstName} ${lastName}!`}</h2>
-        </div>
-      </header>
-
-      <div className="container">
-        <div className="inner-container">
-          <div className="top-container">
-            <div className="chart">
-              <img src={progressChart} alt="Progress Chart" />
-            </div>
-
-            <div className="logged-times">
-              <h3>Time Spent:</h3>
-              <ul className="time-spent">
-                <li>Website: 45 minutes</li>
-                <li>Lesson: 10 minutes</li>
-                <li>Puzzle: 5 minutes</li>
-                <li>Playing: 15 minutes</li>
-                <li>Mentoring: 15 minutes</li>
-              </ul>
-            </div>
+    <div className="background-wrapper">
+      <div className="userProfileDiv">
+        <header className="header">
+          <div className="profile-image">
+            <img src="https://via.placeholder.com/100" alt="Profile" />
+            <h2>{`Hello, ${firstName} ${lastName}!`}</h2>
           </div>
+        </header>
 
-          <div className="bottom-container">
-            <div className="tabs-container">
-              <div className="tab">
-                <button
-                  className="tablinks active"
-                  onClick={() => openTab("Activity")}
-                  id="ActivityBtn"
-                >
-                  <img
-                    src={activityTab}
-                    className="tab-image"
-                    alt="Activity Tab"
-                  />
-                </button>
-                <button
-                  className="tablinks"
-                  onClick={() => openTab("Mentor_Session")}
-                  id="Mentor_SessionBtn"
-                >
-                  <img
-                    src={mentorTab}
-                    className="tab-image2"
-                    alt="Mentor Session Tab"
-                  />
-                </button>
-                <button
-                  className="tablinks"
-                  onClick={() => openTab("Professional_Development")}
-                  id="Professional_DevelopmentBtn"
-                >
-                  <img
-                    src={prodevTab}
-                    className="tab-image2"
-                    alt="Professional Development Tab"
-                  />
-                </button>
-                <button
-                  className="tablinks"
-                  onClick={() => openTab("Chess_Lesson")}
-                  id="Chess_LessonBtn"
-                >
-                  <img
-                    src={chessTab}
-                    className="tab-image2"
-                    alt="Chess Lesson Tab"
-                  />
-                </button>
-                <button
-                  className="tablinks"
-                  onClick={() => openTab("Games")}
-                  id="GamesBtn"
-                >
-                  <img src={gamesTab} className="tab-image2" alt="Games Tab" />
-                </button>
-                <button
-                  className="tablinks"
-                  onClick={() => openTab("Puzzles")}
-                  id="PuzzlesBtn"
-                >
-                  <img
-                    src={puzzlesTab}
-                    className="tab-image2"
-                    alt="Puzzles Tab"
-                  />
-                </button>
-                <button
-                  className="tablinks"
-                  onClick={() => openTab("computer")}
-                  id="computerBtn"
-                >
-                  <img
-                    src={playTab}
-                    className="tab-image2"
-                    alt="Computer Tab"
-                  />
-                </button>
-                <button
-                  className="tablinks"
-                  onClick={() => openTab("Recordings")}
-                  id="RecordingsBtn"
-                >
-                  <img
-                    src={recordingsTab}
-                    className="tab-image3"
-                    alt="Recordings Tab"
-                  />
-                </button>
+        <div className="container">
+          <div className="inner-container">
+            <div className="top-container">
+              <div className="chart">
+                <img src={progressChart} alt="Progress Chart" />
+              </div>
 
-                <button
-                  className="tablinks"
-                  onClick={() => openTab("Inventory")}
-                  id="InventoryBtn"
-                >
-                  <img
-                    src={inventoryTab}
-                    className="tab-image4"
-                    alt="Inventory Tab"
-                  />
-                </button>
+              <div className="logged-times">
+                <h3>Time Spent:</h3>
+                <ul className="time-spent">
+                  <li>Website: 45 minutes</li>
+                  <li>Lesson: 10 minutes</li>
+                  <li>Puzzle: 5 minutes</li>
+                  <li>Playing: 15 minutes</li>
+                  <li>Mentoring: 15 minutes</li>
+                </ul>
               </div>
             </div>
 
-            <div className="tab-content-container">
-              <div id="Activity" className="tabcontent active">
-                <div className="rightbox">
-                  <div className="rb-container">
-                    <ul className="rb">
-                      <li className="rb-item">
-                        <div className="timestamp">
-                          23rd July 2022
-                          <br /> 7:00 PM
-                        </div>
-                        <div className="item-title">
-                          Solved 2 tactical puzzles
-                        </div>
-                      </li>
-                      <li className="rb-item">
-                        <div className="timestamp">
-                          19th July 2022
-                          <br /> 3:00 PM
-                        </div>
-                        <div className="item-title">
-                          Practiced 7 positions on{" "}
-                          <a href="/learnings">Piece Checkmates I</a>
-                        </div>
-                      </li>
-                      <li className="rb-item">
-                        <div className="timestamp">
-                          17st July 2022
-                          <br /> 7:00 PM
-                        </div>
-                        <div className="item-title">
-                          Signed up to{" "}
-                          <a
-                            href="http://www.ystemandchess.com"
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            ystemandchess.com
-                          </a>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
+            <div className="bottom-container">
+              <div className="tabs-container">
+                <div className="tab">
+                  <button
+                    className="tablinks active"
+                    onClick={() => openTab("Activity")}
+                    id="ActivityBtn"
+                  >
+                    <img
+                      src={activityTab}
+                      className="tab-image"
+                      alt="Activity Tab"
+                    />
+                  </button>
+                  <button
+                    className="tablinks"
+                    onClick={() => openTab("Mentor_Session")}
+                    id="Mentor_SessionBtn"
+                  >
+                    <img
+                      src={mentorTab}
+                      className="tab-image2"
+                      alt="Mentor Session Tab"
+                    />
+                  </button>
+                  <button
+                    className="tablinks"
+                    onClick={() => openTab("Professional_Development")}
+                    id="Professional_DevelopmentBtn"
+                  >
+                    <img
+                      src={prodevTab}
+                      className="tab-image2"
+                      alt="Professional Development Tab"
+                    />
+                  </button>
+                  <button
+                    className="tablinks"
+                    onClick={() => openTab("Chess_Lesson")}
+                    id="Chess_LessonBtn"
+                  >
+                    <img
+                      src={chessTab}
+                      className="tab-image2"
+                      alt="Chess Lesson Tab"
+                    />
+                  </button>
+                  <button
+                    className="tablinks"
+                    onClick={() => openTab("Games")}
+                    id="GamesBtn"
+                  >
+                    <img
+                      src={gamesTab}
+                      className="tab-image2"
+                      alt="Games Tab"
+                    />
+                  </button>
+                  <button
+                    className="tablinks"
+                    onClick={() => openTab("Puzzles")}
+                    id="PuzzlesBtn"
+                  >
+                    <img
+                      src={puzzlesTab}
+                      className="tab-image2"
+                      alt="Puzzles Tab"
+                    />
+                  </button>
+                  <button
+                    className="tablinks"
+                    onClick={() => openTab("computer")}
+                    id="computerBtn"
+                  >
+                    <img
+                      src={playTab}
+                      className="tab-image2"
+                      alt="Computer Tab"
+                    />
+                  </button>
+                  <button
+                    className="tablinks"
+                    onClick={() => openTab("Recordings")}
+                    id="RecordingsBtn"
+                  >
+                    <img
+                      src={recordingsTab}
+                      className="tab-image3"
+                      alt="Recordings Tab"
+                    />
+                  </button>
+
+                  <button
+                    className="tablinks"
+                    onClick={() => openTab("Inventory")}
+                    id="InventoryBtn"
+                  >
+                    <img
+                      src={inventoryTab}
+                      className="tab-image4"
+                      alt="Inventory Tab"
+                    />
+                  </button>
                 </div>
               </div>
-              <div id="Mentor_Session" className="tabcontent">
-                <h3>Mentor Sessions</h3>
-                <p>Details about mentor sessions will go here.</p>
-              </div>
-              <div id="Professional_Development" className="tabcontent">
-                <h3>Professional Development</h3>
-                <p>Details about professional development will go here.</p>
-              </div>
-              <div id="Chess_Lesson" className="tabcontent">
-                <h3>Chess Lesson</h3>
-                <p>Details about chess lessons will go here.</p>
-              </div>
-              <div id="Games" className="tabcontent">
-                <h3>Games</h3>
-                <p>Details about games will go here.</p>
-              </div>
-              <div id="Puzzles" className="tabcontent">
-                <h3>Puzzles</h3>
-                <p>Details about puzzles will go here.</p>
-              </div>
-              <div id="computer" className="tabcontent">
-                <h3>Computer</h3>
-                <p>Details about computer activities will go here.</p>
-              </div>
-              <div id="Recordings" className="tabcontent">
-                <h3>Recordings</h3>
-                {recordingList.map((record, index) => (
-                  <div key={index}>
-                    <h4>{record.title}</h4>
-                    <p>{record.description}</p>
+
+              <div className="tab-content-container">
+                <div id="Activity" className="tabcontent active">
+                  <div className="rightbox">
+                    <div className="rb-container">
+                      <ul className="rb">
+                        <li className="rb-item">
+                          <div className="timestamp">
+                            23rd July 2022
+                            <br /> 7:00 PM
+                          </div>
+                          <div className="item-title">
+                            Solved 2 tactical puzzles
+                          </div>
+                        </li>
+                        <li className="rb-item">
+                          <div className="timestamp">
+                            19th July 2022
+                            <br /> 3:00 PM
+                          </div>
+                          <div className="item-title">
+                            Practiced 7 positions on{" "}
+                            <a href="/learnings">Piece Checkmates I</a>
+                          </div>
+                        </li>
+                        <li className="rb-item">
+                          <div className="timestamp">
+                            17st July 2022
+                            <br /> 7:00 PM
+                          </div>
+                          <div className="item-title">
+                            Signed up to{" "}
+                            <a
+                              href="http://www.ystemandchess.com"
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              ystemandchess.com
+                            </a>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
-                ))}
+                </div>
+                <div id="Mentor_Session" className="tabcontent">
+                  <h3>Mentor Sessions</h3>
+                  <p>Details about mentor sessions will go here.</p>
+                </div>
+                <div id="Professional_Development" className="tabcontent">
+                  <h3>Professional Development</h3>
+                  <p>Details about professional development will go here.</p>
+                </div>
+                <div id="Chess_Lesson" className="tabcontent">
+                  <h3>Chess Lesson</h3>
+                  <p>Details about chess lessons will go here.</p>
+                </div>
+                <div id="Games" className="tabcontent">
+                  <h3>Games</h3>
+                  <p>Details about games will go here.</p>
+                </div>
+                <div id="Puzzles" className="tabcontent">
+                  <h3>Puzzles</h3>
+                  <p>Details about puzzles will go here.</p>
+                </div>
+                <div id="computer" className="tabcontent">
+                  <h3>Computer</h3>
+                  <p>Details about computer activities will go here.</p>
+                </div>
+                <div id="Recordings" className="tabcontent">
+                  <h3>Recordings</h3>
+                  {recordingList.map((record, index) => (
+                    <div key={index}>
+                      <h4>{record.title}</h4>
+                      <p>{record.description}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
