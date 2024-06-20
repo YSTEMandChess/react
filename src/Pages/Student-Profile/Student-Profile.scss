@@ -14,7 +14,6 @@ body {
 }
 
 .userProfileDiv {
-  background-color: #e5f3d200;
   text-align: left;
   padding: 40px;
 }
@@ -23,7 +22,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e5f3d200;
   padding: 20px;
   margin-bottom: 20px;
 }
@@ -68,6 +66,27 @@ body {
   height: 20px;
   background-color: #7fcc26;
   border-radius: 10px 10px 0 0; /* Add border radius for rounded corners */
+}
+
+.green-bar {
+  display: flex;
+  justify-content: space-around;
+  background-color: #7fcc26;
+  padding: 10px;
+  margin-bottom: 20px; /* Adjust spacing below the green bar */
+}
+
+.green-bar-button {
+  border: none;
+  padding: 10px 20px;
+  background: none;
+  cursor: pointer;
+}
+
+.green-bar-button img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .inner-container {

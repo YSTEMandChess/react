@@ -12,7 +12,11 @@ import playTab from "../../images/student/play_tab.PNG";
 import recordingsTab from "../../images/student/recordings_tab.PNG";
 import inventoryTab from "../../images/student/inventory_tab.png";
 import progressChart from "../../images/student/chart.PNG";
-import background from "../../images/student/bg-image.jpg";
+import profileButton from "../../images/student/profile_button.svg";
+import streakButton from "../../images/student/streak_button.svg";
+import activitiesButton from "../../images/student/activities_button.svg";
+import badgesButton from "../../images/student/badges_button.svg";
+import leaderboardButton from "../../images/student/leaderboard_button.svg";
 
 const StudentProfile = ({
   firstName = "First",
@@ -50,6 +54,23 @@ const StudentProfile = ({
 
   return (
     <div className="background-wrapper">
+      <div className="green-bar">
+        <button className="green-bar-button">
+          <img src={profileButton} alt="Profile" />
+        </button>
+        <button className="green-bar-button">
+          <img src={streakButton} alt="Streak" />
+        </button>
+        <button className="green-bar-button">
+          <img src={activitiesButton} alt="Activities" />
+        </button>
+        <button className="green-bar-button">
+          <img src={badgesButton} alt="Badges" />
+        </button>
+        <button className="green-bar-button">
+          <img src={leaderboardButton} alt="Leaderboard" />
+        </button>
+      </div>
       <div className="userProfileDiv">
         <header className="header">
           <div className="profile-image">
