@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import "./Login.scss";
 import { useState } from "react";
-import { environment } from "../../environments/environment";
+import { environment } from "../../environments/environment.ts";
 import { useCookies } from "react-cookie";
 
 const Login = () => {
@@ -121,7 +121,7 @@ const Login = () => {
         <Link to="/signup" className="option">
           Create a new account
         </Link>
-        <Link to="/resetpassword" className="option">
+        <Link to="/reset-password" className="option">
           Forgot password?
         </Link>
       </div>

@@ -15,6 +15,7 @@ import Board from "./Pages/About-Us/Board/Board";
 import Mentor from "./Pages/Mentor/Mentor";
 import Financial from "./Pages/About-Us/Financial/Financial";
 import StudentInventory from "./Pages/Student-Inventory/StudentInventory";
+import ResetPassword from "./Pages/Reset-Password/reset-password";
 
 // Variables and Mutable Data
 import userPortraitImg from "./images/user-portrait-placeholder.svg";
@@ -41,6 +42,7 @@ const AppRoutes = () => {
       <Route path="/lessons" element={<Lessons />} />
       <Route path="/sponsors&partners" element={<SponsorsPartners />} />
       <Route path="/board" element={<Board />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route
         path="/student-inventory"
         element={
