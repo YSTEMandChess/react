@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Cookies from 'js-cookie';
 import './reset-password.component.scss';
-import { environment } from '../../environments/environment.ts';
+import { environment } from '../../environments/environment.js';
 
 const ResetPassword = () => {
   const [link, setLink] = useState('/');

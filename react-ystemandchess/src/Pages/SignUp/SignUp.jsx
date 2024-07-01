@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './SignUp.scss';
-import { environment } from '../../environments/environment.ts';
+import { environment } from '../../environments/environment.js';
 
 const Signup = () => {
   const [firstName, setFirstName] = useState('');

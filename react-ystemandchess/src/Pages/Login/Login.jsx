@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import "./Login.scss";
 import { useState } from "react";
-import { environment } from "../../environments/environment.ts";
+import { environment } from "../../environments/environment.js";
 import { useCookies } from "react-cookie";
 
 const Login = () => {

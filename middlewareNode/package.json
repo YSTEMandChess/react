@@ -26,5 +26,8 @@
     "server": "nodemon server"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "volta": {
+    "node": "14.21.3"
+  }
 }

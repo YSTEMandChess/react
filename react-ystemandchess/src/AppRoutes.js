@@ -1,5 +1,5 @@
 // Imports for React Components/Pages
-import { Route, Routes } from "react-router-dom";
+import { Route, Router, Routes } from "react-router-dom";
 import Home from "./Pages/Home/Home";
 import Programs from "./Pages/Programs/Programs";
 import CSBenefitPage from "./Pages/About-Us/Benefit-of-CS/CSBenefitPage";
@@ -16,6 +16,7 @@ import Mentor from "./Pages/Mentor/Mentor";
 import Financial from "./Pages/About-Us/Financial/Financial";
 import StudentInventory from "./Pages/Student-Inventory/StudentInventory";
 import ResetPassword from "./Pages/Reset-Password/reset-password";
+import Student from "./Pages/Student/Student";
 
 // Variables and Mutable Data
 import userPortraitImg from "./images/user-portrait-placeholder.svg";
@@ -52,6 +53,7 @@ const AppRoutes = () => {
           />
         }
       />
+      <Route path="/student" element={<Student/>} />
     </Routes>
   );
 };
