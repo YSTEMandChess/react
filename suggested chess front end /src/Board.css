@@ -1,0 +1,39 @@
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr); /* Adjust the number of columns as needed */
+  grid-template-rows: repeat(8, 1fr); /* Adjust the number of rows as needed */
+  max-width: 100vh; /* Adjust the maximum width of the board relative to viewport height */
+  max-height: 100vh; /* Adjust the maximum height of the board relative to viewport height */
+  width: 100%;
+  height: 100%;
+  margin: auto; /* Center the board horizontally and vertically */
+  position: absolute; /* Positioning absolute to center */
+  top: 50%; /* Centering vertically */
+  left: 50%; /* Centering horizontally */
+  transform: translate(-50%, -50%); /* Move back 50% of width and height */
+}
+
+  
+  
+  .square {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .square.black {
+    background-color: #769656;
+  }
+  
+  .square.white {
+    background-color: #eeeed2;
+  }
+  
+  .piece {
+    max-width: 80%; /* Adjust the size of the piece */
+    max-height: 80%; /* Adjust the size of the piece */
+  }
+  
