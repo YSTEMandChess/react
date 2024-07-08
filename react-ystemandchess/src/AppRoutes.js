@@ -17,6 +17,8 @@ import Financial from "./Pages/About-Us/Financial/Financial";
 import StudentInventory from "./Pages/Student-Inventory/StudentInventory";
 import StudentProfile from "./Pages/StudentProfile/Student-Profile";
 import MentorProfile from "./Pages/MentorProfile/Mentor-Profile";
+import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
+// import LessonContent from "./Pages/piece-lessons/lesson-content/lesson-content"; // this one doesn't exist yet
 
 // Variables and Mutable Data
 import userPortraitImg from "./images/user-portrait-placeholder.svg";
@@ -55,6 +57,7 @@ const AppRoutes = () => {
 
       <Route path="/mentor-profile" element={<MentorProfile />} />
       <Route path="/student-profile" element={<StudentProfile />} />
+      <Route path="/lessons/test" element={<LessonOverlay />} />
     </Routes>
   );
 };
