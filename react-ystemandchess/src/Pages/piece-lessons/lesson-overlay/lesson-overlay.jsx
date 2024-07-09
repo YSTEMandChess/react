@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../../environments/environment';
-import PlayLesson from '../play-lesson/PlayLesson'; // Corrected import
+import PlayLesson from '../play-lesson/PlayLesson'; // Corrected import path
 import './lesson-overlay.scss';
 
 const LessonOverlay = () => {
@@ -19,7 +19,7 @@ const LessonOverlay = () => {
     const [isReady, setIsReady] = useState(false);
     const [cookies] = useCookies(['piece', 'login']);
     const piece = cookies.piece;
-    const displayPiece = piece.toUpperCase();
+    const displayPiece = piece ? piece.toUpperCase() : 'UNKNOWN PIECE';
     const [displayLessonNum, setDisplayLessonNum] = useState(0);
 
     useEffect(() => {
