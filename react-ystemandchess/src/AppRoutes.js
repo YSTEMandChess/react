@@ -17,6 +17,7 @@ import Financial from "./Pages/About-Us/Financial/Financial";
 import StudentInventory from "./Pages/Student-Inventory/StudentInventory";
 import ResetPassword from "./Pages/Reset-Password/reset-password";
 import Student from "./Pages/Student/Student";
+import MentorProfile from "./Pages/Mentor-Profile/MentorProfile";
 
 // Variables and Mutable Data
 import userPortraitImg from "./images/user-portrait-placeholder.svg";
@@ -54,6 +55,7 @@ const AppRoutes = () => {
         }
       />
       <Route path="/student" element={<Student/>} />
+      <Route path="/mentor-profile" element={<MentorProfile />} />
     </Routes>
   );
 };

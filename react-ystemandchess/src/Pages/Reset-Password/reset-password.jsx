@@ -1,93 +1,96 @@
 import React, { useState } from 'react';
-import Cookies from 'js-cookie';
+import { useCookies } from 'react-cookie';
 import './reset-password.component.scss';
 import { environment } from '../../environments/environment.js';
 
 const ResetPassword = () => {
-  const [link, setLink] = useState('/');
-  const [usernameFlag, setUsernameFlag] = useState(false);
-  const [emailFlag, setEmailFlag] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [userNameError, setUserNameError] = useState('');
   const [resetPasswordError, setResetPasswordError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [result, setResult] = useState(null);
   const [showData, setShowData] = useState(false);
+  const [cookies] = useCookies(['login']);
 
   const usernameVerification = () => {
-    const username = document.getElementById('username').value;
     if (username.length > 2) {
-      setUsernameFlag(true);
       setUserNameError('');
+      return true;
     } else {
-      setUsernameFlag(false);
       setUserNameError('Invalid username');
+      return false;
     }
   };
 
-  const emailVerification = (event) => {
-    const email = event.target.value;
+  const emailVerification = () => {
     if (/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}/.test(email)) {
-      setEmailFlag(true);
       setEmailError('');
       return true;
     } else {
-      setEmailFlag(false);
       setEmailError('Invalid Email');
       return false;
     }
   };
 
   const errorMessages = () => {
-    if (!emailFlag || !usernameFlag) {
+    const isUsernameValid = usernameVerification();
+    const isEmailValid = emailVerification();
+    if (!isUsernameValid || !isEmailValid) {
       setResetPasswordError('Invalid username or email');
+      return false;
     } else {
       setResetPasswordError('');
+      return true;
     }
   };
 
   const verifyUser = () => {
-    if (usernameFlag && emailFlag) {
+    if (errorMessages()) {
       verifyInDataBase();
-    } else {
-      setLink('/resetpassword');
     }
   };
 
   const verifyInDataBase = () => {
-    const username = document.getElementById('username').value;
-    const email = document.getElementById('email').value;
-
     const baseURL = environment.urls.middlewareURL;
     if (!baseURL) {
       console.error('Middleware URL is not defined');
       return;
     }
 
-    httpGetAsync(
-      `${baseURL}/user/sendMail?username=${username}&email=${email}`,
-      'POST',
-      (response) => {
-        if (response.status === 200) {
+    const data = { username, email };
+    console.log('Sending data:', data);
+
+    fetch(`${baseURL}/user/sendMail`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${cookies.login}`
+      },
+      body: JSON.stringify(data)
+    })
+      .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+          return response.json().then(err => { throw new Error(err.message) });
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Response data:', data);
+        if (data.message === 'Mail Sent') {
           setResult('');
           setShowData(true);
         } else {
-          setResult('Invalid data');
+          setResult(data.message || 'Invalid data');
           setShowData(false);
         }
-      }
-    );
-  };
-
-  const httpGetAsync = (theUrl, method = 'POST', callback) => {
-    const xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function () {
-      if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-        callback(xmlHttp);
-      }
-    };
-    xmlHttp.open(method, theUrl, true); // true for asynchronous
-    xmlHttp.setRequestHeader('Authorization', `Bearer ${Cookies.get('login')}`);
-    xmlHttp.send(null);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setResult(error.message || 'Invalid data');
+        setShowData(false);
+      });
   };
 
   return (
@@ -110,7 +113,8 @@ const ResetPassword = () => {
               <input
                 type="text"
                 placeholder="UserName"
-                id="username"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
                 onBlur={usernameVerification}
               />
               <h6>{userNameError}</h6>
@@ -119,15 +123,14 @@ const ResetPassword = () => {
               <input
                 type="email"
                 placeholder="Email"
-                id="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 onBlur={emailVerification}
               />
               <h6>{emailError}</h6>
               <h3>{result}</h3>
             </li>
-            <button onClick={() => { errorMessages(); verifyUser(); }}>
-              Enter
-            </button>
+            <button onClick={verifyUser}>Enter</button>
           </>
         ) : (
           <div>
