@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../../environments/environment';
-import PlayLesson from '../play-lesson/PlayLesson'; // Corrected import path
+import PlayLesson from '../play-lesson/PlayLesson';
 import './lesson-overlay.scss';
 
 const LessonOverlay = () => {
@@ -198,23 +198,36 @@ const LessonOverlay = () => {
     };
 
     return (
-        <div>
-            <PlayLesson chessLessonSrc={environment.urls.chessClientURL} />
-            <div id="lesson-container">
-                <div id="top">
-                    <h1>Lesson Number {displayLessonNum}</h1>
+        <div id="lesson-container">
+            <div id="chess-board">
+                <div id="chess-board-top">
+                    <button className="lesson-button">Lesson</button>
+                    <button className="play-button">Play</button>
                 </div>
-                <div id="chess-board">
-                    {/* Replace this comment with your lesson content */}
+                <PlayLesson chessLessonSrc={environment.urls.chessClientURL} />
+            </div>
+            <div id="lesson-content">
+                <h2>Pawn-It moves forward only</h2>
+                <div id="try-this">
+                    <p>Try this!</p>
+                    <p>[Lesson Description Here]</p>
                 </div>
                 <div id="bottom">
                     <button type="button" id="previous" onClick={previousLesson}>
-                        Previous &lt;
+                        &lt; Back
                     </button>
                     <button type="button" id="next" onClick={nextLesson}>
                         Next &gt;
                     </button>
                 </div>
+            </div>
+            <div id="lesson-selector">
+                <button className="lesson-tab">Basic</button>
+                <button className="lesson-tab">Capture</button>
+                <button className="lesson-tab">Training 1</button>
+                <button className="lesson-tab">Training 2</button>
+                <button className="lesson-tab">Training 3</button>
+                <button className="lesson-tab">Special Move</button>
             </div>
         </div>
     );

@@ -1,12 +1,9 @@
 .cont {
   width: 100%;
-  padding: 30px;
-  margin: 0;
-  border: 0;
   .lichess {
     position: relative;
-    width: 40%;
-    padding-bottom: 43%;
+    width: 100%;
+    padding-bottom: 100%;
 
     iframe {
       position: absolute;
@@ -26,15 +23,15 @@
 
   @media only screen and (max-width: 1550px) {
     .lichess {
-      width:50%;
-      padding-bottom: 53%;
+      width:70%;
+      padding-bottom: 70%;
     }
   }
 
   @media only screen and (max-width:1000px) {
     .lichess {
-      width: 70%;
-      padding-bottom: 70%;
+      width: 50%;
+      padding-bottom: 50%;
 
       iframe {
         overflow: hidden;
