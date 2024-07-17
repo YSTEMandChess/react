@@ -5,7 +5,7 @@ import PlayLesson from '../play-lesson/PlayLesson';
 import './lesson-overlay.scss';
 
 const LessonOverlay = () => {
-    const [lessonStartFEN, setLessonStartFEN] = useState('');
+    const [lessonStartFEN, setLessonStartFEN] = useState('8/8/8/8/P7/5p2/8/8');
     const [lessonEndFEN, setLessonEndFEN] = useState('');
     const [lessonStarted, setLessonStarted] = useState(false);
     const [endSquare, setEndSquare] = useState('');
@@ -210,7 +210,7 @@ const LessonOverlay = () => {
                 <h2>Pawn-It moves forward only</h2>
                 <div id="try-this">
                     <p>Try this!</p>
-                    <p>[Lesson Description Here]</p>
+                    <p>Pawns move one square only. But when they reach the other side of the board, they become a stronger piece!</p>
                 </div>
                 <div id="bottom">
                     <button type="button" id="previous" onClick={previousLesson}>
