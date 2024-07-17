@@ -14,5 +14,8 @@
     "express": "^4.17.1",
     "js-chess-engine": "^0.5.0",
     "stockfish": "^11.0.0"
+  },
+  "volta": {
+    "node": "14.21.3"
   }
 }

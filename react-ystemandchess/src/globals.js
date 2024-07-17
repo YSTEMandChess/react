@@ -1,4 +1,4 @@
-import { environment } from "./environments/environment";
+import { environment } from "./environments/environment.js";
 let information;
 
 export async function SetPermissionLevel(cookies, removeCookie) {
