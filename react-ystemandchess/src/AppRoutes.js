@@ -58,6 +58,7 @@ const AppRoutes = () => {
       <Route path="/mentor-profile" element={<MentorProfile />} />
       <Route path="/student-profile" element={<StudentProfile />} />
       <Route path="/learnings" element={<LessonOverlay />} />
+      <Route path="/play-nolog" element={<ChessFreePlay />} />
     </Routes>
   );
 };
