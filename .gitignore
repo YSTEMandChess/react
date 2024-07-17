@@ -11,8 +11,8 @@ dist
 node_modules
 
 #environment
-environment.prod.ts
-environment.ts
+react-ystemandchess/environment.prod.ts
+react-ystemandchess/environment.ts
 environment.php
 .env
 environment.*
