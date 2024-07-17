@@ -64,7 +64,7 @@ const Login = () => {
         console.log(payload, true);
         switch (payload["role"]) {
           case "student":
-            window.location.pathname = "/student";
+            window.location.pathname = "/student-profile";
             break;
           case "parent":
             window.location.pathname = "/parent";

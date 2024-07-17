@@ -223,7 +223,7 @@ const Signup = () => {
         />
         <p>Select Account Type</p>
         <select value={accountType} onChange={handleAccountTypeChange}>
-          <option value=""></option>
+          <option value="student">Student</option>
           <option value="mentor">Mentor</option>
           <option value="parent">Parent</option>
         </select>

@@ -46,6 +46,7 @@ const NavBar = () => {
   const [role, setRole] = useState("");
   const [profileDropdown, setProfileDropdown] = useState(false);
   const profileDropdownRef = useRef(null);
+
   // toggles dropdown menu
   const toggleDropdown = () => {
     setDropdown((prevDropdown) => !prevDropdown);
@@ -109,7 +110,7 @@ const NavBar = () => {
     removeCookie("login");
     removeCookie("eventId");
     removeCookie("timerStatus");
-    window.location.reload();
+    window.location.pathname = "/login"; // Redirect to login page
   };
 
   return (
