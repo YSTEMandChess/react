@@ -15,7 +15,7 @@
   height: 50px;
   display: flex;
   gap: 2em;
-  margin-top: 50px;
+  margin-top: 70px;
 }
 .footer-email {
   margin-bottom: -7vh;
@@ -24,16 +24,16 @@
   margin-bottom: -4vh;
 }
 .footer-icons #twitter-icon {
-  width: 50%;
-}
-.footer-icons #insta-icon {
-  width: 50%;
-}
-.footer-icons #fb-icon {
   width: 30%;
 }
+.footer-icons #instagram-icon {
+  width: 30%;
+}
+.footer-icons #facebook-icon {
+  width: 20%;
+}
 .footer-icons #google-icon {
-  width: 50%;
+  width: 30%;
 }
 .footer-sponsors {
   width: 20%;
@@ -42,6 +42,7 @@
 }
 .sponsors-list {
   list-style-type: none;
+  padding-right: 30px;
 }
 .sponsors-list li {
   margin-bottom: 1vh;
@@ -56,4 +57,5 @@
 }
 .partners-list-1 {
   list-style-type: none;
+  padding-right: 30px;
 }
