@@ -24,12 +24,27 @@ import playComputerIcon from "./StudentInventoryIcons/play-computer-icon.svg";
 import recordingsIcon from "./StudentInventoryIcons/recordings-icon.svg";
 import backpackIcon from "./StudentInventoryIcons/backpack-icon.svg";
 
+<<<<<<< HEAD
 // Chess Benefit Page
 import mathComputerImg from "./mathArticle/computer.png";
 import mathChampImg from "./mathArticle/Junechamp 2.png";
+=======
+// Chess Benefits Page
+import mathComputerImg from "./mathArticle/computer.png"
+import mathChampImg from "./mathArticle/Junechamp 2.png"
+>>>>>>> origin/feature/add-static-badge-elements
+
+// Badges
+import badgeKnight from "./badges/badge-knight.png";
+import badgeQueen from "./badges/badge-knight.png";
+import badgeRook from "./badges/badge-knight.png";
+import badgeKing from "./badges/badge-knight.png";
+import badgePawn from "./badges/badge-knight.png";
+import badgeBishop from "./badges/badge-knight.png";
 
 // Global image object. Don't forget to place images here.
 const images = {
+<<<<<<< HEAD
   // Home
   LogoLineBr,
   TreesGroup,
@@ -55,6 +70,40 @@ const images = {
   playComputerIcon,
   recordingsIcon,
   backpackIcon,
+=======
+    // Home
+    LogoLineBr,
+    TreesGroup,
+    Heart,
+    Gem,
+    LargeInfo,
+    ChessGroup,
+    Book1,
+    Book2,
+    BuyNow,
+    // Chess Benefit Page
+    mathComputerImg,
+    mathChampImg,
+    // Student Inventory
+    userPortraitCamera,
+    lineGraphPlaceholder,
+    activityIcon,
+    mentorIcon,
+    learningIcon,
+    chessLessonsIcon,
+    gamesIcon,
+    puzzlesIcon,
+    playComputerIcon,
+    recordingsIcon,
+    backpackIcon,
+    // Badges
+    badgeKnight,
+    badgeQueen,
+    badgeRook,
+    badgeKing,
+    badgePawn,
+    badgeBishop
+>>>>>>> origin/feature/add-static-badge-elements
 };
 
 export default images;
