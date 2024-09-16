@@ -1,0 +1,100 @@
+.hero-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8rem;
+    margin: 5rem 7rem;
+    border-radius: 1rem;
+    background-color: #3f8cdf;
+    padding: 2rem;
+  }
+  
+  .hero-section img {
+    object-fit: contain;
+    border-radius: 1rem;
+    box-shadow: 0.1rem 0.1rem 0.1rem black;
+  }
+  
+  .hero-section .programs-text {
+    text-align: left;
+    color: rgb(255, 250, 250);
+    max-width: 65%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .hero-section .programs-text p,
+  .hero-section .programs-text ul li {
+    font-size: 1.2rem;
+  }
+  
+  .hero-section .programs-text h2 {
+    font-size: 2.5rem;
+    margin: 0;
+  }
+  
+  .hero-section .programs-text h4 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+  
+  .hero-section a {
+    margin-top: 0.4rem;
+  }
+  
+  .hero-section a button {
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    width: 12rem;
+    height: 3rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+    background-color: #eef36a;
+  }
+  
+  .hero-section a button:hover {
+    transition: 0.3s;
+    transform: scale(1.1);
+  }
+  
+  .sub-terms {
+    display: flex;
+    margin: 5rem 7rem;
+    gap: 10rem;
+  }
+  
+  .sub-terms .sub-terms-left {
+    height: 80%;
+  }
+  
+  .sub-terms .sub-terms-left,
+  .sub-terms .sub-terms-right {
+    text-align: left;
+    background-color: #e2aa03;
+    border-radius: 1rem;
+    padding: 2rem;
+    font-size: 1.4rem;
+    flex: 1;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .sub-terms .sub-terms-left p,
+  .sub-terms .sub-terms-right p {
+    margin: 0;
+  }
+  
+  .sub-terms h3 {
+    font-size: 2.4rem;
+    margin: 0;
+  }
+  
+  .sub-terms h5 {
+    font-size: 1.7rem;
+    margin: 0;
+  }
+  

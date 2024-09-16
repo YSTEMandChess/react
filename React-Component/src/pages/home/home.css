@@ -1,0 +1,319 @@
+* {
+  font-family: sans-serif;
+}
+
+.home-container {
+  width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+
+/* FIRST SECTOR OF LANDING PAGE*/
+.home-content1 {
+  width: 85%;
+  height: 460px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  gap: 2em;
+  margin-bottom: 50px;
+}
+
+.info {
+  width: 50%;
+  height: 100%;
+}
+
+.info h1 {
+  padding-top: 5%;
+  font-size: 30px;
+  text-align: left;
+}
+
+.info p {
+  font-size: 25px;
+  padding-top: 40px;
+  text-align: left;
+}
+
+.donate-button {
+  text-align: center;
+  margin-right: 30%;
+  margin-top: 5%;
+  width: 25%;
+  font-size: 140%;
+  border: none;
+  border-radius: 20px;
+  height: 10%;
+  background-color: rgb(182, 180, 180);
+  box-shadow: 5px 5px 1px greenyellow;
+}
+
+.donate-button:hover {
+  background-color: rgb(211, 209, 209);
+  cursor: pointer;
+  transform: scale(1.05);
+  transition: 0.2s;
+}
+
+#tree-group-img {
+  width: 110%;
+}
+
+/* Logo Line Break */
+
+.logo-break {
+  width: 85%;
+}
+
+#floating-h1 {
+  text-align: left;
+  margin-left: 8%;
+  font-size: 24px;
+  margin-bottom: -10px;
+}
+
+/* SECTOR 2 -- Cards for subscription plans */
+.home-content2 {
+  width: 85%;
+  height: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10em;
+  justify-content: center;
+}
+
+.card1 {
+  width: 35%;
+  height: 700px;
+  background-color: rgb(115, 179, 19);
+  border-radius: 20px;
+  box-shadow: 20px 20px 1px rgb(209, 230, 28);
+}
+
+.card1 img {
+  width: 25%;
+  margin-bottom: -5%;
+  margin-top: 20%;
+}
+
+.card1 p {
+  font-size: 180%;
+  margin-top: 10%;
+}
+
+.card1 button {
+  width: 40%;
+  height: 10%;
+  font-size: 160%;
+  border: none;
+  border-radius: 20px;
+  background-color: rgb(209, 230, 28);
+  box-shadow: 5px 5px 1px rgb(255, 255, 255);
+}
+
+.card1 button:hover {
+  background-color: rgb(228, 243, 96);
+  transform: scale(1.1);
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.card2 {
+  width: 35%;
+  height: 700px;
+  background-color: rgb(255, 255, 255);
+  border-radius: 20px;
+  border: 3px solid rgb(115, 179, 19);
+  box-shadow: 20px 20px 1px rgb(115, 179, 19);
+}
+
+.card2 img {
+  width: 25%;
+  margin-top: 20%;
+  margin-bottom: -5%;
+}
+
+.card2 h1 {
+  margin-bottom: -7%;
+}
+
+.card2 p {
+  font-size: 180%;
+  margin-top: 10%;
+}
+
+.card2 button {
+  width: 40%;
+  height: 10%;
+  font-size: 160%;
+  border: none;
+  border-radius: 20px;
+  background-color: rgb(201, 200, 200);
+  box-shadow: 5px 5px 1px rgb(115, 179, 19);
+}
+
+.card2 button:hover {
+  background-color: rgb(238, 238, 238);
+  transform: scale(1.1);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* ------------------------------------------------------------*/
+
+/* SECTOR 3 -- Introduction (Play, Learn, Donate) */
+.home-content3 img {
+  width: 90%;
+}
+
+/* SECTION Video */
+
+.home-video-container {
+  width: 100%;
+  height: 90vh;
+}
+
+.home-video {
+  width: 70%;
+  height: 100%;
+}
+
+/* Section 4 -- Labels */
+
+.home-content4 {
+  width: 100%;
+  height: 55vh;
+  margin-top: 5%;
+  margin-bottom: 5%;
+}
+
+.home-content4-box {
+  width: 60%;
+  height: 90%;
+  border: 4px solid rgb(54, 206, 54);
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 50px;
+}
+
+.home-content4-box img {
+  margin-top: 5%;
+}
+
+.home-content4-box p {
+  font-size: 20px;
+  margin-top: 4%;
+}
+
+.home-content4-box button {
+  width: 20%;
+  height: 10%;
+  border: none;
+  border-radius: 20px;
+  font-size: 120%;
+  margin-top: 2%;
+  background-color: rgb(235, 235, 12);
+  box-shadow: 5px 5px 1px rgb(153, 153, 153);
+}
+
+.home-content4-box button:hover {
+  background-color: rgb(248, 246, 115);
+  cursor: pointer;
+  transform: scale(1.1);
+  transition: 0.2s;
+}
+
+/* Logo Line Break */
+
+.logo-break {
+  width: 85%;
+  margin-top: 40px;
+}
+
+/* Section 5 -- Books by Devin Nakano */
+
+.home-content5 {
+  width: 100%;
+  height: 55vh;
+  margin-top: 5%;
+  margin-bottom: 30%;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 5%;
+}
+
+footer {
+  text-align: center;
+}
+
+.book {
+  display: flex;
+  align-items: flex-start;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.book-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 5%;
+  margin-right: 5%;
+}
+
+.book-image {
+  max-width: 150px;
+  margin-right: 5%;
+}
+
+.book-details {
+  flex: 1;
+}
+
+.book-details h2 {
+  text-align: left;
+  font-size: 1.5em;
+  margin-top: 0;
+  margin-right: 10%;
+  margin-bottom: 1%;
+}
+
+.book-details h3 {
+  margin: 0;
+  text-align: left;
+  font-size: 1.2em;
+  margin-top: 0;
+  margin-right: 10%;
+  margin-bottom: 1%;
+  color: #555;
+}
+
+.book-details p {
+  text-align: left;
+  margin-top: 2.5%;
+  line-height: 1.5;
+}
+
+.buy-now {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-top: 5%;
+}
+
+.buy-now img {
+  width: 150px;
+  height: auto;
+}
+
+.buy-now:hover img {
+  filter: brightness(0.9);
+}
