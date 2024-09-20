@@ -13,40 +13,54 @@ var io = require("socket.io")(http, {
 
 var ongoingGames = [];
 
+/// Purpose: Triggered when a client connects to the socket.
+/// Input: N/A (Automatically triggered by the connection)
+/// Output: Logs "a user connected to socket" in the server console.
+
 io.sockets.on("connection", (socket) => {
   console.log("a user connected to socket");
-  // On the connection of a new game being found.
+  
+  /// Purpose: Handle new game initialization or join an existing game.
+  /// Input: { student: string (e.g., "Alice"), mentor: string (e.g., "Bob"), role: string ("mentor"/"student") }
+  /// Output: { boardState: string (e.g., "initial_board_state"), color: string ("black"/"white") }
+
   socket.on("newGame", (msg) => {
     newGame = true;
     var parsedmsg = JSON.parse(msg);
-    ongoingGames.forEach((element) => {
-      if (
-        element.student.username == parsedmsg.student ||
-        element.mentor.username == parsedmsg.mentor
-      ) {
-        newGame = false;
+
+    ongoingGames.forEach((game) => {
+      // checking if student/mentor already in an ongoeing game
+      if ( game.student.username == parsedmsg.student || game.mentor.username == parsedmsg.mentor ) 
+      {
+        newGame = false;  
         // Set the new client id for student or mentor.
         let color;
+        
         if (parsedmsg.role == "student") {
-          element.student.id = socket.id;
-          color = element.student.color;
-        } else if (parsedmsg.role == "mentor") {
-          element.mentor.id = socket.id;
-          color = element.mentor.color;
+          game.student.id = socket.id;
+          color = game.student.color;
+        } 
+        else if (parsedmsg.role == "mentor") {
+          game.mentor.id = socket.id;
+          color = game.mentor.color;
         }
 
         io.to(socket.id).emit(
           "boardState",
-          JSON.stringify({ boardState: element.boardState, color: color })
+          JSON.stringify({ boardState: game.boardState, color: color })
         );
       }
     });
 
     if (newGame) {
       let colors = [];
-      if (parsedmsg.role == "student") {
+
+      if (parsedmsg.role == "student") 
+      {
         colors = ["black", "white"];
-      } else {
+      } 
+      else 
+      {
         colors = ["white", "black"];
       }
 
@@ -89,6 +103,10 @@ io.sockets.on("connection", (socket) => {
     }
   });
 
+  /// Purpose: End an ongoing game and remove it from the list.
+  /// Input: { username: string (e.g., "Alice") }
+  /// Output: { success: boolean (true/false) }
+
   socket.on("endGame", (msg) => {
     var parsedmsg = JSON.parse(msg);
     let index = 0;
@@ -107,6 +125,10 @@ io.sockets.on("connection", (socket) => {
     );
   });
 
+  /// Purpose: Request to undo the last moves.
+  /// Input: { moveId: string (e.g., "move123"), playerId: string (e.g., "player1") }
+  /// Output: { success: boolean (true/false), moveId: string (e.g., "move123") }
+
   socket.on("undoMoves", (data) => {
     const moves = JSON.parse(data);
     io.emit(
@@ -114,6 +136,10 @@ io.sockets.on("connection", (socket) => {
       JSON.stringify(moves)
     );
   });
+
+  /// Purpose: Inform both players whether the current step is the last update.
+  /// Input: boolean (true/false)
+  /// Output: boolean (true/false)
 
   socket.on("isStepLastUpdate", (data) => {
     const isStepLast = JSON.parse(data);
@@ -131,6 +157,10 @@ io.sockets.on("connection", (socket) => {
     );
   });
 
+  /// Purpose: Send information about the last move in the game.
+  /// Input: { moveId: string (e.g., "move123"), playerId: string (e.g., "player1"), position: string (e.g., "A3") }
+  /// Output: { moveId: string (e.g., "move123"), playerId: string (e.g., "player1"), position: string (e.g., "A3") }
+
   socket.on("lastMoveInfo", (data) => {
     const moves = JSON.parse(data);
     io.emit(
@@ -139,6 +169,10 @@ io.sockets.on("connection", (socket) => {
     );
   });
 
+  /// Purpose: Block undo actions after the game ends.
+  /// Input: { gameId: string (e.g., "game567") }
+  /// Output: { success: boolean (true/false) }
+
   socket.on("preventUndoAfterGameOver", (data) => {
     const info = JSON.parse(data);
     io.emit(
@@ -146,6 +180,10 @@ io.sockets.on("connection", (socket) => {
       JSON.stringify(info)
     );
   });
+
+  /// Purpose: Update the board state for the game.
+  /// Input: { username: string (e.g., "Alice"), boardState: string (e.g., "updated_board_state") }
+  /// Output: { boardState: string (e.g., "updated_board_state"), color: string ("black"/"white") }
 
   socket.on("newState", (msg) => {
     //msg contains boardstate, find boardstate
@@ -175,6 +213,10 @@ io.sockets.on("connection", (socket) => {
     // update the board state and send to the other person.
     // {boardState: sdlfkjsk, username: sfjdslk}
   });
+
+  /// Purpose: Create a new game instance with default settings.
+  /// Input: { student: string (e.g., "Alice"), mentor: string (e.g., "Bob") }
+  /// Output: { boardState: string (e.g., "initial_board_state"), color: string ("black"/"white") }
 
   socket.on("createNewGame", (msg) => {
     //msg contains boardstate, find boardstate
@@ -239,6 +281,10 @@ io.sockets.on("connection", (socket) => {
     // {boardState: sdlfkjsk, username: sfjdslk}
   });
 
+  /// Purpose: Switch the colors between student and mentor.
+  /// Input: { username: string (e.g., "Alice") }
+  /// Output: { boardState: string (e.g., "flipped_board_state"), color: string ("black"/"white") }
+
   socket.on("flipBoard", (msg) => {
     var parsedmsg = JSON.parse(msg);
     ongoingGames.forEach((element) => {
@@ -267,6 +313,10 @@ io.sockets.on("connection", (socket) => {
       }
     });
   });
+
+  /// Purpose: Handle game-over status for both players.
+  /// Input: { username: string (e.g., "Alice") }
+  /// Output: { boardState: string (e.g., "final_board_state"), color: string ("black"/"white") }
 
   socket.on("gameOver", (msg) => {
     var parsedmsg = JSON.parse(msg);
