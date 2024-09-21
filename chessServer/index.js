@@ -133,7 +133,6 @@ io.sockets.on("connection", (socket) => {
   socket.on("makeTurn", (msg) => {
     
     let currentGame;
-    let currentState = currentGame.boardState instanceof Chess;
     var clientSocket = socket.id;
 
     parsedmsg = JSON.parse(msg);
@@ -151,7 +150,9 @@ io.sockets.on("connection", (socket) => {
 
     if (currentGame)
     {
-
+      
+      let currentState = currentGame.boardState instanceof Chess;
+      
       // Get initial state
       console.log('Initial FEN:', currentState.fen());
       console.log('Current turn:', currentState.turn());
@@ -164,6 +165,8 @@ io.sockets.on("connection", (socket) => {
       } else {
         console.log('Illegal move');
       }
+
+      currentGame.boardState = currentState;
 
       // broadcast current board state to mentor and student
       io.to(mentor.id).emit(
@@ -181,26 +184,8 @@ io.sockets.on("connection", (socket) => {
     // Output the final state of the board
     console.log('Final FEN:', currentState.fen());
     console.log('Moves history:', currentState.history());
-    
-    var legal = true;
-    // determine legal turn
-    // retrieve from and to
-    // determine legality
-    // if legal, change gamestate
 
-    if (legal) {
-      io.to(clientSocket).emit(
-        "changeState"
-      );
-
-    }
-    else if (!legal)
-    {
-
-    }
-    // 
-
-    });
+  });
 
   /// Purpose: End an ongoing game and remove it from the list.
   /// Input: { username: string (e.g., "Alice") }
