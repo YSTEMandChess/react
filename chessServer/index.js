@@ -38,26 +38,10 @@ io.sockets.on("connection", (socket) => {
       // checking if student/mentor already in an ongoeing game
       if ( game.student.username == parsedmsg.student || game.mentor.username == parsedmsg.mentor ) 
       {
-        newGame = false;  
-        // Set the new client id for student or mentor.
-        let color;
-        
-        if (parsedmsg.role == "student") 
-        {
-          game.student.id = socket.id;
-          color = game.student.color;
-        } 
-        else if (parsedmsg.role == "mentor") 
-        {
-          game.mentor.id = socket.id;
-          color = game.mentor.color;
-        } 
-
-        io.to(socket.id).emit(
-          "boardState",
-          JSON.stringify({ boardState: game.boardState, color: color })
-        );
+        newGame = false;
+        break; 
       }
+      
     });
 
     if (newGame) {
@@ -86,6 +70,7 @@ io.sockets.on("connection", (socket) => {
 
       const clientColor = (parsedmsg) => parsedmsg.role === "student" ? colors[0] : parsedmsg.role === "mentor" ? colors[1] : null;
       
+      // saving game to ongoing games
       ongoingGames.push({
         student: {
           username: parsedmsg.student,
@@ -100,7 +85,6 @@ io.sockets.on("connection", (socket) => {
         boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
       });
 
-    
       io.emit(
         "boardState",
         JSON.stringify({
@@ -110,6 +94,30 @@ io.sockets.on("connection", (socket) => {
       );
     
       // Set client ids,
+    }
+    else if (newGame == false)
+    {
+      // Set the new client id for student or mentor.
+      let color;
+        
+      if (parsedmsg.role == "student") 
+      {
+        game.student.id = socket.id;
+        color = game.student.color;
+      } 
+      else if (parsedmsg.role == "mentor") 
+      {
+        game.mentor.id = socket.id;
+        color = game.mentor.color;
+      } 
+
+      io.to(socket.id).emit(
+        "boardState",
+        JSON.stringify({ boardState: game.boardState, color: color })
+      );
+    }
+    else {
+      // TODO : implement exception : newgame is null
     }
   });
 
