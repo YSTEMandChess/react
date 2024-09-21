@@ -9,7 +9,7 @@ let previousEndSquare = "";
 var squareClass = "square-55d63";
 var $board = $("#myBoard");
 var board = null;
-var game = new Chess();
+var currentState = new Chess();
 var whiteSquareGrey = "#eebe7bf7";
 var blackSquareGrey = "#ae5716d6";
 
@@ -54,13 +54,13 @@ eventer(
 
     // move a piece if it's a move message
     if ("from" in data && "to" in data) {
-      game.move({ from: data.from, to: data.to });
+      currentState.move({ from: data.from, to: data.to });
 
       // move highlight
       highlightMove(data.from, data.to);
 
       updateStatus();
-      sendToParent(game.fen());
+      sendToParent(currentState.fen());
     }
 
     // highlight message
@@ -103,21 +103,21 @@ eventer(
         board = Chessboard("myBoard", lessonConfig);
         // var overlay = new ChessboardArrows('board_wrapper');
         lessonStarted = true;
-        game.load(lessonBoard);
+        currentState.load(lessonBoard);
       } else {
         board.position(data.boardState);
-        game.load(data.boardState);
+        currentState.load(data.boardState);
         updateStatus();
       }
 
       $board.find(".square-" + endSquare).addClass("highlight");
     } else if (data.boardState == startFEN) {
-      game = new Chess();
+      currentState = new Chess();
     }
     if (isLesson == false) {
       playerColor = data.color;
       board.orientation(playerColor);
-      game.load(data.boardState);
+      currentState.load(data.boardState);
       board.position(data.boardState);
       updateStatus();
     }
@@ -147,7 +147,7 @@ function letParentKnow() {
 function onDragStart(source, piece, position, orientation) {
   // do not pick up pieces if the game is over
   if (isLesson == false) {
-    if (game.game_over()) {
+    if (currentState.game_over()) {
       sendGameOver();
       return false;
     }
@@ -161,8 +161,8 @@ function onDragStart(source, piece, position, orientation) {
 
   // only pick up pieces for the side to move
   if (
-    (game.turn() === "w" && piece.search(/^b/) !== -1) ||
-    (game.turn() === "b" && piece.search(/^w/) !== -1)
+    (currentState.turn() === "w" && piece.search(/^b/) !== -1) ||
+    (currentState.turn() === "b" && piece.search(/^w/) !== -1)
   ) {
     return false;
   }
@@ -171,7 +171,7 @@ function onDragStart(source, piece, position, orientation) {
 function onDrop(source, target, draggedPieceSource) {
   removeGreySquares();
   // see if the move is legal
-  var move = game.move({
+  var move = currentState.move({
     from: source,
     to: target,
     promotion: "q", // NOTE: always promote to a queen for example simplicity
@@ -181,7 +181,7 @@ function onDrop(source, target, draggedPieceSource) {
   if (move === null) return "snapback";
 
   if (isLesson == false) {
-    if (game.game_over()) {
+    if (currentState.game_over()) {
       sendGameOver();
     }
   }
@@ -198,12 +198,12 @@ function onDrop(source, target, draggedPieceSource) {
     }),
   );
   sendToParent(`target:${move.to}`);
-  sendToParent(game.fen());
+  sendToParent(currentState.fen());
 }
 // To add possible move suggestion on chessboard
 function onMouseoverSquare(square, piece) {
   // get list of possible moves for this square
-  var moves = game.moves({
+  var moves = currentState.moves({
     square: square,
     verbose: true,
   });
@@ -228,26 +228,27 @@ function sendToParent(fen) {
 // update the board position after the piece snap
 // for castling, en passant, pawn promotion
 function onSnapEnd() {
-  board.position(game.fen());
+  board.position(currentState.fen());
 }
 
 function updateStatus() {
   var status = "";
 
   var moveColor = "White";
-  if (game.turn() === "b") {
+
+  if (currentState.turn() === "b") {
     moveColor = "Black";
   }
 
   // checkmate?
   if (isLesson == false) {
-    if (game.in_checkmate()) {
+    if (currentState.in_checkmate()) {
       status = "Game over, " + moveColor + " is in checkmate.";
       sendCheckmate();
     }
 
     // draw?
-    else if (game.in_draw()) {
+    else if (currentState.in_draw()) {
       status = "Game over, drawn position";
       sendDraw();
     }
@@ -258,7 +259,7 @@ function updateStatus() {
     status = moveColor + " to move";
 
     // check?
-    if (game.in_check()) {
+    if (currentState.in_check()) {
       status += ", " + moveColor + " is in check";
     }
   }

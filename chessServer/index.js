@@ -84,7 +84,7 @@ io.sockets.on("connection", (socket) => {
           id: mentorSocket, 
           color: colors[1] 
         },
-        boardState: chessState.fen(),
+        boardState: chessState,
       };
 
       ongoingGames.push(currentGame);
@@ -93,7 +93,7 @@ io.sockets.on("connection", (socket) => {
       io.emit(
         "boardState",
         JSON.stringify({
-          boardState: chessState.fen(),
+          boardState: currentGame.boardState,
           color: clientColor,
         })
       );
@@ -108,12 +108,12 @@ io.sockets.on("connection", (socket) => {
       if (parsedmsg.role == "student") 
       {
         currentGame.student.id = socket.id;
-        color = game.student.color;
+        color = currentState.student.color;
       } 
       else if (parsedmsg.role == "mentor") 
       {
         currentGame.mentor.id = socket.id;
-        color = game.mentor.color;
+        color = currentState.mentor.color;
       } 
 
       // emitting board state
@@ -130,8 +130,58 @@ io.sockets.on("connection", (socket) => {
   /// Purpose: Changes state of existing game.
   /// Input: { student: string (e.g., "Alice"), mentor: string (e.g., "Bob"), role: string ("mentor"/"student") }
   /// Output: { boardState: string (e.g., "initial_board_state"), color: string ("black"/"white") }
-  socket.on("changeState", (msg) => {
+  socket.on("makeTurn", (msg) => {
+    
+    let currentGame;
+    let currentState = currentGame.boardState instanceof Chess;
     var clientSocket = socket.id;
+
+    parsedmsg = JSON.parse(msg);
+    move = parsedmsg.move;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    if (currentGame)
+    {
+
+      // Get initial state
+      console.log('Initial FEN:', currentState.fen());
+      console.log('Current turn:', currentState.turn());
+
+      // Attempt to make a legal move
+      let move = currentState.move({ from: parsedmsg.from, to: parsedmsg.to }); // Move the pawn to e4
+
+      if (move) {
+        console.log('Move made:', move);
+      } else {
+        console.log('Illegal move');
+      }
+
+      // broadcast current board state to mentor and student
+      io.to(mentor.id).emit(
+        "boardState",
+        JSON.stringify({ boardState: currentGame.boardState, color: currentGame.color })
+      );
+
+      io.to(student.id).emit(
+        "boardState",
+        JSON.stringify*({boardState: currentGame.boardState, color: currentGame.color})
+      )
+
+    }
+
+    // Output the final state of the board
+    console.log('Final FEN:', currentState.fen());
+    console.log('Moves history:', currentState.history());
+    
     var legal = true;
     // determine legal turn
     // retrieve from and to
