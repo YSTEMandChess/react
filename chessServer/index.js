@@ -63,54 +63,52 @@ io.sockets.on("connection", (socket) => {
     if (newGame) {
       let colors = [];
 
+      
+      var studentSocket = "";
+      var mentorSocket = "";
+      
+
       if (parsedmsg.role == "student") 
       {
         colors = ["black", "white"];
+        studentSocket = socket.id;
+        mentorSocket = "";
       } 
       else if (parsedmsg.role == "mentor")
       {
         colors = ["white", "black"];
+        studentSocket = "";
+        mentorSocket = socket.id;
       }
       else { 
         io.emit("error : invalid value for msg.role. Requires student/mentor")  
       }
 
-      if (parsedmsg.role == "student") 
-      {
-        ongoingGames.push({
-          student: {
-            username: parsedmsg.student,
-            id: socket.id,
-            color: colors[0],
-          },
-          mentor: { username: parsedmsg.mentor, id: "", color: colors[1] },
+      const clientColor = (parsedmsg) => parsedmsg.role === "student" ? colors[0] : parsedmsg.role === "mentor" ? colors[1] : null;
+      
+      ongoingGames.push({
+        student: {
+          username: parsedmsg.student,
+          id: studentSocket,
+          color: colors[0],
+        },
+        mentor: { 
+          username: parsedmsg.mentor, 
+          id: mentorSocket, 
+          color: colors[1] 
+        },
+        boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+      });
+
+    
+      io.emit(
+        "boardState",
+        JSON.stringify({
           boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-        });
-        io.emit(
-          "boardState",
-          JSON.stringify({
-            boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-            color: colors[0],
-          })
-        );
-      } else if (parsedmsg.role == "mentor") {
-        ongoingGames.push({
-          student: { username: parsedmsg.student, id: "", color: colors[0] },
-          mentor: {
-            username: parsedmsg.mentor,
-            id: socket.id,
-            color: colors[1],
-          },
-          boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-        });
-        io.emit(
-          "boardState",
-          JSON.stringify({
-            boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-            color: colors[1],
-          })
-        );
-      }
+          color: clientColor,
+        })
+      );
+    
       // Set client ids,
     }
   });
