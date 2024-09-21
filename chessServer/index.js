@@ -1,15 +1,19 @@
 require("dotenv").config();
 var app = require("express")();
+
 var http = require("http")
   .createServer(app)
   .listen(process.env.PORT, () =>
     console.log(`listening on ${process.env.PORT}`)
   );
+
 var io = require("socket.io")(http, {
   cors: true,
   origins: [process.env.URL],
   credentials: true,
 });
+
+const {Chess} = require("chess.js");
 
 var ongoingGames = [];
 
@@ -28,6 +32,8 @@ io.sockets.on("connection", (socket) => {
     newGame = true;
     var parsedmsg = JSON.parse(msg);
 
+
+
     ongoingGames.forEach((game) => {
       // checking if student/mentor already in an ongoeing game
       if ( game.student.username == parsedmsg.student || game.mentor.username == parsedmsg.mentor ) 
@@ -36,14 +42,16 @@ io.sockets.on("connection", (socket) => {
         // Set the new client id for student or mentor.
         let color;
         
-        if (parsedmsg.role == "student") {
+        if (parsedmsg.role == "student") 
+        {
           game.student.id = socket.id;
           color = game.student.color;
         } 
-        else if (parsedmsg.role == "mentor") {
+        else if (parsedmsg.role == "mentor") 
+        {
           game.mentor.id = socket.id;
           color = game.mentor.color;
-        }
+        } 
 
         io.to(socket.id).emit(
           "boardState",
@@ -59,12 +67,16 @@ io.sockets.on("connection", (socket) => {
       {
         colors = ["black", "white"];
       } 
-      else 
+      else if (parsedmsg.role == "mentor")
       {
         colors = ["white", "black"];
       }
+      else { 
+        io.emit("error : invalid value for msg.role. Requires student/mentor")  
+      }
 
-      if (parsedmsg.role == "student") {
+      if (parsedmsg.role == "student") 
+      {
         ongoingGames.push({
           student: {
             username: parsedmsg.student,
@@ -101,6 +113,19 @@ io.sockets.on("connection", (socket) => {
       }
       // Set client ids,
     }
+  });
+
+  /// Purpose: Changes state of existing game.
+  /// Input: { student: string (e.g., "Alice"), mentor: string (e.g., "Bob"), role: string ("mentor"/"student") }
+  /// Output: { boardState: string (e.g., "initial_board_state"), color: string ("black"/"white") }
+  socket.on("changeState", (msg) => {
+
+    // determine legal turn
+    // retrieve from and to
+    // determine legality
+    // change gamestate
+    // 
+
   });
 
   /// Purpose: End an ongoing game and remove it from the list.
@@ -320,23 +345,24 @@ io.sockets.on("connection", (socket) => {
 
   socket.on("gameOver", (msg) => {
     var parsedmsg = JSON.parse(msg);
-    ongoingGames.forEach((element) => {
+    ongoingGames.forEach((game) => {
+      // testing to see if 
       if (
-        element.student.username == parsedmsg.username ||
-        element.mentor.username == parsedmsg.username
+        game.student.username == parsedmsg.username ||
+        game.mentor.username == parsedmsg.username
       ) {
-        io.to(element.student.id).emit(
+        io.to(game.student.id).emit(
           "gameOver",
           JSON.stringify({
-            boardState: element.boardState,
-            color: element.student.color,
+            boardState: game.boardState,
+            color: game.student.color,
           })
         );
-        io.to(element.mentor.id).emit(
+        io.to(game.mentor.id).emit(
           "gameOver",
           JSON.stringify({
-            boardState: element.boardState,
-            color: element.mentor.color,
+            boardState: game.boardState,
+            color: game.mentor.color,
           })
         );
       }
