@@ -29,49 +29,51 @@ io.sockets.on("connection", (socket) => {
   /// Output: { boardState: string (e.g., "initial_board_state"), color: string ("black"/"white") }
 
   socket.on("newGame", (msg) => {
-    newGame = true;
+    
+    let currentGame;
+    let newGame = true;
     var parsedmsg = JSON.parse(msg);
 
 
-
-    ongoingGames.forEach((game) => {
-      // checking if student/mentor already in an ongoeing game
-      if ( game.student.username == parsedmsg.student || game.mentor.username == parsedmsg.mentor ) 
-      {
-        newGame = false;
-        break; 
-      }
+    // checking if student/mentor already in an ongoing game
+    for (let game of ongoingGames) {
       
-    });
+      if (game.student.username == parsedmsg.student || game.mentor.username == parsedmsg.mentor) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
 
+    // if student/mentor not in ongoing game, create a newgame
     if (newGame) {
+      let chessState = new Chess();
+      
       let colors = [];
-
       
       var studentSocket = "";
       var mentorSocket = "";
-      
 
+      // determining outputs based on role of client
       if (parsedmsg.role == "student") 
       {
         colors = ["black", "white"];
         studentSocket = socket.id;
-        mentorSocket = "";
       } 
       else if (parsedmsg.role == "mentor")
       {
         colors = ["white", "black"];
-        studentSocket = "";
         mentorSocket = socket.id;
       }
       else { 
         io.emit("error : invalid value for msg.role. Requires student/mentor")  
       }
 
+      // determining color of client peices
       const clientColor = (parsedmsg) => parsedmsg.role === "student" ? colors[0] : parsedmsg.role === "mentor" ? colors[1] : null;
       
-      // saving game to ongoing games
-      ongoingGames.push({
+      // saving game to ongoingGames
+      currentGame = {
         student: {
           username: parsedmsg.student,
           id: studentSocket,
@@ -82,13 +84,16 @@ io.sockets.on("connection", (socket) => {
           id: mentorSocket, 
           color: colors[1] 
         },
-        boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-      });
+        boardState: chessState.fen(),
+      };
 
+      ongoingGames.push(currentGame);
+
+      // emitting board state to client
       io.emit(
         "boardState",
         JSON.stringify({
-          boardState: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+          boardState: chessState.fen(),
           color: clientColor,
         })
       );
@@ -102,18 +107,19 @@ io.sockets.on("connection", (socket) => {
         
       if (parsedmsg.role == "student") 
       {
-        game.student.id = socket.id;
+        currentGame.student.id = socket.id;
         color = game.student.color;
       } 
       else if (parsedmsg.role == "mentor") 
       {
-        game.mentor.id = socket.id;
+        currentGame.mentor.id = socket.id;
         color = game.mentor.color;
       } 
 
+      // emitting board state
       io.to(socket.id).emit(
         "boardState",
-        JSON.stringify({ boardState: game.boardState, color: color })
+        JSON.stringify({ boardState: currentGame.boardState, color: color })
       );
     }
     else {
@@ -125,14 +131,26 @@ io.sockets.on("connection", (socket) => {
   /// Input: { student: string (e.g., "Alice"), mentor: string (e.g., "Bob"), role: string ("mentor"/"student") }
   /// Output: { boardState: string (e.g., "initial_board_state"), color: string ("black"/"white") }
   socket.on("changeState", (msg) => {
-
+    var clientSocket = socket.id;
+    var legal = true;
     // determine legal turn
     // retrieve from and to
     // determine legality
-    // change gamestate
+    // if legal, change gamestate
+
+    if (legal) {
+      io.to(clientSocket).emit(
+        "changeState"
+      );
+
+    }
+    else if (!legal)
+    {
+
+    }
     // 
 
-  });
+    });
 
   /// Purpose: End an ongoing game and remove it from the list.
   /// Input: { username: string (e.g., "Alice") }
