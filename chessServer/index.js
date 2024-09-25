@@ -236,7 +236,7 @@ io.on("connection", (socket) => {
   /// Input: { moveId: string (e.g., "move123"), playerId: string (e.g., "player1") }
   /// Output: { success: boolean (true/false), moveId: string (e.g., "move123") }
 
-  socket.on("undo", (data) => {
+  socket.on("undo", (msg) => {
     
     let currentGame;
     var clientSocket = socket.id;

@@ -68,7 +68,7 @@
       iframe.contentWindow.postMessage(JSON.stringify(data), '*');
     }
     
-    function newGame() {
+    function undo() {
       var data = {command: "undo"}; 
       iframe.contentWindow.postMessage(JSON.stringify(data), '*');
     }
