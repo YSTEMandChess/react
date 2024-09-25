@@ -70,6 +70,18 @@ function sendEndGame()
   io.emit("endgame", data);
 }
 
+function sendRedo()
+{
+  var data = {"mentor": mentor, "student": student, "role": role};
+  io.emit("redo", data);
+}
+
+function sendUndo()
+{
+  var data = {"mentor": mentor, "student": student, "role": role};
+  io.emit("undo", data);
+}
+
 
 // Listening for message from server
 
@@ -103,14 +115,24 @@ eventer(
     let data = JSON.parse(e.data);
 
 
-    // get mentor and student info, send to server
-    mentor = data.mentor;
-    student = data.student;
     
     // get command from parent and send to server
     var command = data.command;
     if (command == "newgame") { sendNewGame(); }
     else if (command == "endgame") {sendEndGame(); }
+    else if (command == "mentor") {
+      mentor = data.mentor;
+      student = data.student;
+      role = data.role;
+    }
+    else if (command == "redo")
+    {
+
+    }
+    else if (command == "undo")
+    {
+
+    }
 
 
     // get and set lessonflag
