@@ -83,8 +83,13 @@ io.on("connection", (socket) => {
       }
 
       // determining color of client peices
-      const clientColor = (parsedmsg) => parsedmsg.role === "student" ? colors[0] : parsedmsg.role === "mentor" ? colors[1] : null;
+      let clientColor = (parsedmsg) => 
+        parsedmsg.role === "student" ? colors[0] : 
+        parsedmsg.role === "mentor" ? colors[1] : 
+        null;
       
+      const color = clientColor(parsedmsg);
+
       // saving game to ongoingGames
       currentGame = {
         student: {
@@ -106,9 +111,7 @@ io.on("connection", (socket) => {
       // emitting board state to client
       io.emit(
         "boardstate",
-        JSON.stringify({
-          boardState: currentGame.boardState,
-          color: clientColor,
+        JSON.stringify({ boardState: currentGame.boardState.fen(), color: color
         })
       );
     
@@ -122,18 +125,19 @@ io.on("connection", (socket) => {
       if (parsedmsg.role == "student") 
       {
         currentGame.student.id = socket.id;
-        color = currentState.student.color;
+        color = currentGame.student.color;
       } 
       else if (parsedmsg.role == "mentor") 
       {
         currentGame.mentor.id = socket.id;
-        color = currentState.mentor.color;
+        color = currentGame.mentor.color;
       } 
+
 
       // emitting board state
       io.to(socket.id).emit(
-        "boardState",
-        JSON.stringify({ boardState: currentGame.boardState, color: color })
+        "boardstate",
+        JSON.stringify({ boardState: currentGame.boardState.fen(), color: color})
       );
     }
     else {
@@ -168,11 +172,9 @@ io.on("connection", (socket) => {
       
 
 
-      let currentState = currentGame.boardState instanceof Chess;
+      let currentState = currentGame.boardState;
       let pastState = currentState;
       // Get initial state
-      console.log('Initial FEN:', currentState.fen());
-      console.log('Current turn:', currentState.turn());
 
 
 
@@ -182,23 +184,24 @@ io.on("connection", (socket) => {
 
       // Testing legal move
       if (move) {
-        currentGame.push(currentState);
+        currentGame.boardState = currentState;
         console.log('Move made:', move);
       } else {
         console.log('Illegal move');
       }
 
-      currentGame.boardState = currentState;
-
       // broadcast current board state to mentor and student
-      io.to(mentor.id).emit(
+      
+      
+      io.to(currentGame.mentor.id).emit(
         "boardstate",
-        JSON.stringify({ boardState: currentGame.boardState, color: currentGame.color })
+        JSON.stringify({ boardState: currentGame.boardState.fen(), color: currentGame.color})
+
       );
 
-      io.to(student.id).emit(
+      io.to(currentGame.student.id).emit(
         "boardstate",
-        JSON.stringify({boardState: currentGame.boardState, color: currentGame.color})
+        JSON.stringify({boardState: currentGame.boardState.fen(), color: currentGame.color})
       )
 
     }

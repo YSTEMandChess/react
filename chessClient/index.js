@@ -98,12 +98,12 @@ socket.on('boardstate', (msg) => {
     console.log(parsedMsg);
 
     // update state of chess board
-    currentState = parsedMsg.boardState;
     console.log(currentState);
+    console.log(currentState.fen());
+    currentState = new Chess(parsedMsg.boardState);
 
     // update visuals of chessboard
     board.position(currentState.fen());
-    console.log(currentState.fen());
 });
 
 // Listen to message from parent window
