@@ -133,7 +133,8 @@ io.on("connection", (socket) => {
         currentGame.mentor.id = socket.id;
         color = currentGame.mentor.color;
       } 
-
+      
+      
 
       // emitting board state
       io.to(socket.id).emit(
@@ -144,6 +145,7 @@ io.on("connection", (socket) => {
     else {
       // TODO : implement exception : newgame is null
     }
+    
   });
 
   /// Purpose: Changes state of existing game.
@@ -277,8 +279,11 @@ io.on("connection", (socket) => {
 
       io.to(currentGame.student.id).emit(
         "boardstate",
-        JSON.stringify*({boardState: currentGame.boardState.fen()})
-      )
+        JSON.stringify({boardState: currentGame.boardState.fen()})
+      );
+
+      
+      console.log(currentGame);
 
     }
   });
