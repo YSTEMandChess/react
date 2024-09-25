@@ -128,7 +128,7 @@ io.sockets.on("connection", (socket) => {
   });
 
   /// Purpose: Changes state of existing game.
-  /// Input: { student: string (e.g., "Alice"), mentor: string (e.g., "Bob"), role: string ("mentor"/"student") }
+  /// Input: { from: e2, to: e3 }
   /// Output: { boardState: string (e.g., "initial_board_state"), color: string ("black"/"white") }
   socket.on("makeTurn", (msg) => {
     
@@ -202,7 +202,7 @@ io.sockets.on("connection", (socket) => {
         ongoingGames.splice(index, 1);
       }
       index++;
-    });
+    });     
     io.emit(
       "deleteCookies",
       JSON.stringify(msg)

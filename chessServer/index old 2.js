@@ -320,23 +320,24 @@ io.sockets.on("connection", (socket) => {
 
   socket.on("gameOver", (msg) => {
     var parsedmsg = JSON.parse(msg);
-    ongoingGames.forEach((element) => {
+    ongoingGames.forEach((game) => {
+      // testing to see if 
       if (
-        element.student.username == parsedmsg.username ||
-        element.mentor.username == parsedmsg.username
+        game.student.username == parsedmsg.username ||
+        game.mentor.username == parsedmsg.username
       ) {
-        io.to(element.student.id).emit(
+        io.to(game.student.id).emit(
           "gameOver",
           JSON.stringify({
-            boardState: element.boardState,
-            color: element.student.color,
+            boardState: game.boardState,
+            color: game.student.color,
           })
         );
-        io.to(element.mentor.id).emit(
+        io.to(game.mentor.id).emit(
           "gameOver",
           JSON.stringify({
-            boardState: element.boardState,
-            color: element.mentor.color,
+            boardState: game.boardState,
+            color: game.mentor.color,
           })
         );
       }

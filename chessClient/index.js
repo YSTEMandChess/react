@@ -13,6 +13,27 @@ var currentState = new Chess();
 var whiteSquareGrey = "#eebe7bf7";
 var blackSquareGrey = "#ae5716d6";
 
+var mentorName = "mentor";
+var studentName = "student";
+var role = "student";
+
+socket.on('anotherEvent', (data) => {
+  console.log('Another event received:', data);
+});
+
+// Send a message to the server starting a newgame
+
+function startNewGame(student, mentor) {
+  mentorName = mentor;
+  studentName = student;
+
+  var output = {role: "student", mentor: "mentor", student: "student"};
+  
+  socket.emit('newgame',  JSON.stringify(output));
+}
+
+
+
 var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
 var eventer = window[eventMethod];
 var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
@@ -41,6 +62,7 @@ function greySquare(square) {
   $square.css("background-position", "center");
   $square.css("background-image", "url('img/chesspieces/wikipedia/dot.png')");
 }
+
 // Listen to message from parent window
 eventer(
   messageEvent,
@@ -61,6 +83,17 @@ eventer(
 
       updateStatus();
       sendToParent(currentState.fen());
+    }
+    
+    if ("mentor" in data && "student" in data)
+    {
+      mentorName = data.mentor.name;
+      studentName = data.student.name;
+    }
+    
+    if ("boardState" in data)
+    {
+      currentState = data.boardState;
     }
 
     // highlight message
