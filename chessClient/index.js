@@ -76,20 +76,12 @@ function sendEndGame()
   socket.emit("endgame", JSON.stringify(data));
 }
 
-function sendRedo()
-{
-  console.log("sending redo to server");
-  var data = {"mentor": mentor, "student": student, "role": role};
-  console.log(data);
-  io.emit("redo", JSON.stringify(data));
-}
-
 function sendUndo()
 {
   console.log("sending undo to server");
   var data = {"mentor": mentor, "student": student, "role": role};
   console.log(data);
-  io.emit("undo", JSON.stringify(data));
+  socket.emit("undo", JSON.stringify(data));
 }
 
 // Handle boardstate message from the client
@@ -133,15 +125,7 @@ window.addEventListener('message', (e) => {
       student = data.student;
       role = data.role;
       console.log(data);
-    }
-    else if (command == "redo")
-    {
-      sendRedo();
-    }
-    else if (command == "undo")
-    {
-      sendUndo();
-    }
+    } else if (command == "undo") { sendUndo(); }
 
 
     // get and set lessonflag

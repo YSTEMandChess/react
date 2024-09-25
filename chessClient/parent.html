@@ -40,6 +40,7 @@
   <button onclick="enterUsers()">Enter User Info</button>
   <button onclick="newGame()">Start New Game</button>
   <button onclick="endGame()">End Game</button>
+  <button onclick="undo()">Undo</button>
 
   <!-- Submit Button -->
   <button id="submitBtn">Submit</button>
@@ -64,6 +65,11 @@
 
     function endGame() {
       var data = {command: "endgame"};
+      iframe.contentWindow.postMessage(JSON.stringify(data), '*');
+    }
+    
+    function newGame() {
+      var data = {command: "undo"}; 
       iframe.contentWindow.postMessage(JSON.stringify(data), '*');
     }
 
