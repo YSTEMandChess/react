@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
   /// Input: { student: string (e.g., "Alice"), mentor: string (e.g., "Bob"), role: string ("mentor"/"student") }
   /// Output: { boardState: string (e.g., "initial_board_state"), color: string ("black"/"white") }
 
-  socket.on("newGame", (msg) => {
+  socket.on("newgame", (msg) => {
     
     let currentGame;
     let newGame = true;
@@ -105,7 +105,7 @@ io.on("connection", (socket) => {
 
       // emitting board state to client
       io.emit(
-        "boardState",
+        "boardstate",
         JSON.stringify({
           boardState: currentGame.boardState,
           color: clientColor,
@@ -192,12 +192,12 @@ io.on("connection", (socket) => {
 
       // broadcast current board state to mentor and student
       io.to(mentor.id).emit(
-        "boardState",
+        "boardstate",
         JSON.stringify({ boardState: currentGame.boardState, color: currentGame.color })
       );
 
       io.to(student.id).emit(
-        "boardState",
+        "boardstate",
         JSON.stringify({boardState: currentGame.boardState, color: currentGame.color})
       )
 
@@ -209,7 +209,7 @@ io.on("connection", (socket) => {
   /// Input: { username: string (e.g., "Alice") }
   /// Output: { success: boolean (true/false) }
 
-  socket.on("endGame", (msg) => {
+  socket.on("endgame", (msg) => {
     var parsedmsg = JSON.parse(msg);
     console.log(msg);
 
@@ -233,7 +233,7 @@ io.on("connection", (socket) => {
   /// Input: { moveId: string (e.g., "move123"), playerId: string (e.g., "player1") }
   /// Output: { success: boolean (true/false), moveId: string (e.g., "move123") }
 
-  socket.on("undoMoves", (data) => {
+  socket.on("undo", (data) => {
     
     let currentGame;
     var clientSocket = socket.id;
@@ -292,6 +292,9 @@ io.on("connection", (socket) => {
     console.log('Moves history:', currentState.history());
   });
 
+
+
+  /*
   /// Purpose: Inform both players whether the current step is the last update.
   /// Input: boolean (true/false)
   /// Output: boolean (true/false)
@@ -498,4 +501,5 @@ io.on("connection", (socket) => {
       }
     });
   });
+  */
 });
