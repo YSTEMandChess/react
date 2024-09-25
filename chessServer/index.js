@@ -1,27 +1,39 @@
 require("dotenv").config();
-var app = require("express")();
+const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
+const cors = require("cors");
+const { Chess } = require("chess.js");
 
-var http = require("http")
-  .createServer(app)
-  .listen(process.env.PORT, () =>
-    console.log(`listening on ${process.env.PORT}`)
-  );
+const app = express();
+const server = http.createServer(app);
 
-var io = require("socket.io")(http, {
-  cors: true,
-  origins: [process.env.URL],
-  credentials: true,
+// Use CORS middleware to allow all origins
+app.use(cors({
+  origin: "*", // Allow all origins
+  methods: ["GET", "POST"], // Allowed methods
+  credentials: true // Allow credentials (if needed)
+}));
+
+const io = socketIo(server, {
+  cors: {
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST"], // Allowed methods
+    credentials: true // Allow credentials if needed
+  }
 });
 
-const {Chess} = require("chess.js");
+const ongoingGames = [];
 
-var ongoingGames = [];
+server.listen(process.env.PORT, () => {
+  console.log(`listening on ${process.env.PORT}`);
+});
 
 /// Purpose: Triggered when a client connects to the socket.
 /// Input: N/A (Automatically triggered by the connection)
 /// Output: Logs "a user connected to socket" in the server console.
 
-io.sockets.on("connection", (socket) => {
+io.on("connection", (socket) => {
   console.log("a user connected to socket");
   
   /// Purpose: Handle new game initialization or join an existing game.
