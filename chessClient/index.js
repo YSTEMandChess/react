@@ -102,6 +102,14 @@ socket.on('boardstate', (msg) => {
     console.log(currentState.fen());
     currentState = new Chess(parsedMsg.boardState);
 
+
+    // setting player color 
+    if (parsedMsg.color)
+    {  
+      playerColor = parsedMsg.color[0];
+      console.log(playerColor);
+    }
+
     // update visuals of chessboard
     board.position(currentState.fen());
 });
@@ -244,26 +252,31 @@ function letParentKnow() {
 }
 
 function onDragStart(source, piece, position, orientation) {
-  // do not pick up pieces if the game is over
-  if (isLesson == false) {
-    if (currentState.game_over()) {
-      sendGameOver();
+  if (playerColor == currentState.turn())
+  {
+      
+    // do not pick up pieces if the game is over
+    if (isLesson == false) {
+      if (currentState.game_over()) {
+        sendGameOver();
+        return false;
+      }
+    }
+
+    if (playerColor === "black") {
+      if (piece.search(/^w/) !== -1) return false;
+    } else if (playerColor === "white") {
+      if (piece.search(/^b/) !== -1) return false;
+    }
+
+    // only pick up pieces for the side to move
+    if (
+      (currentState.turn() === "w" && piece.search(/^b/) !== -1) ||
+      (currentState.turn() === "b" && piece.search(/^w/) !== -1)
+    ) {
       return false;
     }
-  }
-
-  if (playerColor === "black") {
-    if (piece.search(/^w/) !== -1) return false;
-  } else if (playerColor === "white") {
-    if (piece.search(/^b/) !== -1) return false;
-  }
-
-  // only pick up pieces for the side to move
-  if (
-    (currentState.turn() === "w" && piece.search(/^b/) !== -1) ||
-    (currentState.turn() === "b" && piece.search(/^w/) !== -1)
-  ) {
-    return false;
+    
   }
 }
 
@@ -303,18 +316,21 @@ function onDrop(source, target, draggedPieceSource) {
 }
 // To add possible move suggestion on chessboard
 function onMouseoverSquare(square, piece) {
-  // get list of possible moves for this square
-  var moves = currentState.moves({
-    square: square,
-    verbose: true,
-  });
+  if (playerColor == currentState.turn())
+  {
+    // get list of possible moves for this square
+    var moves = currentState.moves({
+      square: square,
+      verbose: true,
+    });
 
-  // exit if there are no moves available for this square
-  if (moves.length === 0) return;
+    // exit if there are no moves available for this square
+    if (moves.length === 0) return;
 
-  // highlight the possible squares for this piece
-  for (var i = 0; i < moves.length; i++) {
-    greySquare(moves[i].to);
+    // highlight the possible squares for this piece
+    for (var i = 0; i < moves.length; i++) {
+      greySquare(moves[i].to);
+    }
   }
 }
 // To remove possible move suggestion on chessboard
