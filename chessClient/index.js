@@ -17,6 +17,9 @@ var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
 var eventer = window[eventMethod];
 var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 
+var mentor = "";
+var student = "";
+
 var playerColor;
 
 let startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
@@ -46,29 +49,26 @@ function greySquare(square) {
 eventer(
   messageEvent,
   (e) => {
-    // console.log("client evenet: ", e); // uncomment for debugging
+
+    
+
+    // parse message
     let data = JSON.parse(e.data);
+
+
+    // get mentor and student info, send to server
+    mentor = data.mentor;
+    student = data.student;
+
+    
+
+    // get and set lessonflag
     lessonFlag = data.lessonFlag;
     if (lessonFlag == true) {
       isLesson = true;
     }
 
-    // move a piece if it's a move message
-    if ("from" in data && "to" in data) {
-      currentState.move({ from: data.from, to: data.to });
-
-      // move highlight
-      highlightMove(data.from, data.to);
-
-      updateStatus();
-      sendToParent(currentState.fen());
-    }
-
-    // highlight message
-    if ("highlightFrom" in data && "highlightTo" in data) {
-      highlightMove(data.highlightFrom, data.highlightTo);
-    }
-
+    // if this is a lesson, setup lesson
     if (isLesson == true) {
       endSquare = data.endSquare;
       lessonBoard = data.boardState;
@@ -122,6 +122,28 @@ eventer(
       board.position(data.boardState);
       updateStatus();
     }
+
+    /*
+    // console.log("client evenet: ", e); // uncomment for debugging
+    
+
+    // move a piece if it's a move message
+    if ("from" in data && "to" in data) {
+      currentState.move({ from: data.from, to: data.to });
+
+      // move highlight
+      highlightMove(data.from, data.to);
+
+      updateStatus();
+      sendToParent(currentState.fen());
+    }
+
+    // highlight message
+    if ("highlightFrom" in data && "highlightTo" in data) {
+      highlightMove(data.highlightFrom, data.highlightTo);
+    }
+
+      */
   },
   false,
 );
