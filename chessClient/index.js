@@ -54,13 +54,19 @@ function greySquare(square) {
 
 function sendNewGame()
 {
-  var data = {mentor: mentor, student: student, role: role};
+  var data = {"mentor": mentor, "student": student, "role": role};
   io.emit("newgame", data);
 }
 
 function sendMove(from, to)
 {
   var data = {"mentor": mentor, "student": student, "role": role, "from": from, "to": to};
+  io.emit("newgame", data);
+}
+
+function sendEndGame()
+{
+  var data = {"mentor": mentor, "student": student, "role": role};
   io.emit("newgame", data);
 }
 
