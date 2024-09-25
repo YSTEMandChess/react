@@ -85,6 +85,7 @@ io.sockets.on("connection", (socket) => {
           color: colors[1] 
         },
         boardState: chessState,
+        pastStates: []
       };
 
       ongoingGames.push(currentGame);
@@ -151,16 +152,23 @@ io.sockets.on("connection", (socket) => {
     if (currentGame)
     {
       
+
+
       let currentState = currentGame.boardState instanceof Chess;
-      
+      let pastState = currentState;
       // Get initial state
       console.log('Initial FEN:', currentState.fen());
       console.log('Current turn:', currentState.turn());
 
+
+
+
       // Attempt to make a legal move
       let move = currentState.move({ from: parsedmsg.from, to: parsedmsg.to }); // Move the pawn to e4
 
+      // Testing legal move
       if (move) {
+        currentGame.push(currentState);
         console.log('Move made:', move);
       } else {
         console.log('Illegal move');
@@ -214,11 +222,59 @@ io.sockets.on("connection", (socket) => {
   /// Output: { success: boolean (true/false), moveId: string (e.g., "move123") }
 
   socket.on("undoMoves", (data) => {
-    const moves = JSON.parse(data);
-    io.emit(
-      "undoMoves",
-      JSON.stringify(moves)
-    );
+    
+    let currentGame;
+    var clientSocket = socket.id;
+
+    parsedmsg = JSON.parse(msg);
+    move = parsedmsg.move;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    if (currentGame)
+    {
+      
+      let currentState = currentGame.boardState instanceof Chess;
+      
+      // Get initial state
+      console.log('Initial FEN:', currentState.fen());
+      console.log('Current turn:', currentState.turn());
+
+      // Attempt to make a legal move
+      let move = currentState.move({ from: parsedmsg.from, to: parsedmsg.to }); // Move the pawn to e4
+
+      if (move) {
+        console.log('Move made:', move);
+      } else {
+        console.log('Illegal move');
+      }
+
+      currentGame.boardState = currentState;
+
+      // broadcast current board state to mentor and student
+      io.to(mentor.id).emit(
+        "boardState",
+        JSON.stringify({ boardState: currentGame.boardState, color: currentGame.color })
+      );
+
+      io.to(student.id).emit(
+        "boardState",
+        JSON.stringify*({boardState: currentGame.boardState, color: currentGame.color})
+      )
+
+    }
+
+    // Output the final state of the board
+    console.log('Final FEN:', currentState.fen());
+    console.log('Moves history:', currentState.history());
   });
 
   /// Purpose: Inform both players whether the current step is the last update.
