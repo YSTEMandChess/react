@@ -13,14 +13,21 @@ var currentState = new Chess();
 var whiteSquareGrey = "#eebe7bf7";
 var blackSquareGrey = "#ae5716d6";
 
+var serverStartNotified = false;
+
 var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
 var eventer = window[eventMethod];
 var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 
 var mentor = "";
 var student = "";
+var role = "student";
 
 var playerColor;
+
+
+const socket = io('http://localhost:3001');
+
 
 let startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
@@ -45,6 +52,13 @@ function greySquare(square) {
   $square.css("background-image", "url('img/chesspieces/wikipedia/dot.png')");
 }
 
+function sendNewGame(mentor, student)
+{
+  var data = {mentor: mentor, student: student, role: role};
+  io.emit("newgame", data);
+}
+
+
 // Listen to message from parent window
 eventer(
   messageEvent,
@@ -60,7 +74,7 @@ eventer(
     mentor = data.mentor;
     student = data.student;
 
-    
+
 
     // get and set lessonflag
     lessonFlag = data.lessonFlag;
