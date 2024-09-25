@@ -97,9 +97,14 @@ socket.on('boardstate', (msg) => {
 
     // setting player color 
     if (parsedMsg.color)
-    {  
+    { 
+      // setting player color for turn keeping 
       playerColor = parsedMsg.color[0];
       console.log(playerColor);
+
+      // setting chess board orientation
+      config.orientation = parsedMsg.color;
+      board = Chessboard("myBoard", config);
     }
 
     // update visuals of chessboard
@@ -598,6 +603,7 @@ var config = {
   draggable: true,
   showNotation: true,
   position: "start",
+  orientation: "white",
   onDragStart: onDragStart,
   onDrop: onDrop,
   onMouseoutSquare: onMouseoutSquare,
