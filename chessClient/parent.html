@@ -37,11 +37,49 @@
     <option value="mentor">Mentor</option>
   </select>
 
-  <button onclick=""></button>
+  <button onclick="enterUsers()">Enter User Info</button>
+  <button onclick="newGame()">Start New Game</button>
+  <button onclick="endGame()">End Game</button>
 
   <!-- Submit Button -->
   <button id="submitBtn">Submit</button>
 
+  <script>
+    
+    const iframe = document.getElementById('chessboard');
+
+    function newGame() {
+      var data = {command: "newgame"}; 
+      iframe.contentWindow.postMessage(JSON.stringify(data), '*');
+    }
+
+    function enterUsers() {
+      let studentID = document.getElementById('studentID').value;
+      let mentorID = document.getElementById('mentorID').value;
+      let roleID = document.getElementById('role').value;
+
+      var data = {command: "userinfo", student: studentID, mentor: mentorID, role: roleID};
+      iframe.contentWindow.postMessage(JSON.stringify(data), '*');
+    }
+
+    function endGame() {
+      var data = {command: "endgame"};
+      iframe.contentWindow.postMessage(JSON.stringify(data), '*');
+    }
+
+
+  </script>
+
+  <script>
+    // Listen for messages from child iframes
+    window.addEventListener('message', function(event) {
+            // Make sure to validate the origin of the message
+            if (event.origin === "index.html") { // Change to your domain
+                document.getElementById('receivedMessage').innerText = event.data;
+            }
+        });
+
+  </script>
 
 
 </body>

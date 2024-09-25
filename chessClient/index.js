@@ -54,52 +54,60 @@ function greySquare(square) {
 
 function sendNewGame()
 {
+  console.log("starting new game with server")
   var data = {"mentor": mentor, "student": student, "role": role};
-  io.emit("newgame", data);
+  console.log(data);
+  socket.emit("newgame", JSON.stringify(data));
 }
 
 function sendMove(from, to)
 {
+  console.log("sending move to server");
   var data = {"mentor": mentor, "student": student, "role": role, "from": from, "to": to};
-  io.emit("newgame", data);
+  console.log(data);
+  socket.emit("move", JSON.stringify(data));
 }
 
 function sendEndGame()
 {
+  console.log("sending end game to server");
   var data = {"mentor": mentor, "student": student, "role": role};
-  io.emit("endgame", data);
+  console.log(data);
+  socket.emit("endgame", JSON.stringify(data));
 }
 
 function sendRedo()
 {
+  console.log("sending redo to server");
   var data = {"mentor": mentor, "student": student, "role": role};
-  io.emit("redo", data);
+  console.log(data);
+  io.emit("redo", JSON.stringify(data));
 }
 
 function sendUndo()
 {
+  console.log("sending undo to server");
   var data = {"mentor": mentor, "student": student, "role": role};
-  io.emit("undo", data);
+  console.log(data);
+  io.emit("undo", JSON.stringify(data));
 }
 
-
-
-// Handle incoming messages from the client
+// Handle boardstate message from the client
 socket.on('boardstate', (msg) => {
     parsedMsg = JSON.parse(msg);
+    console.log(parsedMsg);
 
     // update state of chess board
     currentState = parsedMsg.boardState;
-    
+    console.log(currentState);
+
     // update visuals of chessboard
     board.position(currentState.fen());
-
+    console.log(currentState.fen());
 });
 
 // Listen to message from parent window
-eventer(
-  messageEvent,
-  (e) => {
+window.addEventListener('message', (e) => {
 
     
 
@@ -112,18 +120,19 @@ eventer(
     var command = data.command;
     if (command == "newgame") { sendNewGame(); }
     else if (command == "endgame") {sendEndGame(); }
-    else if (command == "mentor") {
+    else if (command == "userinfo") {
       mentor = data.mentor;
       student = data.student;
       role = data.role;
+      console.log(data);
     }
     else if (command == "redo")
     {
-
+      sendRedo();
     }
     else if (command == "undo")
     {
-
+      sendUndo();
     }
 
 
@@ -180,6 +189,7 @@ eventer(
     } else if (data.boardState == startFEN) {
       currentState = new Chess();
     }
+    /*
     if (isLesson == false) {
       playerColor = data.color;
       board.orientation(playerColor);
@@ -187,6 +197,7 @@ eventer(
       board.position(data.boardState);
       updateStatus();
     }
+      */
 
     /*
     // console.log("client evenet: ", e); // uncomment for debugging
@@ -266,7 +277,9 @@ function onDrop(source, target, draggedPieceSource) {
   });
 
   // illegal move
-  if (move === null) return "snapback";
+  if (move === null) {return "snapback"}
+  // legal move
+  else {sendMove(source, target)};
 
   if (isLesson == false) {
     if (currentState.game_over()) {
