@@ -195,13 +195,13 @@ io.on("connection", (socket) => {
       
       io.to(currentGame.mentor.id).emit(
         "boardstate",
-        JSON.stringify({ boardState: currentGame.boardState.fen(), color: currentGame.color})
+        JSON.stringify({ boardState: currentGame.boardState.fen()})
 
       );
 
       io.to(currentGame.student.id).emit(
         "boardstate",
-        JSON.stringify({boardState: currentGame.boardState.fen(), color: currentGame.color})
+        JSON.stringify({boardState: currentGame.boardState.fen()})
       )
 
     }
@@ -260,39 +260,24 @@ io.on("connection", (socket) => {
     if (currentGame)
     {
       
-      let currentState = currentGame.boardState instanceof Chess;
+      let currentState = currentGame.boardState;
       
-      // Get initial state
-      console.log('Initial FEN:', currentState.fen());
-      console.log('Current turn:', currentState.turn());
-
-      // Attempt to make a legal move
-      let move = currentState.move({ from: parsedmsg.from, to: parsedmsg.to }); // Move the pawn to e4
-
-      if (move) {
-        console.log('Move made:', move);
-      } else {
-        console.log('Illegal move');
-      }
+      currentState.undo();
 
       currentGame.boardState = currentState;
 
       // broadcast current board state to mentor and student
       io.to(mentor.id).emit(
         "boardState",
-        JSON.stringify({ boardState: currentGame.boardState, color: currentGame.color })
+        JSON.stringify({ boardState: currentGame.boardState.fen()})
       );
 
       io.to(student.id).emit(
         "boardState",
-        JSON.stringify*({boardState: currentGame.boardState, color: currentGame.color})
+        JSON.stringify*({boardState: currentGame.boardState.fen()})
       )
 
     }
-
-    // Output the final state of the board
-    console.log('Final FEN:', currentState.fen());
-    console.log('Moves history:', currentState.history());
   });
 
 
