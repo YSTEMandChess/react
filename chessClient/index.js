@@ -67,7 +67,7 @@ function sendMove(from, to)
 function sendEndGame()
 {
   var data = {"mentor": mentor, "student": student, "role": role};
-  io.emit("newgame", data);
+  io.emit("endgame", data);
 }
 
 // Listen to message from parent window
@@ -84,7 +84,11 @@ eventer(
     // get mentor and student info, send to server
     mentor = data.mentor;
     student = data.student;
-
+    
+    // get command from parent and send to server
+    var command = data.command;
+    if (command == "newgame") { sendNewGame(); }
+    else if (command == "endgame") {sendEndGame(); }
 
 
     // get and set lessonflag
