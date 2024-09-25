@@ -70,6 +70,28 @@ function sendEndGame()
   io.emit("endgame", data);
 }
 
+
+// Listening for message from server
+
+// Handle socket connection
+io.on('connection', (socket) => {
+  console.log('Server connected');
+
+  // Handle incoming messages from the client
+  socket.on('boardstate', (msg) => {
+      parsedMsg = JSON.parse(msg);
+
+      // update state of chess board
+      currentState = parsedMsg.boardState;
+      
+      // update visuals of chessboard
+      board.position(currentState.fen());
+
+  });
+
+});
+
+
 // Listen to message from parent window
 eventer(
   messageEvent,
