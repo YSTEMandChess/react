@@ -52,12 +52,17 @@ function greySquare(square) {
   $square.css("background-image", "url('img/chesspieces/wikipedia/dot.png')");
 }
 
-function sendNewGame(mentor, student)
+function sendNewGame()
 {
   var data = {mentor: mentor, student: student, role: role};
   io.emit("newgame", data);
 }
 
+function sendMove(from, to)
+{
+  var data = {"mentor": mentor, "student": student, "role": role, "from": from, "to": to};
+  io.emit("newgame", data);
+}
 
 // Listen to message from parent window
 eventer(
