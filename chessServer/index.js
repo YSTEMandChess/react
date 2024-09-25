@@ -32,10 +32,11 @@ server.listen(process.env.PORT, () => {
 /// Purpose: Triggered when a client connects to the socket.
 /// Input: N/A (Automatically triggered by the connection)
 /// Output: Logs "a user connected to socket" in the server console.
-
 io.on("connection", (socket) => {
   console.log("a user connected to socket");
   
+
+
   /// Purpose: Handle new game initialization or join an existing game.
   /// Input: { student: string (e.g., "Alice"), mentor: string (e.g., "Bob"), role: string ("mentor"/"student") }
   /// Output: { boardState: string (e.g., "initial_board_state"), color: string ("black"/"white") }
@@ -266,14 +267,16 @@ io.on("connection", (socket) => {
 
       currentGame.boardState = currentState;
 
+      console.log(currentGame.boardState.fen());
+
       // broadcast current board state to mentor and student
-      io.to(mentor.id).emit(
-        "boardState",
+      io.to(currentGame.mentor.id).emit(
+        "boardstate",
         JSON.stringify({ boardState: currentGame.boardState.fen()})
       );
 
-      io.to(student.id).emit(
-        "boardState",
+      io.to(currentGame.student.id).emit(
+        "boardstate",
         JSON.stringify*({boardState: currentGame.boardState.fen()})
       )
 
