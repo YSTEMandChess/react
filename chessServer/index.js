@@ -45,6 +45,7 @@ io.on("connection", (socket) => {
     let currentGame;
     let newGame = true;
     var parsedmsg = JSON.parse(msg);
+    console.log(msg);
 
 
     // checking if student/mentor already in an ongoing game
@@ -148,6 +149,7 @@ io.on("connection", (socket) => {
     let currentGame;
     var clientSocket = socket.id;
     console.log(msg);
+
     parsedmsg = JSON.parse(msg);
     move = parsedmsg.move;
 
@@ -209,6 +211,8 @@ io.on("connection", (socket) => {
 
   socket.on("endGame", (msg) => {
     var parsedmsg = JSON.parse(msg);
+    console.log(msg);
+
     let index = 0;
     ongoingGames.forEach((element) => {
       if (
@@ -234,7 +238,10 @@ io.on("connection", (socket) => {
     let currentGame;
     var clientSocket = socket.id;
 
+    console.log(msg);
+
     parsedmsg = JSON.parse(msg);
+    
     move = parsedmsg.move;
 
     // checking student/mentor is in an ongoing game
