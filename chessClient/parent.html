@@ -4,23 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Parent Window</title>
-  <script>
-    // Handle incoming messages from the child application
-    window.addEventListener('message', function(event) {
-      // Ensure the message comes from a trusted source
-      if (event.origin !== window.location.origin) {
-        console.log('Untrusted message origin:', event.origin);
-        return;
-      }
-
-      // Log the message received from the child
-      console.log('Message received from child:', event.data);
-      
-      // Display the message in the HTML
-      document.getElementById('messageDisplay').textContent = 'Received: ' + event.data;
-    });
-  </script>
+  
 </head>
+
 <body>
   <h1>Parent Window</h1>
   <p>This is the parent page. It will receive messages from the embedded child app (JavaScript).</p>
@@ -51,66 +37,12 @@
     <option value="mentor">Mentor</option>
   </select>
 
-  <button onclick="startNewGame()">Start New Game</button>
-  <button onclick="startNewGame()">Start New Game</button>
-  <button onclick="startNewGame()">Start New Game</button>
-
-  
-  <script>
-    var socket = io('http://localhost:3001');
-
-    // Start a new game
-    function startNewGame() {
-      var student = document.getElementById('studentID').value;
-      var mentor = document.getElementById('mentorID').value;
-      var role = document.getElementById('role').value;
-
-      socket.emit('newGame', JSON.stringify({
-        student: student,
-        mentor: mentor,
-        role: role
-      }));
-    }
-
-    // Handle new board state from the server
-    socket.on('boardState', function (msg) {
-      var data = JSON.parse(msg);
-      document.getElementById('boardStateDisplay').textContent = 'Board State: ' + data.boardState + '\nYour Color: ' + data.color;
-    });
-
-    // Make a move in the game
-    function makeTurn() {
-      var from = document.getElementById('fromPosition').value;
-      var to = document.getElementById('toPosition').value;
-
-      socket.emit('makeTurn', JSON.stringify({
-        from: from,
-        to: to
-      }));
-    }
-
-    // End the game
-    function endGame() {
-      var username = document.getElementById('username').value;
-
-      socket.emit('endGame', JSON.stringify({
-        username: username
-      }));
-    }
-
-    // Handle end game or delete cookies
-    socket.on('deleteCookies', function (msg) {
-      document.getElementById('boardStateDisplay').textContent = 'Game ended for: ' + JSON.parse(msg).username;
-    });
-
-    // Handle errors
-    socket.on('error', function (errorMessage) {
-      alert('Error: ' + errorMessage);
-    });
-  </script>
-  
+  <button onclick=""></button>
 
   <!-- Submit Button -->
   <button id="submitBtn">Submit</button>
+
+
+
 </body>
 </html>
