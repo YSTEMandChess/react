@@ -218,21 +218,31 @@ io.on("connection", (socket) => {
   socket.on("endgame", (msg) => {
     var parsedmsg = JSON.parse(msg);
     console.log(msg);
+    console.log("ending game on server");
 
     let index = 0;
-    ongoingGames.forEach((element) => {
+    ongoingGames.forEach((game) => {
       if (
-        element.student.username == parsedmsg.username ||
-        element.mentor.username == parsedmsg.username
+        game.student.username == parsedmsg.student &&
+        game.mentor.username == parsedmsg.mentor
       ) {
+
+        io.to(game.mentor.id).emit(
+          "reset"
+        );
+    
+        io.to(game.student.id).emit(
+          "reset"
+        );
+
         ongoingGames.splice(index, 1);
+        console.log(ongoingGames);
       }
       index++;
     });     
-    io.emit(
-      "deleteCookies",
-      JSON.stringify(msg)
-    );
+    
+    
+
   });
 
   /// Purpose: Request to undo the last moves.

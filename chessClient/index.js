@@ -111,6 +111,28 @@ socket.on('boardstate', (msg) => {
     board.position(currentState.fen());
 });
 
+
+// Handle reset message from the client
+socket.on('reset', () => {
+  // reload page
+  location.reload();
+  deleteAllCookies();
+  console.log("resetting board");
+});
+
+
+
+// Deletes all cookies on iframe
+function deleteAllCookies() {
+  const cookies = document.cookie.split(";");
+
+  for (let cookie of cookies) {
+      const cookieName = cookie.split("=")[0].trim();
+      deleteCookie(cookieName);
+  }
+}
+
+
 // Listen to message from parent window
 window.addEventListener('message', (e) => {
 
@@ -124,7 +146,11 @@ window.addEventListener('message', (e) => {
     // get command from parent and send to server
     var command = data.command;
     if (command == "newgame") { sendNewGame(); }
-    else if (command == "endgame") {sendEndGame(); }
+    else if (command == "endgame") {
+      // delete game on server
+      sendEndGame(); 
+      
+    }
     else if (command == "userinfo") {
       mentor = data.mentor;
       student = data.student;
