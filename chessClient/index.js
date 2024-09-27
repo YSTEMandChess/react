@@ -25,6 +25,7 @@ var role = "student";
 
 var playerColor;
 
+var freeplayFlag = false;
 
 const socket = io('http://localhost:3001');
 
@@ -267,67 +268,86 @@ function letParentKnow() {
 }
 
 function onDragStart(source, piece, position, orientation) {
-  if (playerColor == currentState.turn())
+  
+  // if freeplay mode is off
+  if (!freeplayFlag)
   {
       
-    // do not pick up pieces if the game is over
-    if (isLesson == false) {
-      if (currentState.game_over()) {
-        sendGameOver();
-        return false;
-      }
-    }
-
-    if (playerColor === "black") {
-      if (piece.search(/^w/) !== -1) return false;
-    } else if (playerColor === "white") {
-      if (piece.search(/^b/) !== -1) return false;
-    }
-
-    // only pick up pieces for the side to move
-    if (
-      (currentState.turn() === "w" && piece.search(/^b/) !== -1) ||
-      (currentState.turn() === "b" && piece.search(/^w/) !== -1)
-    ) {
-      return false;
-    }
+    // if it's your turn
+    if (playerColor == currentState.turn())
+      {
+          
+        // do not pick up pieces if the game is over
+        if (isLesson == false) {
+          if (currentState.game_over()) {
+            sendGameOver();
+            return false;
+          }
+        }
     
+        if (playerColor === "black") {
+          if (piece.search(/^w/) !== -1) return false;
+        } else if (playerColor === "white") {
+          if (piece.search(/^b/) !== -1) return false;
+        }
+    
+        // only pick up pieces for the side to move
+        if (
+          (currentState.turn() === "w" && piece.search(/^b/) !== -1) ||
+          (currentState.turn() === "b" && piece.search(/^w/) !== -1)
+        ) {
+          return false;
+        }
+        
+      }
   }
+  else 
+  {
+    return true;
+  }
+  
 }
 
 function onDrop(source, target, draggedPieceSource) {
   removeGreySquares();
-  // see if the move is legal
-  var move = currentState.move({
-    from: source,
-    to: target,
-    promotion: "q", // NOTE: always promote to a queen for example simplicity
-  });
-
-  // illegal move
-  if (move === null) {return "snapback"}
-  // legal move
-  else {sendMove(source, target)};
-
-  if (isLesson == false) {
-    if (currentState.game_over()) {
-      sendGameOver();
-    }
-  }
-
-  // move highlight
-  highlightMove(source, target);
-
-  updateStatus();
-  sendToParent(`piece-${draggedPieceSource}`);
-  sendToParent(
-    JSON.stringify({
+  
+  
+  // if we're not in freeplay
+  if (freeplayFlag)
+  {
+      
+    // see if the move is legal
+    var move = currentState.move({
       from: source,
       to: target,
-    }),
-  );
-  sendToParent(`target:${move.to}`);
-  sendToParent(currentState.fen());
+      promotion: "q", // NOTE: always promote to a queen for example simplicity
+    });
+
+    // illegal move
+    if (move === null) {return "snapback"}
+    // legal move
+    else {sendMove(source, target)};
+
+    if (isLesson == false) {
+      if (currentState.game_over()) {
+        sendGameOver();
+      }
+    }
+
+    // move highlight
+    highlightMove(source, target);
+
+    updateStatus();
+    sendToParent(`piece-${draggedPieceSource}`);
+    sendToParent(
+      JSON.stringify({
+        from: source,
+        to: target,
+      }),
+    );
+    sendToParent(`target:${move.to}`);
+    sendToParent(currentState.fen());
+  }
 }
 // To add possible move suggestion on chessboard
 function onMouseoverSquare(square, piece) {
