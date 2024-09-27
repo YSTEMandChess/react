@@ -300,6 +300,47 @@ io.on("connection", (socket) => {
 
 
 
+  socket.on("setstate", (msg) => {
+
+    let currentGame;
+    var clientSocket = socket.id;
+
+    console.log(msg);
+
+    parsedmsg = JSON.parse(msg);
+    
+    state = parsedmsg.state;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    if (currentGame)
+    {
+      currentGame.boardState = state;
+    }
+
+    io.to(currentGame.mentor.id).emit(
+      "boardstate",
+      JSON.stringify({ boardState: currentGame.boardState.fen()})
+
+    );
+
+    io.to(currentGame.student.id).emit(
+      "boardstate",
+      JSON.stringify({boardState: currentGame.boardState.fen()})
+    )
+
+
+  });
+
+
   /*
   /// Purpose: Inform both players whether the current step is the last update.
   /// Input: boolean (true/false)
