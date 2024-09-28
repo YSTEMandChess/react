@@ -313,7 +313,7 @@ function onDrop(source, target, draggedPieceSource) {
   
   
   // if we're not in freeplay
-  if (freeplayFlag)
+  if (!freeplayFlag)
   {
       
     // see if the move is legal
