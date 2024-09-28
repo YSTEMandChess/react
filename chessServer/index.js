@@ -340,6 +340,59 @@ io.on("connection", (socket) => {
 
   });
 
+  socket.on("lastmove", (msg) => {
+
+    let currentGame;
+
+    
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    let from = parsedmsg.from;
+    let to = parsedmsg.to;
+
+    const validCoordinate = (letter, number) => ['a','b','c','d','e','f','g','h'].includes(letter) && number > 0 && number < 9;
+
+    // checking for good coordinate
+    if (from.letter && from.number && to.letter && to.number)
+    {
+        
+      if (validCoordinate(from.letter, from.number) && validCoordinate(to.letter, to.number))
+      {
+              
+        io.to(currentGame.mentor.id).emit(
+          "lasthighlight",
+          JSON.stringify({ from, to})
+  
+        );
+  
+        io.to(currentGame.student.id).emit(
+          "lasthighlight",
+          JSON.stringify({from, to})
+        )
+      }
+      else
+      {
+        // bad highlight
+      }
+    }
+    else { 
+      // bad entry
+    }
+
+
+      
+
+  });
 
   /*
   /// Purpose: Inform both players whether the current step is the last update.
