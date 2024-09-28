@@ -1,6 +1,3 @@
-const bcrypt = require('bcrypt');
-// TODO: Ask about hashing like bcrypt for password sending
-// in the backend. For now, mirroring Angular without hashing
 const User = require('../models/User');
 
 const updatePassword = async (password, token) => {
