@@ -98,12 +98,14 @@ function sendUndo()
 }
 
 function sendGreySquare() { 
-  socket.emit("mouseover", JSON.stringify({})); 
+  var data = {"mentor": mentor, "student": student};
+  socket.emit("mouseover", JSON.stringify(data)); 
 }
 
 function sendRemoveGrey(to)
 {
-  socket.emit("mouseout", JSON.stringify({"to": to})); 
+  var data = {"mentor": mentor, "student": student, "to": to};
+  socket.emit("mouseout", JSON.stringify(data)); 
 }
 
 // Handle boardstate message from the client
