@@ -97,6 +97,15 @@ function sendUndo()
   socket.emit("undo", JSON.stringify(data));
 }
 
+function sendGreySquare() { 
+  socket.emit("mouseover", JSON.stringify({})); 
+}
+
+function sendRemoveGrey(to)
+{
+  socket.emit("mouseout", JSON.stringify({"to": to})); 
+}
+
 // Handle boardstate message from the client
 socket.on('boardstate', (msg) => {
     parsedMsg = JSON.parse(msg);
@@ -131,16 +140,15 @@ socket.on('highlight', (msg) => {
 
 });
 
-socket.on('mousemoveover', (msg) => {
+socket.on('mouseover', (msg) => {
 
   // Highlight the last moved spaces
   parsedMsg = JSON.parse(msg);
-  
   greySquare(parsedMsg.to);
 
 });
 
-socket.on('mousemoveout', () => {
+socket.on('mouseout', () => {
   removeGreySquares();
 });
 
@@ -413,6 +421,7 @@ function onMouseoverSquare(square, piece) {
 // To remove possible move suggestion on chessboard
 function onMouseoutSquare(square, piece) {
   removeGreySquares();
+  sendRemoveGrey();
 }
 
 function sendToParent(fen) {
