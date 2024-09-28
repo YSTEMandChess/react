@@ -363,31 +363,31 @@ io.on("connection", (socket) => {
     const validCoordinate = (letter, number) => ['a','b','c','d','e','f','g','h'].includes(letter) && number > 0 && number < 9;
 
     // checking for good coordinate
-    if (from.letter && from.number && to.letter && to.number)
-    {
+    //if (from.letter && from.number && to.letter && to.number)
+    //{
         
-      if (validCoordinate(from.letter, from.number) && validCoordinate(to.letter, to.number))
-      {
+      //if (validCoordinate(from.letter, from.number) && validCoordinate(to.letter, to.number))
+      //{
               
-        io.to(currentGame.mentor.id).emit(
-          "lastmove",
-          JSON.stringify({ from, to})
-  
-        );
-  
-        io.to(currentGame.student.id).emit(
-          "lastmove",
-          JSON.stringify({from, to})
-        )
-      }
-      else
-      {
+    io.to(currentGame.mentor.id).emit(
+      "lastmove",
+      JSON.stringify({ from, to})
+
+    );
+
+    io.to(currentGame.student.id).emit(
+      "lastmove",
+      JSON.stringify({from, to})
+    )
+      //}
+      //else
+      //{
         // bad highlight
-      }
-    }
-    else { 
+      //}
+    //}
+    //else { 
       // bad entry
-    }
+    //}
 
 
       
