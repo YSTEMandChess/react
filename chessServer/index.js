@@ -370,13 +370,13 @@ io.on("connection", (socket) => {
       {
               
         io.to(currentGame.mentor.id).emit(
-          "lasthighlight",
+          "lastmove",
           JSON.stringify({ from, to})
   
         );
   
         io.to(currentGame.student.id).emit(
-          "lasthighlight",
+          "lastmove",
           JSON.stringify({from, to})
         )
       }

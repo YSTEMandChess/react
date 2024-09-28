@@ -121,7 +121,15 @@ socket.on('reset', () => {
   console.log("resetting board");
 });
 
+// Handle lastmove message from the client
+socket.on('lastmove', (msg) => {
+  // Highlight the last moved spaces
+  parsedMsg = JSON.parse(msg);
 
+
+  highlightMove(parsedMsg.from, parseMsg.to);
+
+});
 
 // Deletes all cookies on iframe
 function deleteAllCookies() {
