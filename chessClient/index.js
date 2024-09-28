@@ -135,7 +135,8 @@ socket.on('mousemoveover', (msg) => {
 
   // Highlight the last moved spaces
   parsedMsg = JSON.parse(msg);
-  highlightMove(parsedMsg.from, parsedMsg.to);
+  
+  greySquare(parsedMsg.to);
 
 });
 
@@ -405,6 +406,7 @@ function onMouseoverSquare(square, piece) {
     // highlight the possible squares for this piece
     for (var i = 0; i < moves.length; i++) {
       greySquare(moves[i].to);
+      sendGreySquare(moves[i].to);
     }
   }
 }
