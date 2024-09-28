@@ -25,7 +25,7 @@ var role = "student";
 
 var playerColor;
 
-var freeplayFlag = false;
+var freemoveFlag = false;
 
 const socket = io('http://localhost:3001');
 
@@ -69,12 +69,24 @@ function sendMove(from, to)
   socket.emit("move", JSON.stringify(data));
 }
 
+
 function sendEndGame()
 {
   console.log("sending end game to server");
   var data = {"mentor": mentor, "student": student, "role": role};
   console.log(data);
   socket.emit("endgame", JSON.stringify(data));
+}
+
+
+function sendLastMove(from, to) {
+  let data = {from, to};
+  socket.emit('lastmove', JSON.stringify(data));
+}
+
+function sendHighLight(from, to) {
+  let data = {from, to};
+  socket.emit('highlight', JSON.stringify(data));
 }
 
 function sendUndo()
@@ -110,6 +122,25 @@ socket.on('boardstate', (msg) => {
 
     // update visuals of chessboard
     board.position(currentState.fen());
+});
+
+socket.on('highlight', (msg) => {
+  // Highlight the anticipated space
+  parsedMsg = JSON.parse(msg);
+  highlightMove(parsedMsg.from, parsedMsg.to);
+
+});
+
+socket.on('mousemoveover', (msg) => {
+
+  // Highlight the last moved spaces
+  parsedMsg = JSON.parse(msg);
+  highlightMove(parsedMsg.from, parsedMsg.to);
+
+});
+
+socket.on('mousemoveout', () => {
+  removeGreySquares();
 });
 
 
@@ -266,10 +297,6 @@ function flip() {
   board.flip();
 }
 
-function sendHighlight(from, to) {
-  let data = {from, to};
-  socket.emit('lastmove', JSON.stringify(data));
-}
 
 function letParentKnow() {
   if (flag === false) {
@@ -279,9 +306,9 @@ function letParentKnow() {
 }
 
 function onDragStart(source, piece, position, orientation) {
-  
+   
   // if freeplay mode is off
-  if (!freeplayFlag)
+  if (!freemoveFlag)
   {
       
     // if it's your turn
@@ -324,7 +351,7 @@ function onDrop(source, target, draggedPieceSource) {
   
   
   // if we're not in freeplay
-  if (!freeplayFlag)
+  if (!freemoveFlag)
   {
       
     // see if the move is legal
@@ -348,7 +375,7 @@ function onDrop(source, target, draggedPieceSource) {
     // move highlight
     highlightMove(source, target);
     // move highlight of mentor/student
-    sendHighlight(source, target);
+    sendLastMove(source, target);
 
     updateStatus();
     sendToParent(`piece-${draggedPieceSource}`);
