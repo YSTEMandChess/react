@@ -343,8 +343,8 @@ io.on("connection", (socket) => {
   socket.on("lastmove", (msg) => {
 
     let currentGame;
+    var clientSocket = socket.id;
 
-    
     // checking student/mentor is in an ongoing game
     for (let game of ongoingGames) {
       
@@ -360,7 +360,7 @@ io.on("connection", (socket) => {
     let from = parsedmsg.from;
     let to = parsedmsg.to;
 
-    const validCoordinate = (letter, number) => ['a','b','c','d','e','f','g','h'].includes(letter) && number > 0 && number < 9;
+    //const validCoordinate = (letter, number) => ['a','b','c','d','e','f','g','h'].includes(letter) && number > 0 && number < 9;
 
     // checking for good coordinate
     //if (from.letter && from.number && to.letter && to.number)

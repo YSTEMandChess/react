@@ -125,7 +125,7 @@ socket.on('reset', () => {
 socket.on('lastmove', (msg) => {
   // Highlight the last moved spaces
   parsedMsg = JSON.parse(msg);
-  highlightMove(parsedMsg.from, parseMsg.to);
+  highlightMove(parsedMsg.from, parsedMsg.to);
 
 });
 
