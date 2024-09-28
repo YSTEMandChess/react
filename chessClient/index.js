@@ -125,8 +125,6 @@ socket.on('reset', () => {
 socket.on('lastmove', (msg) => {
   // Highlight the last moved spaces
   parsedMsg = JSON.parse(msg);
-
-
   highlightMove(parsedMsg.from, parseMsg.to);
 
 });
@@ -268,6 +266,11 @@ function flip() {
   board.flip();
 }
 
+function sendHighlight(from, to) {
+  let data = {from, to};
+  socket.emit('lastmove', JSON.stringify(data));
+}
+
 function letParentKnow() {
   if (flag === false) {
     parent.postMessage("ReadyToRecieve", "*");
@@ -344,6 +347,8 @@ function onDrop(source, target, draggedPieceSource) {
 
     // move highlight
     highlightMove(source, target);
+    // move highlight of mentor/student
+    sendHighlight(source, target);
 
     updateStatus();
     sendToParent(`piece-${draggedPieceSource}`);
