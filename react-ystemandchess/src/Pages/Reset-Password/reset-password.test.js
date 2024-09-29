@@ -1,10 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ResetPassword from './ResetPassword';
+import ResetPassword from './reset-password';
+import '@testing-library/jest-dom/extend-expect';
 
 test('renders reset password component', () => {
   render(<ResetPassword />);
-  const heading = screen.getByText(/Please Enter UserName and Email To Reset Your Password/i);
+  const heading = screen.getByText(
+    /Please Enter UserName and Email To Reset Your Password/i
+  );
   expect(heading).toBeInTheDocument();
 });
 
