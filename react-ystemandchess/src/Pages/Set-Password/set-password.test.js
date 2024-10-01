@@ -1,3 +1,7 @@
+/**
+ * Tests for setPassword Controller.
+ * Unit tests for the setPassword controller, mocking the setPasswordService.
+ */
 const { setPassword } = require('./setPasswordController');
 const { updatePassword } = require('./setPasswordService');
 

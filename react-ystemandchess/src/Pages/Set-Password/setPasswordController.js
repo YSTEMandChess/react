@@ -1,3 +1,7 @@
+/**
+ * Controller handling set password
+ * Validates the token and updates the user's password in the database
+ */
 const { updatePassword } = require('./setPasswordService');
 
 const setPassword = async (req, res) => {

@@ -1,3 +1,11 @@
+/**
+ * Service function that handles updating a user's password in the database.
+ *
+ * password - The new password to be set.
+ * token - The token used to validate the password reset request.
+ * return an object containing the success status and a message.
+ */
+
 const User = require('../models/User');
 
 const updatePassword = async (password, token) => {
