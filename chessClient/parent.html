@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parent Window</title>
+  
+</head>
+
+<body>
+  <h1>Parent Window</h1>
+  <p>This is the parent page. It will receive messages from the embedded child app (JavaScript).</p>
+
+  <!-- Iframe embedding the child application (index.js) -->
+  <iframe id="chessboard" src="http://127.0.0.1:5500/chessClient/index.html" width="400px" height="400px"></iframe>
+
+  <!-- Display received messages here -->
+  <p id="messageDisplay">Waiting for message...</p>
+
+
+
+  
+  
+  <!-- Textbox for entering the Student/Mentor ID -->
+  <label for="studentID">Student ID:</label>
+  <input type="text" id="studentID" placeholder="Enter student ID">
+
+  <label for="mentorID">Mentor ID:</label>
+  <input type="text" id="mentorID" placeholder="Enter mentor ID">
+
+  <!-- Dropdown for selecting Mentor or Student -->
+  <label for="role">Role:</label>
+  <select id="role">
+    <option value="student">Student</option>
+    <option value="mentor">Mentor</option>
+  </select>
+
+  <button onclick="enterUsers()">Enter User Info</button>
+  <button onclick="newGame()">Start New Game</button>
+  <button onclick="endGame()">End Game</button>
+  <button onclick="undo()">Undo</button>
+
+
+  <script>
+    
+    const iframe = document.getElementById('chessboard');
+
+    function newGame() {
+      var data = {command: "newgame"}; 
+      iframe.contentWindow.postMessage(JSON.stringify(data), '*');
+    }
+
+    function enterUsers() {
+      let studentID = document.getElementById('studentID').value;
+      let mentorID = document.getElementById('mentorID').value;
+      let roleID = document.getElementById('role').value;
+
+      var data = {command: "userinfo", student: studentID, mentor: mentorID, role: roleID};
+      iframe.contentWindow.postMessage(JSON.stringify(data), '*');
+    }
+
+    function endGame() {
+      var data = {command: "endgame"};
+      iframe.contentWindow.postMessage(JSON.stringify(data), '*');
+    }
+    
+    function undo() {
+      var data = {command: "undo"}; 
+      iframe.contentWindow.postMessage(JSON.stringify(data), '*');
+    }
+
+
+  </script>
+
+  <script>
+    /*
+    // Listen for messages from child iframes
+    window.addEventListener('message', function(event) {
+            // Make sure to validate the origin of the message
+            if (event.origin === "index.html") { // Change to your domain
+                document.getElementById('receivedMessage').innerText = event.data;
+            }
+        });
+    */
+
+  </script>
+
+
+</body>
+</html>

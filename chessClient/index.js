@@ -9,15 +9,26 @@ let previousEndSquare = "";
 var squareClass = "square-55d63";
 var $board = $("#myBoard");
 var board = null;
-var game = new Chess();
+var currentState = new Chess();
 var whiteSquareGrey = "#eebe7bf7";
 var blackSquareGrey = "#ae5716d6";
+
+var serverStartNotified = false;
 
 var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
 var eventer = window[eventMethod];
 var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 
+var mentor = "";
+var student = "";
+var role = "student";
+
 var playerColor;
+
+var freemoveFlag = false;
+
+const socket = io('http://localhost:3001');
+
 
 let startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
@@ -41,33 +52,169 @@ function greySquare(square) {
   $square.css("background-position", "center");
   $square.css("background-image", "url('img/chesspieces/wikipedia/dot.png')");
 }
+
+function sendNewGame()
+{
+  console.log("starting new game with server")
+  var data = {"mentor": mentor, "student": student, "role": role};
+  console.log(data);
+  socket.emit("newgame", JSON.stringify(data));
+}
+
+function sendMove(from, to)
+{
+  console.log("sending move to server");
+  var data = {"mentor": mentor, "student": student, "role": role, "from": from, "to": to};
+  console.log(data);
+  socket.emit("move", JSON.stringify(data));
+}
+
+
+function sendEndGame()
+{
+  console.log("sending end game to server");
+  var data = {"mentor": mentor, "student": student, "role": role};
+  console.log(data);
+  socket.emit("endgame", JSON.stringify(data));
+}
+
+
+function sendLastMove(from, to) {
+  let data = {from, to};
+  socket.emit('lastmove', JSON.stringify(data));
+}
+
+function sendHighLight(from, to) {
+  let data = {from, to};
+  socket.emit('highlight', JSON.stringify(data));
+}
+
+function sendUndo()
+{
+  console.log("sending undo to server");
+  var data = {"mentor": mentor, "student": student, "role": role};
+  console.log(data);
+  socket.emit("undo", JSON.stringify(data));
+}
+
+function sendGreySquare() { 
+  var data = {"mentor": mentor, "student": student};
+  socket.emit("mouseover", JSON.stringify(data)); 
+}
+
+function sendRemoveGrey(to)
+{
+  var data = {"mentor": mentor, "student": student, "to": to};
+  socket.emit("mouseout", JSON.stringify(data)); 
+}
+
+// Handle boardstate message from the client
+socket.on('boardstate', (msg) => {
+    parsedMsg = JSON.parse(msg);
+    console.log(parsedMsg);
+
+    // update state of chess board
+    console.log(currentState);
+    console.log(currentState.fen());
+    currentState = new Chess(parsedMsg.boardState);
+
+
+    // setting player color 
+    if (parsedMsg.color)
+    { 
+      // setting player color for turn keeping 
+      playerColor = parsedMsg.color[0];
+      console.log(playerColor);
+
+      // setting chess board orientation
+      config.orientation = parsedMsg.color;
+      board = Chessboard("myBoard", config);
+    }
+
+    // update visuals of chessboard
+    board.position(currentState.fen());
+});
+
+socket.on('highlight', (msg) => {
+  // Highlight the anticipated space
+  parsedMsg = JSON.parse(msg);
+  highlightMove(parsedMsg.from, parsedMsg.to);
+
+});
+
+socket.on('mouseover', (msg) => {
+
+  // Highlight the last moved spaces
+  parsedMsg = JSON.parse(msg);
+  greySquare(parsedMsg.to);
+
+});
+
+socket.on('mouseout', () => {
+  removeGreySquares();
+});
+
+
+// Handle reset message from the client
+socket.on('reset', () => {
+  // reload page
+  location.reload();
+  deleteAllCookies();
+  console.log("resetting board");
+});
+
+// Handle lastmove message from the client
+socket.on('lastmove', (msg) => {
+  // Highlight the last moved spaces
+  parsedMsg = JSON.parse(msg);
+  highlightMove(parsedMsg.from, parsedMsg.to);
+
+});
+
+// Deletes all cookies on iframe
+function deleteAllCookies() {
+  const cookies = document.cookie.split(";");
+
+  for (let cookie of cookies) {
+      const cookieName = cookie.split("=")[0].trim();
+      deleteCookie(cookieName);
+  }
+}
+
+
 // Listen to message from parent window
-eventer(
-  messageEvent,
-  (e) => {
-    // console.log("client evenet: ", e); // uncomment for debugging
+window.addEventListener('message', (e) => {
+
+    
+
+    // parse message
     let data = JSON.parse(e.data);
+
+
+    
+    // get command from parent and send to server
+    var command = data.command;
+    if (command == "newgame") { sendNewGame(); }
+    else if (command == "endgame") {
+      // delete game on server
+      sendEndGame(); 
+      
+    }
+    else if (command == "userinfo") {
+      mentor = data.mentor;
+      student = data.student;
+      role = data.role;
+      console.log(data);
+    } else if (command == "undo") { sendUndo(); }
+
+
+    // get and set lessonflag
     lessonFlag = data.lessonFlag;
     if (lessonFlag == true) {
       isLesson = true;
     }
 
-    // move a piece if it's a move message
-    if ("from" in data && "to" in data) {
-      game.move({ from: data.from, to: data.to });
-
-      // move highlight
-      highlightMove(data.from, data.to);
-
-      updateStatus();
-      sendToParent(game.fen());
-    }
-
-    // highlight message
-    if ("highlightFrom" in data && "highlightTo" in data) {
-      highlightMove(data.highlightFrom, data.highlightTo);
-    }
-
+    // if this is a lesson, setup lesson
     if (isLesson == true) {
       endSquare = data.endSquare;
       lessonBoard = data.boardState;
@@ -103,24 +250,48 @@ eventer(
         board = Chessboard("myBoard", lessonConfig);
         // var overlay = new ChessboardArrows('board_wrapper');
         lessonStarted = true;
-        game.load(lessonBoard);
+        currentState.load(lessonBoard);
       } else {
         board.position(data.boardState);
-        game.load(data.boardState);
+        currentState.load(data.boardState);
         updateStatus();
       }
 
       $board.find(".square-" + endSquare).addClass("highlight");
     } else if (data.boardState == startFEN) {
-      game = new Chess();
+      currentState = new Chess();
     }
+    /*
     if (isLesson == false) {
       playerColor = data.color;
       board.orientation(playerColor);
-      game.load(data.boardState);
+      currentState.load(data.boardState);
       board.position(data.boardState);
       updateStatus();
     }
+      */
+
+    /*
+    // console.log("client evenet: ", e); // uncomment for debugging
+    
+
+    // move a piece if it's a move message
+    if ("from" in data && "to" in data) {
+      currentState.move({ from: data.from, to: data.to });
+
+      // move highlight
+      highlightMove(data.from, data.to);
+
+      updateStatus();
+      sendToParent(currentState.fen());
+    }
+
+    // highlight message
+    if ("highlightFrom" in data && "highlightTo" in data) {
+      highlightMove(data.highlightFrom, data.highlightTo);
+    }
+
+      */
   },
   false,
 );
@@ -137,6 +308,7 @@ function flip() {
   board.flip();
 }
 
+
 function letParentKnow() {
   if (flag === false) {
     parent.postMessage("ReadyToRecieve", "*");
@@ -145,80 +317,113 @@ function letParentKnow() {
 }
 
 function onDragStart(source, piece, position, orientation) {
-  // do not pick up pieces if the game is over
-  if (isLesson == false) {
-    if (game.game_over()) {
-      sendGameOver();
-      return false;
-    }
+   
+  // if freeplay mode is off
+  if (!freemoveFlag)
+  {
+      
+    // if it's your turn
+    if (playerColor == currentState.turn())
+      {
+          
+        // do not pick up pieces if the game is over
+        if (isLesson == false) {
+          if (currentState.game_over()) {
+            sendGameOver();
+            return false;
+          }
+        }
+    
+        if (playerColor === "black") {
+          if (piece.search(/^w/) !== -1) return false;
+        } else if (playerColor === "white") {
+          if (piece.search(/^b/) !== -1) return false;
+        }
+    
+        // only pick up pieces for the side to move
+        if (
+          (currentState.turn() === "w" && piece.search(/^b/) !== -1) ||
+          (currentState.turn() === "b" && piece.search(/^w/) !== -1)
+        ) {
+          return false;
+        }
+        
+      }
   }
-
-  if (playerColor === "black") {
-    if (piece.search(/^w/) !== -1) return false;
-  } else if (playerColor === "white") {
-    if (piece.search(/^b/) !== -1) return false;
+  else 
+  {
+    return true;
   }
-
-  // only pick up pieces for the side to move
-  if (
-    (game.turn() === "w" && piece.search(/^b/) !== -1) ||
-    (game.turn() === "b" && piece.search(/^w/) !== -1)
-  ) {
-    return false;
-  }
+  
 }
 
 function onDrop(source, target, draggedPieceSource) {
   removeGreySquares();
-  // see if the move is legal
-  var move = game.move({
-    from: source,
-    to: target,
-    promotion: "q", // NOTE: always promote to a queen for example simplicity
-  });
-
-  // illegal move
-  if (move === null) return "snapback";
-
-  if (isLesson == false) {
-    if (game.game_over()) {
-      sendGameOver();
-    }
-  }
-
-  // move highlight
-  highlightMove(source, target);
-
-  updateStatus();
-  sendToParent(`piece-${draggedPieceSource}`);
-  sendToParent(
-    JSON.stringify({
+  
+  
+  // if we're not in freeplay
+  if (!freemoveFlag)
+  {
+      
+    // see if the move is legal
+    var move = currentState.move({
       from: source,
       to: target,
-    }),
-  );
-  sendToParent(`target:${move.to}`);
-  sendToParent(game.fen());
+      promotion: "q", // NOTE: always promote to a queen for example simplicity
+    });
+
+    // illegal move
+    if (move === null) {return "snapback"}
+    // legal move
+    else {sendMove(source, target)};
+
+    if (isLesson == false) {
+      if (currentState.game_over()) {
+        sendGameOver();
+      }
+    }
+
+    // move highlight
+    highlightMove(source, target);
+    // move highlight of mentor/student
+    sendLastMove(source, target);
+
+    updateStatus();
+    sendToParent(`piece-${draggedPieceSource}`);
+    sendToParent(
+      JSON.stringify({
+        from: source,
+        to: target,
+      }),
+    );
+    sendToParent(`target:${move.to}`);
+    sendToParent(currentState.fen());
+  }
 }
 // To add possible move suggestion on chessboard
 function onMouseoverSquare(square, piece) {
-  // get list of possible moves for this square
-  var moves = game.moves({
-    square: square,
-    verbose: true,
-  });
+  if (playerColor == currentState.turn())
+  {
+    // get list of possible moves for this square
+    var moves = currentState.moves({
+      square: square,
+      verbose: true,
+    });
 
-  // exit if there are no moves available for this square
-  if (moves.length === 0) return;
+    // exit if there are no moves available for this square
+    if (moves.length === 0) return;
 
-  // highlight the possible squares for this piece
-  for (var i = 0; i < moves.length; i++) {
-    greySquare(moves[i].to);
+    // highlight the possible squares for this piece
+    for (var i = 0; i < moves.length; i++) {
+      greySquare(moves[i].to);
+      sendGreySquare(moves[i].to);
+    }
   }
 }
 // To remove possible move suggestion on chessboard
 function onMouseoutSquare(square, piece) {
   removeGreySquares();
+  sendRemoveGrey();
 }
 
 function sendToParent(fen) {
@@ -228,26 +433,27 @@ function sendToParent(fen) {
 // update the board position after the piece snap
 // for castling, en passant, pawn promotion
 function onSnapEnd() {
-  board.position(game.fen());
+  board.position(currentState.fen());
 }
 
 function updateStatus() {
   var status = "";
 
   var moveColor = "White";
-  if (game.turn() === "b") {
+
+  if (currentState.turn() === "b") {
     moveColor = "Black";
   }
 
   // checkmate?
   if (isLesson == false) {
-    if (game.in_checkmate()) {
+    if (currentState.in_checkmate()) {
       status = "Game over, " + moveColor + " is in checkmate.";
       sendCheckmate();
     }
 
     // draw?
-    else if (game.in_draw()) {
+    else if (currentState.in_draw()) {
       status = "Game over, drawn position";
       sendDraw();
     }
@@ -258,7 +464,7 @@ function updateStatus() {
     status = moveColor + " to move";
 
     // check?
-    if (game.in_check()) {
+    if (currentState.in_check()) {
       status += ", " + moveColor + " is in check";
     }
   }
@@ -496,6 +702,7 @@ var config = {
   draggable: true,
   showNotation: true,
   position: "start",
+  orientation: "white",
   onDragStart: onDragStart,
   onDrop: onDrop,
   onMouseoutSquare: onMouseoutSquare,
