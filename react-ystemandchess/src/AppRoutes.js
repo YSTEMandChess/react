@@ -1,5 +1,5 @@
 // Imports for React Components/Pages
-import { Route, Routes } from "react-router-dom";
+import { Route, Router, Routes } from "react-router-dom";
 import Home from "./Pages/Home/Home";
 import Programs from "./Pages/Programs/Programs";
 import CSBenefitPage from "./Pages/About-Us/Benefit-of-CS/CSBenefitPage";
@@ -15,10 +15,10 @@ import Board from "./Pages/About-Us/Board/Board";
 import Mentor from "./Pages/Mentor/Mentor";
 import Financial from "./Pages/About-Us/Financial/Financial";
 import StudentInventory from "./Pages/Student-Inventory/StudentInventory";
-import StudentProfile from "./Pages/StudentProfile/Student-Profile";
-import MentorProfile from "./Pages/MentorProfile/Mentor-Profile";
-import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
-// import LessonContent from "./Pages/piece-lessons/lesson-content/lesson-content"; // this one doesn't exist yet
+import ResetPassword from "./Pages/Reset-Password/reset-password";
+import Student from "./Pages/Student/Student";
+import MentorProfile from "./Pages/Mentor-Profile/MentorProfile";
+import UserProfile from "./Pages/Student-Profile/UserProfile";
 
 // Variables and Mutable Data
 import userPortraitImg from "./images/user-portrait-placeholder.svg";
@@ -45,6 +45,7 @@ const AppRoutes = () => {
       <Route path="/lessons" element={<Lessons />} />
       <Route path="/sponsors&partners" element={<SponsorsPartners />} />
       <Route path="/board" element={<Board />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route
         path="/student-inventory"
         element={
@@ -54,11 +55,14 @@ const AppRoutes = () => {
           />
         }
       />
-
+      <Route path="/student" element={<Student/>} />
       <Route path="/mentor-profile" element={<MentorProfile />} />
       <Route path="/student-profile" element={<StudentProfile />} />
       <Route path="/learnings" element={<LessonOverlay />} />
       <Route path="/play-nolog" element={<ChessFreePlay />} />
+      <Route path="/student-profile" element={<UserProfile />} />
+      {/* <Route path="/learnings" element={<LessonOverlay />} /> */}
+
     </Routes>
   );
 };

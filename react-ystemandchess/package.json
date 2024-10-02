@@ -9,7 +9,9 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.7.2",
     "framer-motion": "^11.0.6",
+    "js-cookie": "^3.0.5",
     "react": "^18.2.0",
     "react-cookie": "^7.1.4",
     "react-dom": "^18.2.0",
@@ -44,5 +46,8 @@
   },
   "devDependencies": {
     "sass": "^1.70.0"
+  },
+  "volta": {
+    "node": "14.21.3"
   }
 }
