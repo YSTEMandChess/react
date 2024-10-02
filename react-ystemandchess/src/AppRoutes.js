@@ -57,8 +57,12 @@ const AppRoutes = () => {
       />
       <Route path="/student" element={<Student/>} />
       <Route path="/mentor-profile" element={<MentorProfile />} />
+      <Route path="/student-profile" element={<StudentProfile />} />
+      <Route path="/learnings" element={<LessonOverlay />} />
+      <Route path="/play-nolog" element={<ChessFreePlay />} />
       <Route path="/student-profile" element={<UserProfile />} />
       {/* <Route path="/learnings" element={<LessonOverlay />} /> */}
+
     </Routes>
   );
 };
