@@ -394,6 +394,59 @@ io.on("connection", (socket) => {
 
   });
 
+  socket.on("addgrey", (msg) => {
+    
+    let currentGame;
+    var clientSocket = socket.id;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    let to = parsedmsg.to;
+
+
+    if (currentGame.mentor.id != clientSocket)
+    {
+          
+      io.to(currentGame.mentor.id).emit(
+        "lastmove",
+        JSON.stringify({ from, to})
+
+      );
+
+    }      
+    else if (currentGame.student.id != clientSocket)
+    {
+        
+      io.to(currentGame.student.id).emit(
+        "lastmove",
+        JSON.stringify({from, to})
+      )
+    }
+    else {console.log("bad request, no client/")}
+      //}
+      //else
+      //{
+        // bad highlight
+      //}
+    //}
+    //else { 
+      // bad entry
+    //}
+
+  }); 
+
+  
+
   /*
   /// Purpose: Inform both players whether the current step is the last update.
   /// Input: boolean (true/false)
