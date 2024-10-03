@@ -1,4 +1,3 @@
-const { get } = require("jquery");
 
 let flag = false;
 let lessonFlag = false;
@@ -169,6 +168,19 @@ function sendGreySquare(to)
   socket.emit("addgrey", JSON.stringify(data)); 
 }
 
+function sendPeiceDrag(piece)
+{
+  var data = {"mentor": mentor, "student": student, "piece": piece};
+  socket.emit("piecedrag", JSON.stringify(data)); 
+}
+
+function sendPeiceDrop()
+{
+  var data = {"mentor": mentor, "student": student};
+  socket.emit("piecedrop", JSON.stringify(data)); 
+}
+
+
 // Handle boardstate message from the client
 socket.on('boardstate', (msg) => {
     parsedMsg = JSON.parse(msg);
@@ -196,17 +208,17 @@ socket.on('boardstate', (msg) => {
     board.position(currentState.fen());
 });
 
-socket.on('peiceDrag', (msg) => {
+socket.on('pieceDrag', (msg) => {
 
   parsedMsg = JSON.parse(msg);
 
   // Change the image of the cursor back to default
   cursor = document.getElementById('cursor');
-  cursor.src = getChessPieceImage(piece);
+  cursor.src = getChessPieceImage(parsedMsg.piece);
 
 });
 
-socket.on('peiceDrop', (msg) => {
+socket.on('pieceDrop', () => {
 
   // Change the image of the cursor back to default
   cursor = document.getElementById('cursor');
@@ -419,7 +431,9 @@ function onDragStart(source, piece, position, orientation) {
     // if it's your turn
     if (playerColor == currentState.turn())
       {
-          
+        
+        
+
         // do not pick up pieces if the game is over
         if (isLesson == false) {
           if (currentState.game_over()) {
@@ -441,6 +455,8 @@ function onDragStart(source, piece, position, orientation) {
         ) {
           return false;
         }
+
+        sendPeiceDrag(piece);
         
       }
   }
@@ -453,7 +469,7 @@ function onDragStart(source, piece, position, orientation) {
 
 function onDrop(source, target, draggedPieceSource) {
   removeGreySquares();
-  
+  sendPeiceDrop();
   
   // if we're not in freeplay
   if (!freemoveFlag)

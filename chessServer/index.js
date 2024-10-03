@@ -535,4 +535,95 @@ io.on("connection", (socket) => {
    
 
   }); 
+
+  socket.on("piecedrop", (msg) => {
+    
+    let currentGame;
+    var clientSocket = socket.id;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    
+    if (currentGame)
+    {
+        
+      if (currentGame.mentor.id != clientSocket)
+        {
+              
+          io.to(currentGame.mentor.id).emit(
+            "piecedrop",
+            JSON.stringify({})
+    
+          );
+    
+        }      
+        else if (currentGame.student.id != clientSocket)
+        {
+            
+          io.to(currentGame.student.id).emit(
+            "piecedrop",
+            JSON.stringify({})
+          );
+        }
+        else {console.log("bad request, no client to send mouse xy to")}
+    }
+   
+
+  }); 
+
+  socket.on("piecedrag", (msg) => {
+    
+    let currentGame;
+    var clientSocket = socket.id;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    let piece = parsedmsg.piece;
+
+    if (currentGame)
+    {
+        
+      if (currentGame.mentor.id != clientSocket)
+        {
+              
+          io.to(currentGame.mentor.id).emit(
+            "piecedrag",
+            JSON.stringify({"piece":piece})
+    
+          );
+    
+        }      
+        else if (currentGame.student.id != clientSocket)
+        {
+            
+          io.to(currentGame.student.id).emit(
+            "piecedrag",
+            JSON.stringify({"piece":piece})
+          );
+        }
+        else {console.log("bad request, no client to send mouse xy to")}
+    }
+   
+
+  }); 
 });
