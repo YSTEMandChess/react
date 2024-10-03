@@ -537,7 +537,7 @@ io.on("connection", (socket) => {
   }); 
 
   socket.on("piecedrop", (msg) => {
-    
+    console.log('dropping piece');
     let currentGame;
     var clientSocket = socket.id;
 
@@ -582,7 +582,7 @@ io.on("connection", (socket) => {
   }); 
 
   socket.on("piecedrag", (msg) => {
-    
+    console.log('dragging piece');
     let currentGame;
     var clientSocket = socket.id;
 

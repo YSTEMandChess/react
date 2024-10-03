@@ -57,7 +57,7 @@ function updateOpponentMouseXY() {
 }
 
 // References to chess piece images
-const chessPieceFolder = 'img/chesspieces/wikipedia';
+const chessPieceFolder = 'img/chesspieces/wikipedia/';
 
 const chessImages = {
   bB: 'bB.png', // Black Bishop
@@ -208,17 +208,25 @@ socket.on('boardstate', (msg) => {
     board.position(currentState.fen());
 });
 
-socket.on('pieceDrag', (msg) => {
+socket.on('piecedrag', (msg) => {
 
+  console.log('recieved piece drag');
   parsedMsg = JSON.parse(msg);
 
   // Change the image of the cursor back to default
   cursor = document.getElementById('cursor');
-  cursor.src = getChessPieceImage(parsedMsg.piece);
+  pieceImage = getChessPieceImage(parsedMsg.piece);
+
+  console.log(pieceImage);
+  console.log(parsedMsg.piece);
+
+  cursor.src = pieceImage;
 
 });
 
-socket.on('pieceDrop', () => {
+socket.on('piecedrop', () => {
+
+  console.log('recieved piece drop');
 
   // Change the image of the cursor back to default
   cursor = document.getElementById('cursor');
