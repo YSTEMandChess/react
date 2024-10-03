@@ -486,7 +486,52 @@ io.on("connection", (socket) => {
 
   }); 
   
+  socket.on("mousexy", (msg) => {
+    
+    let currentGame;
+    var clientSocket = socket.id;
 
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    let x = parsedmsg.x;
+    let y = parsedmsg.y;
+
+    if (currentGame)
+    {
+        
+      if (currentGame.mentor.id != clientSocket)
+        {
+              
+          io.to(currentGame.mentor.id).emit(
+            "mousexy",
+            JSON.stringify({"x":x, "y":y})
+    
+          );
+    
+        }      
+        else if (currentGame.student.id != clientSocket)
+        {
+            
+          io.to(currentGame.student.id).emit(
+            "mousexy",
+            JSON.stringify({"x":x, "y":y})
+          )
+        }
+        else {console.log("bad request, no client to send greysquare to")}
+    }
+   
+
+  }); 
   /*
   /// Purpose: Inform both players whether the current step is the last update.
   /// Input: boolean (true/false)
