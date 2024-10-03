@@ -413,27 +413,28 @@ io.on("connection", (socket) => {
     parsedmsg = JSON.parse(msg);
     let to = parsedmsg.to;
 
-
-    if (currentGame.mentor.id != clientSocket)
+    if (currentGame)
     {
+      if (currentGame.mentor.id != clientSocket)
+      {
+            
+        io.to(currentGame.mentor.id).emit(
+          "addgrey",
+          JSON.stringify({to})
+
+        );
+
+      }      
+      else if (currentGame.student.id != clientSocket)
+      {
           
-      io.to(currentGame.mentor.id).emit(
-        "addgrey",
-        JSON.stringify({to})
-
-      );
-
-    }      
-    else if (currentGame.student.id != clientSocket)
-    {
-        
-      io.to(currentGame.student.id).emit(
-        "addgrey",
-        JSON.stringify({to})
-      )
+        io.to(currentGame.student.id).emit(
+          "addgrey",
+          JSON.stringify({to})
+        )
+      }
+      else {console.log("bad request, no client to send greysquare to")}
     }
-    else {console.log("bad request, no client to send greysquare to")}
-   
 
   }); 
 
@@ -457,26 +458,29 @@ io.on("connection", (socket) => {
     parsedmsg = JSON.parse(msg);
     let to = parsedmsg.to;
 
-
-    if (currentGame.mentor.id != clientSocket)
-    {
-          
-      io.to(currentGame.mentor.id).emit(
-        "removegrey",
-        JSON.stringify({})
-
-      );
-
-    }      
-    else if (currentGame.student.id != clientSocket)
+    if (currentGame)
     {
         
-      io.to(currentGame.student.id).emit(
-        "removegrey",
-        JSON.stringify({})
-      )
+      if (currentGame.mentor.id != clientSocket)
+        {
+              
+          io.to(currentGame.mentor.id).emit(
+            "removegrey",
+            JSON.stringify({})
+    
+          );
+    
+        }      
+        else if (currentGame.student.id != clientSocket)
+        {
+            
+          io.to(currentGame.student.id).emit(
+            "removegrey",
+            JSON.stringify({})
+          )
+        }
+        else {console.log("bad request, no client to send greysquare to")}
     }
-    else {console.log("bad request, no client to send greysquare to")}
    
 
   }); 
