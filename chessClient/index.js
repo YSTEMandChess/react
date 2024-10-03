@@ -32,12 +32,21 @@ var mouseY;
 
 // Listen for mouse position change 
 document.addEventListener('mousemove', (event) => {
-  
   mouseX = event.clientX;
   mouseY = event.clientY;
   console.log(mouseX, mouseY);
-  
 });
+
+// Update the position of the other players mouse
+function updateOpponentMouseXY() {
+  const img = document.getElementById("cursor");
+    
+  // Set absolute position values (top and left in pixels)
+  img.style.top = `${mouseY}px`;
+  img.style.left = `${mouseX}px`;
+}
+
+
 
 const socket = io('http://localhost:3001');
 
