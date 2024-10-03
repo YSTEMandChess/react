@@ -38,6 +38,11 @@ document.addEventListener('mousemove', (event) => {
   myMouseX = event.clientX;
   myMouseY = event.clientY;
   console.log(myMouseX, myMouseY);
+
+  if (mentor && student)
+  {
+    sendMouseXY();
+  }
 });
 
 // Update the position of the other players mouse
@@ -45,8 +50,8 @@ function updateOpponentMouseXY() {
   const img = document.getElementById("cursor");
     
   // Set absolute position values (top and left in pixels)
-  img.style.top = `${opponentMouseX}px`;
-  img.style.left = `${opponentMouseY}px`;
+  img.style.top = `${opponentMouseY}px`;
+  img.style.left = `${opponentMouseX}px`;
 }
 
 
@@ -188,12 +193,16 @@ socket.on('removegrey', () => {
 socket.on('mousexy', (msg)=>{
   let parsedMsg = JSON.parse(msg);
   
+  let viewportWidth = window.innerWidth;
+  let viewportHeight = window.innerHeight;
+
   if (parsedMsg.x && parsedMsg.y)
   {  
-    opponentMouseX = parsedMsg.x;
-    opponentMouseY = parsedMsg.y;
+    opponentMouseX = (-1 * parsedMsg.x) + viewportWidth;
+    opponentMouseY = (-1 * parsedMsg.y) + viewportHeight;
     
     updateOpponentMouseXY();
+    console.log(opponentMouseX, opponentMouseY);
   }
 
 });

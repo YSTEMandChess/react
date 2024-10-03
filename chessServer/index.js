@@ -336,7 +336,7 @@ io.on("connection", (socket) => {
     io.to(currentGame.student.id).emit(
       "boardstate",
       JSON.stringify({boardState: currentGame.boardState.fen()})
-    )
+    );
 
 
   });
@@ -379,7 +379,7 @@ io.on("connection", (socket) => {
     io.to(currentGame.student.id).emit(
       "lastmove",
       JSON.stringify({from, to})
-    )
+    );
       //}
       //else
       //{
@@ -432,7 +432,7 @@ io.on("connection", (socket) => {
         io.to(currentGame.student.id).emit(
           "addgrey",
           JSON.stringify({to})
-        )
+        );
       }
       else {console.log("bad request, no client to send greysquare to")}
     }
@@ -478,7 +478,7 @@ io.on("connection", (socket) => {
           io.to(currentGame.student.id).emit(
             "removegrey",
             JSON.stringify({})
-          )
+          );
         }
         else {console.log("bad request, no client to send greysquare to")}
     }
@@ -488,6 +488,8 @@ io.on("connection", (socket) => {
   
   socket.on("mousexy", (msg) => {
     
+    console.log("recieved mousexy message from client");
+
     let currentGame;
     var clientSocket = socket.id;
 
@@ -509,6 +511,7 @@ io.on("connection", (socket) => {
     if (currentGame)
     {
         
+      console.log("sending mousexy message from client");
       if (currentGame.mentor.id != clientSocket)
         {
               
@@ -525,9 +528,9 @@ io.on("connection", (socket) => {
           io.to(currentGame.student.id).emit(
             "mousexy",
             JSON.stringify({"x":x, "y":y})
-          )
+          );
         }
-        else {console.log("bad request, no client to send greysquare to")}
+        else {console.log("bad request, no client to send mouse xy to")}
     }
    
 
