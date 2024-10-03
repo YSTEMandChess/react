@@ -184,6 +184,19 @@ socket.on('removegrey', () => {
   removeGreySquares();
 });
 
+// handle change of opponents mousexy
+socket.on('mousexy', (msg)=>{
+  let parsedMsg = JSON.parse(msg);
+  
+  if (parsedMsg.x && parsedMsg.y)
+  {  
+    opponentMouseX = parsedMsg.x;
+    opponentMouseY = parsedMsg.y;
+    
+    updateOpponentMouseXY();
+  }
+
+});
 
 // Handle reset message from the client
 socket.on('reset', () => {
