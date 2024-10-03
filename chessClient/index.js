@@ -1,3 +1,5 @@
+const { get } = require("jquery");
+
 let flag = false;
 let lessonFlag = false;
 let isLesson = false;
@@ -29,6 +31,7 @@ var freemoveFlag = false;
 
 var myMouseX;
 var myMouseY;
+const mouseImage = 'img/cursor.png';
 
 var opponentMouseX = 0;
 var opponentMouseY = 0;
@@ -54,6 +57,29 @@ function updateOpponentMouseXY() {
   img.style.left = `${opponentMouseX}px`;
 }
 
+// References to chess piece images
+const chessPieceFolder = 'img/chesspieces/wikipedia';
+
+const chessImages = {
+  bB: 'bB.png', // Black Bishop
+  bK: 'bK.png', // Black King
+  bN: 'bN.png', // Black Knight
+  bP: 'bP.png', // Black Pawn
+  bQ: 'bQ.png', // Black Queen
+  bR: 'bR.png', // Black Rook
+  wB: 'wB.png', // White Bishop
+  wK: 'wK.png', // White King
+  wN: 'wN.png', // White Knight
+  wP: 'wP.png', // White Pawn
+  wQ: 'wQ.png', // White Queen
+  wR: 'wR.png', // White Rook
+};
+
+function getChessPieceImage(peice)
+{
+  chessString = chessPieceFolder + chessImages[peice];
+  return chessString;
+}
 
 
 const socket = io('http://localhost:3001');
@@ -168,6 +194,24 @@ socket.on('boardstate', (msg) => {
 
     // update visuals of chessboard
     board.position(currentState.fen());
+});
+
+socket.on('peiceDrag', (msg) => {
+
+  parsedMsg = JSON.parse(msg);
+
+  // Change the image of the cursor back to default
+  cursor = document.getElementById('cursor');
+  cursor.src = getChessPieceImage(piece);
+
+});
+
+socket.on('peiceDrop', (msg) => {
+
+  // Change the image of the cursor back to default
+  cursor = document.getElementById('cursor');
+  cursor.src = mouseImage;
+
 });
 
 socket.on('highlight', (msg) => {
