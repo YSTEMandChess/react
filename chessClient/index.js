@@ -27,14 +27,17 @@ var playerColor;
 
 var freemoveFlag = false;
 
-var mouseX;
-var mouseY;
+var myMouseX;
+var myMouseY;
+
+var opponentMouseX = 0;
+var opponentMouseY = 0;
 
 // Listen for mouse position change 
 document.addEventListener('mousemove', (event) => {
-  mouseX = event.clientX;
-  mouseY = event.clientY;
-  console.log(mouseX, mouseY);
+  myMouseX = event.clientX;
+  myMouseY = event.clientY;
+  console.log(myMouseX, myMouseY);
 });
 
 // Update the position of the other players mouse
@@ -42,8 +45,8 @@ function updateOpponentMouseXY() {
   const img = document.getElementById("cursor");
     
   // Set absolute position values (top and left in pixels)
-  img.style.top = `${mouseY}px`;
-  img.style.left = `${mouseX}px`;
+  img.style.top = `${opponentMouseX}px`;
+  img.style.left = `${opponentMouseY}px`;
 }
 
 
@@ -99,14 +102,20 @@ function sendEndGame()
   socket.emit("endgame", JSON.stringify(data));
 }
 
+function sendMouseXY()
+{
+  let data = {"x":myMouseX, "y":myMouseY, "mentor":mentor, "student":student};
+  socket.emit('mousexy', JSON.stringify(data));
+}
+
 
 function sendLastMove(from, to) {
-  let data = {from, to};
+  let data = {"from":from, "to":to, "mentor":mentor, "student":student};
   socket.emit('lastmove', JSON.stringify(data));
 }
 
 function sendHighLight(from, to) {
-  let data = {from, to};
+  let data = {"from":from, "to":to, "mentor":mentor, "student":student};
   socket.emit('highlight', JSON.stringify(data));
 }
 
