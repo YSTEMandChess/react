@@ -27,10 +27,22 @@ var playerColor;
 
 var freemoveFlag = false;
 
+var mouseX;
+var mouseY;
+
+// Listen for mouse position change 
+document.addEventListener('mousemove', (event) => {
+  
+  mouseX = event.clientX;
+  mouseY = event.clientY;
+  console.log(mouseX, mouseY);
+  
+});
+
 const socket = io('http://localhost:3001');
 
 
-let startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+let defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
 letParentKnow();
 
@@ -256,7 +268,7 @@ window.addEventListener('message', (e) => {
       }
 
       $board.find(".square-" + endSquare).addClass("highlight");
-    } else if (data.boardState == startFEN) {
+    } else if (data.boardState == defaultFEN) {
       currentState = new Chess();
     }
     /*

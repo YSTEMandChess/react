@@ -8,6 +8,7 @@ const { Chess } = require("chess.js");
 const app = express();
 const server = http.createServer(app);
 
+
 // Use CORS middleware to allow all origins
 app.use(cors({
   origin: "*", // Allow all origins
