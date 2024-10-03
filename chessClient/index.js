@@ -97,15 +97,15 @@ function sendUndo()
   socket.emit("undo", JSON.stringify(data));
 }
 
-function sendGreySquare() { 
+function sendRemoveGrey() { 
   var data = {"mentor": mentor, "student": student};
-  socket.emit("mouseover", JSON.stringify(data)); 
+  socket.emit("removegrey", JSON.stringify(data)); 
 }
 
-function sendRemoveGrey(to)
+function sendGreySquare(to)
 {
   var data = {"mentor": mentor, "student": student, "to": to};
-  socket.emit("mouseout", JSON.stringify(data)); 
+  socket.emit("addgrey", JSON.stringify(data)); 
 }
 
 // Handle boardstate message from the client
@@ -142,7 +142,7 @@ socket.on('highlight', (msg) => {
 
 });
 
-socket.on('mouseover', (msg) => {
+socket.on('addgrey', (msg) => {
 
   // Highlight the last moved spaces
   parsedMsg = JSON.parse(msg);
@@ -150,7 +150,7 @@ socket.on('mouseover', (msg) => {
 
 });
 
-socket.on('mouseout', () => {
+socket.on('removegrey', () => {
   removeGreySquares();
 });
 
@@ -184,8 +184,6 @@ function deleteAllCookies() {
 
 // Listen to message from parent window
 window.addEventListener('message', (e) => {
-
-    
 
     // parse message
     let data = JSON.parse(e.data);
