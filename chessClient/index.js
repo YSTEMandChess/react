@@ -262,8 +262,8 @@ socket.on('mousexy', (msg)=>{
 
   if (parsedMsg.x && parsedMsg.y)
   {  
-    opponentMouseX = (-1 * parsedMsg.x) + viewportWidth;
-    opponentMouseY = (-1 * parsedMsg.y) + viewportHeight;
+    opponentMouseX = (-1 * parsedMsg.x) + viewportWidth - 28;
+    opponentMouseY = (-1 * parsedMsg.y) + viewportHeight - 28;
     
     updateOpponentMouseXY();
     console.log(opponentMouseX, opponentMouseY);
