@@ -39,7 +39,6 @@ var opponentMouseY = 0;
 document.addEventListener('mousemove', (event) => {
   myMouseX = event.clientX;
   myMouseY = event.clientY;
-  console.log(myMouseX, myMouseY);
 
   if (mentor && student)
   {
@@ -145,6 +144,7 @@ function sendLastMove(from, to) {
 }
 
 function sendHighLight(from, to) {
+  console.log("sending highlihgt");
   let data = {"from":from, "to":to, "mentor":mentor, "student":student};
   socket.emit('highlight', JSON.stringify(data));
 }
@@ -168,14 +168,16 @@ function sendGreySquare(to)
   socket.emit("addgrey", JSON.stringify(data)); 
 }
 
-function sendPeiceDrag(piece)
+function sendPieceDrag(piece)
 {
+  console.log("sending drag");
   var data = {"mentor": mentor, "student": student, "piece": piece};
   socket.emit("piecedrag", JSON.stringify(data)); 
 }
 
-function sendPeiceDrop()
+function sendPieceDrop()
 {
+  console.log("sending drop");
   var data = {"mentor": mentor, "student": student};
   socket.emit("piecedrop", JSON.stringify(data)); 
 }
@@ -236,8 +238,9 @@ socket.on('piecedrop', () => {
 
 socket.on('highlight', (msg) => {
   // Highlight the anticipated space
+  console.log("highlight recieved")
   parsedMsg = JSON.parse(msg);
-  highlightMove(parsedMsg.from, parsedMsg.to);
+  highlightMove(parsedMsg.from, parsedMsg.to, 'nextMove');
 
 });
 
@@ -266,7 +269,6 @@ socket.on('mousexy', (msg)=>{
     opponentMouseY = (-1 * parsedMsg.y) + viewportHeight - 28;
     
     updateOpponentMouseXY();
-    console.log(opponentMouseX, opponentMouseY);
   }
 
 });
@@ -283,7 +285,7 @@ socket.on('reset', () => {
 socket.on('lastmove', (msg) => {
   // Highlight the last moved spaces
   parsedMsg = JSON.parse(msg);
-  highlightMove(parsedMsg.from, parsedMsg.to);
+  highlightMove(parsedMsg.from, parsedMsg.to, "lastmove");
 
 });
 
@@ -410,11 +412,11 @@ window.addEventListener('message', (e) => {
   false,
 );
 
-function highlightMove(from, to) {
-  $board.find("." + squareClass).removeClass("highlight");
+function highlightMove(from, to, style) {
+  $board.find("." + squareClass).removeClass(style);
   if (from !== "remove" || to !== "remove") {
-    $board.find(".square-" + from).addClass("highlight");
-    $board.find(".square-" + to).addClass("highlight");
+    $board.find(".square-" + from).addClass(style);
+    $board.find(".square-" + to).addClass(style);
   }
 }
 
@@ -464,8 +466,7 @@ function onDragStart(source, piece, position, orientation) {
           return false;
         }
 
-        sendPeiceDrag(piece);
-        
+        sendPieceDrag(piece);
       }
   }
   else 
@@ -477,7 +478,7 @@ function onDragStart(source, piece, position, orientation) {
 
 function onDrop(source, target, draggedPieceSource) {
   removeGreySquares();
-  sendPeiceDrop();
+  sendPieceDrop();
   
   // if we're not in freeplay
   if (!freemoveFlag)
@@ -502,7 +503,7 @@ function onDrop(source, target, draggedPieceSource) {
     }
 
     // move highlight
-    highlightMove(source, target);
+    highlightMove(source, target, 'lastmove');
     // move highlight of mentor/student
     sendLastMove(source, target);
 

@@ -488,8 +488,6 @@ io.on("connection", (socket) => {
   
   socket.on("mousexy", (msg) => {
     
-    console.log("recieved mousexy message from client");
-
     let currentGame;
     var clientSocket = socket.id;
 
@@ -511,7 +509,6 @@ io.on("connection", (socket) => {
     if (currentGame)
     {
         
-      console.log("sending mousexy message from client");
       if (currentGame.mentor.id != clientSocket)
         {
               
@@ -619,6 +616,53 @@ io.on("connection", (socket) => {
           io.to(currentGame.student.id).emit(
             "piecedrag",
             JSON.stringify({"piece":piece})
+          );
+        }
+        else {console.log("bad request, no client to send mouse xy to")}
+    }
+   
+
+  }); 
+
+  socket.on("highlight", (msg) => {
+    console.log('getting highlight future move');
+    let currentGame;
+    var clientSocket = socket.id;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    let from = parsedmsg.from;
+    let to = parsedmsg.to;
+
+    if (currentGame)
+    {
+        
+      if (currentGame.mentor.id != clientSocket)
+        {
+              
+          io.to(currentGame.mentor.id).emit(
+            "highlight",
+            JSON.stringify({"from":from, "to":to})
+    
+          );
+    
+        }      
+        else if (currentGame.student.id != clientSocket)
+        {
+            
+          io.to(currentGame.student.id).emit(
+            "highlight",
+            JSON.stringify({"from":from, "to":to})
           );
         }
         else {console.log("bad request, no client to send mouse xy to")}
