@@ -1,7 +1,8 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ResetPassword from './reset-password';
-import '@testing-library/jest-dom/extend-expect';
+// import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 
 test('renders reset password component', () => {
   render(<ResetPassword />);

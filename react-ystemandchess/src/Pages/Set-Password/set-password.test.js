@@ -26,7 +26,7 @@ describe('setPassword Controller', () => {
   });
 
   it('should return 400 if password or token is missing', async () => {
-    req.body = {}; // Empty body
+    req.body = {};
     await setPassword(req, res);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
