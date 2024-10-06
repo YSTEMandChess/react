@@ -4,42 +4,126 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Parent Window</title>
-  
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
+
+  <style>
+    body {
+      background: radial-gradient(circle, #202020, #292929);
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    #chessboard {
+      display: block;
+      margin: 0 auto;
+      border: 2px solid #333;
+      border-radius: 10px;
+    }
+
+    .form-control {
+      border: 2px solid #333;
+      border-radius: 10px;
+      background-color: transparent;
+      color: #333;
+      margin-bottom: 15px;
+      padding: 10px;
+    }
+
+    .form-label {
+      font-weight: bold;
+      color: white;
+    }
+
+    .btn-custom {
+      border: 2px solid #333;
+      background-color: transparent;
+      color: #333;
+      border-radius: 10px;
+      padding: 10px 20px;
+      margin: 10px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .btn-custom:hover {
+      background-color: #333;
+      color: #fff;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+  </style>
+
+
   <h1>Parent Window</h1>
-  <p>This is the parent page. It will receive messages from the embedded child app (JavaScript).</p>
+  <p class="text-center">This is the parent page. It will receive messages from the embedded child app (JavaScript).</p>
 
   <!-- Iframe embedding the child application (index.js) -->
   <iframe id="chessboard" src="http://127.0.0.1:5500/chessClient/index.html" width="400px" height="400px"></iframe>
 
   <!-- Display received messages here -->
-  <p id="messageDisplay">Waiting for message...</p>
+  <p id="messageDisplay" class="text-center mt-4">Waiting for message...</p>
 
+  <div class="container">
 
-
+    <div class="row">
+      <!-- Left Column (Student/Mentor ID input and Role selection) -->
+      <div class="col-md-6 text-center">
+        
+        <!-- Textbox for entering the Student/Mentor ID -->
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <label for="studentID" class="form-label">Student ID:</label>
+            <input type="text" id="studentID" class="form-control" placeholder="Enter student ID">
+          </div>
+          <div class="col-md-6">
+            <label for="mentorID" class="form-label">Mentor ID:</label>
+            <input type="text" id="mentorID" class="form-control" placeholder="Enter mentor ID">
+          </div>
+        </div>
   
+        <!-- Dropdown for selecting Mentor or Student -->
+        <div class="row justify-content-center mt-3">
+          <div class="col-md-6">
+            <label for="role" class="form-label">Role:</label>
+            <select id="role" class="form-control">
+              <option value="student">Student</option>
+              <option value="mentor">Mentor</option>
+            </select>
+          </div>
+        </div>
   
-  <!-- Textbox for entering the Student/Mentor ID -->
-  <label for="studentID">Student ID:</label>
-  <input type="text" id="studentID" placeholder="Enter student ID">
-
-  <label for="mentorID">Mentor ID:</label>
-  <input type="text" id="mentorID" placeholder="Enter mentor ID">
-
-  <!-- Dropdown for selecting Mentor or Student -->
-  <label for="role">Role:</label>
-  <select id="role">
-    <option value="student">Student</option>
-    <option value="mentor">Mentor</option>
-  </select>
-
-  <button onclick="enterUsers()">Enter User Info</button>
-  <button onclick="newGame()">Start New Game</button>
-  <button onclick="endGame()">End Game</button>
-  <button onclick="undo()">Undo</button>
-
+      </div>
+  
+      <!-- Right Column (Buttons) -->
+      <div class="col-md-6 text-center">
+        <!-- Buttons -->
+        <div class="row justify-content-center mt-4">
+          <div class="col-md-3 text-center">
+            <button onclick="enterUsers()" class="btn btn-custom">Enter User Info</button>
+          </div>
+          <div class="col-md-3 text-center">
+            <button onclick="newGame()" class="btn btn-custom">Start New Game</button>
+          </div>
+          <div class="col-md-3 text-center">
+            <button onclick="endGame()" class="btn btn-custom">End Game</button>
+          </div>
+          <div class="col-md-3 text-center">
+            <button onclick="undo()" class="btn btn-custom">Undo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  </div>
+  
 
   <script>
     
