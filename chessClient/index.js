@@ -1,3 +1,4 @@
+
 let flag = false;
 let lessonFlag = false;
 let isLesson = false;
@@ -27,10 +28,62 @@ var playerColor;
 
 var freemoveFlag = false;
 
+var myMouseX;
+var myMouseY;
+const mouseImage = 'img/cursor.png';
+
+var opponentMouseX = 0;
+var opponentMouseY = 0;
+
+// Listen for mouse position change 
+document.addEventListener('mousemove', (event) => {
+  myMouseX = event.clientX;
+  myMouseY = event.clientY;
+
+  if (mentor && student)
+  {
+    sendMouseXY();
+  }
+});
+
+// Update the position of the other players mouse
+function updateOpponentMouseXY() {
+  const img = document.getElementById("cursor");
+    
+  // Set absolute position values (top and left in pixels)
+  img.style.top = `${opponentMouseY}px`;
+  img.style.left = `${opponentMouseX}px`;
+}
+
+// References to chess piece images
+const chessPieceFolder = 'img/chesspieces/wikipedia/';
+
+const chessImages = {
+  bB: 'bB.png', // Black Bishop
+  bK: 'bK.png', // Black King
+  bN: 'bN.png', // Black Knight
+  bP: 'bP.png', // Black Pawn
+  bQ: 'bQ.png', // Black Queen
+  bR: 'bR.png', // Black Rook
+  wB: 'wB.png', // White Bishop
+  wK: 'wK.png', // White King
+  wN: 'wN.png', // White Knight
+  wP: 'wP.png', // White Pawn
+  wQ: 'wQ.png', // White Queen
+  wR: 'wR.png', // White Rook
+};
+
+function getChessPieceImage(peice)
+{
+  chessString = chessPieceFolder + chessImages[peice];
+  return chessString;
+}
+
+
 const socket = io('http://localhost:3001');
 
 
-let startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+let defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
 letParentKnow();
 
@@ -78,14 +131,21 @@ function sendEndGame()
   socket.emit("endgame", JSON.stringify(data));
 }
 
+function sendMouseXY()
+{
+  let data = {"x":myMouseX, "y":myMouseY, "mentor":mentor, "student":student};
+  socket.emit('mousexy', JSON.stringify(data));
+}
+
 
 function sendLastMove(from, to) {
-  let data = {from, to};
+  let data = {"from":from, "to":to, "mentor":mentor, "student":student};
   socket.emit('lastmove', JSON.stringify(data));
 }
 
 function sendHighLight(from, to) {
-  let data = {from, to};
+  console.log("sending highlihgt");
+  let data = {"from":from, "to":to, "mentor":mentor, "student":student};
   socket.emit('highlight', JSON.stringify(data));
 }
 
@@ -97,16 +157,31 @@ function sendUndo()
   socket.emit("undo", JSON.stringify(data));
 }
 
-function sendGreySquare() { 
+function sendRemoveGrey() { 
   var data = {"mentor": mentor, "student": student};
-  socket.emit("mouseover", JSON.stringify(data)); 
+  socket.emit("removegrey", JSON.stringify(data)); 
 }
 
-function sendRemoveGrey(to)
+function sendGreySquare(to)
 {
   var data = {"mentor": mentor, "student": student, "to": to};
-  socket.emit("mouseout", JSON.stringify(data)); 
+  socket.emit("addgrey", JSON.stringify(data)); 
 }
+
+function sendPieceDrag(piece)
+{
+  console.log("sending drag");
+  var data = {"mentor": mentor, "student": student, "piece": piece};
+  socket.emit("piecedrag", JSON.stringify(data)); 
+}
+
+function sendPieceDrop()
+{
+  console.log("sending drop");
+  var data = {"mentor": mentor, "student": student};
+  socket.emit("piecedrop", JSON.stringify(data)); 
+}
+
 
 // Handle boardstate message from the client
 socket.on('boardstate', (msg) => {
@@ -135,14 +210,41 @@ socket.on('boardstate', (msg) => {
     board.position(currentState.fen());
 });
 
-socket.on('highlight', (msg) => {
-  // Highlight the anticipated space
+socket.on('piecedrag', (msg) => {
+
+  console.log('recieved piece drag');
   parsedMsg = JSON.parse(msg);
-  highlightMove(parsedMsg.from, parsedMsg.to);
+
+  // Change the image of the cursor back to default
+  cursor = document.getElementById('cursor');
+  pieceImage = getChessPieceImage(parsedMsg.piece);
+
+  console.log(pieceImage);
+  console.log(parsedMsg.piece);
+
+  cursor.src = pieceImage;
 
 });
 
-socket.on('mouseover', (msg) => {
+socket.on('piecedrop', () => {
+
+  console.log('recieved piece drop');
+
+  // Change the image of the cursor back to default
+  cursor = document.getElementById('cursor');
+  cursor.src = mouseImage;
+
+});
+
+socket.on('highlight', (msg) => {
+  // Highlight the anticipated space
+  console.log("highlight recieved")
+  parsedMsg = JSON.parse(msg);
+  highlightMove(parsedMsg.from, parsedMsg.to, 'nextMove');
+
+});
+
+socket.on('addgrey', (msg) => {
 
   // Highlight the last moved spaces
   parsedMsg = JSON.parse(msg);
@@ -150,10 +252,26 @@ socket.on('mouseover', (msg) => {
 
 });
 
-socket.on('mouseout', () => {
+socket.on('removegrey', () => {
   removeGreySquares();
 });
 
+// handle change of opponents mousexy
+socket.on('mousexy', (msg)=>{
+  let parsedMsg = JSON.parse(msg);
+  
+  let viewportWidth = window.innerWidth;
+  let viewportHeight = window.innerHeight;
+
+  if (parsedMsg.x && parsedMsg.y)
+  {  
+    opponentMouseX = (-1 * parsedMsg.x) + viewportWidth - 28;
+    opponentMouseY = (-1 * parsedMsg.y) + viewportHeight - 28;
+    
+    updateOpponentMouseXY();
+  }
+
+});
 
 // Handle reset message from the client
 socket.on('reset', () => {
@@ -167,7 +285,7 @@ socket.on('reset', () => {
 socket.on('lastmove', (msg) => {
   // Highlight the last moved spaces
   parsedMsg = JSON.parse(msg);
-  highlightMove(parsedMsg.from, parsedMsg.to);
+  highlightMove(parsedMsg.from, parsedMsg.to, "lastmove");
 
 });
 
@@ -184,8 +302,6 @@ function deleteAllCookies() {
 
 // Listen to message from parent window
 window.addEventListener('message', (e) => {
-
-    
 
     // parse message
     let data = JSON.parse(e.data);
@@ -258,7 +374,7 @@ window.addEventListener('message', (e) => {
       }
 
       $board.find(".square-" + endSquare).addClass("highlight");
-    } else if (data.boardState == startFEN) {
+    } else if (data.boardState == defaultFEN) {
       currentState = new Chess();
     }
     /*
@@ -296,11 +412,11 @@ window.addEventListener('message', (e) => {
   false,
 );
 
-function highlightMove(from, to) {
-  $board.find("." + squareClass).removeClass("highlight");
+function highlightMove(from, to, style) {
+  $board.find("." + squareClass).removeClass(style);
   if (from !== "remove" || to !== "remove") {
-    $board.find(".square-" + from).addClass("highlight");
-    $board.find(".square-" + to).addClass("highlight");
+    $board.find(".square-" + from).addClass(style);
+    $board.find(".square-" + to).addClass(style);
   }
 }
 
@@ -325,7 +441,9 @@ function onDragStart(source, piece, position, orientation) {
     // if it's your turn
     if (playerColor == currentState.turn())
       {
-          
+        
+        
+
         // do not pick up pieces if the game is over
         if (isLesson == false) {
           if (currentState.game_over()) {
@@ -347,7 +465,8 @@ function onDragStart(source, piece, position, orientation) {
         ) {
           return false;
         }
-        
+
+        sendPieceDrag(piece);
       }
   }
   else 
@@ -359,7 +478,7 @@ function onDragStart(source, piece, position, orientation) {
 
 function onDrop(source, target, draggedPieceSource) {
   removeGreySquares();
-  
+  sendPieceDrop();
   
   // if we're not in freeplay
   if (!freemoveFlag)
@@ -384,7 +503,7 @@ function onDrop(source, target, draggedPieceSource) {
     }
 
     // move highlight
-    highlightMove(source, target);
+    highlightMove(source, target, 'lastmove');
     // move highlight of mentor/student
     sendLastMove(source, target);
 

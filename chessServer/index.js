@@ -8,6 +8,7 @@ const { Chess } = require("chess.js");
 const app = express();
 const server = http.createServer(app);
 
+
 // Use CORS middleware to allow all origins
 app.use(cors({
   origin: "*", // Allow all origins
@@ -335,7 +336,7 @@ io.on("connection", (socket) => {
     io.to(currentGame.student.id).emit(
       "boardstate",
       JSON.stringify({boardState: currentGame.boardState.fen()})
-    )
+    );
 
 
   });
@@ -378,7 +379,7 @@ io.on("connection", (socket) => {
     io.to(currentGame.student.id).emit(
       "lastmove",
       JSON.stringify({from, to})
-    )
+    );
       //}
       //else
       //{
@@ -394,212 +395,279 @@ io.on("connection", (socket) => {
 
   });
 
-  /*
-  /// Purpose: Inform both players whether the current step is the last update.
-  /// Input: boolean (true/false)
-  /// Output: boolean (true/false)
+  socket.on("addgrey", (msg) => {
+    
+    let currentGame;
+    var clientSocket = socket.id;
 
-  socket.on("isStepLastUpdate", (data) => {
-    const isStepLast = JSON.parse(data);
-    io.emit(
-      "isStepLastUpdate",
-      isStepLast
-    );
-  });
-
-  socket.on("isStepLast", (data) => {
-    const isStepLast = JSON.parse(data);
-    io.emit(
-      "isStepLast",
-      isStepLast
-    );
-  });
-
-  /// Purpose: Send information about the last move in the game.
-  /// Input: { moveId: string (e.g., "move123"), playerId: string (e.g., "player1"), position: string (e.g., "A3") }
-  /// Output: { moveId: string (e.g., "move123"), playerId: string (e.g., "player1"), position: string (e.g., "A3") }
-
-  socket.on("lastMoveInfo", (data) => {
-    const moves = JSON.parse(data);
-    io.emit(
-      "lastMoveInfo",
-      JSON.stringify(moves)
-    );
-  });
-
-  /// Purpose: Block undo actions after the game ends.
-  /// Input: { gameId: string (e.g., "game567") }
-  /// Output: { success: boolean (true/false) }
-
-  socket.on("preventUndoAfterGameOver", (data) => {
-    const info = JSON.parse(data);
-    io.emit(
-      "preventUndoAfterGameOver",
-      JSON.stringify(info)
-    );
-  });
-
-  /// Purpose: Update the board state for the game.
-  /// Input: { username: string (e.g., "Alice"), boardState: string (e.g., "updated_board_state") }
-  /// Output: { boardState: string (e.g., "updated_board_state"), color: string ("black"/"white") }
-
-  socket.on("newState", (msg) => {
-    //msg contains boardstate, find boardstate
-    var parsedmsg = JSON.parse(msg);
-    ongoingGames.forEach((element) => {
-      if (element.student.username == parsedmsg.username) {
-        //pull json out of ongoing
-        element.boardState = parsedmsg.boardState;
-        io.to(element.mentor.id).emit(
-          "boardState",
-          JSON.stringify({
-            boardState: element.boardState,
-            color: element.mentor.color,
-          })
-        );
-      } else if (element.mentor.username == parsedmsg.username) {
-        element.boardState = parsedmsg.boardState;
-        io.to(element.student.id).emit(
-          "boardState",
-          JSON.stringify({
-            boardState: element.boardState,
-            color: element.student.color,
-          })
-        );
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
       }
-    });
-    // update the board state and send to the other person.
-    // {boardState: sdlfkjsk, username: sfjdslk}
-  });
-
-  /// Purpose: Create a new game instance with default settings.
-  /// Input: { student: string (e.g., "Alice"), mentor: string (e.g., "Bob") }
-  /// Output: { boardState: string (e.g., "initial_board_state"), color: string ("black"/"white") }
-
-  socket.on("createNewGame", (msg) => {
-    //msg contains boardstate, find boardstate
-    io.emit(
-      "gameOverMsg",
-      JSON.stringify(msg)
-    );
-    io.emit(
-      "undoAfterGameOver",
-      JSON.stringify(msg)
-    );
-    let colors;
-    if (Math.random() > 0.5) {
-      colors = ["black", "white"];
-    } else {
-      colors = ["white", "black"];
     }
 
-    var parsedmsg = JSON.parse(msg);
-    ongoingGames.forEach((element) => {
-      if (element.student.username == parsedmsg.username) {
-        element.boardState = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-        element.student.color = colors[0];
-        element.mentor.color = colors[1];
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    let to = parsedmsg.to;
 
-        io.to(element.student.id).emit(
-          "boardState",
-          JSON.stringify({
-            boardState: element.boardState,
-            color: element.student.color,
-          })
-        );
-        io.to(element.mentor.id).emit(
-          "boardState",
-          JSON.stringify({
-            boardState: element.boardState,
-            color: element.mentor.color,
-          })
-        );
-      } else if (element.mentor.username == parsedmsg.username) {
-        element.student.color = colors[0];
-        element.mentor.color = colors[1];
-        element.boardState = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+    if (currentGame)
+    {
+      if (currentGame.mentor.id != clientSocket)
+      {
+            
+        io.to(currentGame.mentor.id).emit(
+          "addgrey",
+          JSON.stringify({to})
 
-        io.to(element.mentor.id).emit(
-          "boardState",
-          JSON.stringify({
-            boardState: element.boardState,
-            color: element.mentor.color,
-          })
         );
-        io.to(element.student.id).emit(
-          "boardState",
-          JSON.stringify({
-            boardState: element.boardState,
-            color: element.student.color,
-          })
+
+      }      
+      else if (currentGame.student.id != clientSocket)
+      {
+          
+        io.to(currentGame.student.id).emit(
+          "addgrey",
+          JSON.stringify({to})
         );
       }
-    });
-    // update the board state and send to the other person.
-    // {boardState: sdlfkjsk, username: sfjdslk}
-  });
+      else {console.log("bad request, no client to send greysquare to")}
+    }
 
-  /// Purpose: Switch the colors between student and mentor.
-  /// Input: { username: string (e.g., "Alice") }
-  /// Output: { boardState: string (e.g., "flipped_board_state"), color: string ("black"/"white") }
+  }); 
 
-  socket.on("flipBoard", (msg) => {
-    var parsedmsg = JSON.parse(msg);
-    ongoingGames.forEach((element) => {
-      if (
-        element.student.username == parsedmsg.username ||
-        element.mentor.username == parsedmsg.username
-      ) {
-        element.student.color =
-          element.student.color == "black" ? "white" : "black";
-        element.mentor.color =
-          element.mentor.color == "black" ? "white" : "black";
-        io.to(element.student.id).emit(
-          "boardState",
-          JSON.stringify({
-            boardState: element.boardState,
-            color: element.student.color,
-          })
-        );
-        io.to(element.mentor.id).emit(
-          "boardState",
-          JSON.stringify({
-            boardState: element.boardState,
-            color: element.mentor.color,
-          })
-        );
+  
+  socket.on("removegrey", (msg) => {
+    
+    let currentGame;
+    var clientSocket = socket.id;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
       }
-    });
-  });
+    }
 
-  /// Purpose: Handle game-over status for both players.
-  /// Input: { username: string (e.g., "Alice") }
-  /// Output: { boardState: string (e.g., "final_board_state"), color: string ("black"/"white") }
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    let to = parsedmsg.to;
 
-  socket.on("gameOver", (msg) => {
-    var parsedmsg = JSON.parse(msg);
-    ongoingGames.forEach((game) => {
-      // testing to see if 
-      if (
-        game.student.username == parsedmsg.username ||
-        game.mentor.username == parsedmsg.username
-      ) {
-        io.to(game.student.id).emit(
-          "gameOver",
-          JSON.stringify({
-            boardState: game.boardState,
-            color: game.student.color,
-          })
-        );
-        io.to(game.mentor.id).emit(
-          "gameOver",
-          JSON.stringify({
-            boardState: game.boardState,
-            color: game.mentor.color,
-          })
-        );
+    if (currentGame)
+    {
+        
+      if (currentGame.mentor.id != clientSocket)
+        {
+              
+          io.to(currentGame.mentor.id).emit(
+            "removegrey",
+            JSON.stringify({})
+    
+          );
+    
+        }      
+        else if (currentGame.student.id != clientSocket)
+        {
+            
+          io.to(currentGame.student.id).emit(
+            "removegrey",
+            JSON.stringify({})
+          );
+        }
+        else {console.log("bad request, no client to send greysquare to")}
+    }
+   
+
+  }); 
+  
+  socket.on("mousexy", (msg) => {
+    
+    let currentGame;
+    var clientSocket = socket.id;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
       }
-    });
-  });
-  */
+    }
+
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    let x = parsedmsg.x;
+    let y = parsedmsg.y;
+
+    if (currentGame)
+    {
+        
+      if (currentGame.mentor.id != clientSocket)
+        {
+              
+          io.to(currentGame.mentor.id).emit(
+            "mousexy",
+            JSON.stringify({"x":x, "y":y})
+    
+          );
+    
+        }      
+        else if (currentGame.student.id != clientSocket)
+        {
+            
+          io.to(currentGame.student.id).emit(
+            "mousexy",
+            JSON.stringify({"x":x, "y":y})
+          );
+        }
+        else {console.log("bad request, no client to send mouse xy to")}
+    }
+   
+
+  }); 
+
+  socket.on("piecedrop", (msg) => {
+    console.log('dropping piece');
+    let currentGame;
+    var clientSocket = socket.id;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    
+    if (currentGame)
+    {
+        
+      if (currentGame.mentor.id != clientSocket)
+        {
+              
+          io.to(currentGame.mentor.id).emit(
+            "piecedrop",
+            JSON.stringify({})
+    
+          );
+    
+        }      
+        else if (currentGame.student.id != clientSocket)
+        {
+            
+          io.to(currentGame.student.id).emit(
+            "piecedrop",
+            JSON.stringify({})
+          );
+        }
+        else {console.log("bad request, no client to send mouse xy to")}
+    }
+   
+
+  }); 
+
+  socket.on("piecedrag", (msg) => {
+    console.log('dragging piece');
+    let currentGame;
+    var clientSocket = socket.id;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    let piece = parsedmsg.piece;
+
+    if (currentGame)
+    {
+        
+      if (currentGame.mentor.id != clientSocket)
+        {
+              
+          io.to(currentGame.mentor.id).emit(
+            "piecedrag",
+            JSON.stringify({"piece":piece})
+    
+          );
+    
+        }      
+        else if (currentGame.student.id != clientSocket)
+        {
+            
+          io.to(currentGame.student.id).emit(
+            "piecedrag",
+            JSON.stringify({"piece":piece})
+          );
+        }
+        else {console.log("bad request, no client to send mouse xy to")}
+    }
+   
+
+  }); 
+
+  socket.on("highlight", (msg) => {
+    console.log('getting highlight future move');
+    let currentGame;
+    var clientSocket = socket.id;
+
+    // checking student/mentor is in an ongoing game
+    for (let game of ongoingGames) {
+      
+      if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
+        newGame = false;
+        currentGame = game;
+        break;  // breaks early, since we no longer need to go through this loop
+      }
+    }
+
+    // getting message variables
+    parsedmsg = JSON.parse(msg);
+    let from = parsedmsg.from;
+    let to = parsedmsg.to;
+
+    if (currentGame)
+    {
+        
+      if (currentGame.mentor.id != clientSocket)
+        {
+              
+          io.to(currentGame.mentor.id).emit(
+            "highlight",
+            JSON.stringify({"from":from, "to":to})
+    
+          );
+    
+        }      
+        else if (currentGame.student.id != clientSocket)
+        {
+            
+          io.to(currentGame.student.id).emit(
+            "highlight",
+            JSON.stringify({"from":from, "to":to})
+          );
+        }
+        else {console.log("bad request, no client to send mouse xy to")}
+    }
+   
+
+  }); 
 });
