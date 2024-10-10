@@ -6,60 +6,125 @@ const Lessons = () => {
   const [highlightedSquares, setHighlightedSquares] = useState([]);
   const [draggingPiece, setDraggingPiece] = useState(null); // Track which piece is being dragged
 
-  // Initialize the chessboard with pieces in starting positions
+  // Description for each Scenarios
+  const [scenarioDescription, setScenarioDescription] = useState("");
+
+  // State for showing scenario buttons for pieces
+  const [showScenarios, setShowScenarios] = useState({
+    pawn: false,
+    rook: false,
+    // Add other pieces as needed
+  });
+
+  // Initialize the chessboard
   function initializeBoard() {
     return [
-      ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'], // Black pieces
-      ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'], // Black pawns
       [null, null, null, null, null, null, null, null],  // Empty row
       [null, null, null, null, null, null, null, null],  // Empty row
       [null, null, null, null, null, null, null, null],  // Empty row
       [null, null, null, null, null, null, null, null],  // Empty row
-      ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'], // White pawns
-      ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']  // White pieces
+      [null, null, null, null, null, null, null, null],  // Empty row
+      [null, null, null, null, null, null, null, null],  // Empty row
+      [null, null, null, null, null, null, null, null],  // Empty row
+      [null, null, null, null, null, null, null, null],  // Empty row
     ];
   }
 
-// Helper function to get possible moves for a piece
-const getPieceMoves = (piece, position) => {
-  const color = piece[0]; // Get color from the piece (first character)
-  switch (piece[1]) {
-    case 'P':
-      return getPawnMoves(position, color === 'w', board);
-    case 'R':
-      return getRookMoves(position, color, board); // Pass color directly
-    case 'N':
-      return getKnightMoves(position, color, board); // Pass color directly
-    case 'B':
-      return getBishopMoves(position, color, board); // Pass color directly
-    case 'K':
-      return getKingMoves(position, color, board); // Pass color directly
-    case 'Q':
-      return getQueenMoves(position, color, board); // Pass color directly
-    default:
-      return [];
-  }
-};
-
-// Handle hover to show possible moves
-const handleSquareHover = (key) => {
-  const [row, col] = key.split('-').map(Number);
-  const piece = board[row][col];
-
-  // Clear previous highlights
-  setHighlightedSquares([]);
-
-  if (piece) {
-    const possibleMoves = getPieceMoves(piece, key);
-    setHighlightedSquares(possibleMoves); // Highlight valid move squares
-  } else {
-    // Check if the square has an opponent's piece
-    const targetPiece = board[row][col];
-    if (targetPiece && targetPiece[0] !== draggingPiece?.piece[0]) {
-      setHighlightedSquares((prev) => [...prev, key]); // Highlight the opponent's piece square
+  // Update the setupScenario function to handle both Pawn and Rook
+  const setupScenario = (piece, scenario) => {
+    const updatedBoard = initializeBoard(); // Reset board
+    // setup the board by scenario
+    switch (piece) {
+      case 'pawn':
+        switch (scenario) {
+          case 'basic':
+            updatedBoard[4][0] = 'wP'; // a5
+            updatedBoard[5][5] = 'bP'; // f3
+            setScenarioDescription("Basic scenario for Pawn");
+            break;
+          case 'capture':
+            updatedBoard[5][1] = 'wP'; // b5
+            updatedBoard[4][2] = 'bP'; // c4
+            setScenarioDescription("Capture scenario for Pawn");
+            break;
+          // more scenario
+          default:
+            break;
+        }
+        break;
+      case 'rook':
+        switch (scenario) {
+          case 'basic':
+            updatedBoard[0][0] = 'wR'; // a1
+            updatedBoard[7][0] = 'bR'; // a8
+            setScenarioDescription("Basic scenario for Rook");
+            break;
+          case 'attack':
+            updatedBoard[4][0] = 'wR'; // a5
+            updatedBoard[5][5] = 'bR'; // f3
+            setScenarioDescription("Attack scenario for Rook");
+            break;
+          // more scenario
+          default:
+            break;
+        }
+        break;
+      default:
+        break;
     }
-  }
-};
+    setBoard(updatedBoard);
+    setHighlightedSquares([]); // clear highlight
+  };
+
+  // Button click handlers
+  const handlePawnClick = () => {
+    setShowScenarios({ pawn: true, rook: false }); // Show Pawn scenarios, hide Rook scenarios
+  };
+
+  const handleRookClick = () => {
+    setShowScenarios({ pawn: false, rook: true }); // Show Rook scenarios, hide Pawn scenarios
+  };
+
+  // Helper function to get possible moves for a piece
+  const getPieceMoves = (piece, position) => {
+    const color = piece[0]; // Get color from the piece (first character)
+    switch (piece[1]) {
+      case 'P':
+        return getPawnMoves(position, color === 'w', board);
+      case 'R':
+        return getRookMoves(position, color, board); // Pass color directly
+      case 'N':
+        return getKnightMoves(position, color, board); // Pass color directly
+      case 'B':
+        return getBishopMoves(position, color, board); // Pass color directly
+      case 'K':
+        return getKingMoves(position, color, board); // Pass color directly
+      case 'Q':
+        return getQueenMoves(position, color, board); // Pass color directly
+      default:
+        return [];
+    }
+  };
+
+  // Handle hover to show possible moves
+  const handleSquareHover = (key) => {
+    const [row, col] = key.split('-').map(Number);
+    const piece = board[row][col];
+
+    // Clear previous highlights
+    setHighlightedSquares([]);
+
+    if (piece) {
+      const possibleMoves = getPieceMoves(piece, key);
+      setHighlightedSquares(possibleMoves); // Highlight valid move squares
+    } else {
+      // Check if the square has an opponent's piece
+      const targetPiece = board[row][col];
+      if (targetPiece && targetPiece[0] !== draggingPiece?.piece[0]) {
+        setHighlightedSquares((prev) => [...prev, key]); // Highlight the opponent's piece square
+      }
+    }
+  };
 
   // Handle drag start
   const handleDragStart = (e, piece, position) => {
@@ -72,49 +137,91 @@ const handleSquareHover = (key) => {
     if (highlightedSquares.includes(key)) {
       const [startRow, startCol] = draggingPiece.position.split('-').map(Number);
       const [endRow, endCol] = key.split('-').map(Number);
-  
+
       const targetPiece = board[endRow][endCol];
-  
+
       if (targetPiece && targetPiece.color !== draggingPiece.piece.color) {
         console.log(`Captured ${targetPiece.type}`);
       }
-  
+
       const updatedBoard = [...board];
       updatedBoard[endRow][endCol] = draggingPiece.piece; // Move piece to new square
       updatedBoard[startRow][startCol] = null;            // Clear old square
-  
-      setBoard(updatedBoard);
+
+      // Check if the moved piece is a pawn reaching the promotion rank
+    if (draggingPiece.piece[1] === 'P' && (endRow === 0 || endRow === 7)) {
+      promotePawn(key); // Call promote function
+    } else {
+      setBoard(updatedBoard); // Update board state
+    }
     }
     setDraggingPiece(null);
     setHighlightedSquares([]);
   };
-  
-
 
   // Handle drag over a square (allow dropping)
   const handleDragOver = (e) => {
     e.preventDefault(); // Prevent default behavior to allow dropping
   };
+  
+ // Update promotePawn function to set the board state
+function promotePawn(position) {
+  const [row, col] = position.split('-').map(Number);
+  const updatedBoard = [...board];
+  const color = board[row][col][0]; // Determine color of the pawn
+  const newPiece = color === 'w' ? 'wQ' : 'bQ'; // Promote to Queen
+
+  updatedBoard[row][col] = newPiece; // Update the board with the new queen
+  setBoard(updatedBoard); // Set the new board state
+}
+
   return (
     <div className="lessons-page">
       <div className="chessboard-container">
-          <div className="button-container">
-            <button className="lesson-button">Lesson</button>
-            <button className="play-button">Play</button>
-          </div>
-          <div className="chessboard">
-            {createChessBoard(
-              board,
-              highlightedSquares,
-              setHighlightedSquares,
-              handleSquareHover,
-              handleDragStart,
-              handleDrop,
-              handleDragOver,
-              draggingPiece
-            )}
-          </div>
+        <div className="button-container">
+          <button className="lesson-button">Lesson</button>
+          <button className="play-button">Play</button>
         </div>
+
+        <div className="chessboard">
+          {createChessBoard(
+            board,
+            highlightedSquares,
+            setHighlightedSquares,
+            handleSquareHover,
+            handleDragStart,
+            handleDrop,
+            handleDragOver,
+            draggingPiece
+          )}
+        </div>
+
+      </div>
+
+      {/* Description part */}
+      <div className="scenario-description">
+        {scenarioDescription}
+      </div>
+
+      <div className="lesson-buttons-container">
+        <button onClick={handlePawnClick} className="lesson-pawn-button">Pawn</button>
+            {showScenarios.pawn && (
+                <>
+                    <button className="choice-buttons" onClick={() => setupScenario('pawn', 'basic')}>Basic</button>
+                    <button className="choice-buttons" onClick={() => setupScenario('pawn', 'capture')}>Capture</button>
+                    {/* Additional Pawn scenario buttons */}
+                </>
+            )}
+            
+            <button onClick={handleRookClick} className="lesson-rook-button">Rook</button>
+            {showScenarios.rook && (
+                <>
+                    <button className="choice-buttons" onClick={() => setupScenario('rook', 'basic')}>Basic</button>
+                    <button className="choice-buttons" onClick={() => setupScenario('rook', 'attack')}>Attack</button>
+                    {/* Additional Rook scenario buttons */}
+                </>
+            )}
+      </div>
     </div>
   );
 };
@@ -163,7 +270,7 @@ function createChessBoard(
         >
           {/* Show gray circle for possible moves on hover */}
           {highlightedSquares.includes(key) && <div className="highlight-circle" />}
-          
+
           {/* If there is a piece here, show the circle for the opponent's piece */}
           {piece && piece[0] !== draggingPiece?.piece[0] && highlightedSquares.includes(key) && (
             <div className="highlight-circle" />
@@ -197,16 +304,19 @@ function isInBounds(row, col) {
 
 // Pawn movement (handles both white and black)
 export function getPawnMoves(position, isWhite, board) {
+  // Prevent black pawns from moving
+  if (!isWhite) return [];
+
   const [row, col] = position.split('-').map(Number);
-  const direction = isWhite ? -1 : 1; // Determine direction based on color
+  const direction = -1; // White pawns only move upwards
   const possibleMoves = [];
-  
+
   // Check forward move (1 square)
   if (isInBounds(row + direction, col) && board[row + direction][col] === null) {
     possibleMoves.push(`${row + direction}-${col}`);
-    
+
     // Check forward move (2 squares) if in starting position
-    const startingRow = isWhite ? 6 : 1; // White pawns start at row 6, black pawns at row 1
+    const startingRow = 6; // White pawns start at row 6
     if (row === startingRow && isInBounds(row + 2 * direction, col) && board[row + 2 * direction][col] === null) {
       possibleMoves.push(`${row + 2 * direction}-${col}`);
     }
@@ -219,17 +329,24 @@ export function getPawnMoves(position, isWhite, board) {
   ];
 
   captureMoves.forEach(({ row, col }) => {
-    if (isInBounds(row, col) && board[row][col] && board[row][col][0] !== (isWhite ? 'w' : 'b')) { // Check color
+    if (isInBounds(row, col) && board[row][col] && board[row][col][0] !== 'w') { // Check color
       possibleMoves.push(`${row}-${col}`); // Add capture move if there's an opponent's piece
     }
   });
 
+  // Check for promotion if the pawn reaches the last row
+  if (row === 0) {
+    return possibleMoves.concat('promote'); // Indicate promotion to queen for white
+  }
+
   return possibleMoves;
 }
 
-
 // Rook movement (handles both white and black)
 export function getRookMoves(position, isWhite, board) {
+  // Prevent black pieces from moving
+  if (!isWhite) return [];
+
   const [row, col] = position.split('-').map(Number);
   const moves = [];
 
@@ -246,11 +363,11 @@ export function getRookMoves(position, isWhite, board) {
       const newRow = row + r * i;
       const newCol = col + c * i;
       if (!isInBounds(newRow, newCol)) break; // Stop if out of bounds
-      
+
       if (!board[newRow][newCol]) {
         moves.push(`${newRow}-${newCol}`);
       } else {
-        if (board[newRow][newCol][0] !== (isWhite ? 'w' : 'b')) {
+        if (board[newRow][newCol][0] !== 'w') {
           moves.push(`${newRow}-${newCol}`); // Capture move
         }
         break; // Stop if there's a piece blocking the path
@@ -263,6 +380,9 @@ export function getRookMoves(position, isWhite, board) {
 
 // Knight movement (handles both white and black)
 export function getKnightMoves(position, isWhite, board) {
+  // Prevent black pieces from moving
+  if (!isWhite) return [];
+
   const [row, col] = position.split('-').map(Number);
   const moves = [];
   const knightMoves = [
@@ -273,7 +393,7 @@ export function getKnightMoves(position, isWhite, board) {
   ];
 
   for (const [r, c] of knightMoves) {
-    if (isInBounds(r, c) && (!board[r][c] || board[r][c][0] !== (isWhite ? 'w' : 'b'))) {
+    if (isInBounds(r, c) && (!board[r][c] || board[r][c][0] !== 'w')) {
       moves.push(`${r}-${c}`);
     }
   }
@@ -283,9 +403,12 @@ export function getKnightMoves(position, isWhite, board) {
 
 // Bishop movement (handles both white and black)
 export function getBishopMoves(position, isWhite, board) {
+  // Prevent black pieces from moving
+  if (!isWhite) return [];
+
   const [row, col] = position.split('-').map(Number);
   const moves = [];
-  
+
   // Diagonal movement (Top-right, Top-left, Bottom-right, Bottom-left)
   const directions = [
     { r: 1, c: 1 },  // Bottom-right
@@ -299,11 +422,11 @@ export function getBishopMoves(position, isWhite, board) {
       const newRow = row + r * i;
       const newCol = col + c * i;
       if (!isInBounds(newRow, newCol)) break; // Stop if out of bounds
-      
+
       if (!board[newRow][newCol]) {
         moves.push(`${newRow}-${newCol}`);
       } else {
-        if (board[newRow][newCol][0] !== (isWhite ? 'w' : 'b')) {
+        if (board[newRow][newCol][0] !== 'w') {
           moves.push(`${newRow}-${newCol}`); // Capture move
         }
         break; // Stop if there's a piece blocking the path
@@ -316,6 +439,9 @@ export function getBishopMoves(position, isWhite, board) {
 
 // King movement (handles both white and black)
 export function getKingMoves(position, isWhite, board) {
+  // Prevent black pieces from moving
+  if (!isWhite) return [];
+
   const [row, col] = position.split('-').map(Number);
   const moves = [];
   const kingMoves = [
@@ -324,7 +450,7 @@ export function getKingMoves(position, isWhite, board) {
   ];
 
   for (const [r, c] of kingMoves) {
-    if (isInBounds(r, c) && (!board[r][c] || board[r][c][0] !== (isWhite ? 'w' : 'b'))) {
+    if (isInBounds(r, c) && (!board[r][c] || board[r][c][0] !== 'w')) {
       moves.push(`${r}-${c}`);
     }
   }
@@ -334,8 +460,12 @@ export function getKingMoves(position, isWhite, board) {
 
 // Queen movement (combines Rook + Bishop) - handles both white and black
 export function getQueenMoves(position, isWhite, board) {
+  // Prevent black pieces from moving
+  if (!isWhite) return [];
+
   return [...getRookMoves(position, isWhite, board), ...getBishopMoves(position, isWhite, board)];
 }
+
 
 export default Lessons;
 

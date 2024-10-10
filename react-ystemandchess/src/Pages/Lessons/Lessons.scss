@@ -6,120 +6,6 @@
   background-size: cover;
 }
 
-.grid-container {
-  background-color: #bfd99e;
-  display: grid;
-  margin-left: 7%;
-  margin-right: 7%;
-  padding-bottom: 10%;
-  grid-template-columns: 3fr 2fr;
-  grid-template-rows: auto 1fr auto;
-}
-
-.lesson-h1 {
-  font-size: 28px;
-  font-weight: bold;
-  text-align: left;
-  margin-top: 5%;
-  margin-bottom: 2.5%;
-  margin-left: 5%;
-  margin-right: 0;
-  line-height: 1.4;
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.lesson-p1 {
-  font-size: 18px;
-  line-height: 1.6;
-  text-align: left;
-  margin-left: 7.5%;
-  grid-column: 1;
-  grid-row: 2;
-}
-
-.lesson-ul {
-  line-height: 1.6;
-  text-align: left;
-  margin-left: 7.5%;
-  grid-column: 1;
-  grid-row: 3;
-}
-
-ul li {
-  margin-bottom: 1%;
-}
-
-.register-button {
-  text-decoration: none;
-  grid-column: 2;
-  grid-row: 2;
-  text-align: center;
-  place-self: center;
-  width: 40%;
-  font-size: 160%;
-  border: none;
-  border-radius: 10px;
-  height: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #ead94c;
-  box-shadow: 5px 5px 1px #d4dddd;
-}
-
-.register-button:hover {
-  background-color: #ebe07d;
-  transform: scale(1.1);
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.register-button a {
-  text-decoration: none;
-  color: inherit;
-}
-
-.donate-h1 {
-  font-size: 28px;
-  font-weight: bold;
-  text-align: left;
-  margin-top: 5%;
-  margin-bottom: 2.5%;
-  margin-left: 5%;
-  margin-right: 0;
-  line-height: 1.4;
-  grid-column: 1;
-  grid-row: 4;
-}
-
-.donate-p1 {
-  font-size: 16px;
-  line-height: 1.6;
-  text-align: left;
-  margin-left: 5%;
-  grid-column: 1;
-  grid-row: 5;
-}
-
-.donate-p2 {
-  font-size: 16px;
-  line-height: 1.6;
-  text-align: left;
-  margin-left: 5%;
-  grid-column: 1;
-  grid-row: 6;
-}
-
-.donate-p3 {
-  font-size: 16px;
-  line-height: 1.6;
-  text-align: left;
-  margin-left: 5%;
-  grid-column: 1;
-  grid-row: 7;
-}
-
 /* Button styles */
 .lesson-button, .play-button {
   padding: 10px 20px;
@@ -133,7 +19,7 @@ ul li {
   z-index: 1; /* Ensure buttons appear above the chessboard */
 }
 
-.lesson-button:hover, .play-button:hover {
+.lesson-button:hover, .play-button:hover,.lesson-pawn-button:hover, .lesson-rook-button:hover {
   background-color: #45a049; /* Darker green on hover */
 }
 
@@ -145,6 +31,40 @@ ul li {
 .play-button {
   top: -50px; /* Position above the chessboard */
   right: 10px; /* Slightly to the right */
+}
+
+.lesson-pawn-button, .lesson-rook-button {
+  padding: 10px 20px;
+  margin: 5px;
+  border: none;
+  background-color: #4CAF50; /* Green background */
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  position: absolute; /* Place buttons relative to the container */
+  z-index: 1; /* Ensure buttons appear above the chessboard */
+  width: 100px;
+}
+
+.lesson-pawn-button {
+  top: 200px; /* Adjust the top value to position below lesson button */
+  right: 100px; /* Keep this to place on the right */
+}
+
+.lesson-rook-button {
+  top: 250px; /* Adjust the top value to position below pawn button */
+  right: 100px; /* Keep this to place on the right */
+}
+
+.choice-buttons {
+  background-color: #4CAF50; /* Green background */
+  width: 100px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.choice-buttons:hover {
+  background-color: #45a049; /* Darker green on hover */
 }
 
 /* Chessboard Container */
@@ -186,8 +106,6 @@ ul li {
   pointer-events: none;
 }
 
-
-
 /* Labels for ranks (1-8) */
 .rank-label {
   position: absolute;
@@ -211,3 +129,5 @@ ul li {
   height: 90%;
   object-fit: contain; /* Ensure the image fits nicely within the square */
 }
+
+
