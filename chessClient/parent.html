@@ -23,7 +23,7 @@
     #chessboard {
       display: block;
       margin: 0 auto;
-      border: 2px solid #333;
+      border: 2px solid #ffffff;
       border-radius: 10px;
     }
 
@@ -31,7 +31,7 @@
       border: 2px solid #333;
       border-radius: 10px;
       background-color: transparent;
-      color: #333;
+      color: #ffffff;
       margin-bottom: 15px;
       padding: 10px;
     }
@@ -42,8 +42,9 @@
     }
 
     .btn-custom {
-      border: 2px solid #333;
+      border: 2px solid #ffffff;
       background-color: transparent;
+      
       color: #333;
       border-radius: 10px;
       padding: 10px 20px;
@@ -58,6 +59,7 @@
 
     .text-center {
       text-align: center;
+      color: white;
     }
   </style>
 
@@ -69,7 +71,7 @@
   <iframe id="chessboard" src="http://127.0.0.1:5500/chessClient/index.html" width="400px" height="400px"></iframe>
 
   <!-- Display received messages here -->
-  <p id="messageDisplay" class="text-center mt-4">Waiting for message...</p>
+  <p id="messageDisplay" class="text-center mt-4"></p>
 
   <div class="container">
 
@@ -153,19 +155,6 @@
       iframe.contentWindow.postMessage(JSON.stringify(data), '*');
     }
 
-
-  </script>
-
-  <script>
-    /*
-    // Listen for messages from child iframes
-    window.addEventListener('message', function(event) {
-            // Make sure to validate the origin of the message
-            if (event.origin === "index.html") { // Change to your domain
-                document.getElementById('receivedMessage').innerText = event.data;
-            }
-        });
-    */
 
   </script>
 
