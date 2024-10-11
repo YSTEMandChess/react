@@ -1,5 +1,5 @@
 import "./Lessons.scss";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Lessons = () => {
   const [board, setBoard] = useState(initializeBoard()); // Initialize the board with chess pieces
@@ -16,6 +16,9 @@ const Lessons = () => {
     // Add other pieces as needed
   });
 
+  const [showPopup, setShowPopup] = useState(false); // Popup state
+  const [trainingStarted, setTrainingStarted] = useState(false); // Training state
+
   // Initialize the chessboard
   function initializeBoard() {
     return [
@@ -30,9 +33,33 @@ const Lessons = () => {
     ];
   }
 
+  // Popup
+  // Function to check if all black pieces are removed
+  const checkBlackPieces = () => {
+    const blackPieces = board.flat().filter(piece => piece && piece[0] === 'b'); // Filter out black pieces
+    if (blackPieces.length === 0 && trainingStarted === true) {
+      setShowPopup(true); // Show the popup
+    }
+  };
+
+  // Reset the chessboard when the popup confirm button is clicked
+  const handlePopupConfirm = () => {
+    if (trainingStarted === true){
+      setShowPopup(false);
+      setBoard(initializeBoard()); // Reset the chessboard
+      setTrainingStarted(false); // Reset training state
+    }
+  };
+
+  // Check for black pieces every time the board state changes
+  useEffect(() => {
+    checkBlackPieces();
+  }, [board]);
+
   // Update the setupScenario function to handle both Pawn and Rook
   const setupScenario = (piece, scenario) => {
     const updatedBoard = initializeBoard(); // Reset board
+
     // setup the board by scenario
     switch (piece) {
       case 'pawn':
@@ -41,11 +68,13 @@ const Lessons = () => {
             updatedBoard[4][0] = 'wP'; // a5
             updatedBoard[5][5] = 'bP'; // f3
             setScenarioDescription("Basic scenario for Pawn");
+            setTrainingStarted(true); // Mark training as started
             break;
           case 'capture':
             updatedBoard[5][1] = 'wP'; // b5
             updatedBoard[4][2] = 'bP'; // c4
             setScenarioDescription("Capture scenario for Pawn");
+            setTrainingStarted(true); // Mark training as started
             break;
           // more scenario
           default:
@@ -58,11 +87,13 @@ const Lessons = () => {
             updatedBoard[0][0] = 'wR'; // a1
             updatedBoard[7][0] = 'bR'; // a8
             setScenarioDescription("Basic scenario for Rook");
+            setTrainingStarted(true); // Mark training as started
             break;
           case 'attack':
             updatedBoard[4][0] = 'wR'; // a5
             updatedBoard[5][5] = 'bR'; // f3
             setScenarioDescription("Attack scenario for Rook");
+            setTrainingStarted(true); // Mark training as started
             break;
           // more scenario
           default:
@@ -92,15 +123,15 @@ const Lessons = () => {
       case 'P':
         return getPawnMoves(position, color === 'w', board);
       case 'R':
-        return getRookMoves(position, color, board); // Pass color directly
+        return getRookMoves(position, color === 'w', board); // Pass color directly
       case 'N':
-        return getKnightMoves(position, color, board); // Pass color directly
+        return getKnightMoves(position, color === 'w', board); // Pass color directly
       case 'B':
-        return getBishopMoves(position, color, board); // Pass color directly
+        return getBishopMoves(position, color === 'w', board); // Pass color directly
       case 'K':
-        return getKingMoves(position, color, board); // Pass color directly
+        return getKingMoves(position, color === 'w', board); // Pass color directly
       case 'Q':
-        return getQueenMoves(position, color, board); // Pass color directly
+        return getQueenMoves(position, color === 'w', board); // Pass color directly
       default:
         return [];
     }
@@ -195,8 +226,17 @@ function promotePawn(position) {
             draggingPiece
           )}
         </div>
-
       </div>
+
+      {/* Popup for lesson completion */}
+      {showPopup && (
+        <div className="popup">
+          <div className="popup-content">
+            <p>Lesson Completed!</p>
+            <button onClick={handlePopupConfirm}>OK</button>
+          </div>
+        </div>
+      )}
 
       {/* Description part */}
       <div className="scenario-description">
