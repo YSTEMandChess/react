@@ -1,23 +1,40 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
-const ParentWindow = (sid, mid, r) => {
+
+// sid : studentId
+// mid : mentorId
+// r : role
+// w : width
+// h : height
+const ParentWindow = (sid, mid, r, w, h) => {
   
   // setting variables from args 
   const [studentID, setStudentID] = useState(`${sid}`);
   const [mentorID, setMentorID] = useState(`${mid}`);
   const [role, setRole] = useState(`${r}`);
 
+  const [height, setHeight] = useState(h);
+  const [width, setWidth] = useState(w);
 
-  const [message, setMessage] = useState('Waiting for message...');
+
+  
   const iframeRef = useRef(null);
 
-  const newGame = () => {
-    const data = { command: 'newgame' };
+
+  
+  const enterUsers = () => {
+    const data = { command: 'userinfo', student: studentID, mentor: mentorID, role: role };
     iframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
   };
 
-  const enterUsers = () => {
-    const data = { command: 'userinfo', student: sid, mentor: mid, role: r };
+  useEffect(() => {
+    // This function will run once when the component mounts
+    enterUsers();
+  }, []); // Empty dependency array ensures it runs only once
+
+
+  const newGame = () => {
+    const data = { command: 'newgame' };
     iframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
   };
 
@@ -32,57 +49,23 @@ const ParentWindow = (sid, mid, r) => {
   };
 
   return (
-    <div>
-      <h1>Parent Window</h1>
-      <p>This is the parent page. It will receive messages from the embedded child app (JavaScript).</p>
-
-      {/* Iframe embedding the child application */}
+    <div style={{ textAlign: 'center' }}>
       <iframe
         id="chessboard"
         ref={iframeRef}
         src="chessClient/index.html"
-        width="400px"
-        height="400px"
+        width={width}
+        height={height}
         title="Chessboard"
+        style={{ display: 'block', margin: '0 auto' }}
       ></iframe>
 
-      {/* Display received messages */}
-      <p>{message}</p>
-
-      {/* Form inputs */}
-      <label htmlFor="studentID">Student ID:</label>
-      <input
-        type="text"
-        id="studentID"
-        value={sid}
-        onChange={(e) => setStudentID(e.target.value)}
-        placeholder="Enter student ID"
-      />
-
-      <label htmlFor="mentorID">Mentor ID:</label>
-      <input
-        type="text"
-        id="mentorID"
-        value={mid}
-        onChange={(e) => setMentorID(e.target.value)}
-        placeholder="Enter mentor ID"
-      />
-
-      <label htmlFor="role">Role:</label>
-      <select
-        id="role"
-        value={r}
-        onChange={(e) => setRole(e.target.value)}
-      >
-        <option value="student">Student</option>
-        <option value="mentor">Mentor</option>
-      </select>
-
       {/* Buttons for game control */}
-      <button onClick={enterUsers}>Enter User Info</button>
-      <button onClick={newGame}>Start New Game</button>
-      <button onClick={endGame}>End Game</button>
-      <button onClick={undo}>Undo</button>
+      <div style={{ marginTop: '20px' }}>
+        <button onClick={newGame}>Start Game</button>
+        <button onClick={endGame}>End Game</button>
+        <button onClick={undo}>Undo</button>
+      </div>
     </div>
   );
 };
