@@ -27,7 +27,8 @@ http.on("request", (req, res) => {
         res.write(JSON.stringify(lines));
         res.end();
       }
-    } else if (line.substring(0, 4) == "best") {
+    } 
+    else if (line.substring(0, 4) == "best") {
       console.log("paramsssss -> ", params);
       const game = new chess.Chess(params.fen);
       const result = game.move(line.split(" ")[1], { sloppy: true });
