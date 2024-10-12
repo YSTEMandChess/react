@@ -1,9 +1,13 @@
 import React, { useState, useRef } from 'react';
 
-const ParentWindow = (studentID, mentorID, role) => {
-  const [studentID, setStudentID] = useState('');
-  const [mentorID, setMentorID] = useState('');
-  const [role, setRole] = useState('student');
+const ParentWindow = (sid, mid, r) => {
+  
+  // setting variables from args 
+  const [studentID, setStudentID] = useState(`${sid}`);
+  const [mentorID, setMentorID] = useState(`${mid}`);
+  const [role, setRole] = useState(`${r}`);
+
+
   const [message, setMessage] = useState('Waiting for message...');
   const iframeRef = useRef(null);
 
@@ -13,7 +17,7 @@ const ParentWindow = (studentID, mentorID, role) => {
   };
 
   const enterUsers = () => {
-    const data = { command: 'userinfo', student: studentID, mentor: mentorID, role };
+    const data = { command: 'userinfo', student: sid, mentor: mid, role: r };
     iframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
   };
 
@@ -36,7 +40,7 @@ const ParentWindow = (studentID, mentorID, role) => {
       <iframe
         id="chessboard"
         ref={iframeRef}
-        src="http://127.0.0.1:5500/chessClient/index.html"
+        src="chessClient/index.html"
         width="400px"
         height="400px"
         title="Chessboard"
@@ -50,7 +54,7 @@ const ParentWindow = (studentID, mentorID, role) => {
       <input
         type="text"
         id="studentID"
-        value={studentID}
+        value={sid}
         onChange={(e) => setStudentID(e.target.value)}
         placeholder="Enter student ID"
       />
@@ -59,7 +63,7 @@ const ParentWindow = (studentID, mentorID, role) => {
       <input
         type="text"
         id="mentorID"
-        value={mentorID}
+        value={mid}
         onChange={(e) => setMentorID(e.target.value)}
         placeholder="Enter mentor ID"
       />
@@ -67,7 +71,7 @@ const ParentWindow = (studentID, mentorID, role) => {
       <label htmlFor="role">Role:</label>
       <select
         id="role"
-        value={role}
+        value={r}
         onChange={(e) => setRole(e.target.value)}
       >
         <option value="student">Student</option>
