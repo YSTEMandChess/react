@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 
-const ParentWindow = () => {
+const ParentWindow = (studentID, mentorID, role) => {
   const [studentID, setStudentID] = useState('');
   const [mentorID, setMentorID] = useState('');
   const [role, setRole] = useState('student');
