@@ -19,6 +19,9 @@ import ResetPassword from "./Pages/Reset-Password/reset-password";
 import Student from "./Pages/Student/Student";
 import MentorProfile from "./Pages/Mentor-Profile/MentorProfile";
 import UserProfile from "./Pages/Student-Profile/UserProfile";
+import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay"
+import StudentProfile from "./Pages/StudentProfile/Student-Profile"
+
 
 // Variables and Mutable Data
 import userPortraitImg from "./images/user-portrait-placeholder.svg";
@@ -55,13 +58,12 @@ const AppRoutes = () => {
           />
         }
       />
-      <Route path="/student" element={<Student/>} />
+         <Route path="/student" element={<Student/>} />
       <Route path="/mentor-profile" element={<MentorProfile />} />
       <Route path="/student-profile" element={<StudentProfile />} />
       <Route path="/learnings" element={<LessonOverlay />} />
-      <Route path="/play-nolog" element={<ChessFreePlay />} />
+		  {/* <Route path="/play-nolog" element={<ChessFreePlay />} /> */}
       <Route path="/student-profile" element={<UserProfile />} />
-      {/* <Route path="/learnings" element={<LessonOverlay />} /> */}
 
     </Routes>
   );
