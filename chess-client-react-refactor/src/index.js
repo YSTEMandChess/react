@@ -1,13 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import ChessWindow from './ChessWindow';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <ChessWindow sid={111} mid={222} r={'student'} w={'400px'}  h={'400px'}/>
+    <ChessWindow sid={111} mid={222} r={'mentor'} w={'400px'}  h={'400px'}/>
   </React.StrictMode>
 );
 
@@ -15,3 +16,4 @@ root.render(
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+export { default as ChessWindow } from './ChessWindow';

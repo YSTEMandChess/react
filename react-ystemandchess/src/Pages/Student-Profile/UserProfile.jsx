@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { SetPermissionLevel } from '../../globals.js'; 
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment.js';
+
+import {ChessWindow} from '../../ChessWidgets/ChessWindow.js';
 import './UserProfile.scss';
 
 const UserProfile = () => {
@@ -266,14 +268,9 @@ return (
   
         <div id="Mentor_Session" className="tabcontent">
           <h3>Mentor Session</h3>
-          <iframe
-            src="http://127.0.0.1:5500/chessClient/parent.html" // URL of chess parent container
-            title="My Iframe"
-            width="600"
-            height="400"
-            frameBorder="0"
-            allowFullScreen
-          ></iframe>
+          
+          <ChessWindow sid={111} mid={222} r={'student'} w={400}  h={400}/>
+          
         </div>
   
         <div id="Professional_Development" className="tabcontent">

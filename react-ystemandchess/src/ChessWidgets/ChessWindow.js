@@ -6,7 +6,7 @@ import React, { useState, useRef, useEffect } from 'react';
 // r : role
 // w : width
 // h : height
-const ParentWindow = (sid, mid, r, w, h) => {
+export const ChessWindow = (sid, mid, r, w, h) => {
   
   // setting variables from args 
   const [studentID, setStudentID] = useState(`${sid}`);
@@ -49,13 +49,13 @@ const ParentWindow = (sid, mid, r, w, h) => {
   };
 
   return (
-    <div style={{ textAlign: 'center' }}>
+    <div style={{ textAlign: 'center', width: 400, height: 400}}>
       <iframe
         id="chessboard"
         ref={iframeRef}
         src="chessClient/index.html"
-        width={width}
-        height={height}
+        width='200px'
+        height='200px'
         title="Chessboard"
         style={{ display: 'block', margin: '0 auto' }}
       ></iframe>
@@ -70,4 +70,4 @@ const ParentWindow = (sid, mid, r, w, h) => {
   );
 };
 
-export default ParentWindow;
+export default ChessWindow;
