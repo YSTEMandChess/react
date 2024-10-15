@@ -6,12 +6,12 @@ import React, { useState, useRef, useEffect } from 'react';
 // r : role
 // w : width
 // h : height
-export const ChessWindow = (sid, mid, r, w, h) => {
+export const ChessWindow = ({sid, mid, r, w, h}) => {
   
   // setting variables from args 
-  const [studentID, setStudentID] = useState(`${sid}`);
-  const [mentorID, setMentorID] = useState(`${mid}`);
-  const [role, setRole] = useState(`${r}`);
+  const [studentID, setStudentID] = useState(sid);
+  const [mentorID, setMentorID] = useState(mid);
+  const [role, setRole] = useState(r);
 
   const [height, setHeight] = useState(h);
   const [width, setWidth] = useState(w);
@@ -22,18 +22,27 @@ export const ChessWindow = (sid, mid, r, w, h) => {
 
 
   
-  const enterUsers = () => {
-    const data = { command: 'userinfo', student: studentID, mentor: mentorID, role: role };
+  const enterUsers = (student, mentor, role) => {
+    const data = { 'command': 'userinfo', 'student': student, 'mentor': mentor, 'role': role };
+    console.log(data);
     iframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
   };
 
   useEffect(() => {
     // This function will run once when the component mounts
-    enterUsers();
+    setStudentID(`${sid}`);
+    setMentorID(`${mid}`);
+    setRole(`${r}`);
+
+    console.log(`${sid} ${mid} ${r} ${studentID} ${mentorID} ${role}`);
+    
+    enterUsers(sid, mid, r);
   }, []); // Empty dependency array ensures it runs only once
 
 
   const newGame = () => {
+    
+    enterUsers(sid, mid, r);
     const data = { command: 'newgame' };
     iframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
   };

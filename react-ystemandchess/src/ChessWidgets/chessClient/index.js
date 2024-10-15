@@ -305,7 +305,7 @@ window.addEventListener('message', (e) => {
 
     // parse message
     let data = JSON.parse(e.data);
-
+    console.log("message recieved:")
 
     
     // get command from parent and send to server
@@ -320,7 +320,12 @@ window.addEventListener('message', (e) => {
       mentor = data.mentor;
       student = data.student;
       role = data.role;
+      
       console.log(data);
+      console.log(student);
+      console.log(mentor);
+      console.log(role);
+
     } else if (command == "undo") { sendUndo(); }
 
 

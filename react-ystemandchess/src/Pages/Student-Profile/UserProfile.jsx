@@ -269,7 +269,7 @@ return (
         <div id="Mentor_Session" className="tabcontent">
           <h3>Mentor Session</h3>
           
-          <ChessWindow sid={111} mid={222} r={'student'} w={400}  h={400}/>
+          <ChessWindow sid='111' mid='222' r='student'/>
           
         </div>
   
