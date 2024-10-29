@@ -33,7 +33,8 @@
   right: 10px; /* Slightly to the right */
 }
 
-.lesson-pawn-button, .lesson-rook-button {
+.lesson-pawn-button, .lesson-rook-button,.lesson-bishop-button,
+.lesson-knight-button, .lesson-queen-button, .lesson-king-button{
   padding: 10px 20px;
   margin: 5px;
   border: none;
@@ -56,9 +57,29 @@
   right: 100px; /* Keep this to place on the right */
 }
 
+.lesson-bishop-button {
+  top: 300px; /* Adjust the top value to position below pawn button */
+  right: 100px; /* Keep this to place on the right */
+}
+
+.lesson-knight-button {
+  top: 350px; /* Adjust the top value to position below pawn button */
+  right: 100px; /* Keep this to place on the right */
+}
+
+.lesson-queen-button {
+  top: 400px; /* Adjust the top value to position below pawn button */
+  right: 100px; /* Keep this to place on the right */
+}
+
+.lesson-king-button {
+  top: 450px; /* Adjust the top value to position below pawn button */
+  right: 100px; /* Keep this to place on the right */
+}
+
 .choice-buttons {
   background-color: #4CAF50; /* Green background */
-  width: 100px;
+  width: 120px;
   font-size: 1rem;
   cursor: pointer;
 }

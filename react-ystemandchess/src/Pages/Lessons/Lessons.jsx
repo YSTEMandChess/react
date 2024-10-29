@@ -8,12 +8,17 @@ const Lessons = () => {
 
   // Description for each Scenarios
   const [scenarioDescription, setScenarioDescription] = useState("");
+  const [scenarioDescription_2, setScenarioDescription_2] = useState("");
+  const [pieceDescription, setpieceDescription] = useState("");
 
   // State for showing scenario buttons for pieces
   const [showScenarios, setShowScenarios] = useState({
     pawn: false,
     rook: false,
-    // Add other pieces as needed
+    bishop: false,
+    knight: false,
+    queen: false,
+    king: false,
   });
 
   const [showPopup, setShowPopup] = useState(false); // Popup state
@@ -44,10 +49,13 @@ const Lessons = () => {
 
   // Reset the chessboard when the popup confirm button is clicked
   const handlePopupConfirm = () => {
-    if (trainingStarted === true){
+    if (trainingStarted === true) {
       setShowPopup(false);
       setBoard(initializeBoard()); // Reset the chessboard
       setTrainingStarted(false); // Reset training state
+      setScenarioDescription("");
+      setScenarioDescription_2("");
+      setpieceDescription("");
     }
   };
 
@@ -63,25 +71,72 @@ const Lessons = () => {
     // setup the board by scenario
     switch (piece) {
       case 'pawn':
+        setpieceDescription("Pawn - It moves forward only")
+        setScenarioDescription("Try this!");
         switch (scenario) {
           case 'basic':
             updatedBoard[4][0] = 'wP'; // a5
             updatedBoard[5][5] = 'bP'; // f3
-            setScenarioDescription("Basic scenario for Pawn");
+            setScenarioDescription_2("Pawns move one square only. But when they reach the other side of the board, they become a stronger piece!");
             setTrainingStarted(true); // Mark training as started
             break;
           case 'capture':
-            updatedBoard[5][1] = 'wP'; // b5
-            updatedBoard[4][2] = 'bP'; // c4
-            setScenarioDescription("Capture scenario for Pawn");
+            updatedBoard[5][4] = 'wP'; // e3
+            updatedBoard[3][3] = 'bP'; // d5
+            updatedBoard[2][2] = 'bP'; // c6
+            updatedBoard[1][3] = 'bP'; // d7
+            setScenarioDescription_2("A pawn on the second rank can move 2 squares at once!");
             setTrainingStarted(true); // Mark training as started
             break;
-          // more scenario
+          case 'training_1':
+            updatedBoard[5][1] = 'wP'; // b3
+            updatedBoard[1][2] = 'bP'; // c7
+            updatedBoard[2][1] = 'bP'; // b6
+            updatedBoard[2][2] = 'bP'; // c6
+            updatedBoard[2][3] = 'bP'; // d6
+            updatedBoard[4][1] = 'bP'; // b4
+            updatedBoard[4][2] = 'bP'; // c4
+            setScenarioDescription_2("Capture black pawns and promote!");
+            setTrainingStarted(true); // Mark training as started
+            break;
+          case 'training_2':
+            updatedBoard[5][3] = 'wP'; // d3
+            updatedBoard[0][2] = 'bP'; // c8
+            updatedBoard[1][3] = 'bP'; // d7
+            updatedBoard[2][1] = 'bP'; // b6
+            updatedBoard[2][4] = 'bP'; // e6
+            updatedBoard[3][1] = 'bP'; // b5
+            updatedBoard[3][3] = 'bP'; // d5
+            updatedBoard[4][2] = 'bP'; // c4
+            setScenarioDescription_2("Capture black pawns and promote!");
+            setTrainingStarted(true); // Mark training as started
+            break;
+          case 'training_3':
+            updatedBoard[5][0] = 'wP'; // a3
+            updatedBoard[5][2] = 'wP'; // c3
+            updatedBoard[5][3] = 'wP'; // d3
+            updatedBoard[5][7] = 'wP'; // h3
+            updatedBoard[3][1] = 'bP'; // b5
+            updatedBoard[3][2] = 'bP'; // c5
+            updatedBoard[3][4] = 'bP'; // e5
+            updatedBoard[4][3] = 'bP'; // d4
+            updatedBoard[4][6] = 'bP'; // g4
+            setScenarioDescription_2("No need to promote. Capture all black pawns.");
+            setTrainingStarted(true); // Mark training as started
+            break;
+          case 'special_move':
+            updatedBoard[6][4] = 'wP'; // e2
+            updatedBoard[2][3] = 'bP'; // d6
+            setScenarioDescription_2("A pawn on the second rank can move two squares forward.");
+            setTrainingStarted(true); // Mark training as started
+            break;
           default:
             break;
         }
         break;
       case 'rook':
+        setpieceDescription("Rook - It moves in straight lines")
+        setScenarioDescription("Try this!");
         switch (scenario) {
           case 'basic':
             updatedBoard[0][0] = 'wR'; // a1
@@ -100,6 +155,85 @@ const Lessons = () => {
             break;
         }
         break;
+      case "bishop":
+        setpieceDescription("Bishop - It moves diagonally");
+        setScenarioDescription("Try this!");
+        switch (scenario) {
+          case 'basic':
+            updatedBoard[1][6] = 'wB'; // g2
+            updatedBoard[3][4] = 'bP'; // e4
+            updatedBoard[6][7] = 'bP'; // h7
+            setScenarioDescription("Grab all the black pawns!");
+            setTrainingStarted(true); // Mark training as started
+            break;
+          // more scenario
+          default:
+            break;
+        }
+        break;
+      case 'knight':
+        setpieceDescription("Knight - It moves in an 'L' shape");
+        setScenarioDescription("Try this!");
+        switch (scenario) {
+          case 'basic':
+            updatedBoard[0][1] = 'wN'; // b1
+            updatedBoard[2][2] = 'bN'; // c3
+            setScenarioDescription("Knights move in an 'L' shape. Capture the black knight.");
+            setTrainingStarted(true);
+            break;
+          case 'jump':
+            updatedBoard[0][1] = 'wN'; // b1
+            updatedBoard[4][4] = 'bN'; // e5
+            setScenarioDescription("Knights can jump over pieces!");
+            setTrainingStarted(true);
+            break;
+          default:
+            break;
+        }
+        break;
+
+      case 'queen':
+        setpieceDescription("Queen - It moves in any direction");
+        setScenarioDescription("Try this!");
+        switch (scenario) {
+          case 'basic':
+            updatedBoard[0][3] = 'wQ'; // d1
+            updatedBoard[7][3] = 'bQ'; // d8
+            setScenarioDescription("The Queen can move in any direction.");
+            setTrainingStarted(true);
+            break;
+          case 'attack':
+            updatedBoard[3][3] = 'wQ'; // d4
+            updatedBoard[5][5] = 'bQ'; // f6
+            setScenarioDescription("Use the Queen to attack the opponent's pieces.");
+            setTrainingStarted(true);
+            break;
+          default:
+            break;
+        }
+        break;
+
+      case 'king':
+        setpieceDescription("King - It moves one square in any direction");
+        setScenarioDescription("Try this!");
+        switch (scenario) {
+          case 'basic':
+            updatedBoard[0][4] = 'wK'; // e1
+            updatedBoard[7][4] = 'bK'; // e8
+            setScenarioDescription("The King can move one square in any direction.");
+            setTrainingStarted(true);
+            break;
+          case 'endgame':
+            updatedBoard[3][3] = 'wK'; // d4
+            updatedBoard[6][6] = 'bK'; // g7
+            setScenarioDescription("Guide the King to the opponent's side.");
+            setTrainingStarted(true);
+            break;
+          default:
+            break;
+        }
+        break;
+
       default:
         break;
     }
@@ -108,13 +242,24 @@ const Lessons = () => {
   };
 
   // Button click handlers
-  const handlePawnClick = () => {
-    setShowScenarios({ pawn: true, rook: false }); // Show Pawn scenarios, hide Rook scenarios
+  // Generic function to handle all piece button clicks
+  const handlePieceClick = (piece) => {
+    setShowScenarios({
+      pawn: piece === 'pawn',
+      rook: piece === 'rook',
+      bishop: piece === 'bishop',
+      knight: piece === 'knight',
+      queen: piece === 'queen',
+      king: piece === 'king',
+    });
   };
 
-  const handleRookClick = () => {
-    setShowScenarios({ pawn: false, rook: true }); // Show Rook scenarios, hide Pawn scenarios
-  };
+  const handlePawnClick = () => handlePieceClick('pawn');
+  const handleRookClick = () => handlePieceClick('rook');
+  const handleBishopClick = () => handlePieceClick('bishop');
+  const handleKnightClick = () => handlePieceClick('knight');
+  const handleQueenClick = () => handlePieceClick('queen');
+  const handleKingClick = () => handlePieceClick('king');
 
   // Helper function to get possible moves for a piece
   const getPieceMoves = (piece, position) => {
@@ -180,11 +325,11 @@ const Lessons = () => {
       updatedBoard[startRow][startCol] = null;            // Clear old square
 
       // Check if the moved piece is a pawn reaching the promotion rank
-    if (draggingPiece.piece[1] === 'P' && (endRow === 0 || endRow === 7)) {
-      promotePawn(key); // Call promote function
-    } else {
-      setBoard(updatedBoard); // Update board state
-    }
+      if (draggingPiece.piece[1] === 'P' && (endRow === 0 || endRow === 7)) {
+        promotePawn(key); // Call promote function
+      } else {
+        setBoard(updatedBoard); // Update board state
+      }
     }
     setDraggingPiece(null);
     setHighlightedSquares([]);
@@ -194,17 +339,17 @@ const Lessons = () => {
   const handleDragOver = (e) => {
     e.preventDefault(); // Prevent default behavior to allow dropping
   };
-  
- // Update promotePawn function to set the board state
-function promotePawn(position) {
-  const [row, col] = position.split('-').map(Number);
-  const updatedBoard = [...board];
-  const color = board[row][col][0]; // Determine color of the pawn
-  const newPiece = color === 'w' ? 'wQ' : 'bQ'; // Promote to Queen
 
-  updatedBoard[row][col] = newPiece; // Update the board with the new queen
-  setBoard(updatedBoard); // Set the new board state
-}
+  // Update promotePawn function to set the board state
+  function promotePawn(position) {
+    const [row, col] = position.split('-').map(Number);
+    const updatedBoard = [...board];
+    const color = board[row][col][0]; // Determine color of the pawn
+    const newPiece = color === 'w' ? 'wQ' : 'bQ'; // Promote to Queen
+
+    updatedBoard[row][col] = newPiece; // Update the board with the new queen
+    setBoard(updatedBoard); // Set the new board state
+  }
 
   return (
     <div className="lessons-page">
@@ -240,27 +385,70 @@ function promotePawn(position) {
 
       {/* Description part */}
       <div className="scenario-description">
-        {scenarioDescription}
+        <p className="piece_description">{pieceDescription}</p>
+        <p className="scenario_description">{scenarioDescription}</p>
+        <p className="scenario_description_2">{scenarioDescription_2}</p>
       </div>
 
+
       <div className="lesson-buttons-container">
+        {/* Pawn Button and Scenarios */}
         <button onClick={handlePawnClick} className="lesson-pawn-button">Pawn</button>
-            {showScenarios.pawn && (
-                <>
-                    <button className="choice-buttons" onClick={() => setupScenario('pawn', 'basic')}>Basic</button>
-                    <button className="choice-buttons" onClick={() => setupScenario('pawn', 'capture')}>Capture</button>
-                    {/* Additional Pawn scenario buttons */}
-                </>
-            )}
-            
-            <button onClick={handleRookClick} className="lesson-rook-button">Rook</button>
-            {showScenarios.rook && (
-                <>
-                    <button className="choice-buttons" onClick={() => setupScenario('rook', 'basic')}>Basic</button>
-                    <button className="choice-buttons" onClick={() => setupScenario('rook', 'attack')}>Attack</button>
-                    {/* Additional Rook scenario buttons */}
-                </>
-            )}
+        {showScenarios.pawn && (
+          <>
+            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'basic')}>Basic</button>
+            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'capture')}>Capture</button>
+            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_1')}>Training 1</button>
+            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_2')}>Training 2</button>
+            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_3')}>Training 3</button>
+            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'special_move')}>Special Move</button>
+          </>
+        )}
+        {/* Rook Button and Scenarios */}
+        <button onClick={handleRookClick} className="lesson-rook-button">Rook</button>
+        {showScenarios.rook && (
+          <>
+            <button className="choice-buttons" onClick={() => setupScenario('rook', 'basic')}>Basic</button>
+            <button className="choice-buttons" onClick={() => setupScenario('rook', 'attack')}>Attack</button>
+            {/* Additional Rook scenario buttons */}
+          </>
+        )}
+
+        {/* Bishop Button and Scenarios */}
+        <button onClick={handleBishopClick} className="lesson-bishop-button">Bishop</button>
+        {showScenarios.bishop && (
+          <>
+            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'basic')}>Basic</button>
+            {/* Additional Bishop scenario buttons */}
+          </>
+        )}
+
+        {/* Knight Button and Scenarios */}
+        <button onClick={handleKnightClick} className="lesson-knight-button">Knight</button>
+        {showScenarios.knight && (
+          <>
+            <button className="choice-buttons" onClick={() => setupScenario('knight', 'basic')}>Basic</button>
+            {/* Additional Knight scenario buttons */}
+          </>
+        )}
+
+        {/* Queen Button and Scenarios */}
+        <button onClick={handleQueenClick} className="lesson-queen-button">Queen</button>
+        {showScenarios.queen && (
+          <>
+            <button className="choice-buttons" onClick={() => setupScenario('queen', 'basic')}>Basic</button>
+            {/* Additional Queen scenario buttons */}
+          </>
+        )}
+
+        {/* King Button and Scenarios */}
+        <button onClick={handleKingClick} className="lesson-king-button">King</button>
+        {showScenarios.king && (
+          <>
+            <button className="choice-buttons" onClick={() => setupScenario('king', 'basic')}>Basic</button>
+            {/* Additional King scenario buttons */}
+          </>
+        )}
       </div>
     </div>
   );
