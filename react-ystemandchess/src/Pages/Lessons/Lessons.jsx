@@ -200,55 +200,113 @@ const Lessons = () => {
             setScenarioDescription_2("One light-squared bishop, one dark-squared bishop. You need both!");
             setTrainingStarted(true);
             break;
-            case 'training_4':
-              updatedBoard[4][3] = 'wB'; // d4
-              updatedBoard[7][0] = 'bP'; // a1
-              updatedBoard[2][1] = 'bP'; // b6
-              updatedBoard[7][2] = 'bP'; // c1
-              updatedBoard[5][4] = 'bP'; // e3
-              updatedBoard[1][6] = 'bP'; // g7
-              updatedBoard[2][7] = 'bP'; // h6
-              setScenarioDescription_2("Grab all the black pawns!");
-              setTrainingStarted(true);
-              break;
+          case 'training_4':
+            updatedBoard[4][3] = 'wB'; // d4
+            updatedBoard[7][0] = 'bP'; // a1
+            updatedBoard[2][1] = 'bP'; // b6
+            updatedBoard[7][2] = 'bP'; // c1
+            updatedBoard[5][4] = 'bP'; // e3
+            updatedBoard[1][6] = 'bP'; // g7
+            updatedBoard[2][7] = 'bP'; // h6
+            setScenarioDescription_2("Grab all the black pawns!");
+            setTrainingStarted(true);
+            break;
           case 'final':
-              updatedBoard[5][2] = 'wB'; // c3
-              updatedBoard[1][3] = 'wB'; // d7
-              updatedBoard[5][0] = 'bP'; // a3
-              updatedBoard[6][2] = 'bP'; // c2
-              updatedBoard[1][4] = 'bP'; // e7
-              updatedBoard[3][5] = 'bP'; // f5
-              updatedBoard[2][5] = 'bP'; // f6
-              updatedBoard[0][6] = 'bP'; // g8
-              updatedBoard[4][7] = 'bP'; // h4
-              updatedBoard[1][7] = 'bP'; // h7
-              setScenarioDescription_2("One light-squared bishop, one dark-squared bishop. You need both!");
-              setTrainingStarted(true);
-              break;          
+            updatedBoard[5][2] = 'wB'; // c3
+            updatedBoard[1][3] = 'wB'; // d7
+            updatedBoard[5][0] = 'bP'; // a3
+            updatedBoard[6][2] = 'bP'; // c2
+            updatedBoard[1][4] = 'bP'; // e7
+            updatedBoard[3][5] = 'bP'; // f5
+            updatedBoard[2][5] = 'bP'; // f6
+            updatedBoard[0][6] = 'bP'; // g8
+            updatedBoard[4][7] = 'bP'; // h4
+            updatedBoard[1][7] = 'bP'; // h7
+            setScenarioDescription_2("One light-squared bishop, one dark-squared bishop. You need both!");
+            setTrainingStarted(true);
+            break;
           default:
             break;
         }
         break;
-
 
       case 'knight':
         setpieceDescription("Knight - It moves in an 'L' shape");
         setScenarioDescription("Try this!");
         switch (scenario) {
           case 'basic':
-            updatedBoard[0][1] = 'wN'; // b1
-            updatedBoard[2][2] = 'bN'; // c3
-            setScenarioDescription("Knights move in an 'L' shape. Capture the black knight.");
+            updatedBoard[4][4] = 'wN'; // e4
+            updatedBoard[3][2] = 'bP'; // c5
+            updatedBoard[1][3] = 'bP'; // d7
+            setScenarioDescription_2("Knights have a fancy way of jumping around!");
             setTrainingStarted(true);
             break;
-          case 'jump':
-            updatedBoard[0][1] = 'wN'; // b1
-            updatedBoard[4][4] = 'bN'; // e5
-            setScenarioDescription("Knights can jump over pieces!");
+
+          case 'training_1':
+            updatedBoard[7][1] = 'wN'; // b1
+            updatedBoard[5][2] = 'bP'; // c3
+            updatedBoard[4][3] = 'bP'; // d4
+            updatedBoard[6][4] = 'bP'; // e2
+            updatedBoard[5][5] = 'bP'; // f3
+            updatedBoard[3][6] = 'bP'; // g5
+            updatedBoard[1][5] = 'bP'; // f7
+            updatedBoard[0][7] = 'bP'; // h8
+            setScenarioDescription_2("Grab all the pawns!");
             setTrainingStarted(true);
             break;
-          default:
+
+          case 'training_2':
+            updatedBoard[1][2] = 'wN'; // c7
+            updatedBoard[2][1] = 'bP'; // b6
+            updatedBoard[3][3] = 'bP'; // d5
+            updatedBoard[1][3] = 'bP'; // d7
+            updatedBoard[2][4] = 'bP'; // e6
+            updatedBoard[4][5] = 'bP'; // f4
+            setScenarioDescription_2("Grab all the pawns!");
+            setTrainingStarted(true);
             break;
+
+          case 'training_3':
+            updatedBoard[5][5] = 'wN'; // f3
+            updatedBoard[6][4] = 'bP'; // e2
+            updatedBoard[5][4] = 'bP'; // e3
+            updatedBoard[4][4] = 'bP'; // e4
+            updatedBoard[6][5] = 'bP'; // f2
+            updatedBoard[4][5] = 'bP'; // f4
+            updatedBoard[6][6] = 'bP'; // g2
+            updatedBoard[5][6] = 'bP'; // g3
+            updatedBoard[4][6] = 'bP'; // g4
+            setScenarioDescription_2("Knights can jump over obstacles! Escape and vanquish the pawns!");
+            setTrainingStarted(true);
+            break;
+
+          case 'training_4':
+            updatedBoard[5][3] = 'wN'; // d3
+            updatedBoard[5][2] = 'bP'; // c3
+            updatedBoard[6][4] = 'bP'; // e2
+            updatedBoard[4][4] = 'bP'; // e4
+            updatedBoard[6][5] = 'bP'; // f2
+            updatedBoard[4][5] = 'bP'; // f4
+            updatedBoard[2][6] = 'bP'; // g6
+            setScenarioDescription_2("Grab all the pawns!");
+            setTrainingStarted(true);
+            break;
+
+          case 'final':
+            updatedBoard[1][2] = 'wN'; // c7
+            updatedBoard[4][1] = 'bP'; // b4
+            updatedBoard[3][1] = 'bP'; // b5
+            updatedBoard[2][2] = 'bP'; // c6
+            updatedBoard[0][2] = 'bP'; // c8
+            updatedBoard[4][3] = 'bP'; // d4
+            updatedBoard[3][3] = 'bP'; // d5
+            updatedBoard[5][4] = 'bP'; // e3
+            updatedBoard[1][4] = 'bP'; // e7
+            updatedBoard[3][5] = 'bP'; // f5
+            setScenarioDescription_2("Grab all the pawns!");
+            setTrainingStarted(true);
+            break;
+
         }
         break;
 
@@ -478,6 +536,20 @@ const Lessons = () => {
           </>
         )}
 
+        {/* Knight Button and Scenarios */}
+        <button onClick={handleKnightClick} className="lesson-knight-button">Knight</button>
+        {showScenarios.knight && (
+          <>
+            <button className="choice-buttons" onClick={() => setupScenario('knight', 'basic')}>The Basic</button>
+            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_1')}>Training 1</button>
+            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_2')}>Training 2</button>
+            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_3')}>Training 3</button>
+            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_4')}>Training 4</button>
+            <button className="choice-buttons" onClick={() => setupScenario('knight', 'final')}>Final</button>
+          </>
+        )}
+
+
         {/* Rook Button and Scenarios */}
         <button onClick={handleRookClick} className="lesson-rook-button">Rook</button>
         {showScenarios.rook && (
@@ -485,15 +557,6 @@ const Lessons = () => {
             <button className="choice-buttons" onClick={() => setupScenario('rook', 'basic')}>Basic</button>
             <button className="choice-buttons" onClick={() => setupScenario('rook', 'attack')}>Attack</button>
             {/* Additional Rook scenario buttons */}
-          </>
-        )}
-
-        {/* Knight Button and Scenarios */}
-        <button onClick={handleKnightClick} className="lesson-knight-button">Knight</button>
-        {showScenarios.knight && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'basic')}>Basic</button>
-            {/* Additional Knight scenario buttons */}
           </>
         )}
 
