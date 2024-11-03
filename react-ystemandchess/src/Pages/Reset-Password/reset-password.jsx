@@ -1,153 +1,99 @@
 import React, { useState } from 'react';
-import { useCookies } from 'react-cookie';
-import './reset-password.component.scss';
-import { environment } from '../../environments/environment.js';
+import { useNavigate } from 'react-router-dom';
 
 const ResetPassword = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [userNameError, setUserNameError] = useState('');
-  const [resetPasswordError, setResetPasswordError] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [result, setResult] = useState(null);
-  const [showData, setShowData] = useState(false);
-  const [cookies] = useCookies(['login']);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const usernameVerification = () => {
-    if (username.length > 2) {
-      setUserNameError('');
-      return true;
-    } else {
-      setUserNameError('Invalid username');
-      return false;
-    }
-  };
+  const handleResetRequest = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
-  const emailVerification = () => {
-    if (/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}/.test(email)) {
-      setEmailError('');
-      return true;
-    } else {
-      setEmailError('Invalid Email');
-      return false;
-    }
-  };
-
-  const errorMessages = () => {
-    const isUsernameValid = usernameVerification();
-    const isEmailValid = emailVerification();
-    if (!isUsernameValid || !isEmailValid) {
-      setResetPasswordError('Invalid username or email');
-      return false;
-    } else {
-      setResetPasswordError('');
-      return true;
-    }
-  };
-
-  const verifyUser = () => {
-    if (errorMessages()) {
-      verifyInDataBase();
-    }
-  };
-
-  const verifyInDataBase = () => {
-    const baseURL = environment.urls.middlewareURL;
-    if (!baseURL) {
-      console.error('Middleware URL is not defined');
-      return;
-    }
-
-    const data = { username, email };
-    console.log('Sending data:', data);
-
-    fetch(`${baseURL}/user/sendMail`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${cookies.login}`,
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => {
-        console.log('Response status:', response.status);
-        if (!response.ok) {
-          return response.json().then((err) => {
-            throw new Error(err.message);
-          });
+    try {
+      // Using query parameters instead of request body
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+      const response = await fetch(
+        `${baseURL}/user/sendMail?username=${encodeURIComponent(
+          username
+        )}&email=${encodeURIComponent(email)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
-        return response.json();
-      })
-      .then((data) => {
-        console.log('Response data:', data);
-        if (data.message === 'Mail Sent') {
-          setResult('');
-          setShowData(true);
-        } else {
-          setResult(data.message || 'Invalid data');
-          setShowData(false);
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-        setResult(error.message || 'Invalid data');
-        setShowData(false);
-      });
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        navigate(`/set-password?token=${data.token}`);
+      } else {
+        setError(data.message || 'Error requesting password reset');
+      }
+    } catch (error) {
+      console.error('Reset request error:', error);
+      setError('Error connecting to server. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div>
-      <header>
-        <link
-          href='https://fonts.googleapis.com/css?family=Roboto'
-          rel='stylesheet'
-        />
-        <link
-          href='https://fonts.googleapis.com/css?family=Lato'
-          rel='stylesheet'
-        />
-      </header>
-      <div className='input-container'>
-        {!showData ? (
-          <>
-            <h4>Please Enter UserName and Email To Reset Your Password</h4>
-            <li>
-              <input
-                type='text'
-                placeholder='UserName'
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                onBlur={usernameVerification}
-              />
-              <h6>{userNameError}</h6>
-            </li>
-            <li>
-              <input
-                type='email'
-                placeholder='Email'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onBlur={emailVerification}
-              />
-              <h6>{emailError}</h6>
-              <h3>{result}</h3>
-            </li>
-            <button onClick={verifyUser}>Enter</button>
-          </>
-        ) : (
-          <div>
-            <p>
-              A password reset link was sent to your registered email. Click the
-              link in the email to create a new password.
-            </p>
-            <div>
-              If you have already changed the password then click the
-              <a href='/login'>Login</a>
-            </div>
-          </div>
-        )}
-      </div>
-      <footer></footer>
+    <div className='max-w-md mx-auto p-6'>
+      <h2 className='text-2xl font-bold mb-6'>Reset Password</h2>
+
+      {error && (
+        <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleResetRequest} className='space-y-4'>
+        <div>
+          <label htmlFor='username' className='block text-sm font-medium mb-1'>
+            Username
+          </label>
+          <input
+            id='username'
+            type='text'
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className='w-full p-2 border rounded'
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div>
+          <label htmlFor='email' className='block text-sm font-medium mb-1'>
+            Email
+          </label>
+          <input
+            id='email'
+            type='email'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className='w-full p-2 border rounded'
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <button
+          type='submit'
+          disabled={isLoading}
+          className={`w-full bg-blue-500 text-white p-2 rounded ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
+          }`}
+        >
+          {isLoading ? 'Sending...' : 'Reset Password'}
+        </button>
+      </form>
     </div>
   );
 };

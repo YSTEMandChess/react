@@ -1,11 +1,50 @@
 const { sendResetPasswordEmail } = require('./resetPasswordService');
-const User = require('../models/User'); // Adjust the path as necessary
+const User = require('../models/User');
+
+const jwt = require('jsonwebtoken');
+
+// const resetPassword = async (req, res) => {
+//   const { username, email } = req.body;
+
+//   if (!username || !email) {
+//     console.log('Missing username or email');
+//     return res.status(400).json({ message: 'Missing username or email' });
+//   }
+
+//   try {
+//     const user = await User.findOne({ username, email });
+//     if (!user) {
+//       console.log('User not found');
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+
+//     // Generate JWT token for resetting password
+//     const token = jwt.sign(
+//       { username: user.username, email: user.email },
+//       'your_jwt_secret', // Replace with actual secret key
+//       { expiresIn: '1h' }
+//     );
+
+//     // Create reset link with the generated token
+//     const resetLink = `${process.env.CHESS_CLIENT_URL}/reset-password?token=${token}`;
+
+//     // Send reset password email
+//     await sendResetPasswordEmail(email, resetLink);
+//     console.log('Mail Sent with Reset Link');
+//     return res.status(200).json({ message: 'Mail Sent' });
+//   } catch (error) {
+//     console.error('Error sending email:', error);
+//     return res.status(500).json({ message: 'Error sending email' });
+//   }
+// };
+
+// ONLy FOR TESTING PURPOSES TO BYPASS EMAIL
 
 const resetPassword = async (req, res) => {
-  // Log the request body to ensure it is being received correctly
-  console.log('Received request body:', req.body);
+  const { username, email } = req.body;
 
-  const { username, email } = req.body; // Ensure you are reading req.body for POST requests
+  console.log('Received username:', username);
+  console.log('Received email:', email);
 
   if (!username || !email) {
     console.log('Missing username or email');
@@ -13,23 +52,28 @@ const resetPassword = async (req, res) => {
   }
 
   try {
-    // Verify user details
     const user = await User.findOne({ username, email });
     if (!user) {
       console.log('User not found');
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Generate reset link (example link, replace with actual link generation logic)
-    const resetLink = `${process.env.CHESS_CLIENT_URL}/reset-password?token=exampleToken`;
+    // Generate JWT token for resetting password
+    const token = jwt.sign(
+      { username: user.username, email: user.email },
+      'your_jwt_secret', // Replace with the actual secret key
+      { expiresIn: '1h' }
+    );
 
-    // Send reset password email
-    await sendResetPasswordEmail(email, resetLink);
-    console.log('Sending response: { message: "Mail Sent" }');
-    return res.status(200).json({ message: 'Mail Sent' });
+    // Create reset link with the generated token
+    const resetLink = `http://localhost:3001/reset-password?token=${token}`;
+
+    // Instead of sending the email, just return the reset link
+    console.log('Reset link:', resetLink);
+    return res.status(200).json({ message: 'Mail bypassed', resetLink });
   } catch (error) {
-    console.error('Error sending email:', error);
-    return res.status(500).json({ message: 'Error sending email' });
+    console.error('Error generating reset link:', error);
+    return res.status(500).json({ message: 'Error generating reset link' });
   }
 };
 

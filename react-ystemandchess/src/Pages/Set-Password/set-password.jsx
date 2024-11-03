@@ -1,106 +1,141 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import './set-password.component.scss';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [confirmError, setConfirmError] = useState('');
-  const [showData, setShowData] = useState(false);
   const [token, setToken] = useState('');
-
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const tokenFromUrl = queryParams.get('token');
-    setToken(tokenFromUrl);
+    const params = new URLSearchParams(location.search);
+    const tokenParam = params.get('token');
+    if (tokenParam) {
+      setToken(tokenParam);
+    } else {
+      setError('Invalid reset link. Please request a new password reset.');
+    }
   }, [location]);
 
-  const checkConfirmPassword = () => {
-    if (password === confirmPassword) {
-      setConfirmError('');
-      submitNewPassword();
-      return true;
-    } else {
-      setConfirmError('Password and confirm password do not match');
-      return false;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${baseURL}/user/setPassword`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password,
+          token,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else {
+        setError(data.message || 'Failed to update password');
+      }
+    } catch (err) {
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const submitNewPassword = () => {
-    const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
-    fetch(`${baseURL}/user/resetPassword`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        password: password,
-        token: token,
-      }),
-    })
-      .then((response) => {
-        if (response.ok) {
-          setShowData(true);
-        } else {
-          return response.json().then((data) => {
-            setConfirmError(data.message || 'Error resetting password');
-          });
-        }
-      })
-      .catch((error) => {
-        setConfirmError('An error occurred. Please try again.');
-        console.error('Error:', error);
-      });
-  };
+  if (!token) {
+    return (
+      <div className='max-w-md mx-auto p-6'>
+        <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded'>
+          Invalid reset link. Please request a new password reset.
+          <button
+            onClick={() => navigate('/reset-password')}
+            className='block mt-2 text-blue-500 hover:underline'
+          >
+            Go to Reset Password
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <header>
-        <link
-          href='https://fonts.googleapis.com/css?family=Roboto'
-          rel='stylesheet'
-        />
-        <link
-          href='https://fonts.googleapis.com/css?family=Lato'
-          rel='stylesheet'
-        />
-      </header>
+    <div className='max-w-md mx-auto p-6'>
+      <h2 className='text-2xl font-bold mb-6'>Set New Password</h2>
 
-      <div className='input-container'>
-        {!showData ? (
-          <>
-            <h4>Enter Your New Password</h4>
-            <li>
-              <input
-                type='password'
-                placeholder='New Password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </li>
-            <li>
-              <input
-                type='password'
-                placeholder='Confirm New Password'
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-              <h6>{confirmError}</h6>
-            </li>
-            <button onClick={checkConfirmPassword}>Enter</button>
-          </>
-        ) : (
-          <div>
-            <h4>Password Changed Successfully 🎉</h4>
-            <a href='/login'>Login</a>
-          </div>
-        )}
-      </div>
+      {error && (
+        <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
+          {error}
+        </div>
+      )}
 
-      <footer></footer>
+      <form onSubmit={handleSubmit} className='space-y-4'>
+        <div>
+          <label htmlFor='password' className='block text-sm font-medium mb-1'>
+            New Password
+          </label>
+          <input
+            id='password'
+            type='password'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className='w-full p-2 border rounded'
+            required
+            disabled={isLoading}
+            minLength={8}
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor='confirmPassword'
+            className='block text-sm font-medium mb-1'
+          >
+            Confirm Password
+          </label>
+          <input
+            id='confirmPassword'
+            type='password'
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className='w-full p-2 border rounded'
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <button
+          type='submit'
+          disabled={isLoading}
+          className={`w-full bg-blue-500 text-white p-2 rounded ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
+          }`}
+        >
+          {isLoading ? 'Updating...' : 'Set New Password'}
+        </button>
+      </form>
     </div>
   );
 };
