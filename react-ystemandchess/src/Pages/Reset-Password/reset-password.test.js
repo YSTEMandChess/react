@@ -36,5 +36,4 @@ test('verifies user input', () => {
   fireEvent.blur(emailInput, { target: { value: 'validemail@example.com' } });
   const button = screen.getByText('Enter');
   fireEvent.click(button);
-  // Add assertions based on the behavior after clicking the button
 });

@@ -14,7 +14,6 @@ const ResetPassword = () => {
     setError('');
 
     try {
-      // Using query parameters instead of request body
       const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
       const response = await fetch(
         `${baseURL}/user/sendMail?username=${encodeURIComponent(

@@ -1,50 +1,11 @@
 const { sendResetPasswordEmail } = require('./resetPasswordService');
 const User = require('../models/User');
+const config = require('config');
 
 const jwt = require('jsonwebtoken');
 
-// const resetPassword = async (req, res) => {
-//   const { username, email } = req.body;
-
-//   if (!username || !email) {
-//     console.log('Missing username or email');
-//     return res.status(400).json({ message: 'Missing username or email' });
-//   }
-
-//   try {
-//     const user = await User.findOne({ username, email });
-//     if (!user) {
-//       console.log('User not found');
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-
-//     // Generate JWT token for resetting password
-//     const token = jwt.sign(
-//       { username: user.username, email: user.email },
-//       'your_jwt_secret', // Replace with actual secret key
-//       { expiresIn: '1h' }
-//     );
-
-//     // Create reset link with the generated token
-//     const resetLink = `${process.env.CHESS_CLIENT_URL}/reset-password?token=${token}`;
-
-//     // Send reset password email
-//     await sendResetPasswordEmail(email, resetLink);
-//     console.log('Mail Sent with Reset Link');
-//     return res.status(200).json({ message: 'Mail Sent' });
-//   } catch (error) {
-//     console.error('Error sending email:', error);
-//     return res.status(500).json({ message: 'Error sending email' });
-//   }
-// };
-
-// ONLy FOR TESTING PURPOSES TO BYPASS EMAIL
-
 const resetPassword = async (req, res) => {
   const { username, email } = req.body;
-
-  console.log('Received username:', username);
-  console.log('Received email:', email);
 
   if (!username || !email) {
     console.log('Missing username or email');
@@ -61,14 +22,13 @@ const resetPassword = async (req, res) => {
     // Generate JWT token for resetting password
     const token = jwt.sign(
       { username: user.username, email: user.email },
-      'your_jwt_secret', // Replace with the actual secret key
+      config.get('indexKey'),
       { expiresIn: '1h' }
     );
 
     // Create reset link with the generated token
     const resetLink = `http://localhost:3001/reset-password?token=${token}`;
 
-    // Instead of sending the email, just return the reset link
     console.log('Reset link:', resetLink);
     return res.status(200).json({ message: 'Mail bypassed', resetLink });
   } catch (error) {
