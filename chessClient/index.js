@@ -1,3 +1,4 @@
+
 let flag = false;
 let lessonFlag = false;
 let isLesson = false;
@@ -9,17 +10,80 @@ let previousEndSquare = "";
 var squareClass = "square-55d63";
 var $board = $("#myBoard");
 var board = null;
-var game = new Chess();
+var currentState = new Chess();
 var whiteSquareGrey = "#eebe7bf7";
 var blackSquareGrey = "#ae5716d6";
+
+var serverStartNotified = false;
 
 var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
 var eventer = window[eventMethod];
 var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 
+var mentor = "";
+var student = "";
+var role = "student";
+
 var playerColor;
 
-let startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+var freemoveFlag = false;
+
+var myMouseX;
+var myMouseY;
+const mouseImage = 'img/cursor.png';
+
+var opponentMouseX = 0;
+var opponentMouseY = 0;
+
+// Listen for mouse position change 
+document.addEventListener('mousemove', (event) => {
+  myMouseX = event.clientX;
+  myMouseY = event.clientY;
+
+  if (mentor && student)
+  {
+    sendMouseXY();
+  }
+});
+
+// Update the position of the other players mouse
+function updateOpponentMouseXY() {
+  const img = document.getElementById("cursor");
+    
+  // Set absolute position values (top and left in pixels)
+  img.style.top = `${opponentMouseY}px`;
+  img.style.left = `${opponentMouseX}px`;
+}
+
+// References to chess piece images
+const chessPieceFolder = 'img/chesspieces/wikipedia/';
+
+const chessImages = {
+  bB: 'bB.png', // Black Bishop
+  bK: 'bK.png', // Black King
+  bN: 'bN.png', // Black Knight
+  bP: 'bP.png', // Black Pawn
+  bQ: 'bQ.png', // Black Queen
+  bR: 'bR.png', // Black Rook
+  wB: 'wB.png', // White Bishop
+  wK: 'wK.png', // White King
+  wN: 'wN.png', // White Knight
+  wP: 'wP.png', // White Pawn
+  wQ: 'wQ.png', // White Queen
+  wR: 'wR.png', // White Rook
+};
+
+function getChessPieceImage(peice)
+{
+  chessString = chessPieceFolder + chessImages[peice];
+  return chessString;
+}
+
+
+const socket = io('http://localhost:3001');
+
+
+let defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
 letParentKnow();
 
@@ -41,33 +105,232 @@ function greySquare(square) {
   $square.css("background-position", "center");
   $square.css("background-image", "url('img/chesspieces/wikipedia/dot.png')");
 }
+
+function sendNewGame()
+{
+  console.log("starting new game with server")
+  var data = {"mentor": mentor, "student": student, "role": role};
+  console.log(data);
+  socket.emit("newgame", JSON.stringify(data));
+}
+
+function sendMove(from, to)
+{
+  console.log("sending move to server");
+  var data = {"mentor": mentor, "student": student, "role": role, "from": from, "to": to};
+  console.log(data);
+  socket.emit("move", JSON.stringify(data));
+}
+
+
+function sendEndGame()
+{
+  console.log("sending end game to server");
+  var data = {"mentor": mentor, "student": student, "role": role};
+  console.log(data);
+  socket.emit("endgame", JSON.stringify(data));
+}
+
+function sendMouseXY()
+{
+  let data = {"x":myMouseX, "y":myMouseY, "mentor":mentor, "student":student};
+  socket.emit('mousexy', JSON.stringify(data));
+}
+
+
+function sendLastMove(from, to) {
+  let data = {"from":from, "to":to, "mentor":mentor, "student":student};
+  socket.emit('lastmove', JSON.stringify(data));
+}
+
+function sendHighLight(from, to) {
+  console.log("sending highlihgt");
+  let data = {"from":from, "to":to, "mentor":mentor, "student":student};
+  socket.emit('highlight', JSON.stringify(data));
+}
+
+function sendUndo()
+{
+  console.log("sending undo to server");
+  var data = {"mentor": mentor, "student": student, "role": role};
+  console.log(data);
+  socket.emit("undo", JSON.stringify(data));
+}
+
+function sendRemoveGrey() { 
+  var data = {"mentor": mentor, "student": student};
+  socket.emit("removegrey", JSON.stringify(data)); 
+}
+
+function sendGreySquare(to)
+{
+  var data = {"mentor": mentor, "student": student, "to": to};
+  socket.emit("addgrey", JSON.stringify(data)); 
+}
+
+function sendPieceDrag(piece)
+{
+  console.log("sending drag");
+  var data = {"mentor": mentor, "student": student, "piece": piece};
+  socket.emit("piecedrag", JSON.stringify(data)); 
+}
+
+function sendPieceDrop()
+{
+  console.log("sending drop");
+  var data = {"mentor": mentor, "student": student};
+  socket.emit("piecedrop", JSON.stringify(data)); 
+}
+
+
+// Handle boardstate message from the client
+socket.on('boardstate', (msg) => {
+    parsedMsg = JSON.parse(msg);
+    console.log(parsedMsg);
+
+    // update state of chess board
+    console.log(currentState);
+    console.log(currentState.fen());
+    currentState = new Chess(parsedMsg.boardState);
+
+
+    // setting player color 
+    if (parsedMsg.color)
+    { 
+      // setting player color for turn keeping 
+      playerColor = parsedMsg.color[0];
+      console.log(playerColor);
+
+      // setting chess board orientation
+      config.orientation = parsedMsg.color;
+      board = Chessboard("myBoard", config);
+    }
+
+    // update visuals of chessboard
+    board.position(currentState.fen());
+});
+
+socket.on('piecedrag', (msg) => {
+
+  console.log('recieved piece drag');
+  parsedMsg = JSON.parse(msg);
+
+  // Change the image of the cursor back to default
+  cursor = document.getElementById('cursor');
+  pieceImage = getChessPieceImage(parsedMsg.piece);
+
+  console.log(pieceImage);
+  console.log(parsedMsg.piece);
+
+  cursor.src = pieceImage;
+
+});
+
+socket.on('piecedrop', () => {
+
+  console.log('recieved piece drop');
+
+  // Change the image of the cursor back to default
+  cursor = document.getElementById('cursor');
+  cursor.src = mouseImage;
+
+});
+
+socket.on('highlight', (msg) => {
+  // Highlight the anticipated space
+  console.log("highlight recieved")
+  parsedMsg = JSON.parse(msg);
+  highlightMove(parsedMsg.from, parsedMsg.to, 'nextMove');
+
+});
+
+socket.on('addgrey', (msg) => {
+
+  // Highlight the last moved spaces
+  parsedMsg = JSON.parse(msg);
+  greySquare(parsedMsg.to);
+
+});
+
+socket.on('removegrey', () => {
+  removeGreySquares();
+});
+
+// handle change of opponents mousexy
+socket.on('mousexy', (msg)=>{
+  let parsedMsg = JSON.parse(msg);
+  
+  let viewportWidth = window.innerWidth;
+  let viewportHeight = window.innerHeight;
+
+  if (parsedMsg.x && parsedMsg.y)
+  {  
+    opponentMouseX = (-1 * parsedMsg.x) + viewportWidth - 28;
+    opponentMouseY = (-1 * parsedMsg.y) + viewportHeight - 28;
+    
+    updateOpponentMouseXY();
+  }
+
+});
+
+// Handle reset message from the client
+socket.on('reset', () => {
+  // reload page
+  location.reload();
+  deleteAllCookies();
+  console.log("resetting board");
+});
+
+// Handle lastmove message from the client
+socket.on('lastmove', (msg) => {
+  // Highlight the last moved spaces
+  parsedMsg = JSON.parse(msg);
+  highlightMove(parsedMsg.from, parsedMsg.to, "lastmove");
+
+});
+
+// Deletes all cookies on iframe
+function deleteAllCookies() {
+  const cookies = document.cookie.split(";");
+
+  for (let cookie of cookies) {
+      const cookieName = cookie.split("=")[0].trim();
+      deleteCookie(cookieName);
+  }
+}
+
+
 // Listen to message from parent window
-eventer(
-  messageEvent,
-  (e) => {
-    // console.log("client evenet: ", e); // uncomment for debugging
+window.addEventListener('message', (e) => {
+
+    // parse message
     let data = JSON.parse(e.data);
+
+
+    
+    // get command from parent and send to server
+    var command = data.command;
+    if (command == "newgame") { sendNewGame(); }
+    else if (command == "endgame") {
+      // delete game on server
+      sendEndGame(); 
+      
+    }
+    else if (command == "userinfo") {
+      mentor = data.mentor;
+      student = data.student;
+      role = data.role;
+      console.log(data);
+    } else if (command == "undo") { sendUndo(); }
+
+
+    // get and set lessonflag
     lessonFlag = data.lessonFlag;
     if (lessonFlag == true) {
       isLesson = true;
     }
 
-    // move a piece if it's a move message
-    if ("from" in data && "to" in data) {
-      game.move({ from: data.from, to: data.to });
-
-      // move highlight
-      highlightMove(data.from, data.to);
-
-      updateStatus();
-      sendToParent(game.fen());
-    }
-
-    // highlight message
-    if ("highlightFrom" in data && "highlightTo" in data) {
-      highlightMove(data.highlightFrom, data.highlightTo);
-    }
-
+    // if this is a lesson, setup lesson
     if (isLesson == true) {
       endSquare = data.endSquare;
       lessonBoard = data.boardState;
@@ -103,39 +366,64 @@ eventer(
         board = Chessboard("myBoard", lessonConfig);
         // var overlay = new ChessboardArrows('board_wrapper');
         lessonStarted = true;
-        game.load(lessonBoard);
+        currentState.load(lessonBoard);
       } else {
         board.position(data.boardState);
-        game.load(data.boardState);
+        currentState.load(data.boardState);
         updateStatus();
       }
 
       $board.find(".square-" + endSquare).addClass("highlight");
-    } else if (data.boardState == startFEN) {
-      game = new Chess();
+    } else if (data.boardState == defaultFEN) {
+      currentState = new Chess();
     }
+    /*
     if (isLesson == false) {
       playerColor = data.color;
       board.orientation(playerColor);
-      game.load(data.boardState);
+      currentState.load(data.boardState);
       board.position(data.boardState);
       updateStatus();
     }
+      */
+
+    /*
+    // console.log("client evenet: ", e); // uncomment for debugging
+    
+
+    // move a piece if it's a move message
+    if ("from" in data && "to" in data) {
+      currentState.move({ from: data.from, to: data.to });
+
+      // move highlight
+      highlightMove(data.from, data.to);
+
+      updateStatus();
+      sendToParent(currentState.fen());
+    }
+
+    // highlight message
+    if ("highlightFrom" in data && "highlightTo" in data) {
+      highlightMove(data.highlightFrom, data.highlightTo);
+    }
+
+      */
   },
   false,
 );
 
-function highlightMove(from, to) {
-  $board.find("." + squareClass).removeClass("highlight");
+function highlightMove(from, to, style) {
+  $board.find("." + squareClass).removeClass(style);
   if (from !== "remove" || to !== "remove") {
-    $board.find(".square-" + from).addClass("highlight");
-    $board.find(".square-" + to).addClass("highlight");
+    $board.find(".square-" + from).addClass(style);
+    $board.find(".square-" + to).addClass(style);
   }
 }
 
 function flip() {
   board.flip();
 }
+
 
 function letParentKnow() {
   if (flag === false) {
@@ -145,80 +433,116 @@ function letParentKnow() {
 }
 
 function onDragStart(source, piece, position, orientation) {
-  // do not pick up pieces if the game is over
-  if (isLesson == false) {
-    if (game.game_over()) {
-      sendGameOver();
-      return false;
-    }
-  }
+   
+  // if freeplay mode is off
+  if (!freemoveFlag)
+  {
+      
+    // if it's your turn
+    if (playerColor == currentState.turn())
+      {
+        
+        
 
-  if (playerColor === "black") {
-    if (piece.search(/^w/) !== -1) return false;
-  } else if (playerColor === "white") {
-    if (piece.search(/^b/) !== -1) return false;
-  }
+        // do not pick up pieces if the game is over
+        if (isLesson == false) {
+          if (currentState.game_over()) {
+            sendGameOver();
+            return false;
+          }
+        }
+    
+        if (playerColor === "black") {
+          if (piece.search(/^w/) !== -1) return false;
+        } else if (playerColor === "white") {
+          if (piece.search(/^b/) !== -1) return false;
+        }
+    
+        // only pick up pieces for the side to move
+        if (
+          (currentState.turn() === "w" && piece.search(/^b/) !== -1) ||
+          (currentState.turn() === "b" && piece.search(/^w/) !== -1)
+        ) {
+          return false;
+        }
 
-  // only pick up pieces for the side to move
-  if (
-    (game.turn() === "w" && piece.search(/^b/) !== -1) ||
-    (game.turn() === "b" && piece.search(/^w/) !== -1)
-  ) {
-    return false;
+        sendPieceDrag(piece);
+      }
   }
+  else 
+  {
+    return true;
+  }
+  
 }
 
 function onDrop(source, target, draggedPieceSource) {
   removeGreySquares();
-  // see if the move is legal
-  var move = game.move({
-    from: source,
-    to: target,
-    promotion: "q", // NOTE: always promote to a queen for example simplicity
-  });
-
-  // illegal move
-  if (move === null) return "snapback";
-
-  if (isLesson == false) {
-    if (game.game_over()) {
-      sendGameOver();
-    }
-  }
-
-  // move highlight
-  highlightMove(source, target);
-
-  updateStatus();
-  sendToParent(`piece-${draggedPieceSource}`);
-  sendToParent(
-    JSON.stringify({
+  sendPieceDrop();
+  
+  // if we're not in freeplay
+  if (!freemoveFlag)
+  {
+      
+    // see if the move is legal
+    var move = currentState.move({
       from: source,
       to: target,
-    }),
-  );
-  sendToParent(`target:${move.to}`);
-  sendToParent(game.fen());
+      promotion: "q", // NOTE: always promote to a queen for example simplicity
+    });
+
+    // illegal move
+    if (move === null) {return "snapback"}
+    // legal move
+    else {sendMove(source, target)};
+
+    if (isLesson == false) {
+      if (currentState.game_over()) {
+        sendGameOver();
+      }
+    }
+
+    // move highlight
+    highlightMove(source, target, 'lastmove');
+    // move highlight of mentor/student
+    sendLastMove(source, target);
+
+    updateStatus();
+    sendToParent(`piece-${draggedPieceSource}`);
+    sendToParent(
+      JSON.stringify({
+        from: source,
+        to: target,
+      }),
+    );
+    sendToParent(`target:${move.to}`);
+    sendToParent(currentState.fen());
+  }
 }
 // To add possible move suggestion on chessboard
 function onMouseoverSquare(square, piece) {
-  // get list of possible moves for this square
-  var moves = game.moves({
-    square: square,
-    verbose: true,
-  });
+  if (playerColor == currentState.turn())
+  {
+    // get list of possible moves for this square
+    var moves = currentState.moves({
+      square: square,
+      verbose: true,
+    });
 
-  // exit if there are no moves available for this square
-  if (moves.length === 0) return;
+    // exit if there are no moves available for this square
+    if (moves.length === 0) return;
 
-  // highlight the possible squares for this piece
-  for (var i = 0; i < moves.length; i++) {
-    greySquare(moves[i].to);
+    // highlight the possible squares for this piece
+    for (var i = 0; i < moves.length; i++) {
+      greySquare(moves[i].to);
+      sendGreySquare(moves[i].to);
+    }
   }
 }
 // To remove possible move suggestion on chessboard
 function onMouseoutSquare(square, piece) {
   removeGreySquares();
+  sendRemoveGrey();
 }
 
 function sendToParent(fen) {
@@ -228,26 +552,27 @@ function sendToParent(fen) {
 // update the board position after the piece snap
 // for castling, en passant, pawn promotion
 function onSnapEnd() {
-  board.position(game.fen());
+  board.position(currentState.fen());
 }
 
 function updateStatus() {
   var status = "";
 
   var moveColor = "White";
-  if (game.turn() === "b") {
+
+  if (currentState.turn() === "b") {
     moveColor = "Black";
   }
 
   // checkmate?
   if (isLesson == false) {
-    if (game.in_checkmate()) {
+    if (currentState.in_checkmate()) {
       status = "Game over, " + moveColor + " is in checkmate.";
       sendCheckmate();
     }
 
     // draw?
-    else if (game.in_draw()) {
+    else if (currentState.in_draw()) {
       status = "Game over, drawn position";
       sendDraw();
     }
@@ -258,7 +583,7 @@ function updateStatus() {
     status = moveColor + " to move";
 
     // check?
-    if (game.in_check()) {
+    if (currentState.in_check()) {
       status += ", " + moveColor + " is in check";
     }
   }
@@ -496,6 +821,7 @@ var config = {
   draggable: true,
   showNotation: true,
   position: "start",
+  orientation: "white",
   onDragStart: onDragStart,
   onDrop: onDrop,
   onMouseoutSquare: onMouseoutSquare,
