@@ -5,129 +5,122 @@ $brand-color-primary: #dff2c8;
 $brand-color-secondary: #bfd99e;
 $text-color: #333;
 $highlight-color: #556b2f;
+$quote-bg-color: #c1dcaf;
 
-
-// Define variables at the top
 $font-size-base: 16px;
-$font-family-base: Arial, sans-serif;
+$font-family-base: "Roboto", Arial, sans-serif;
 $font-weight-base: 400;
 $line-height-base: 1.6;
 $body-color: #333;
-$body-bg: #f5f5f5;
+$body-bg: #dff2c8;
 
-// Define the mixin for font-size
 @mixin font-size($size) {
   font-size: $size;
-  line-height: 1.6;
+  line-height: $line-height-base;
 }
-// body {
-//   font-family: "Roboto", sans-serif;
-//   background-color: $brand-color-primary;
-//   color: $text-color;
-//   margin: 0;
-//   padding: 0;
-// }
 
 body {
-  margin: 0; // 1
+  margin: 0;
   font-family: $font-family-base;
   @include font-size($font-size-base);
   font-weight: $font-weight-base;
-  line-height: $line-height-base;
   color: $body-color;
-  text-align: left; // 3
-  background-color: $body-bg; // 2
+  text-align: center; // Center-align body content
+  background-color: $body-bg;
 }
-#main-content {
+
+.containerCSBenifit {
   background-color: $brand-color-primary;
-  padding-bottom: 48px;
-  text-align: center;
+  padding: 20px 0;
 }
 
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #e6f3e6;
-  padding: 20px;
-  border-bottom: 1px solid #ddd;
-}
-
-header img {
-  max-height: 60px;
-}
-
-header nav a {
-  margin: 0 15px;
-  color: $highlight-color;
-  text-decoration: none;
-  font-weight: bold;
+#main-content {
+  padding: 24px 0 32px 0;
 }
 
 .text-title-md-cs {
-  font-size: 1.5rem;
-  font-weight: bold;
-  padding-top: 20px;
+  font-size: 2.2rem;
+  font-weight: 900;
   color: $highlight-color;
+  padding-top: 10px;
+  text-align: center;
+  margin-bottom: 10px;
 }
 
-.picture-cs {
-  object-fit: contain;
-  width: 100%;
+.picture-cs,
+.picture {
+  width: 90%;
   max-width: 800px;
   height: auto;
-  margin: 20px 0;
-  border-radius: 8px;
+  margin: 15px auto;
+  display: block;
+  border-radius: 10px;
+  object-fit: cover;
 }
 
-.text-caption-cs {
+.text-caption-cs,
+.text-caption {
   color: $caption-color;
-  padding: 0.7rem 0 1.5rem 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   text-align: center;
+  margin-top: 5px;
 }
 
-.text-normal-cs {
-  padding: 0 15%;
-  font-size: 1.1rem;
-  line-height: 1.6;
-  padding-bottom: 20px;
-  text-align: justify;
+.text-normal-cs,
+.text-normal {
+  max-width: 800px; // Limit the width of the paragraph
+  margin: 0 auto 15px; // Center align with auto margins
+  padding: 0 20px; // Add padding to avoid edges
+  font-size: 1.05rem;
+  line-height: 1.7;
   color: $text-color;
+  text-align: justify;
 }
 
-.rectdiv2 {
-  background-color: $brand-color-secondary;
+.rectdiv2CS {
+  background-color: $quote-bg-color;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 200px;
-  margin: 40px 0;
-  padding: 20px;
-  border-radius: 8px;
+  height: 160px; // Reduce height to fit content
+  //margin: 20px auto; // Center-align the quote section
+  //padding: 10px;
+  //max-width: 800px;
 }
 
-.rectdiv2-wrapper {
-  width: 80%;
+.recttextCS {
+  // font-size: 1.6rem;
+  // font-weight: 500;
+  // color: $highlight-color;
+  // text-align: center;
+  // line-height: 1.4;
+  // width: 80%;
+
+  max-width: 500px; // Limit the width of the paragraph
+  margin: 0 auto 15px; // Center align with auto margins
+  padding: 0 20px; // Add padding to avoid edges
+  font-size: 1.20rem;
+  line-height: 1.7;
+  color: $text-color;
   text-align: center;
-}
-
-.recttext {
-  font-size: 1.8rem;
-  font-weight: 500;
-  color: $highlight-color;
-  margin: 0;
-  line-height: 1.4;
+  font-weight: bold;
 }
 
 footer {
-  background-color: #e6f3e6;
+  background-color: $brand-color-secondary;
   padding: 20px;
   text-align: center;
   color: $caption-color;
   font-size: 0.9rem;
   border-top: 1px solid #ddd;
 }
+
+.pictureCS{
+  object-fit: contain;
+    width: max(100%, 300px);
+    height: 450px;
+}
+
 
 footer p {
   margin: 5px 0;
@@ -138,16 +131,3 @@ footer a {
   text-decoration: none;
   font-weight: bold;
 }
-
-.footer-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-footer .social-icons img {
-  width: 24px;
-  margin: 0 5px;
-}
-

@@ -1,5 +1,13 @@
-h1 {
+#login-h1 {
   margin-top: 5rem;
+}
+
+#loginError-h3 {
+  display: none;  // Hide the element by default
+  
+  &.show {
+    display: block;  // Show the element when it has content
+  }
 }
 
 

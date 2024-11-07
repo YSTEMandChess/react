@@ -85,7 +85,8 @@ const Login = () => {
   return (
     <>
       <h1 id="login-h1">Login</h1>
-      <h3 id="loginError-h3">{loginError}</h3>
+      {loginError && <h3 id="loginError-h3">{loginError}</h3>}
+
       <p></p>
       <form
         className="login-input-container"
