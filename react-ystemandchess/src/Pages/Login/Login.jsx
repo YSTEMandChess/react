@@ -84,36 +84,38 @@ const Login = () => {
 
   return (
     <>
-      <h1>Login</h1>
-      <h3>{loginError}</h3>
+      <h1 id="login-h1">Login</h1>
+      <h3 id="loginError-h3">{loginError}</h3>
       <p></p>
       <form
-        className="input-container"
+        className="login-input-container"
         onSubmit={(e) => submitLogin(username, password, e)}
       >
-        <div className="input-field">
+        <div className="login-input-field">
           <input
             type="text"
             name="username"
             id="username"
+            placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
-          <div className="underline"></div>
-          <label htmlFor="username">Username</label>
+          {/* <div className="underline"></div> */}
+          {/* <label htmlFor="username">Username</label> */}
         </div>
-        <div className="input-field">
+        <div className="login-input-field">
           <input
             type="password"
             name="password"
+            placeholder="Password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <div className="underline"></div>
-          <label htmlFor="password">Password</label>
+          {/* <div className="underline"></div> */}
+          {/* <label htmlFor="password">Password</label> */}
         </div>
         <button type="submit">Enter</button>
       </form>

@@ -95,22 +95,14 @@ const ResetPassword = () => {
 
   return (
     <div>
-      <header>
-        <link
-          href="https://fonts.googleapis.com/css?family=Roboto"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css?family=Lato"
-          rel="stylesheet"
-        />
-      </header>
-      <div className="input-container">
+      
+      <div className="input-container-rp">
         {!showData ? (
           <>
             <h4>Please Enter UserName and Email To Reset Your Password</h4>
             <li>
               <input
+                id="username-rp"
                 type="text"
                 placeholder="UserName"
                 value={username}
@@ -121,6 +113,7 @@ const ResetPassword = () => {
             </li>
             <li>
               <input
+                id="email-rp"
                 type="email"
                 placeholder="Email"
                 value={email}
@@ -130,7 +123,7 @@ const ResetPassword = () => {
               <h6>{emailError}</h6>
               <h3>{result}</h3>
             </li>
-            <button onClick={verifyUser}>Enter</button>
+            <button id="button-rp" onClick={verifyUser}>Enter</button>
           </>
         ) : (
           <div>
@@ -145,7 +138,7 @@ const ResetPassword = () => {
           </div>
         )}
       </div>
-      <footer></footer>
+     
     </div>
   );
 };

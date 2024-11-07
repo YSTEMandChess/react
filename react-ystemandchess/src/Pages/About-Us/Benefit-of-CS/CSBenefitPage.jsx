@@ -7,7 +7,7 @@ const CSBenefitPage = () => {
   return (
     <main id="main-content">
       <section className="container">
-        <div className="text-title-md txt-p">
+        <div className="text-title-md-cs txt-p">
           <h1 style={{ fontWeight: "bold" }}>
             The Benefits of Computer Science Tutoring
           </h1>
@@ -15,16 +15,16 @@ const CSBenefitPage = () => {
 
         <figure>
           <img
-            className="picture"
+            className="picture-cs"
             src={ImageOne}
             alt="students practicing chess on computers"
           />
-          <figcaption className="text-caption txt-p">
+          <figcaption className="text-caption-cs txt-p">
             Students practicing their chess skills in the classroom
           </figcaption>
         </figure>
 
-        <div className="text-normal txt-p">
+        <div className="text-normal-cs txt-p">
           <p>
             Computer science is a quickly growing field as technology becomes
             more and more ingrained in everyday life. Studying computer science
@@ -35,7 +35,7 @@ const CSBenefitPage = () => {
           </p>
         </div>
 
-        <div className="text-normal txt-p ">
+        <div className="text-normal-cs txt-p ">
           <p>
             Computer science has become fundamental to our lives, from the
             smartphones in our pockets to the computer you are reading this on.

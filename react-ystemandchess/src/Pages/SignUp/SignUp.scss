@@ -1,6 +1,129 @@
 h2 {
   margin-top: 5rem;
 }
+
+.signupForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; /* Centers form vertically */
+  width: 100%;
+}
+
+.signUpButton {
+  margin-top: 10px; // Space above the button
+
+  .submitButton {
+    width: 100%;                            // Full width
+    max-width: 300px;                      // Maximum width of the button
+    border: none;                          // Remove the default border
+    background-color: transparent;         // Transparent background
+    color: black;                          // Black text color
+    padding: 12px 20px;                    // Padding for better appearance
+    cursor: pointer;                       // Pointer cursor on hover
+    border-radius: 25px;                  // Circular edges
+    font-size: 16px;                      // Font size
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // Subtle shadow for depth
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; // Smooth transition
+
+    &:hover {
+      background-color: blue;              // Change background color on hover
+      color: white;                        // Change text color to white on hover
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); // Darker shadow on hover
+    }
+
+    &:focus {
+      outline: none;                       // Remove outline on focus
+      box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.5); // Add a blue outline on focus
+    }
+  }
+}
+
+.termsCheckbox {
+  display: flex;                      // Use flexbox for alignment
+  align-items: center;               // Center items vertically
+  justify-content: center;            // Center items horizontally (optional)
+  margin: 15px 0;                    // Space above and below the terms checkbox
+  
+  input[type="checkbox"] {
+    margin-right: 10px;              // Space between checkbox and label
+  }
+}
+
+.errorMessages {
+  color: red;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.errorMessages {
+  display: none; // Default to not displaying any error messages
+
+  &.visible {
+    display: block; // Only show when the .visible class is added
+  }
+
+  h3 {
+    color: red; // Styling for error messages
+    text-align: center; // Center the error message text
+  }
+}
+
+.formInputs {
+  display: flex;
+  flex-direction: column;
+  align-items: center; // Center the content horizontally
+  
+
+  // Styling for the terms and conditions checkbox
+  > div {
+    display: flex;
+    align-items: center; // Center the checkbox and label vertically
+    margin-bottom: 15px; // Space below the terms section
+  }
+
+  // Center the dropdown
+  select {
+    width: 100%; // Full width for better aesthetics
+    max-width: 300px; // Limit max width for better control
+    padding: 10px; // Add padding for comfort
+    margin: 10px 0; // Add vertical margin
+  }
+
+  // Center the submit button
+  input[type="submit"] {
+    margin-top: 10px; // Space above the button
+    align-self: center; // Center the button horizontally
+  }
+}
+
+.formInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Adds space between each input */
+  width: 100%;
+  max-width: 20rem; /* Limits max width for centered appearance */
+  
+}
+
+.formInputs input,
+.formInputs select,
+.formInputs button {
+  width: 80%; /* Ensures inputs and select span full width */
+  padding: 0.5rem;
+}
+
+.formInputs label {
+  margin-top: 0.5rem;
+}
+
+.formInputs div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .input-container {
   display: flex;
   flex-direction: column;
