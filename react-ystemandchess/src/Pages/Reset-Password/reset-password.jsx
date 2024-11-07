@@ -109,7 +109,7 @@ const ResetPassword = () => {
                 onChange={e => setUsername(e.target.value)}
                 onBlur={usernameVerification}
               />
-              <h6>{userNameError}</h6>
+              <h6 id="err-reset">{userNameError}</h6>
             </li>
             <li>
               <input
@@ -120,8 +120,8 @@ const ResetPassword = () => {
                 onChange={e => setEmail(e.target.value)}
                 onBlur={emailVerification}
               />
-              <h6>{emailError}</h6>
-              <h3>{result}</h3>
+              <h6 id="err-reset">{emailError}</h6>
+              <h3 id="h3-reset">{result}</h3>
             </li>
             <button id="button-rp" onClick={verifyUser}>Enter</button>
           </>
