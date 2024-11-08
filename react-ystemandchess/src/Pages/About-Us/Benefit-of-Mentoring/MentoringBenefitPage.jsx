@@ -5,24 +5,24 @@ import ImageTwo from "../../../images/mathArticle/Junechamp 2.png";
 
 const MathTutBenefitPage = () => {
   return (
-    <main id="main-content">
-      <section className="container">
-        <div className="text-title-md txt-p">
+    <main id="main-content-mentor">
+      <section className="container-mentor">
+        <div className="text-title-md-mentor txt-p">
           <h1 style={{ fontWeight: "bold" }}>The Benefits of Mentoring</h1>
         </div>
 
         <figure>
           <img
-            className="picture"
+            className="picture-mentor"
             src={ImageOne}
             alt="students practicing chess on computers"
           />
-          <figcaption className="text-caption txt-p">
+          <figcaption className="text-caption-mentor txt-p">
             Students practicing their chess skills in the classroom
           </figcaption>
         </figure>
 
-        <div className="text-normal txt-p">
+        <div className="text-normal-mentor txt-p">
           <p>
             Mentors serve an important role in a student's growth, providing
             both encouragement and support. They are the examples that students
@@ -35,7 +35,7 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
 
-        <div className="text-normal txt-p ">
+        <div className="text-normal-mentor txt-p ">
           <p>
             Underserved students are put at a disadvantage compared to those
             from more affluent neighborhoods when pursuing STEM careers. Poorer
@@ -53,9 +53,9 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container rectdiv2">
-        <div className="rectdiv2-wrapper">
-          <p className="recttext">
+      <section className="container rectdiv2-mentor">
+        <div className="rectdiv2-wrapper-mentor">
+          <p className="recttext-mentor">
             "Mentors give students the chance to explore what they can do and
             what they want to do, and when it comes to mentoring, personalized
             attention is important"
@@ -63,7 +63,7 @@ const MathTutBenefitPage = () => {
         </div>
       </section>
       <section className="container">
-        <div className="text-normal txt-p">
+        <div className="text-normal-mentor txt-p">
           <p>
             STEM can seem like a challenging field to go into for minority
             students in particular. The same USNews article states that less
@@ -77,7 +77,7 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
 
-        <div className="text-normal txt-p">
+        <div className="text-normal-mentor txt-p">
           <p>
             Mentors provide the encouragement and support that builds students'
             confidence. Mentors give students the chance to explore what they
@@ -96,16 +96,16 @@ const MathTutBenefitPage = () => {
 
         <figure>
           <img
-            className="picture"
+            className="pictureMentor"
             src={ImageTwo}
             alt="A student standing and holding a trophy alongside their mentor."
           />
-          <figcaption className="text-caption txt-p">
+          <figcaption className="text-caption-mentor txt-p">
             A student with their mentor after winning an award.
           </figcaption>
         </figure>
 
-        <div className="text-normal txt-p">
+        <div className="text-normal-mentor txt-p">
           <p>
             Y STEM and Chess provides one-on-one mentoring sessions to help
             build students' personal skills, in addition to tutoring in STEM and
