@@ -118,7 +118,7 @@ const Login = () => {
           {/* <div className="underline"></div> */}
           {/* <label htmlFor="password">Password</label> */}
         </div>
-        <button type="submit">Enter</button>
+        <button id="button-login" type="submit">Enter</button>
       </form>
       <div className="additional-options">
         <Link to="/signup" className="option">

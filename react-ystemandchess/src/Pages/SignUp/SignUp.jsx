@@ -294,30 +294,7 @@ const Signup = () => {
         </div>
   
   {/* Submit Button */}
-  <div className='signUpButton'>
-  <input
-    type="submit"
-    value="Submit"
-    className="submitButton" // Add a class for styling
-    style={{
-      border: '1px solid black',
-      backgroundColor: 'transparent',
-      color: 'black',
-      padding: '10px 20px',
-      cursor: 'pointer',
-      transition: 'background-color 0.3s ease, color 0.3s ease',
-      marginTop: '10px', // Add some space above the button
-    }}
-    onMouseEnter={(e) => {
-      e.target.style.backgroundColor = 'blue';
-      e.target.style.color = 'white';
-    }}
-    onMouseLeave={(e) => {
-      e.target.style.backgroundColor = 'transparent';
-      e.target.style.color = 'black';
-    }}
-  />
-   </div>  
+  <button type="submit" id="button-signup">Submit</button>
     </form>
   );  
 };

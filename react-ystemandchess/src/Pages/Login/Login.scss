@@ -90,27 +90,26 @@ footer {
       transition: all 0.3s ease;
     }
   }
-  button {
-    position: relative;
-    background: #ead94c;
-    color: black;
-    text-transform: uppercase;
-    font-size: 1.2rem;
-    letter-spacing: 0.1rem;
-    font-weight: 400;
-    padding: 0.5rem 1.5rem;
-    transition: 0.3s;
-    cursor: pointer;
-    border: 2px solid black;
+  #button-login {
+    border: 2px solid;      // Sets the border width and style
+    border-color: #3a7cca;
+    width: 15%;
+    outline-style: none;
+    padding-left: 2%;
+    padding-right: 2%;
+    font-family: Roboto;
+    font-size: 22px;
+    font-style: normal;
+    font-weight: 700;
+    background-color: #fff;
+    color: #1a63ab;
+    border-radius: 33px;
     margin-top: 35px;
-    margin-left: 1%;
-    width: 20%;
-    border-radius: 0.5rem;
   }
-
+  
   button:hover {
-    background: rgb(46, 221, 46);
-    letter-spacing: 0.25rem;
+    background-color: #3a7cca;
+    color: #fff;
   }
 }
 

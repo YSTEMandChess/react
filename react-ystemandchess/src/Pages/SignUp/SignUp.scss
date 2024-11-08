@@ -11,33 +11,25 @@ h2 {
   width: 100%;
 }
 
-.signUpButton {
-  margin-top: 10px; // Space above the button
+#button-signup {
+  border: 2px solid;      // Sets the border width and style
+  border-color: #3a7cca;
+  width: 15%;
+  outline-style: none;
+  padding-left: 2%;
+  padding-right: 2%;
+  font-family: Roboto;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 700;
+  background-color: #fff;
+  color: #1a63ab;
+  border-radius: 33px;
+}
 
-  .submitButton {
-    width: 100%;                            // Full width
-    max-width: 300px;                      // Maximum width of the button
-    border: none;                          // Remove the default border
-    background-color: transparent;         // Transparent background
-    color: black;                          // Black text color
-    padding: 12px 20px;                    // Padding for better appearance
-    cursor: pointer;                       // Pointer cursor on hover
-    border-radius: 25px;                  // Circular edges
-    font-size: 16px;                      // Font size
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // Subtle shadow for depth
-    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; // Smooth transition
-
-    &:hover {
-      background-color: blue;              // Change background color on hover
-      color: white;                        // Change text color to white on hover
-      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); // Darker shadow on hover
-    }
-
-    &:focus {
-      outline: none;                       // Remove outline on focus
-      box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.5); // Add a blue outline on focus
-    }
-  }
+button:hover {
+  background-color: #3a7cca;
+  color: #fff;
 }
 
 .termsCheckbox {
