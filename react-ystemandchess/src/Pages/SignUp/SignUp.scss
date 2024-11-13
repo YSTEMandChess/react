@@ -1,6 +1,121 @@
 h2 {
   margin-top: 5rem;
 }
+
+.signupForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; /* Centers form vertically */
+  width: 100%;
+}
+
+#button-signup {
+  border: 2px solid;      // Sets the border width and style
+  border-color: #3a7cca;
+  width: 15%;
+  outline-style: none;
+  padding-left: 2%;
+  padding-right: 2%;
+  font-family: Roboto;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 700;
+  background-color: #fff;
+  color: #1a63ab;
+  border-radius: 33px;
+}
+
+button:hover {
+  background-color: #3a7cca;
+  color: #fff;
+}
+
+.termsCheckbox {
+  display: flex;                      // Use flexbox for alignment
+  align-items: center;               // Center items vertically
+  justify-content: center;            // Center items horizontally (optional)
+  margin: 15px 0;                    // Space above and below the terms checkbox
+  
+  input[type="checkbox"] {
+    margin-right: 10px;              // Space between checkbox and label
+  }
+}
+
+.errorMessages {
+  color: red;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.errorMessages {
+  display: none; // Default to not displaying any error messages
+
+  &.visible {
+    display: block; // Only show when the .visible class is added
+  }
+
+  h3 {
+    color: red; // Styling for error messages
+    text-align: center; // Center the error message text
+  }
+}
+
+.formInputs {
+  display: flex;
+  flex-direction: column;
+  align-items: center; // Center the content horizontally
+  
+
+  // Styling for the terms and conditions checkbox
+  > div {
+    display: flex;
+    align-items: center; // Center the checkbox and label vertically
+    margin-bottom: 15px; // Space below the terms section
+  }
+
+  // Center the dropdown
+  select {
+    width: 100%; // Full width for better aesthetics
+    max-width: 300px; // Limit max width for better control
+    padding: 10px; // Add padding for comfort
+    margin: 10px 0; // Add vertical margin
+  }
+
+  // Center the submit button
+  input[type="submit"] {
+    margin-top: 10px; // Space above the button
+    align-self: center; // Center the button horizontally
+  }
+}
+
+.formInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Adds space between each input */
+  width: 100%;
+  max-width: 20rem; /* Limits max width for centered appearance */
+  
+}
+
+.formInputs input,
+.formInputs select,
+.formInputs button {
+  width: 80%; /* Ensures inputs and select span full width */
+  padding: 0.5rem;
+}
+
+.formInputs label {
+  margin-top: 0.5rem;
+}
+
+.formInputs div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .input-container {
   display: flex;
   flex-direction: column;

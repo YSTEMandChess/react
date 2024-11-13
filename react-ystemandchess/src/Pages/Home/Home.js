@@ -35,7 +35,7 @@ const Home = () => {
     <div className="home-container">
       <div className="home-content1">
         <div className="info">
-          <h1>
+          <h1 id="h1-home">
             Helping your child develop <br />
             critical thinking skills!
           </h1>
@@ -71,7 +71,7 @@ const Home = () => {
       <div className="home-content2">
         <div className="card1">
           <img src={Images.Heart} alt="heart"></img>
-          <h1>Free</h1>
+          <h1 id="h1-home">Free</h1>
           <p>
             For students who qualify for <br></br> free and reduced lunch.
             <br></br>
@@ -83,7 +83,7 @@ const Home = () => {
         </div>
         <div className="card2">
           <img src={Images.Gem} alt="gem"></img>
-          <h1>Premium</h1>
+          <h1 id="h1-home">Premium</h1>
           <p>
             For students who don't qualify <br></br> for free and reduced lunch.{" "}
             <br></br>
@@ -132,7 +132,7 @@ const Home = () => {
       ></img>
 
       <div className="home-content5">
-        <h1>Books by Devin Nakano</h1>
+        <h1 id="h1-home">Books by Devin Nakano</h1>
         {books.map((book, index) => (
           <div key={index} className="book">
             <div className="book-left">

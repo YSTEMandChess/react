@@ -170,7 +170,7 @@ const Signup = () => {
   return (
     <form className="signupForm" onSubmit={sendToDatabase}>
       <h2>Sign up</h2>
-      <div className="errorMessages">
+      <div className="errorMessages" style={{ display: (firstNameError || lastNameError || emailError || userNameError || passwordError || retypePasswordError) ? 'block' : 'none' }}>
         <h3>{firstNameError}</h3>
         <h3>{lastNameError}</h3>
         <h3>{emailError}</h3>
@@ -280,7 +280,9 @@ const Signup = () => {
             ))}
           </div>
         )}
-        <div>
+        </div>
+          <div className="termsCheckbox">
+         
           <input
             type="checkbox"
             id="termsCheckbox"
@@ -288,28 +290,11 @@ const Signup = () => {
             onChange={handleTermsCheckboxChange}
           />
           <label htmlFor="termsCheckbox">I accept the terms and conditions</label>
+
         </div>
-          <input
-            type="submit"
-            value="Submit"
-            style={{
-              border: '1px solid black',    // Black border
-              backgroundColor: 'transparent',  // Transparent background
-              color: 'black',               // Black text color
-              padding: '10px 20px',         // Padding for better appearance
-              cursor: 'pointer',            // Pointer cursor on hover
-              transition: 'background-color 0.3s ease, color 0.3s ease',  // Smooth transition for background and text color
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = 'blue';  // Change background color on hover
-              e.target.style.color = 'white';           // Change text color to white on hover
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';  // Restore transparent background on leave
-              e.target.style.color = 'black';                  // Restore text color to black on leave
-            }}
-          />
-      </div>
+  
+  {/* Submit Button */}
+  <button type="submit" id="button-signup">Submit</button>
     </form>
   );  
 };

@@ -5,9 +5,9 @@ import ImageTwo from "../../../images/mathArticle/Junechamp 2.png";
 
 const CSBenefitPage = () => {
   return (
-    <main id="main-content">
-      <section className="container">
-        <div className="text-title-md txt-p">
+    <main id="main-contentCS">
+      <section className="containerCSBenifit">
+        <div className="text-title-md-cs txt-p">
           <h1 style={{ fontWeight: "bold" }}>
             The Benefits of Computer Science Tutoring
           </h1>
@@ -15,16 +15,16 @@ const CSBenefitPage = () => {
 
         <figure>
           <img
-            className="picture"
+            className="picture-cs"
             src={ImageOne}
             alt="students practicing chess on computers"
           />
-          <figcaption className="text-caption txt-p">
+          <figcaption className="text-caption-cs txt-p">
             Students practicing their chess skills in the classroom
           </figcaption>
         </figure>
 
-        <div className="text-normal txt-p">
+        <div className="text-normal-cs txt-p">
           <p>
             Computer science is a quickly growing field as technology becomes
             more and more ingrained in everyday life. Studying computer science
@@ -35,7 +35,7 @@ const CSBenefitPage = () => {
           </p>
         </div>
 
-        <div className="text-normal txt-p ">
+        <div className="text-normal-cs txt-p ">
           <p>
             Computer science has become fundamental to our lives, from the
             smartphones in our pockets to the computer you are reading this on.
@@ -49,17 +49,17 @@ const CSBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container rectdiv2">
+      <section className="container rectdiv2CS">
         <div className="rectdiv2-wrapper">
-          <p className="recttext">
+          <p className="recttextCS">
             "Women earn only eighteen percent of computer science degrees and
             Black and Latino students receive only twenty-two percent of college
             degrees in computer science"
           </p>
         </div>
       </section>
-      <section className="container">
-        <div className="text-normal txt-p">
+      <section className="containerCSBenifit">
+        <div className="text-normal-cs txt-p">
           <p>
             From an economic perspective, computer science is worthwhile and
             profitable to study. As this{" "}
@@ -79,7 +79,7 @@ const CSBenefitPage = () => {
           </p>
         </div>
 
-        <div className="text-normal txt-p">
+        <div className="text-normal-cs txt-p">
           <p>
             Tutoring for students in computer science can make a great
             difference. Starting early gives students an advantage in
@@ -100,7 +100,7 @@ const CSBenefitPage = () => {
 
         <figure>
           <img
-            className="picture"
+            className="pictureCS"
             src={ImageTwo}
             alt="A student standing and holding a trophy alongside their mentor."
           />
@@ -109,7 +109,7 @@ const CSBenefitPage = () => {
           </figcaption>
         </figure>
 
-        <div className="text-normal txt-p">
+        <div className="text-normal-cs txt-p">
           <p>
             Y STEM and Chess is dedicated to helping students rise out of
             poverty, and STEM gives students a pathway to earning a living and
