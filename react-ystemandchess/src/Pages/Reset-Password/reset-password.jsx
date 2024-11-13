@@ -68,54 +68,31 @@ const ResetPassword = () => {
           />
         </div>
 
+        <div>
+          <label htmlFor='email' className='block text-sm font-medium mb-1'>
+            Email
+          </label>
+          <input
+            id='email'
+            type='email'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className='w-full p-2 border rounded'
+            required
+            disabled={isLoading}
+          />
+        </div>
 
-  return (
-    <div>
-      
-      <div className="input-container-rp">
-        {!showData ? (
-          <>
-            <h4>Please Enter UserName and Email To Reset Your Password</h4>
-            <li>
-              <input
-                id="username-rp"
-                type="text"
-                placeholder="UserName"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                onBlur={usernameVerification}
-              />
-              <h6 id="err-reset">{userNameError}</h6>
-            </li>
-            <li>
-              <input
-                id="email-rp"
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                onBlur={emailVerification}
-              />
-              <h6 id="err-reset">{emailError}</h6>
-              <h3 id="h3-reset">{result}</h3>
-            </li>
-            <button id="button-rp" onClick={verifyUser}>Enter</button>
-          </>
-        ) : (
-          <div>
-            <p>
-              A password reset link was sent to your registered email. Click the link
-              in the email to create a new password.
-            </p>
-            <div>
-              If you have already changed the password then click the
-              <a href="/login">Login</a>
-            </div>
-          </div>
-        )}
-      </div>
-     
-
+        <button
+          type='submit'
+          disabled={isLoading}
+          className={`w-full bg-blue-500 text-white p-2 rounded ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
+          }`}
+        >
+          {isLoading ? 'Sending...' : 'Reset Password'}
+        </button>
+      </form>
     </div>
   );
 };
