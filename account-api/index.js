@@ -5,8 +5,17 @@ const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
 
+
 const app = express();
 const server = http.createServer(app);
+
+const debugging = true;
+
+const { Client } = require('pg');
+
+const network = "ystem-network";
+
+
 
 
 // Use CORS middleware to allow all origins
@@ -23,10 +32,6 @@ const io = socketIo(server, {
     credentials: true // Allow credentials if needed
   }
 });
-
-const { Client } = require('pg');
-
-const network = "ystem-network";
 
 server.listen(process.env.PORT, () => {
   console.log(`listening on ${process.env.PORT}`);
@@ -71,9 +76,26 @@ const client = new Client({
 client.connect();
 
 // Create a table
-const creatUsers = async () => {
+const createUsersTable = async () => {
+  
+  // If we're debugging, drop the users table so we can add it again
+  if (debugging)
+  {
+    try {
+      
+      const deleteTableQuery = 'DROP TABLE IF EXISTS Users;';
+      
+      await client.query(deleteTableQuery);
+
+      console.log('Table created successfully!');
+
+    } catch (err) {
+      console.error('Error creating table:', err);
+    }
+  }
+
+  // Create users table
   try {
-    const deleteTableQuery = 'DROP TABLE IF EXISTS Users;';
     
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS Users (
@@ -88,6 +110,42 @@ const creatUsers = async () => {
     console.error('Error creating table:', err);
   }
 };
+
+const createMentorsTable = async () => {
+  
+  // If we're debugging, drop the users table so we can add it again
+  if (debugging)
+  {
+    try {
+      
+      const deleteTableQuery = 'DROP TABLE IF EXISTS Mentors;';
+      
+      await client.query(deleteTableQuery);
+
+      console.log('Table created successfully!');
+
+    } catch (err) {
+      console.error('Error creating table:', err);
+    }
+  }
+
+  // Create users table
+  try {
+    
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS Mentors (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(100) UNIQUE,
+        name VARCHAR(50)
+      );
+    `;
+    await client.query(createTableQuery);
+    console.log('Table created successfully!');
+  } catch (err) {
+    console.error('Error creating table:', err);
+  }
+};
+
 
 // Add an entry to the table
 const addEntry = async () => {
