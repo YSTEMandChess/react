@@ -101,9 +101,9 @@ if __name__ == "__main__":
     run_encoded_command(network_command)
     
     # Compiling and starting transit UPDATER docker
-    print("starting account API node.js")
-    start_docker_image("account-api", "account-api-container", "account-api")
-
+    
     print("stating account database")
     start_docker_image("account-db", "account-db-container", "account-db")
 
+    print("starting account API node.js")
+    start_docker_image("account-api", "account-api-container", "account-api")

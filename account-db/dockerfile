@@ -5,6 +5,7 @@ FROM postgres:latest
 ENV POSTGRES_USER=admin
 ENV POSTGRES_PASSWORD=password
 ENV POSTGRES_DB=account-db
+ENV PGPORT=5000 
 
-# Expose the default PostgreSQL port
-EXPOSE 5400
+# Expose the PostgreSQL port
+EXPOSE 5000

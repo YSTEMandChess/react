@@ -11,7 +11,7 @@ COPY . .
 RUN npm install
 
 # Expose the desired port (e.g., 3000 if your app uses it)
-EXPOSE 3000
+EXPOSE 4000
 
 # Define the default command to run the app
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

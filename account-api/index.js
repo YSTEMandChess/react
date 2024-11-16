@@ -15,6 +15,12 @@ const { Client } = require('pg');
 
 const network = "ystem-network";
 
+const PORT = 4000;
+
+console.log(network);
+console.log(PORT);
+
+
 // Use CORS middleware to allow all origins
 app.use(cors({
   origin: "*", // Allow all origins
@@ -22,19 +28,38 @@ app.use(cors({
   credentials: true // Allow credentials (if needed)
 }));
 
-const io = socketIo(server, {
-  cors: {
-    origin: "*", // Allow all origins
-    methods: ["GET", "POST"], // Allowed methods
-    credentials: true // Allow credentials if needed
+
+// Connect to the PostgreSQL server
+const client = new Client({
+  user: 'admin',  // PostgreSQL username
+  host: 'account-db-container',     // Database host (e.g., localhost)
+  database: 'account-db', // Database name
+  password: 'password', // Database password
+  port: 5000,             // PostgreSQL port (default: 5000)
+});
+// Connect to the PostgreSQL database
+
+async function connectToDatabase(client) {
+
+  try{
+    await client.connect();
+    console.log("success!");
   }
+  catch (err) {
+    console.error('Error connecting to postgreSQL database:', err);
+    
+  }
+
+}
+
+connectToDatabase(client);
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Account server API is running on ${network}:${PORT}`);
 });
 
-server.listen(process.env.PORT, () => {
-  console.log(`listening on ${process.env.PORT}`);
-});
-
-app.post('/signin-user', (req, res) => {
+app.post('/test-student-pass', (req, res) => {
   // Retrieve data from the request body
   const { email, pass } = req.data;
 
@@ -46,7 +71,7 @@ app.post('/signin-user', (req, res) => {
   // Process the data (e.g., save to database, etc.)
   console.log('Received data:', { email, pass });
 
-  user = getUserByEmail(email);
+  let user = getStudentByEmail(email);
 
   if (user.passkey == pass)
   {
@@ -63,7 +88,7 @@ app.post('/signin-user', (req, res) => {
   }
 });
 
-app.post('/signin-mentor', (req, res) => {
+app.post('/test-mentor-pass', (req, res) => {
   // Retrieve data from the request body
   const { email, pass } = req.data;
 
@@ -75,7 +100,7 @@ app.post('/signin-mentor', (req, res) => {
   // Process the data (e.g., save to database, etc.)
   console.log('Received data:', { email, pass });
 
-  user = getMentorByEmail(email);
+  let user = getMentorByEmail(email);
 
   if (user.passkey == pass)
   {
@@ -92,7 +117,7 @@ app.post('/signin-mentor', (req, res) => {
   }
 });
 
-app.post('/signup-user', (req, res) => {
+app.post('/add-student', (req, res) => {
   // Retrieve data from the request body
   const { name, email, pass } = req.data;
 
@@ -104,7 +129,7 @@ app.post('/signup-user', (req, res) => {
   // Process the data (e.g., save to database, etc.)
   console.log('Received data:', { email, pass });
 
-  user = addUser(email);
+  let user = addUser(email);
 
   if (user.passkey == pass)
   {
@@ -121,7 +146,7 @@ app.post('/signup-user', (req, res) => {
   }
 });
 
-app.post('/signup-mentor', (req, res) => {
+app.post('/add-mentor', (req, res) => {
   // Retrieve data from the request body
   const { name, email, pass } = req.data;
 
@@ -150,42 +175,24 @@ app.post('/signup-mentor', (req, res) => {
   }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://${network}:${PORT}`);
-});
-
-
 // METHODS FOR CONNECTING TO DATABASE
 
-// Connect to the PostgreSQL server
-const client = new Client({
-  user: 'admin',  // PostgreSQL username
-  host: 'account-db-container',     // Database host (e.g., localhost)
-  database: 'account-db', // Database name
-  password: 'password', // Database password
-  port: 5432,             // PostgreSQL port (default: 5432)
-});
-
-// Connect to the PostgreSQL database
-client.connect();
-
 // Create tables
-const createUsersTable = async () => {
+const createStudentTable = async () => {
   
   // If we're debugging, drop the users table so we can add it again
   if (debugging)
   {
     try {
       
-      const deleteTableQuery = 'DROP TABLE IF EXISTS user;';
+      const deleteTableQuery = 'DROP TABLE IF EXISTS student;';
       
       await client.query(deleteTableQuery);
 
-      console.log('Table created successfully!');
+      console.log('Table deleted successfully!');
 
     } catch (err) {
-      console.error('Error creating table:', err);
+      console.error('Error deleting table:', err);
     }
   }
 
@@ -193,7 +200,7 @@ const createUsersTable = async () => {
   try {
     
     const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS user (
+      CREATE TABLE IF NOT EXISTS student (
         id SERIAL PRIMARY KEY,
         email VARCHAR(100) UNIQUE,
         name VARCHAR(50),
@@ -267,9 +274,9 @@ const createMentorsTable = async () => {
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS mentors (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER,
         mentor_id INTEGER,
-        FOREIGN KEY (user_id) REFERENCES user (id),
+        student_id INTEGER,
+        FOREIGN KEY (student_id) REFERENCES student (id),
         FOREIGN KEY (mentor_id) REFERENCES mentor (id)
       );
     `;
@@ -284,10 +291,10 @@ const createMentorsTable = async () => {
 const addUser = async (username, passkey, email, ) => {
   try {
     const insertQuery = `
-      INSERT INTO user (name, passkey, email)
-      VALUES ('${username}', '${passkey}', '${email}');  -- Avoid duplicate entries
+      INSERT INTO student (name, passkey, email)
+      VALUES ($1, $2, $3);  -- Avoid duplicate entries
     `;
-    await client.query(insertQuery);
+    await client.query(insertQuery, [username, passkey, email]);
     console.log('Entry added successfully!');
     return true;
   } catch (err) {
@@ -300,9 +307,9 @@ const addMentor = async (mentor, passkey, email, ) => {
   try {
     const insertQuery = `
       INSERT INTO mentor (name, passkey, email)
-      VALUES ('${mentor}', '${passkey}', '${email}');  -- Avoid duplicate entries
+      VALUES ($1, $2, $3);  -- Avoid duplicate entries
     `;
-    await client.query(insertQuery);
+    await client.query(insertQuery, [username, passkey, email]);
     console.log('Entry added successfully!');
     return true;
   } catch (err) {
@@ -314,8 +321,8 @@ const addMentor = async (mentor, passkey, email, ) => {
 // Get elements from the table
 const getMentorByEmail = async (email) => {
   try {
-    const result = await client.query(`SELECT * FROM mentor WHERE email = '${email}';`);
-
+    insertQuery = client.query(`SELECT * FROM mentor WHERE email = '$1';`);
+    const result = await client.query(insertQuery, [email]);
 
     if (result.rows.length == 1) {
       // Return the only matching row as a JSON object
@@ -330,9 +337,10 @@ const getMentorByEmail = async (email) => {
   }
 };
 
-const getUserByEmail = async (email) => {
+const getStudentByEmail = async (email) => {
   try {
-    const result = await client.query(`SELECT * FROM user WHERE email = '${email}';`);
+    insertQuery = client.query(`SELECT * FROM student WHERE email = '$1';`);
+    const result = await client.query(insertQuery, [email]);
 
 
     if (result.rows.length == 1) {
@@ -351,14 +359,12 @@ const getUserByEmail = async (email) => {
 // Execute all operations
 const run = async () => {
   try {
-    await createUsersTable(); 
+    await createStudentTable(); 
     await createMentorTable();
     await createMentorsTable();
     
   } catch (err) {
     console.error('Error during operations:', err);
-  } finally {
-    client.end(); // Close the connection
   }
 };
 
