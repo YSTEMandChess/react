@@ -15,9 +15,6 @@ const { Client } = require('pg');
 
 const network = "ystem-network";
 
-
-
-
 // Use CORS middleware to allow all origins
 app.use(cors({
   origin: "*", // Allow all origins
@@ -37,28 +34,126 @@ server.listen(process.env.PORT, () => {
   console.log(`listening on ${process.env.PORT}`);
 });
 
-/// Purpose: Triggered when a client connects to the socket.
-/// Input: N/A (Automatically triggered by the connection)
-/// Output: Logs "a user connected to socket" in the server console.
+app.post('/signin-user', (req, res) => {
+  // Retrieve data from the request body
+  const { email, pass } = req.data;
 
-// Define a simple route
-app.get('/', (req, res) => {
+  // Check if data exists
+  if (!email || !pass) {
+    return res.status(400).json({ error: 'Name and email are required' });
+  }
 
-  res.send('Hello, World!');
-  
+  // Process the data (e.g., save to database, etc.)
+  console.log('Received data:', { email, pass });
+
+  user = getUserByEmail(email);
+
+  if (user.passkey == pass)
+  {
+    // Send a response back of success
+    res.json({
+      passed: true
+    });
+  }
+  else { 
+    // Send a response back of failure
+    res.json({
+      passed: false
+    });
+  }
 });
 
-app.post('/getuserinfo', (req, res) => {
+app.post('/signin-mentor', (req, res) => {
+  // Retrieve data from the request body
+  const { email, pass } = req.data;
 
-  res.send('Hello, World!');
+  // Check if data exists
+  if (!email || !pass) {
+    return res.status(400).json({ error: 'Name and email are required' });
+  }
 
+  // Process the data (e.g., save to database, etc.)
+  console.log('Received data:', { email, pass });
+
+  user = getMentorByEmail(email);
+
+  if (user.passkey == pass)
+  {
+    // Send a response back of success
+    res.json({
+      passed: true
+    });
+  }
+  else { 
+    // Send a response back of failure
+    res.json({
+      passed: false
+    });
+  }
+});
+
+app.post('/signup-user', (req, res) => {
+  // Retrieve data from the request body
+  const { name, email, pass } = req.data;
+
+  // Check if data exists
+  if (!name || !email || !pass) {
+    return res.status(400).json({ error: 'Name, pass, and email are required' });
+  }
+
+  // Process the data (e.g., save to database, etc.)
+  console.log('Received data:', { email, pass });
+
+  user = addUser(email);
+
+  if (user.passkey == pass)
+  {
+    // Send a response back of success
+    res.json({
+      passed: true
+    });
+  }
+  else { 
+    // Send a response back of failure
+    res.json({
+      passed: false
+    });
+  }
+});
+
+app.post('/signup-mentor', (req, res) => {
+  // Retrieve data from the request body
+  const { name, email, pass } = req.data;
+
+  // Check if data exists
+  if (!name || !email || !pass) {
+    return res.status(400).json({ error: 'Name, pass, and email are required' });
+  }
+
+  // Process the data (e.g., save to database, etc.)
+  console.log('Received data:', { email, pass });
+
+  var passed = addMentor(email);
+
+  if (passed)
+  {
+    // Send a response back of success
+    res.json({
+      passed: true
+    });
+  }
+  else { 
+    // Send a response back of failure
+    res.json({
+      passed: false
+    });
+  }
 });
 
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://${network}:${PORT}`);
 });
-
 
 
 // METHODS FOR CONNECTING TO DATABASE
@@ -189,43 +284,77 @@ const createMentorsTable = async () => {
 const addUser = async (username, passkey, email, ) => {
   try {
     const insertQuery = `
-      INSERT INTO users (name, passkey, email)
+      INSERT INTO user (name, passkey, email)
       VALUES ('${username}', '${passkey}', '${email}');  -- Avoid duplicate entries
     `;
     await client.query(insertQuery);
     console.log('Entry added successfully!');
+    return true;
   } catch (err) {
     console.error('Error adding entry:', err);
+    return false;
+  }
+};
+
+const addMentor = async (mentor, passkey, email, ) => {
+  try {
+    const insertQuery = `
+      INSERT INTO mentor (name, passkey, email)
+      VALUES ('${mentor}', '${passkey}', '${email}');  -- Avoid duplicate entries
+    `;
+    await client.query(insertQuery);
+    console.log('Entry added successfully!');
+    return true;
+  } catch (err) {
+    console.error('Error adding entry:', err);
+    return false;
   }
 };
 
 // Get elements from the table
-const getMentorByEmail = async (id) => {
+const getMentorByEmail = async (email) => {
   try {
-    const result = await client.query(`SELECT * FROM mentor WHERE email = '${id}';`);
+    const result = await client.query(`SELECT * FROM mentor WHERE email = '${email}';`);
 
 
     if (result.rows.length == 1) {
       // Return the only matching row as a JSON object
-      console.log('Users:', result.rows); // `result.rows` will contain the fetched rows
+      console.log('Mentors:', result.rows); // `result.rows` will contain the fetched rows
       return result.rows[0]; // This will return the entire row in a JSON format
     } 
     else {
-      return { message: 'Mentor not found' }; // Handle case where no mentor is found
+      return { message: 'Mentor not found or multiple mentors with same email' }; // Handle case where no mentor is found
     }
   } catch (err) {
     console.error('Error fetching elements:', err);
   }
 };
 
+const getUserByEmail = async (email) => {
+  try {
+    const result = await client.query(`SELECT * FROM user WHERE email = '${email}';`);
+
+
+    if (result.rows.length == 1) {
+      // Return the only matching row as a JSON object
+      console.log('User:', result.rows); // `result.rows` will contain the fetched rows
+      return result.rows[0]; // This will return the entire row in a JSON format
+    } 
+    else {
+      return { message: 'User not found or multiple mentors with same email' }; // Handle case where no mentor is found
+    }
+  } catch (err) {
+    console.error('Error fetching elements:', err);
+  }
+};
 
 // Execute all operations
 const run = async () => {
   try {
-    await createTable(); // Step 1: Create table
-    await addEntry();    // Step 2: Add entry
-    await getElements(); // Step 3: Retrieve elements
-    await deleteTable(); // Step 4: Delete table
+    await createUsersTable(); 
+    await createMentorTable();
+    await createMentorsTable();
+    
   } catch (err) {
     console.error('Error during operations:', err);
   } finally {
