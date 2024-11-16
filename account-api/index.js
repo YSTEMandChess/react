@@ -73,12 +73,13 @@ client.connect();
 // Create a table
 const creatUsers = async () => {
   try {
+    const deleteTableQuery = 'DROP TABLE IF EXISTS Users;';
+    
     const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS FRIENDS (
-        idFORUSER1 SERIAL FOREIGN KEY,
-        idFORUSER2 SERIAL FOREIGN KEY,
-
-        email VARCHAR(100) UNIQUE
+      CREATE TABLE IF NOT EXISTS Users (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(100) UNIQUE,
+        name VARCHAR(50)
       );
     `;
     await client.query(createTableQuery);
