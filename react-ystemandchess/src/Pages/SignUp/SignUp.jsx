@@ -1,87 +1,103 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import './SignUp.scss';
 import { environment } from '../../environments/environment.js';
 
 const Signup = () => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [retypedPassword, setRetypedPassword] = useState('');
-  const [accountType, setAccountType] = useState('');
-  const [newStudents, setNewStudents] = useState([]);
+  //states from angular (clean up later)
+  const [link, setLink] = useState(null);
+  const [firstNameFlag, setFirstNameFlag] = useState(false);
+  const [lastNameFlag, setLastNameFlag] = useState(false);
+  const [emailFlag, setEmailFlag] = useState(false);
+  const [userNameFlag, setUserNameFlag] = useState(false);
+  const [passwordFlag, setPasswordFlag] = useState(false);
+  const [retypeFlag, setRetypeFlag] = useState(false);
+
   const [firstNameError, setFirstNameError] = useState('');
   const [lastNameError, setLastNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [userNameError, setUserNameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [retypePasswordError, setRetypePasswordError] = useState('');
-  const [termsAccepted, setTermsAccepted] = useState(false); // Checkbox state
-  const [link, setLink] = useState(null);
+
+  const [parentAccountFlag, setParentAccountFlag] = useState(false);
+  const [numStudents, setNumStudents] = useState([]);
+  const [newStudents, setNewStudents] = useState([]);
+  const [newStudentFlag, setNewStudentFlag] = useState(false);
+  const [studentFirstNameFlag, setStudentFirstNameFlag] = useState(false);
+  const [studentLastNameFlag, setStudentLastNameFlag] = useState(false);
+  const [studentUserNameFlag, setStudentUserNameFlag] = useState(false);
+  const [studentPasswordFlag, setStudentPasswordFlag] = useState(false);
+  const [studentRetypeFlag, setStudentRetypeFlag] = useState(false);
+  const [studentEmailFlag, setStudentEmailFlag] = useState(true);
   const [numNewStudents, setNumNewStudents] = useState(0);
 
-  const firstNameVerificationREGEX = /^[A-Za-z ]{2,15}$/;
-  const lastNameVerificationREGEX = /^[A-Za-z]{2,15}$/;
-  const emailVerificationREGEX = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}/;
-  const usernameVerificationREGEX = /^[a-zA-Z](\S){1,14}$/;
-
-  const validateFirstName = (name) => {
-    if (firstNameVerificationREGEX.test(name)) {
+  const firstNameVerification = (firstName) => {
+    if (/^[A-Za-z ]{2,15}$/.test(firstName)) {
+      setFirstNameFlag(true);
       setFirstNameError('');
       return true;
     } else {
+      setFirstNameFlag(false);
       setFirstNameError('Invalid First Name');
       return false;
     }
   };
 
-  const validateLastName = (name) => {
-    if (lastNameVerificationREGEX.test(name)) {
+  const lastNameVerification = (lastName) => {
+    if (/^[A-Za-z]{2,15}$/.test(lastName)) {
+      setLastNameFlag(true);
       setLastNameError('');
       return true;
     } else {
+      setLastNameFlag(false);
       setLastNameError('Invalid Last Name');
       return false;
     }
   };
 
-  const validateEmail = (email) => {
-    if (emailVerificationREGEX.test(email)) {
+  const emailVerification = (email) => {
+    if (/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}/.test(email)) {
+      setEmailFlag(true);
       setEmailError('');
       return true;
     } else {
+      setEmailFlag(false);
       setEmailError('Invalid Email');
       return false;
     }
   };
 
-  const validateUsername = (username) => {
-    if (usernameVerificationREGEX.test(username)) {
+  const usernameVerification = (username) => {
+    if (/^[a-zA-Z](\S){1,14}$/.test(username)) {
+      setUserNameFlag(true);
       setUserNameError('');
       return true;
     } else {
+      setUserNameFlag(false);
       setUserNameError('Invalid Username');
       return false;
     }
   };
 
-  const validatePassword = (password) => {
-    if (password.length >= 8) {
-      setPasswordError('');
-      return true;
-    } else {
+  const passwordVerification = (password) => {
+    if (password.length < 8) {
+      setPasswordFlag(false);
       setPasswordError('Invalid Password');
       return false;
+    } else {
+      setPasswordFlag(true);
+      setPasswordError('');
+      return true;
     }
   };
 
-  const validateRetypedPassword = (retypedPassword, password) => {
+  const retypePasswordVerification = (retypedPassword, password) => {
     if (retypedPassword === password) {
+      setRetypeFlag(true);
       setRetypePasswordError('');
       return true;
     } else {
+      setRetypeFlag(false);
       setRetypePasswordError('Passwords do not match');
       return false;
     }
@@ -89,12 +105,12 @@ const Signup = () => {
 
   const checkIfValidAccount = () => {
     if (
-      validateFirstName(firstName) &&
-      validateLastName(lastName) &&
-      validateEmail(email) &&
-      validateUsername(username) &&
-      validatePassword(password) &&
-      validateRetypedPassword(retypedPassword, password)
+      firstNameFlag &&
+      lastNameFlag &&
+      emailFlag &&
+      userNameFlag &&
+      passwordFlag &&
+      retypeFlag
     ) {
       setLink('/login');
       return true;
@@ -104,73 +120,89 @@ const Signup = () => {
     }
   };
 
-  const handleAccountTypeChange = (e) => {
-    setAccountType(e.target.value);
+  const checkIfParent = () => {
+    const accountType = document.getElementById('types').value;
+    if (accountType === 'parent') {
+      setParentAccountFlag(true);
+    } else {
+      setParentAccountFlag(false);
+    }
+    return parentAccountFlag;
   };
 
-  const handleCreateNewStudent = () => {
-    setNewStudents([...newStudents, { firstName: '', lastName: '', username: '', email: '', password: '', retypedPassword: '' }]);
-    setNumNewStudents(numNewStudents + 1);
+  const clearNulls = (arr) => {
+    return arr.filter((item) => item !== null);
   };
 
-  const handleStudentChange = (index, field, value) => {
-    const updatedStudents = newStudents.map((student, i) =>
-      i === index ? { ...student, [field]: value } : student
-    );
-    setNewStudents(updatedStudents);
+  const addStudentToArray = (index) => {
+    return {
+      first: document.getElementById('studentFirstName' + index).value,
+      last: document.getElementById('studentLastName' + index).value,
+      username: document.getElementById('studentUsername' + index).value,
+      email: document.getElementById('studentEmail' + index).value,
+      password: document.getElementById('studentPassword' + index).value,
+    };
   };
 
-  const handleRemoveStudent = (index) => {
-    const updatedStudents = newStudents.filter((_, i) => i !== index);
-    setNewStudents(updatedStudents);
-    setNumNewStudents(numNewStudents - 1);
+  const studentFirstNameVerification = (firstName, index) => {
+    if (/^[A-Za-z ]{2,15}$/.test(firstName)) {
+      setStudentFirstNameFlag(true);
+      document.getElementById('errorFirstName' + index).innerHTML = '';
+      return true;
+    } else {
+      setStudentFirstNameFlag(false);
+      document.getElementById('errorFirstName' + index).innerHTML =
+        'Invalid First Name';
+      return false;
+    }
   };
 
-  const handleAddNewStudentForm = () => {
-    handleCreateNewStudent();
-  };
-
-  const handleTermsCheckboxChange = (e) => {
-    setTermsAccepted(e.target.checked);
-  };
-
-  const sendToDatabase = async (e) => {
-    e.preventDefault();
-
-    if (!checkIfValidAccount() || !termsAccepted) {
+  const SendToDataBase = () => {
+    if (!checkIfValidAccount()) {
       return;
     }
 
-    const baseURL = environment.urls.middlewareURL;
-    if (!baseURL) {
-      console.error('Middleware URL is not defined');
-      return;
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const username = document.getElementById('username').value;
+    const accountType = document.getElementById('types').value;
+
+    let url = '';
+
+    if (accountType === 'parent' && newStudentFlag) {
+      const cleanedStudents = clearNulls(newStudents);
+      const students = JSON.stringify(cleanedStudents);
+      url = `${environment.urls.middlewareURL}/user/?first=${firstName}&last=${lastName}&email=${email}&password=${password}&username=${username}&role=${accountType}&students=${students}`;
+    } else {
+      url = `${environment.urls.middlewareURL}/user/?first=${firstName}&last=${lastName}&email=${email}&password=${password}&username=${username}&role=${accountType}`;
     }
 
-    let url = `${baseURL}/user/?first=${firstName}&last=${lastName}&email=${email}&password=${password}&username=${username}&role=${accountType}`;
+    const httpGetAsync = (theUrl, callback) => {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+          callback(xmlHttp.responseText);
+      };
+      xmlHttp.open('POST', theUrl, true);
+      xmlHttp.send(null);
+    };
 
-    if (accountType === 'parent' && newStudents.length > 0) {
-      url += `&students=${encodeURIComponent(JSON.stringify(newStudents))}`;
-    }
-
-    console.log('Request URL:', url);
-
-    try {
-      const response = await axios.post(url);
-      if (response.data === 'This username has been taken. Please choose another.') {
+    httpGetAsync(url, (response) => {
+      if (
+        JSON.parse(response) ===
+        'This username has been taken. Please choose another.'
+      ) {
         setLink('/signup');
-      } else {
-        setLink('/login');
       }
-    } catch (error) {
-      console.error('There was an error!', error);
-    }
+    });
   };
 
   return (
-    <form className="signupForm" onSubmit={sendToDatabase}>
+    <form className='signupForm'>
       <h2>Sign up</h2>
-      <div className="errorMessages" style={{ display: (firstNameError || lastNameError || emailError || userNameError || passwordError || retypePasswordError) ? 'block' : 'none' }}>
+      <div className='errorMessages'>
         <h3>{firstNameError}</h3>
         <h3>{lastNameError}</h3>
         <h3>{emailError}</h3>
@@ -178,126 +210,157 @@ const Signup = () => {
         <h3>{passwordError}</h3>
         <h3>{retypePasswordError}</h3>
       </div>
-      <div className="formInputs">
+
+      <div>
         <input
-          type="text"
-          placeholder="First name"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          onBlur={() => validateFirstName(firstName)}
+          type='text'
+          id='firstName'
+          placeholder='First name'
+          onChange={(e) => firstNameVerification(e.target.value)}
         />
         <input
-          type="text"
-          placeholder="Last name"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          onBlur={() => validateLastName(lastName)}
+          type='text'
+          id='lastName'
+          placeholder='Last name'
+          onChange={(e) => lastNameVerification(e.target.value)}
         />
         <input
-          type="text"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onBlur={() => validateEmail(email)}
+          type='text'
+          id='email'
+          placeholder='Email'
+          onChange={(e) => emailVerification(e.target.value)}
         />
         <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          onBlur={() => validateUsername(username)}
+          type='text'
+          id='username'
+          placeholder='Username'
+          onChange={(e) => usernameVerification(e.target.value)}
         />
         <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onBlur={() => validatePassword(password)}
+          type='password'
+          id='password'
+          placeholder='Password'
+          onChange={(e) => passwordVerification(e.target.value)}
         />
         <input
-          type="password"
-          placeholder="Re-type password"
-          value={retypedPassword}
-          onChange={(e) => setRetypedPassword(e.target.value)}
-          onBlur={() => validateRetypedPassword(retypedPassword, password)}
+          type='password'
+          id='retypedPassword'
+          placeholder='Re-type password'
+          onChange={(e) =>
+            retypePasswordVerification(
+              e.target.value,
+              document.getElementById('password').value
+            )
+          }
         />
-        <p>Select Account Type</p>
-        <select value={accountType} onChange={handleAccountTypeChange}>
-          <option value="student">Student</option>
-          <option value="mentor">Mentor</option>
-          <option value="parent">Parent</option>
-        </select>
-        {accountType === 'parent' && (
-          <div>
-            <button type="button" id="create" onClick={handleCreateNewStudent}>
+      </div>
+
+      <p>Select Account Type</p>
+      <select id='types' onChange={checkIfParent}>
+        <option value='mentor'>Mentor</option>
+        <option value='parent'>Parent</option>
+      </select>
+
+      {parentAccountFlag && (
+        <div>
+          {!newStudentFlag && (
+            <button
+              type='button'
+              id='create'
+              onClick={() => {
+                setNewStudentFlag(true);
+                document.getElementById('create').style.display = 'none';
+                setNumStudents([...numStudents, 0]);
+                setNumNewStudents(numNewStudents + 1);
+              }}
+            >
               Create Student?
             </button>
-            {newStudents.map((student, index) => (
-              <div key={index}>
-                <div className="errorMessages">
-                  <h3>{/* Error messages for students */}</h3>
-                </div>
-                <button type="button" className="x" onClick={() => handleRemoveStudent(index)}>
-                  X
-                </button>
-                <input
-                  type="text"
-                  placeholder="Student's first name"
-                  value={student.firstName}
-                  onChange={(e) => handleStudentChange(index, 'firstName', e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Student's last name"
-                  value={student.lastName}
-                  onChange={(e) => handleStudentChange(index, 'lastName', e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Student username"
-                  value={student.username}
-                  onChange={(e) => handleStudentChange(index, 'username', e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Student's email"
-                  value={student.email}
-                  onChange={(e) => handleStudentChange(index, 'email', e.target.value)}
-                />
-                <input
-                  type="password"
-                  placeholder="Student's password"
-                  value={student.password}
-                  onChange={(e) => handleStudentChange(index, 'password', e.target.value)}
-                />
-                <input
-                  type="password"
-                  placeholder="Re-type student's password"
-                  value={student.retypedPassword}
-                  onChange={(e) => handleStudentChange(index, 'retypedPassword', e.target.value)}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-        </div>
-          <div className="termsCheckbox">
-         
-          <input
-            type="checkbox"
-            id="termsCheckbox"
-            checked={termsAccepted}
-            onChange={handleTermsCheckboxChange}
-          />
-          <label htmlFor="termsCheckbox">I accept the terms and conditions</label>
+          )}
 
+          {numStudents.map((_, i) => (
+            <div key={i} id={`newStudent${i}`}>
+              <div id={`error${i}`} className='errorMessages'>
+                <h3 id={`errorFirstName${i}`}></h3>
+                <h3 id={`errorLastName${i}`}></h3>
+                <h3 id={`errorUsername${i}`}></h3>
+                <h3 id={`errorPassword${i}`}></h3>
+                <h3 id={`errorRetype${i}`}></h3>
+              </div>
+
+              <button
+                type='button'
+                className='x'
+                onClick={() => {
+                  if (numNewStudents === 1) {
+                    setNewStudentFlag(false);
+                    setNumStudents([]);
+                    setNumNewStudents(0);
+                    setNewStudents([]);
+                    document.getElementById('create').style.display = 'inline';
+                  } else {
+                    document.getElementById(`newStudent${i}`).style.display =
+                      'none';
+                    const prevIndex = i !== 0 ? i - 1 : i;
+                    document.getElementById(`plus${prevIndex}`).style.display =
+                      'inline';
+                    setNewStudents((prev) => {
+                      const newArray = [...prev];
+                      newArray[i] = null;
+                      return newArray;
+                    });
+                    setNumNewStudents((prev) => prev - 1);
+                  }
+                }}
+              >
+                X
+              </button>
+
+              <input
+                type='text'
+                id={`studentFirstName${i}`}
+                placeholder="Student's first name"
+              />
+              <input
+                type='text'
+                id={`studentLastName${i}`}
+                placeholder="Student's last name"
+              />
+              <input
+                type='text'
+                id={`studentUsername${i}`}
+                placeholder='Student username'
+              />
+              <input
+                type='text'
+                id={`studentEmail${i}`}
+                placeholder="Student's email"
+              />
+              <input
+                type='password'
+                id={`studentPassword${i}`}
+                placeholder="Student's password"
+              />
+              <input
+                type='password'
+                id={`studentRetypedPassword${i}`}
+                placeholder="Re-type student's password"
+              />
+            </div>
+          ))}
         </div>
-  
-  {/* Submit Button */}
-  <button type="submit" id="button-signup">Submit</button>
+      )}
+
+      <div>
+        <input type='checkbox' id='termsCheckbox' />
+        <label htmlFor='termsCheckbox'>I accept the terms and conditions</label>
+      </div>
+
+      <button type='button' onClick={SendToDataBase}>
+        Sign up
+      </button>
     </form>
-  );  
+  );
 };
 
 export default Signup;
-
