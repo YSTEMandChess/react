@@ -83,7 +83,7 @@ const createUsersTable = async () => {
   {
     try {
       
-      const deleteTableQuery = 'DROP TABLE IF EXISTS Users;';
+      const deleteTableQuery = 'DROP TABLE IF EXISTS user;';
       
       await client.query(deleteTableQuery);
 
@@ -98,7 +98,42 @@ const createUsersTable = async () => {
   try {
     
     const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS Users (
+      CREATE TABLE IF NOT EXISTS user (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(100) UNIQUE,
+        name VARCHAR(50)
+      );
+    `;
+    await client.query(createTableQuery);
+    console.log('Table created successfully!');
+  } catch (err) {
+    console.error('Error creating table:', err);
+  }
+};
+
+const createMentorTable = async () => {
+  
+  // If we're debugging, drop the users table so we can add it again
+  if (debugging)
+  {
+    try {
+      
+      const deleteTableQuery = 'DROP TABLE IF EXISTS mentor;';
+      
+      await client.query(deleteTableQuery);
+
+      console.log('Table created successfully!');
+
+    } catch (err) {
+      console.error('Error creating table:', err);
+    }
+  }
+
+  // Create users table
+  try {
+    
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS mentor (
         id SERIAL PRIMARY KEY,
         email VARCHAR(100) UNIQUE,
         name VARCHAR(50)
@@ -118,7 +153,7 @@ const createMentorsTable = async () => {
   {
     try {
       
-      const deleteTableQuery = 'DROP TABLE IF EXISTS Mentors;';
+      const deleteTableQuery = 'DROP TABLE IF EXISTS mentors;';
       
       await client.query(deleteTableQuery);
 
@@ -133,10 +168,12 @@ const createMentorsTable = async () => {
   try {
     
     const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS Mentors (
+      CREATE TABLE IF NOT EXISTS mentors (
         id SERIAL PRIMARY KEY,
-        email VARCHAR(100) UNIQUE,
-        name VARCHAR(50)
+        user_id INTEGER,
+        mentor_id INTEGER,
+        FOREIGN KEY (user_id) REFERENCES user (id),
+        FOREIGN KEY (mentor_id) REFERENCES mentor (id)
       );
     `;
     await client.query(createTableQuery);
@@ -145,7 +182,6 @@ const createMentorsTable = async () => {
     console.error('Error creating table:', err);
   }
 };
-
 
 // Add an entry to the table
 const addEntry = async () => {
