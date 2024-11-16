@@ -75,7 +75,7 @@ const client = new Client({
 // Connect to the PostgreSQL database
 client.connect();
 
-// Create a table
+// Create tables
 const createUsersTable = async () => {
   
   // If we're debugging, drop the users table so we can add it again
@@ -101,7 +101,8 @@ const createUsersTable = async () => {
       CREATE TABLE IF NOT EXISTS user (
         id SERIAL PRIMARY KEY,
         email VARCHAR(100) UNIQUE,
-        name VARCHAR(50)
+        name VARCHAR(50),
+        passkey VARCHAR(20)
       );
     `;
     await client.query(createTableQuery);
@@ -136,7 +137,8 @@ const createMentorTable = async () => {
       CREATE TABLE IF NOT EXISTS mentor (
         id SERIAL PRIMARY KEY,
         email VARCHAR(100) UNIQUE,
-        name VARCHAR(50)
+        name VARCHAR(50),
+        passkey VARCHAR(20)
       );
     `;
     await client.query(createTableQuery);
@@ -164,7 +166,7 @@ const createMentorsTable = async () => {
     }
   }
 
-  // Create users table
+  // Create mentors table
   try {
     
     const createTableQuery = `
@@ -183,13 +185,12 @@ const createMentorsTable = async () => {
   }
 };
 
-// Add an entry to the table
-const addEntry = async () => {
+// Add User
+const addUser = async (username, passkey, email, ) => {
   try {
     const insertQuery = `
-      INSERT INTO users (name, email)
-      VALUES ('John Doe', 'john.doe@example.com')
-      ON CONFLICT (email) DO NOTHING;  -- Avoid duplicate entries
+      INSERT INTO users (name, passkey, email)
+      VALUES ('${username}', '${passkey}', '${email}');  -- Avoid duplicate entries
     `;
     await client.query(insertQuery);
     console.log('Entry added successfully!');
@@ -199,25 +200,24 @@ const addEntry = async () => {
 };
 
 // Get elements from the table
-const getElements = async () => {
+const getMentorByEmail = async (id) => {
   try {
-    const result = await client.query('SELECT id FROM users WHER');
-    console.log('Users:', result.rows); // `result.rows` will contain the fetched rows
+    const result = await client.query(`SELECT * FROM mentor WHERE email = '${id}';`);
+
+
+    if (result.rows.length == 1) {
+      // Return the only matching row as a JSON object
+      console.log('Users:', result.rows); // `result.rows` will contain the fetched rows
+      return result.rows[0]; // This will return the entire row in a JSON format
+    } 
+    else {
+      return { message: 'Mentor not found' }; // Handle case where no mentor is found
+    }
   } catch (err) {
     console.error('Error fetching elements:', err);
   }
 };
 
-// Delete the table
-const deleteTable = async () => {
-  try {
-    const deleteTableQuery = 'DROP TABLE IF EXISTS users;';
-    await client.query(deleteTableQuery);
-    console.log('Table deleted successfully!');
-  } catch (err) {
-    console.error('Error deleting table:', err);
-  }
-};
 
 // Execute all operations
 const run = async () => {
