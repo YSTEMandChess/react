@@ -4,14 +4,11 @@ FROM node:16
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the container
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy all other project files to the container
+# Copy all files in the current directory to the container
 COPY . .
+
+# Install dependencies (npm install runs in the container after copying the files)
+RUN npm install
 
 # Expose the desired port (e.g., 3000 if your app uses it)
 EXPOSE 3000
