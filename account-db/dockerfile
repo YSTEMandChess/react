@@ -6,11 +6,5 @@ ENV POSTGRES_USER=admin
 ENV POSTGRES_PASSWORD=password
 ENV POSTGRES_DB=account-db
 
-# Copy initialization scripts (if any) to the container
-COPY ./initdb /docker-entrypoint-initdb.d/
-
 # Expose the default PostgreSQL port
 EXPOSE 5400
-
-# Default command to start PostgreSQL
-CMD ["postgres"]
