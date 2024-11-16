@@ -2,18 +2,15 @@
 FROM postgres:latest
 
 # Set environment variables for PostgreSQL
-# Replace these values with your desired credentials
 ENV POSTGRES_USER=your_username
 ENV POSTGRES_PASSWORD=your_password
 ENV POSTGRES_DB=your_database
 
 # Copy initialization scripts (if any) to the container
-# Place your scripts in a directory named `initdb` next to this Dockerfile
-# These scripts will be executed automatically to set up the database
 COPY ./initdb /docker-entrypoint-initdb.d/
 
 # Expose the default PostgreSQL port
 EXPOSE 5432
 
-# Default command to start the PostgreSQL server
+# Default command to start PostgreSQL
 CMD ["postgres"]
