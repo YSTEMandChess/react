@@ -94,15 +94,16 @@ def start_docker_image(location, running_name, image_name):
             print("Exit code:", results[i][1])
 
     return results[-1]  # Return the last result
+
 if __name__ == "__main__":
     # Instantiating network 
     print("Creating docker network")
     run_encoded_command(network_command)
     
     # Compiling and starting transit UPDATER docker
-    print("starting transitDB")
+    print("starting account API node.js")
     start_docker_image("account-api", "account-api-container", "account-api")
 
-    print("stating transitUpdater")
+    print("stating account database")
     start_docker_image("account-db", "account-db-container", "account-db")
 
