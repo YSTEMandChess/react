@@ -15,9 +15,12 @@ const network = "ystem-network";
 
 const PORT = 3000;
 
+const ACCOUNTAPI = "account-api-container";
+const ACCOUNTPORT = 4000;
+
+
 console.log(network);
 console.log(PORT);
-
 
 // Use CORS middleware to allow all origins
 app.use(cors({
@@ -33,92 +36,80 @@ app.listen(PORT, () => {
 
 const loggedMentors = {};
 const loggedStudents = {};
+const loggedTeachers = {};
 
 app.post('/login-student', (req, res) => {
   // Retrieve data from the request body
   const { email, pass } = req.data;
+  
+  // Print the data if debugging (we don't want to print this data if we're actually operating)
+  if (debugging) { console.log('Received data:', email, pass); } 
 
   // Check if data exists
   if (!email || !pass) {
     return res.status(400).json({ error: 'Name and email are required' });
   }
 
-  var student = {}
+  var student = {};
 
   const match = checkPasskey(email, pass);
-  const logintoken = null;
 
   if (match)
   {
-    student = {}
-    result = email + pass
-    const logintoken = bcrypt.hash(email, 1);
-    loggedStudents[logintoken];
+    student = {email:email, id:id};
+    result = id;
+    const logintoken = bcrypt.hash(result, 1);
+
+    loggedStudents[logintoken] = student;
+
+    // Send a response back of success
+    res.json({
+      passed: true, 
+      token: logintoken
+    });
+  }
+  else
+  {
+    // Send a response back of success
+    res.json({
+      passed: false, 
+      token: null
+    });
   }
 
-  // Print the data if debugging (we don't want to print this data if we're actually operating)
-  if (debugging) { console.log('Received data:', { email, pass }); } 
-
-  // Send a response back of success
-  res.json({
-    passed: true, 
-    token: logintoken
-  });
+    
   
 });
 
 app.post('/logout-student', (req, res) => {
   const { token } = req.data;
 
-  try {
-    delete loggedStudents[token];
-    res.json({passed: true});
+  if (checkStudentToken(token)) {
+    try {
+      delete loggedStudents[token];
+      res.json({passed: true});
+    }
+    catch (err) {
+      console.error('Error during operations:', err);
+      res.json({ passed: false});
+    }
   }
-  catch (err) {
-    console.error('Error during operations:', err);
-    res.json({ passed: false});
-  }
+  else { res.json({passed: true}); }
 
 });
 
+// TODO : LOGOUT FOR TEACHER AND MENTOR
+// TODO : LOGIN FOR TEACHER AND MENTOR
 
 
-app.post('/logout', (req, res) => {
-  // Retrieve data from the request body
-  const { email, pass } = req.data;
-
-  // Check if data exists
-  if (!email || !pass) {
-    return res.status(400).json({ error: 'Name and email are required' });
-  }
-
-  // Process the data (e.g., save to database, etc.)
-  console.log('Received data:', { email, pass });
-
-  let user = getStudentByEmail(email);
-
-  if (user.passkey == pass)
-  {
-    // Send a response back of success
-    res.json({
-      passed: true
-    });
-  }
-  else { 
-    // Send a response back of failure
-    res.json({
-      passed: false
-    });
-  }
-});
 
 // Execute all operations
 const checkPasskey = async () => {
   try {
-    const passMatch = await fetch(`${ACCOUNTAPI}/add-student`, {
+    const passMatch = await fetch(`${ACCOUNTAPI}:${ACCOUNTPORT}/test-student-pass`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, pass })
+      body: JSON.stringify({ email, pass })
     });
     
   } catch (err) {

@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
-const http = require("http");
+const http = require("https");
 const socketIo = require("socket.io");
 const cors = require("cors");
 
@@ -129,7 +129,7 @@ app.post('/add-student', (req, res) => {
   // Process the data (e.g., save to database, etc.)
   console.log('Received data:', { email, pass });
 
-  let user = addUser(email);
+  let user = addStudent(email);
 
   if (user.passkey == pass)
   {
@@ -288,7 +288,7 @@ const createMentorsTable = async () => {
 };
 
 // Add User
-const addUser = async (username, passkey, email, ) => {
+const addStudent = async (username, passkey, email, ) => {
   try {
     const insertQuery = `
       INSERT INTO student (name, passkey, email)
