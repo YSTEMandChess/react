@@ -193,7 +193,36 @@ app.post('/add-meeting', (req, res) => {
   }
 });
 
+app.post('/add-teaches', (req, res) => {
+// Retrieve data from the request body
+  const { student_email, teacher_email } = req.data;
 
+  // Check if data exists
+  if ( !student_id || !teacher_id) {
+    return res.status(400).json({ error: 'Name, pass, and email are required' });
+  }
+
+  // Process the data (e.g., save to database, etc.)
+
+  var student_id = getUserByEmail(getUserByEmail(student_email).id);
+  var teacher_id = getUserByEmail(getUserByEmail(teacher_email).id);
+
+  var passed = addTeaches(student_id, mentor_id);
+
+  if (passed)
+  {
+    // Send a response back of success
+    res.json({
+      passed: true
+    });
+  }
+  else { 
+    // Send a response back of failure
+    res.json({
+      passed: false
+    });
+  }
+});
 // TODO : 
 
 app.post('/add-teacher', (req, res) => {
@@ -469,6 +498,43 @@ const createTeacherTable = async () => {
   }
 };
 
+const createTeachesTable = async () => {
+  // If we're debugging, drop the users table so we can add it again
+  if (debugging)
+    {
+      try {
+        
+        const deleteTableQuery = 'DROP TABLE IF EXISTS teaches;';
+        
+        await client.query(deleteTableQuery);
+  
+        console.log('Table deleted successfully!');
+  
+      } catch (err) {
+        console.error('Error creating table:', err);
+      }
+    }
+  
+    // Create teaches table
+    try {
+      
+      const createTableQuery = `
+        CREATE TABLE IF NOT EXISTS teaches (
+          id SERIAL PRIMARY KEY,
+          teacher_id INTEGER,
+          student_id INTEGER,
+          FOREIGN KEY (student_id) REFERENCES teacher (id),
+          FOREIGN KEY (teacher_id) REFERENCES student (id)
+        );
+      `;
+      await client.query(createTableQuery);
+      console.log('Table created successfully!');
+      return true;
+    } catch (err) {
+      console.error('Error creating table:', err);
+      return false;
+    }
+}
 // Add User
 
 const addUser = async (username, email) => {
@@ -516,7 +582,20 @@ const addMeet = async (student_id, mentor_id, hour, minute, day) => {
   }
 };
 
-
+const addTeaches = async (student_id, teacher_id) => {
+  try {
+    const insertQuery = `
+      INSERT INTO teaches (student_id, teacher_id)
+      VALUES ($1, $2);  -- Avoid duplicate entries
+    `;
+    await client.query(insertQuery, [student_id, teacher_id])
+    console.log('Entry added successfully!')
+    return true;
+  } catch (err) {
+    console.error('Error adding entry:', err);
+    return false;
+  }
+}
 
 const addStudent = async (student_id) => {
   try {
