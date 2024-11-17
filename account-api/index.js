@@ -93,6 +93,37 @@ app.post('/test-user-pass', (req, res) => {
 });
 
 
+app.post('/test-teacher-pass', (req, res) => {
+  // Retrieve data from the request body
+  const { email, pass } = req.data;
+
+  // Check if data exists
+  if (!email || !pass) {
+    return res.status(400).json({ error: 'Name and email are required' });
+  }
+
+  // Process the data (e.g., save to database, etc.)
+  console.log('Received data:', { email, pass });
+
+  let user = getTeacherByEmail(email);
+
+  if (user.passkey == pass)
+  {
+    // Send a response back of success
+    res.json({
+      passed: true,
+      user: user
+    });
+  }
+  else { 
+    // Send a response back of failure
+    res.json({
+      passed: false,
+      user: user
+    });
+  }
+});
+
 app.post('/add-student', (req, res) => {
   // Retrieve data from the request body
   const { name, email, pass } = req.data;
@@ -149,6 +180,64 @@ app.post('/add-mentor', (req, res) => {
       passed: false
     });
   }
+});
+
+app.post('/add-teacher', (req, res) => {
+  // Retrieve data from the request body
+  const { name, email, pass } = req.data;
+
+  // Check if data exists
+  if (!name || !email || !pass) {
+    return res.status(400).json({ error: 'Name, pass, and email are required' });
+  }
+
+  // Process the data (e.g., save to database, etc.)
+  console.log('Received data:', { email, pass });
+
+  var passed = addTeacher(email);
+
+  if (passed)
+  {
+    // Send a response back of success
+    res.json({
+      passed: true
+    });
+  }
+  else { 
+    // Send a response back of failure
+    res.json({
+      passed: false
+    });
+  }
+});
+
+app.post('/modify-user', (req, res) => {
+  //Retrieve data from the request body
+  const { newName, email, newPass } = req.data;
+
+  //Check if data exists
+  if(!newName || !email || !newPass) {
+    return res.status(400).json({ error: 'Name, pass, and email are required' });
+  }
+
+  console.log('Received data:', { email, newPass });
+
+  var passed = modifyUser(email)
+
+  if (passed)
+    {
+      // Send a response back of success
+      res.json({
+        passed: true
+      });
+    }
+    else { 
+      // Send a response back of failure
+      res.json({
+        passed: false
+      });
+    }
+
 });
 
 // METHODS FOR CONNECTING TO DATABASE
@@ -297,26 +386,50 @@ const createMeetsTable = async () => {
   }
 };
 
-const createPasskeyTable = async () => {
-  
-  // If we're debugging, drop the users table so we can add it again
+const createTeacherTable = async () => {
+  // If we're debugging, drop the teacher table so we can add it again
   if (debugging)
-  {
+    {
+      try {
+        
+        const deleteTableQuery = 'DROP TABLE IF EXISTS teacher;';
+        
+        await client.query(deleteTableQuery);
+  
+        console.log('Table deleted successfully!');
+  
+      } catch (err) {
+        console.error('Error deleting table:', err);
+      }
+    }
+  
+    // Create teacher table
     try {
-      
-      const deleteTableQuery = 'DROP TABLE IF EXISTS passkey;';
-      
-      await client.query(deleteTableQuery);
-
+      const createTableQuery = `
+        CREATE TABLE IF NOT EXISTS teacher (
+          id SERIAL PRIMARY KEY,
+          email VARCHAR(100) UNIQUE,
+          name VARCHAR(50),
+          passkey VARCHAR(20)
+        );
+      `;
+      await client.query(createTableQuery);
       console.log('Table created successfully!');
-
     } catch (err) {
       console.error('Error creating table:', err);
     }
   }
 
+  const createPasskeyTable = async () => {
+  
+    // If we're debugging, drop the users table so we can add it again
+
   // Create mentors table
   try {
+
+    const deleteTableQuery = 'DROP TABLE IF EXISTS passkey;';
+      
+    await client.query(deleteTableQuery);
     
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS passkey (
@@ -411,6 +524,20 @@ const addMentor = async (mentor_id) => {
   }
 };
 
+const addTeacher = async (username, passkey, email, ) => {
+  try {
+    const insertQuery = `
+      INSERT INTO teacher (name, passkey, email)
+      VALUES ($1, $2, $3);  -- Avoid duplicate entries
+    `;
+    await client.query(insertQuery, [username, passkey, email]);
+    console.log('Entry added successfully!');
+    return true;
+  } catch (err) {
+    console.error('Error adding entry:', err);
+    return false;
+  }
+}
 // Get elements from the table
 const getUserByEmail = async (email) => {
   try {
@@ -459,6 +586,47 @@ const getPasskey= async (id) => {
 
 // TODO : 
 
+const getTeacherByEmail = async (email) => {
+  try {
+    insertQuery = client.query(`SELECT * FROM teacher WHERE email = '$1';`);
+    const result = await client.query(insertQuery, [email]);
+
+
+    if (result.rows.length == 1) {
+      // Return the only matching row as a JSON object
+      console.log('User:', result.rows); // `result.rows` will contain the fetched rows
+      
+      var name = result.rows[0].name;
+      var email = result.rows[0].email;
+      var id = result.rows[0].id;
+
+      return {id:id, name:name, email:email}; // This will return non-hidden elements from the table
+    } 
+    else {
+      return { message: 'User not found or multiple teachers with same email' }; // Handle case where no teacher is found
+    }
+  } catch (err) {
+    console.error('Error fetching elements:', err);
+  }
+};
+
+const modifyUser = async (email, newName, newPasskey) => {
+  try {
+    const updateQuery = `
+      UPDATE student
+      SET name = $2, passkey = $3
+      WHERE email = $1
+      `;
+    
+    const result = await client.query(updateQuery, [email, newName, newPasskey])
+    console.log('User info updated successfully!')
+    return true;
+  } catch (err) {
+    console.error('Error updating user info.')
+    return false;
+  }
+};
+
 // Execute all operations
 const run = async () => {
   try {
@@ -469,6 +637,7 @@ const run = async () => {
     await createMentorTable();
     
     await createMeetsTable();
+    await createTeacherTable();
     
   } catch (err) {
     console.error('Error during operations:', err);
