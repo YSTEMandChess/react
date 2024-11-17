@@ -34,10 +34,10 @@ app.listen(PORT, () => {
 });
 
 const loggedMentors = {};
-const loggedStudents = {};
+const loggedUsers = {};
 const loggedTeachers = {};
 
-app.post('/login-student', (req, res) => {
+app.post('/login', (req, res) => {
   // Retrieve data from the request body
   const { email, pass } = req.data;
   
@@ -49,17 +49,17 @@ app.post('/login-student', (req, res) => {
     return res.status(400).json({ error: 'Name and email are required' });
   }
 
-  var student = {};
+  var user = {};
 
   const match = checkStudentPasskey(email, pass);
 
   if (match.passed)
   {
-    student = {email:match.email, id:match.id, name:match.name};
+    user = {email:match.email, id:match.id, name:match.name};
     result = id;
     const logintoken = hashPassword(id);
 
-    loggedStudents[logintoken] = student;
+    loggedUsers[logintoken] = user;
 
     // Send a response back of success
     res.json({
@@ -75,39 +75,19 @@ app.post('/login-student', (req, res) => {
       token: null
     });
   }
-
-    
-  
 });
 
-app.post('/logout-student', (req, res) => {
-  const { token } = req.data;
-
-  if (checkStudentToken(token)) {
-    try {
-      delete loggedStudents[token];
-      res.json({passed: true});
-    }
-    catch (err) {
-      console.error('Error during operations:', err);
-      res.json({ passed: false});
-    }
-  }
-  else { res.json({passed: true}); }
-
-});
-
-app.post('/get-student-info' , (req, res) => {
+app.post('/get-user-info' , (req, res) => {
 
   const {token} = req.data;
   exists = checkStudentToken(token);
 
   if (exists) {
-    res.json({pass: true, user: loggedStudents[token]});
+    res.json({passed: true, user: loggedUsers[token]});
   }
   else 
   {
-    res.json({pass: false});
+    res.json({passed: false});
   }
 
 });
@@ -119,11 +99,14 @@ app.post('/get-student-info' , (req, res) => {
 // Execute all operations
 const checkStudentPasskey = async () => {
   try {
-    const passMatch = await fetch(`${ACCOUNTAPI}:${ACCOUNTPORT}/test-student-pass`, {
+    const passMatch = await fetch(`${ACCOUNTAPI}:${ACCOUNTPORT}/test-user-pass`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, pass })
     });
+    
+    if (passMatch.passed == true) {return true;}
+    else {return false;}
     
   } catch (err) {
     console.error('Error during operations:', err);
@@ -133,9 +116,9 @@ const checkStudentPasskey = async () => {
 // Execute all operations
 const checkStudentToken = async (token) => {
   try {
-    if (token in loggedStudents)
+    if (token in loggedUsers)
     {
-      return loggedStudents[token];
+      return loggedUsers[token];
     }
     else {return null;}
     

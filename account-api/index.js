@@ -59,7 +59,7 @@ app.listen(PORT, () => {
   console.log(`Account server API is running on ${network}:${PORT}`);
 });
 
-app.post('/test-student-pass', (req, res) => {
+app.post('/test-user-pass', (req, res) => {
   // Retrieve data from the request body
   const { email, pass } = req.data;
 
@@ -68,12 +68,14 @@ app.post('/test-student-pass', (req, res) => {
     return res.status(400).json({ error: 'Name and email are required' });
   }
 
+  var user = getUserByEmail(email);
+  var id = user.id;
+  var realpass = getPasskey(id);
+
   // Process the data (e.g., save to database, etc.)
   console.log('Received data:', { email, pass });
 
-  let user = getStudentByEmail(email);
-
-  if (user.passkey == pass)
+  if (realpass == pass)
   {
     // Send a response back of success
     res.json({
@@ -90,36 +92,6 @@ app.post('/test-student-pass', (req, res) => {
   }
 });
 
-app.post('/test-mentor-pass', (req, res) => {
-  // Retrieve data from the request body
-  const { email, pass } = req.data;
-
-  // Check if data exists
-  if (!email || !pass) {
-    return res.status(400).json({ error: 'Name and email are required' });
-  }
-
-  // Process the data (e.g., save to database, etc.)
-  console.log('Received data:', { email, pass });
-
-  let user = getUserByEmail(email);
-
-  if (user.passkey == pass)
-  {
-    // Send a response back of success
-    res.json({
-      passed: true,
-      user: user
-    });
-  }
-  else { 
-    // Send a response back of failure
-    res.json({
-      passed: false,
-      user: user
-    });
-  }
-});
 
 app.post('/add-student', (req, res) => {
   // Retrieve data from the request body
@@ -205,8 +177,8 @@ const createStudentTable = async () => {
     
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS student (
-        id SERIAL PRIMARY KEY,
-        FOREIGN KEY id REFERENCES users (id)
+        id INTEGER PRIMARY KEY,
+        FOREIGN KEY (id) REFERENCES users (id)
       );
     `;
     await client.query(createTableQuery);
@@ -274,8 +246,8 @@ const createMentorTable = async () => {
     
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS mentor (
-        id PRIMARY KEY,
-        FOREIGN KEY id REFERENCES users (id)
+        id INTEGER PRIMARY KEY,
+        FOREIGN KEY (id) REFERENCES users (id)
       );
     `;
     await client.query(createTableQuery);
@@ -348,9 +320,9 @@ const createPasskeyTable = async () => {
     
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS passkey (
-        user_id INTEGER PRIMARY KEY,
+        id INTEGER PRIMARY KEY,
         passkey VARCHAR(50),
-        FOREIGN KEY (user_id) REFERENCES users (id)
+        FOREIGN KEY (id) REFERENCES users (id)
       );
     `;
     await client.query(createTableQuery);
@@ -380,7 +352,7 @@ const addUser = async (username, email) => {
 const addPasskey = async (user_id, passkey) => {
   try {
     const insertQuery = `
-      INSERT INTO passkey (user_id, passkey)
+      INSERT INTO passkey (id, passkey)
       VALUES ($1, $2);  -- Avoid duplicate entries
     `;
     await client.query(insertQuery, [user_id, passkey]);
@@ -406,6 +378,8 @@ const addMeet = async (student_id, mentor_id, hour, minute, day) => {
     return false;
   }
 };
+
+
 
 const addStudent = async (student_id) => {
   try {
@@ -460,6 +434,26 @@ const getUserByEmail = async (email) => {
   }
 };
 
+// Get elements from the table
+const getPasskey= async (id) => {
+  try {
+    insertQuery = client.query(`SELECT * FROM users WHERE id = '$1';`);
+    const result = await client.query(insertQuery, [id]);
+
+    if (result.rows.length == 1) {
+      // Return the only matching row as a JSON object
+      console.log('Mentors:', result.rows); // `result.rows` will contain the fetched rows
+      var passkey = result.rows[0].passkey;
+
+      return passkey; // This will return the entire row in a JSON format
+    } 
+    else {
+      return null; // Handle case where no mentor is found
+    }
+  } catch (err) {
+    console.error('Error fetching elements:', err);
+  }
+};
 
 
 
@@ -468,8 +462,12 @@ const getUserByEmail = async (email) => {
 // Execute all operations
 const run = async () => {
   try {
+    await createUsersTable();
+    await createPasskeyTable();
+
     await createStudentTable(); 
     await createMentorTable();
+    
     await createMeetsTable();
     
   } catch (err) {
