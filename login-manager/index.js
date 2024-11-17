@@ -53,9 +53,9 @@ app.post('/login-student', (req, res) => {
 
   const match = checkStudentPasskey(email, pass);
 
-  if (match)
+  if (match.passed)
   {
-    student = {email:email, id:id};
+    student = {email:match.email, id:match.id, name:match.name};
     result = id;
     const logintoken = hashPassword(id);
 
@@ -137,6 +137,7 @@ const checkStudentToken = async (token) => {
     {
       return loggedStudents[token];
     }
+    else {return null;}
     
   } catch (err) {
     console.error('Error during operations:', err);

@@ -77,13 +77,15 @@ app.post('/test-student-pass', (req, res) => {
   {
     // Send a response back of success
     res.json({
-      passed: true
+      passed: true,
+      user: user
     });
   }
   else { 
     // Send a response back of failure
     res.json({
-      passed: false
+      passed: false,
+      user: null
     });
   }
 });
@@ -106,13 +108,15 @@ app.post('/test-mentor-pass', (req, res) => {
   {
     // Send a response back of success
     res.json({
-      passed: true
+      passed: true,
+      user: user
     });
   }
   else { 
     // Send a response back of failure
     res.json({
-      passed: false
+      passed: false,
+      user: user
     });
   }
 });
@@ -327,10 +331,14 @@ const getMentorByEmail = async (email) => {
     if (result.rows.length == 1) {
       // Return the only matching row as a JSON object
       console.log('Mentors:', result.rows); // `result.rows` will contain the fetched rows
-      return result.rows[0]; // This will return the entire row in a JSON format
+      var name = result.rows[0].name;
+      var email = result.rows[0].email;
+      var id = result.rows[0].id;
+
+      return {id:id, name:name, email:email}; // This will return the entire row in a JSON format
     } 
     else {
-      return { message: 'Mentor not found or multiple mentors with same email' }; // Handle case where no mentor is found
+      return {id:id, name:name, email:email}; // Handle case where no mentor is found
     }
   } catch (err) {
     console.error('Error fetching elements:', err);
@@ -346,10 +354,15 @@ const getStudentByEmail = async (email) => {
     if (result.rows.length == 1) {
       // Return the only matching row as a JSON object
       console.log('User:', result.rows); // `result.rows` will contain the fetched rows
-      return result.rows[0]; // This will return the entire row in a JSON format
+      
+      var name = result.rows[0].name;
+      var email = result.rows[0].email;
+      var id = result.rows[0].id;
+
+      return {id:id, name:name, email:email}; // This will return non-hidden elements from the table
     } 
     else {
-      return { message: 'User not found or multiple mentors with same email' }; // Handle case where no mentor is found
+      return {id:null, name:null, email:null}; // Handle case where no mentor is found
     }
   } catch (err) {
     console.error('Error fetching elements:', err);
