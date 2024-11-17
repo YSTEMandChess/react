@@ -3,13 +3,12 @@ require("dotenv").config();
 const express = require("express");
 const http = require("https");
 const cors = require("cors");
+const argon2 = require("argon2");
 
 const app = express();
 const server = http.createServer(app);
 
 const debugging = true;
-
-const bcrypt = require('bcrypt');
 
 const network = "ystem-network";
 
@@ -58,7 +57,7 @@ app.post('/login-student', (req, res) => {
   {
     student = {email:email, id:id};
     result = id;
-    const logintoken = bcrypt.hash(result, 1);
+    const logintoken = hashPassword(id);
 
     loggedStudents[logintoken] = student;
 
@@ -152,7 +151,7 @@ async function hashPassword(password) {
     // Generating hash
     if (debugging) { saltRounds = 1;}
     
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await argon2.hash(password);
 
     console.log('Hashed Password:', hashedPassword);
 
