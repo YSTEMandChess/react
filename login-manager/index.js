@@ -52,7 +52,7 @@ app.post('/login-student', (req, res) => {
 
   var student = {};
 
-  const match = checkPasskey(email, pass);
+  const match = checkStudentPasskey(email, pass);
 
   if (match)
   {
@@ -104,7 +104,7 @@ app.post('/get-student-info' , (req, res) => {
   exists = checkStudentToken(token);
 
   if (exists) {
-    res.json({pass: true, user:loggedStudents[token]});
+    res.json({pass: true, user: loggedStudents[token]});
   }
   else 
   {
@@ -113,12 +113,12 @@ app.post('/get-student-info' , (req, res) => {
 
 });
 
-
-// TODO : LOGOUT FOR TEACHER AND MENTOR
-// TODO : LOGIN FOR TEACHER AND MENTOR
+// TODO : LOGOUT FOR TEACHER AND MENTOR      A
+// TODO : LOGIN FOR TEACHER AND MENTOR       |
+// TODO : GET INFO FOR TEACHER AND MENTOR    |
 
 // Execute all operations
-const checkPasskey = async () => {
+const checkStudentPasskey = async () => {
   try {
     const passMatch = await fetch(`${ACCOUNTAPI}:${ACCOUNTPORT}/test-student-pass`, {
       method: 'POST',
@@ -144,36 +144,13 @@ const checkStudentToken = async (token) => {
   }
 };
 
-// Execute all operations
-const addUser = async (oldpass) => {
-  try {
-    newpass = hashPassword(oldpass);
-    
-    const response = await fetch(`${ACCOUNTAPI}/add-student`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, pass })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
-    }
-
-    const result = await response.json();
-    return result.passed;
-
-  } catch (err) {
-    console.error('Error during operations:', err);
-  }
-};
-
-
 // Function to hash a password
 async function hashPassword(password) {
   try {
+
+    const saltRounds = 10;
     // Generating hash
-    if (debugging) {const saltRounds = 2;}
-    else { const saltRounds = 10; }
+    if (debugging) { saltRounds = 1;}
     
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -186,17 +163,4 @@ async function hashPassword(password) {
   }
 }
 
-// Execute all operations
-const run = async () => {
-  try {
-    await createStudentTable(); 
-    await createMentorTable();
-    await createMentorsTable();
-    
-  } catch (err) {
-    console.error('Error during operations:', err);
-  }
-};
-
-// Run the operations
-run();
+console.log("Login manager compiled successfully");

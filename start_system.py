@@ -107,3 +107,10 @@ if __name__ == "__main__":
 
     print("starting account API node.js")
     start_docker_image("account-api", "account-api-container", "account-api")
+
+    print("starting login manager node.js")
+    start_docker_image("login-manager", "login-manager-container", "login-manager")
+
+    #print("starting sign up manager node.js")
+    #start_docker_image("login-manager", "login-manager-container", "login-manager")
+
