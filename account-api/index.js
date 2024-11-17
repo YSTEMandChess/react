@@ -327,6 +327,41 @@ const createMentorsTable = async () => {
   }
 };
 
+const createMentorsTable = async () => {
+  
+  // If we're debugging, drop the users table so we can add it again
+  if (debugging)
+  {
+    try {
+      
+      const deleteTableQuery = 'DROP TABLE IF EXISTS password;';
+      
+      await client.query(deleteTableQuery);
+
+      console.log('Table created successfully!');
+
+    } catch (err) {
+      console.error('Error creating table:', err);
+    }
+  }
+
+  // Create mentors table
+  try {
+    
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS password (
+        user_id INTEGER,
+        passkey VARCHAR(50),
+        FOREIGN KEY (user_id) REFERENCES user (id)
+      );
+    `;
+    await client.query(createTableQuery);
+    console.log('Table created successfully!');
+  } catch (err) {
+    console.error('Error creating table:', err);
+  }
+};
+
 // Add User
 const addStudent = async (username, passkey, email, ) => {
   try {
