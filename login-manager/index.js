@@ -98,10 +98,24 @@ app.post('/logout-student', (req, res) => {
 
 });
 
+app.post('/get-student-info' , (req, res) => {
+
+  const {token} = req.data;
+  exists = checkStudentToken(token);
+
+  if (exists) {
+    res.json({pass: true, user:loggedStudents[token]});
+  }
+  else 
+  {
+    res.json({pass: false});
+  }
+
+});
+
+
 // TODO : LOGOUT FOR TEACHER AND MENTOR
 // TODO : LOGIN FOR TEACHER AND MENTOR
-
-
 
 // Execute all operations
 const checkPasskey = async () => {
