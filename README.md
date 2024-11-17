@@ -5,6 +5,9 @@ Welcome to the Y STEM and Chess project! This document will guide you through se
 
 ### Prerequisites
 
+
+### LEGACY BELOW : SCROLL DOWN TO BOTTOM FOR INSTRUCTIONS ON DOCKER REFACTOR
+
 #### NodeJS
 This project uses NodeJS version 14
 
@@ -74,10 +77,5 @@ The purpose of the chess Client is to
 
 ### Chess Client React Refactor
 
-The purpose of the chessClient React Refactor folder is to hold the chess game react component that will be imported into react-ystemandchess that interfaces with the ChessClient. To start this individually, do the following : 
-
-1. Navigate to the 'chess-client-react-refactor'
-2. Run 'npm i dotenv' to install necessary dependencies.
-3. Start the react app by running 'npm start'
-
-That's it! You've set up your development environment for the Y STEM and Chess project. Happy coding!
+To start all docker scripts, please go to the root of the repo and run start_system.py
+To monitor a docker container, run:  "docker logs -f start-transit-api-container" to get logs for the container you wish to see running
