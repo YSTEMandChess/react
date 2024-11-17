@@ -92,10 +92,6 @@ app.post('/get-user-info' , (req, res) => {
 
 });
 
-// TODO : LOGOUT FOR TEACHER AND MENTOR      A
-// TODO : LOGIN FOR TEACHER AND MENTOR       |
-// TODO : GET INFO FOR TEACHER AND MENTOR    |
-
 // Execute all operations
 const checkStudentPasskey = async () => {
   try {
