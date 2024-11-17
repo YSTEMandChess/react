@@ -93,52 +93,24 @@ app.post('/test-user-pass', (req, res) => {
 });
 
 
-app.post('/test-teacher-pass', (req, res) => {
-  // Retrieve data from the request body
-  const { email, pass } = req.data;
-
-  // Check if data exists
-  if (!email || !pass) {
-    return res.status(400).json({ error: 'Name and email are required' });
-  }
-
-  // Process the data (e.g., save to database, etc.)
-  console.log('Received data:', { email, pass });
-
-  let user = getTeacherByEmail(email);
-
-  if (user.passkey == pass)
-  {
-    // Send a response back of success
-    res.json({
-      passed: true,
-      user: user
-    });
-  }
-  else { 
-    // Send a response back of failure
-    res.json({
-      passed: false,
-      user: user
-    });
-  }
-});
 
 app.post('/add-student', (req, res) => {
   // Retrieve data from the request body
-  const { name, email, pass } = req.data;
+  const { name, email, pass: passkey } = req.data;
 
   // Check if data exists
-  if (!name || !email || !pass) {
+  if (!name || !email || !passkey) {
     return res.status(400).json({ error: 'Name, pass, and email are required' });
   }
 
   // Process the data (e.g., save to database, etc.)
-  console.log('Received data:', { email, pass });
+  console.log('Received data:', { email, pass: passkey });
 
-  let user = addStudent(email);
-
-  if (user.passkey == pass)
+  addUser(name, email);
+  addPasskey(passkey);
+  var passed = addStudent(getUserByEmail(email).id);
+  
+  if (passed )
   {
     // Send a response back of success
     res.json({
@@ -153,6 +125,7 @@ app.post('/add-student', (req, res) => {
   }
 });
 
+
 app.post('/add-mentor', (req, res) => {
   // Retrieve data from the request body
   const { name, email, pass } = req.data;
@@ -165,7 +138,13 @@ app.post('/add-mentor', (req, res) => {
   // Process the data (e.g., save to database, etc.)
   console.log('Received data:', { email, pass });
 
-  var passed = addMentor(email);
+  addUser(name, email);
+  addPasskey(pass);
+  var user = getUserByEmail(getUserByEmail(email));
+  
+  var id = user.id;
+  var passed = addMentor(id);
+
 
   if (passed)
   {
@@ -181,6 +160,41 @@ app.post('/add-mentor', (req, res) => {
     });
   }
 });
+
+app.post('/add-meeting', (req, res) => {
+  // Retrieve data from the request body
+  const { hour, minute, day, student_email, mentor_email } = req.data;
+
+  // Check if data exists
+  if (!hour || !minute || !day || !student_id || !mentor_id) {
+    return res.status(400).json({ error: 'Name, pass, and email are required' });
+  }
+
+  // Process the data (e.g., save to database, etc.)
+
+  var student_id = getUserByEmail(getUserByEmail(student_email).id);
+  var mentor_id = getUserByEmail(getUserByEmail(mentor_email).id);
+
+  var passed = addMeet(student_id, mentor_id, hour, minute, day);
+
+
+  if (passed)
+  {
+    // Send a response back of success
+    res.json({
+      passed: true
+    });
+  }
+  else { 
+    // Send a response back of failure
+    res.json({
+      passed: false
+    });
+  }
+});
+
+
+// TODO : 
 
 app.post('/add-teacher', (req, res) => {
   // Retrieve data from the request body
@@ -240,8 +254,6 @@ app.post('/modify-user', (req, res) => {
 
 });
 
-// METHODS FOR CONNECTING TO DATABASE
-
 // Create tables
 const createStudentTable = async () => {
   
@@ -272,8 +284,10 @@ const createStudentTable = async () => {
     `;
     await client.query(createTableQuery);
     console.log('Table created successfully!');
+    return true;
   } catch (err) {
     console.error('Error creating table:', err);
+    return false;
   }
 };
 
@@ -307,8 +321,10 @@ const createUsersTable = async () => {
     `;
     await client.query(createTableQuery);
     console.log('Table created successfully!');
+    return true;
   } catch (err) {
     console.error('Error creating table:', err);
+    return false;
   }
 };
 
@@ -341,8 +357,10 @@ const createMentorTable = async () => {
     `;
     await client.query(createTableQuery);
     console.log('Table created successfully!');
+    return true;
   } catch (err) {
     console.error('Error creating table:', err);
+    return false;
   }
 };
 
@@ -381,8 +399,10 @@ const createMeetsTable = async () => {
     `;
     await client.query(createTableQuery);
     console.log('Table created successfully!');
+    return true;
   } catch (err) {
     console.error('Error creating table:', err);
+    return false;
   }
 };
 
@@ -415,8 +435,10 @@ const createTeacherTable = async () => {
       `;
       await client.query(createTableQuery);
       console.log('Table created successfully!');
+      return true;
     } catch (err) {
       console.error('Error creating table:', err);
+      return false;
     }
   }
 
@@ -440,8 +462,10 @@ const createTeacherTable = async () => {
     `;
     await client.query(createTableQuery);
     console.log('Table created successfully!');
+    return true;
   } catch (err) {
     console.error('Error creating table:', err);
+    return false;
   }
 };
 
