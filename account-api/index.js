@@ -102,7 +102,7 @@ app.post('/test-mentor-pass', (req, res) => {
   // Process the data (e.g., save to database, etc.)
   console.log('Received data:', { email, pass });
 
-  let user = getMentorByEmail(email);
+  let user = getUserByEmail(email);
 
   if (user.passkey == pass)
   {
@@ -206,8 +206,7 @@ const createStudentTable = async () => {
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS student (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER,
-        FOREIGN KEY user_id REFERENCES users (id)
+        FOREIGN KEY id REFERENCES users (id)
       );
     `;
     await client.query(createTableQuery);
@@ -275,9 +274,8 @@ const createMentorTable = async () => {
     
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS mentor (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER,
-        FOREIGN KEY user_id REFERENCES users (id)
+        id PRIMARY KEY,
+        FOREIGN KEY id REFERENCES users (id)
       );
     `;
     await client.query(createTableQuery);
@@ -412,7 +410,7 @@ const addMeet = async (student_id, mentor_id, hour, minute, day) => {
 const addStudent = async (student_id) => {
   try {
     const insertQuery = `
-      INSERT INTO student (student_id)
+      INSERT INTO student (id)
       VALUES ($1);  -- Avoid duplicate entries
     `;
     await client.query(insertQuery, [student_id]);
@@ -427,7 +425,7 @@ const addStudent = async (student_id) => {
 const addMentor = async (mentor_id) => {
   try {
     const insertQuery = `
-      INSERT INTO mentor (mentor_id)
+      INSERT INTO mentor (id)
       VALUES ($1);  -- Avoid duplicate entries
     `;
     await client.query(insertQuery, [mentor_id]);
@@ -440,9 +438,9 @@ const addMentor = async (mentor_id) => {
 };
 
 // Get elements from the table
-const getMentorByEmail = async (email) => {
+const getUserByEmail = async (email) => {
   try {
-    insertQuery = client.query(`SELECT * FROM mentor WHERE email = '$1';`);
+    insertQuery = client.query(`SELECT * FROM users WHERE email = '$1';`);
     const result = await client.query(insertQuery, [email]);
 
     if (result.rows.length == 1) {
@@ -462,29 +460,10 @@ const getMentorByEmail = async (email) => {
   }
 };
 
-const getStudentByEmail = async (email) => {
-  try {
-    insertQuery = client.query(`SELECT * FROM student WHERE email = '$1';`);
-    const result = await client.query(insertQuery, [email]);
 
 
-    if (result.rows.length == 1) {
-      // Return the only matching row as a JSON object
-      console.log('User:', result.rows); // `result.rows` will contain the fetched rows
-      
-      var name = result.rows[0].name;
-      var email = result.rows[0].email;
-      var id = result.rows[0].id;
 
-      return {id:id, name:name, email:email}; // This will return non-hidden elements from the table
-    } 
-    else {
-      return {id:null, name:null, email:null}; // Handle case where no mentor is found
-    }
-  } catch (err) {
-    console.error('Error fetching elements:', err);
-  }
-};
+// TODO : 
 
 // Execute all operations
 const run = async () => {
