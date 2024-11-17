@@ -287,7 +287,7 @@ const createMentorTable = async () => {
   }
 };
 
-const createMentorsTable = async () => {
+const createMeetsTable = async () => {
   
   // If we're debugging, drop the users table so we can add it again
   if (debugging)
@@ -327,14 +327,14 @@ const createMentorsTable = async () => {
   }
 };
 
-const createMentorsTable = async () => {
+const createPasskeyTable = async () => {
   
   // If we're debugging, drop the users table so we can add it again
   if (debugging)
   {
     try {
       
-      const deleteTableQuery = 'DROP TABLE IF EXISTS password;';
+      const deleteTableQuery = 'DROP TABLE IF EXISTS passkey;';
       
       await client.query(deleteTableQuery);
 
@@ -349,10 +349,10 @@ const createMentorsTable = async () => {
   try {
     
     const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS password (
-        user_id INTEGER,
+      CREATE TABLE IF NOT EXISTS passkey (
+        user_id INTEGER PRIMARY KEY,
         passkey VARCHAR(50),
-        FOREIGN KEY (user_id) REFERENCES user (id)
+        FOREIGN KEY (user_id) REFERENCES users (id)
       );
     `;
     await client.query(createTableQuery);
@@ -363,13 +363,14 @@ const createMentorsTable = async () => {
 };
 
 // Add User
-const addStudent = async (username, passkey, email, ) => {
+
+const addUser = async (username, email) => {
   try {
     const insertQuery = `
-      INSERT INTO student (name, passkey, email)
-      VALUES ($1, $2, $3);  -- Avoid duplicate entries
+      INSERT INTO users (email, name)
+      VALUES ($1, $2);  -- Avoid duplicate entries
     `;
-    await client.query(insertQuery, [username, passkey, email]);
+    await client.query(insertQuery, [email, username]);
     console.log('Entry added successfully!');
     return true;
   } catch (err) {
@@ -378,13 +379,58 @@ const addStudent = async (username, passkey, email, ) => {
   }
 };
 
-const addMentor = async (mentor, passkey, email, ) => {
+const addPasskey = async (user_id, passkey) => {
   try {
     const insertQuery = `
-      INSERT INTO mentor (name, passkey, email)
-      VALUES ($1, $2, $3);  -- Avoid duplicate entries
+      INSERT INTO passkey (user_id, passkey)
+      VALUES ($1, $2);  -- Avoid duplicate entries
     `;
-    await client.query(insertQuery, [username, passkey, email]);
+    await client.query(insertQuery, [user_id, passkey]);
+    console.log('Entry added successfully!');
+    return true;
+  } catch (err) {
+    console.error('Error adding entry:', err);
+    return false;
+  }
+};
+
+const addMeet = async (student_id, mentor_id, hour, minute, day) => {
+  try {
+    const insertQuery = `
+      INSERT INTO meets (student_id, mentor_id, hour, minute, day)
+      VALUES ($1, $2, $3, $4, $5);  -- Avoid duplicate entries
+    `;
+    await client.query(insertQuery, [student_id, mentor_id, hour, minute, day]);
+    console.log('Entry added successfully!');
+    return true;
+  } catch (err) {
+    console.error('Error adding entry:', err);
+    return false;
+  }
+};
+
+const addStudent = async (student_id) => {
+  try {
+    const insertQuery = `
+      INSERT INTO student (student_id)
+      VALUES ($1);  -- Avoid duplicate entries
+    `;
+    await client.query(insertQuery, [student_id]);
+    console.log('Entry added successfully!');
+    return true;
+  } catch (err) {
+    console.error('Error adding entry:', err);
+    return false;
+  }
+};
+
+const addMentor = async (mentor_id) => {
+  try {
+    const insertQuery = `
+      INSERT INTO mentor (mentor_id)
+      VALUES ($1);  -- Avoid duplicate entries
+    `;
+    await client.query(insertQuery, [mentor_id]);
     console.log('Entry added successfully!');
     return true;
   } catch (err) {
@@ -445,7 +491,7 @@ const run = async () => {
   try {
     await createStudentTable(); 
     await createMentorTable();
-    await createMentorsTable();
+    await createMeetsTable();
     
   } catch (err) {
     console.error('Error during operations:', err);
