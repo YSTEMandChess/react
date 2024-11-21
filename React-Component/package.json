@@ -1,0 +1,35 @@
+{
+  "name": "react-component",
+  "version": "1.0.0",
+  "main": "AppRouter.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "chess.js": "^1.0.0-beta.8",
+    "chessboardjsx": "^2.4.7",
+    "react": "^18.3.1",
+    "react-cookie": "^7.2.0",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
