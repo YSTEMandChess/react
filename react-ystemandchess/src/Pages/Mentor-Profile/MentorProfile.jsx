@@ -5,6 +5,9 @@ import { environment } from '../../environments/environment';
 import ViewSDKClient from '../../services/view-sdk.service.js'; // Adjust the path as necessary
 import { SetPermissionLevel } from '../../globals.js'; // Adjust the path as necessary
 
+
+import {ChessWindow} from '../../ChessWidgets/ChessWindow.js';
+
 const MentorProfile = () => {
     const [username, setUsername] = useState('');
     const [firstName, setFirstName] = useState('');
@@ -263,14 +266,8 @@ const MentorProfile = () => {
                   <h3>Mentor Session</h3>
                   <p>The project started in 2018 when someone needed something.</p>
 
-                  <iframe
-                    src="http://127.0.0.1:5500/chessClient/parent.html" // URL of chess parent container
-                    title="My Iframe"
-                    width="600"
-                    height="400"
-                    frameBorder="0"
-                    allowFullScreen
-                  ></iframe>
+                  <ChessWindow sid={'111'} mid={'222'} r={'mentor'} w={400}  h={400}/>
+          
                 </div>
       
                 <div id="Professional_Development" className="tabcontent">
