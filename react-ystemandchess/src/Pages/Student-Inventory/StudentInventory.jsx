@@ -1,8 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import "./StudentInventory.scss";
 import Images from "../../images/imageImporter";
 
 const StudentInventory = ({ userPortraitSrc, userName }) => {
+  const [activeTab, setActiveTab] = useState("activity");
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+  };
+
   return (
     <main id="main-inventory-content">
       <section className="inv-intro">
@@ -22,7 +28,9 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
           <h1>Hello, {userName}!</h1>
         </div>
       </section>
+
       <section className="inv-inventory">
+
         <div className="inv-inventory-topbar">
           <h2>Your Progress</h2>
         </div>
@@ -51,53 +59,33 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
             </ul>
           </div>
         </div>
+
         <div className="inv-inventory-content-section">
           <nav className="inv-inventory-content-tabs">
             <ul>
-              <div className="inventory-tab active-tab">
-                <img src={Images.activityIcon} alt="activity icon"></img>
-                <li data-content="activity">Activity</li>
-              </div>
-              <div className="inventory-tab">
-                <img src={Images.mentorIcon} alt="mentor icon"></img>
-                <li data-content="mentor">Mentor Session</li>
-              </div>
-              <div className="inventory-tab">
-                <img src={Images.learningIcon} alt="learning icon"></img>
-                <li data-content="learning">Learning</li>
-              </div>
-              <div className="inventory-tab">
-                <img
-                  src={Images.chessLessonsIcon}
-                  alt="chess lessons icon"
-                ></img>
-                <li data-content="lessons">Chess Lessons</li>
-              </div>
-              <div className="inventory-tab">
-                <img src={Images.gamesIcon} alt="games icon"></img>
-                <li data-content="games">Games</li>
-              </div>
-              <div className="inventory-tab">
-                <img src={Images.puzzlesIcon} alt="puzzles icon"></img>
-                <li data-content="puzzles">Puzzles</li>
-              </div>
-              <div className="inventory-tab">
-                <img
-                  src={Images.playComputerIcon}
-                  alt="play with computer icon"
-                ></img>
-                <li data-content="computer">Play With Computer</li>
-              </div>
-              <div className="inventory-tab">
-                <img src={Images.recordingsIcon} alt="recordings icon"></img>
-                <li data-content="recordings">Recordings</li>
-              </div>
-              <div className="inventory-tab">
-                <img src={Images.backpackIcon} alt="backpack icon"></img>
-                <li data-content="backpack">Backpack Inventory</li>
-              </div>
+              {["activity", "mentor", "learning", "chessLessons", "games", "puzzles", "playComputer", "recordings", "backpack"].map((tab) => {
+                const displayName =
+                  tab === "chessLessons"
+                    ? "Chess Lessons"
+                    : tab === "playComputer"
+                      ? "Play with Computer"
+                      : tab.charAt(0).toUpperCase() + tab.slice(1);
+
+                return (
+                  <div
+                    key={tab}
+                    className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
+                    onClick={() => handleTabClick(tab)}
+                  >
+                    <img src={Images[`${tab}Icon`]} alt={`${tab} icon`} />
+                    <li>{displayName}</li>
+                  </div>
+                );
+              })}
             </ul>
           </nav>
+
+
           <div className="inv-inventory-content-content">
             <div
               id="inventory-content-activity"
