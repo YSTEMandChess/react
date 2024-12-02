@@ -1,303 +1,420 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import './SignUp.scss';
 import { environment } from '../../environments/environment.js';
 
+console.log('Environment URL:', environment.urls.middlewareURL);
+
 const Signup = () => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [retypedPassword, setRetypedPassword] = useState('');
-  const [accountType, setAccountType] = useState('');
-  const [newStudents, setNewStudents] = useState([]);
-  const [firstNameError, setFirstNameError] = useState('');
-  const [lastNameError, setLastNameError] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [userNameError, setUserNameError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [retypePasswordError, setRetypePasswordError] = useState('');
-  const [termsAccepted, setTermsAccepted] = useState(false); // Checkbox state
-  const [link, setLink] = useState(null);
-  const [numNewStudents, setNumNewStudents] = useState(0);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    username: '',
+    password: '',
+    retypedPassword: '',
+    accountType: 'mentor',
+  });
 
-  const firstNameVerificationREGEX = /^[A-Za-z ]{2,15}$/;
-  const lastNameVerificationREGEX = /^[A-Za-z]{2,15}$/;
-  const emailVerificationREGEX = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}/;
-  const usernameVerificationREGEX = /^[a-zA-Z](\S){1,14}$/;
+  const [firstNameFlag, setFirstNameFlag] = useState(false);
+  const [lastNameFlag, setLastNameFlag] = useState(false);
+  const [emailFlag, setEmailFlag] = useState(false);
+  const [userNameFlag, setUserNameFlag] = useState(false);
+  const [passwordFlag, setPasswordFlag] = useState(false);
+  const [retypeFlag, setRetypeFlag] = useState(false);
 
-  const validateFirstName = (name) => {
-    if (firstNameVerificationREGEX.test(name)) {
-      setFirstNameError('');
-      return true;
-    } else {
-      setFirstNameError('Invalid First Name');
-      return false;
+  const [errors, setErrors] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    username: '',
+    password: '',
+    retypePassword: '',
+  });
+
+  const [parentAccountFlag, setParentAccountFlag] = useState(false);
+  const [showStudentForm, setShowStudentForm] = useState(false);
+  const [students, setStudents] = useState([]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    switch (name) {
+      case 'firstName':
+        firstNameVerification(value);
+        break;
+      case 'lastName':
+        lastNameVerification(value);
+        break;
+      case 'email':
+        emailVerification(value);
+        break;
+      case 'username':
+        usernameVerification(value);
+        break;
+      case 'password':
+        passwordVerification(value);
+        break;
+      case 'retypedPassword':
+        retypePasswordVerification(value, formData.password);
+        break;
+      default:
+        break;
     }
   };
 
-  const validateLastName = (name) => {
-    if (lastNameVerificationREGEX.test(name)) {
-      setLastNameError('');
-      return true;
-    } else {
-      setLastNameError('Invalid Last Name');
-      return false;
-    }
+  const firstNameVerification = (firstName) => {
+    const isValid = /^[A-Za-z ]{2,15}$/.test(firstName);
+    setFirstNameFlag(isValid);
+    setErrors((prev) => ({
+      ...prev,
+      firstName: isValid ? '' : 'Invalid First Name',
+    }));
+    return isValid;
   };
 
-  const validateEmail = (email) => {
-    if (emailVerificationREGEX.test(email)) {
-      setEmailError('');
-      return true;
-    } else {
-      setEmailError('Invalid Email');
-      return false;
-    }
+  const lastNameVerification = (lastName) => {
+    const isValid = /^[A-Za-z]{2,15}$/.test(lastName);
+    setLastNameFlag(isValid);
+    setErrors((prev) => ({
+      ...prev,
+      lastName: isValid ? '' : 'Invalid Last Name',
+    }));
+    return isValid;
   };
 
-  const validateUsername = (username) => {
-    if (usernameVerificationREGEX.test(username)) {
-      setUserNameError('');
-      return true;
-    } else {
-      setUserNameError('Invalid Username');
-      return false;
-    }
+  const emailVerification = (email) => {
+    const isValid = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}/.test(email);
+    setEmailFlag(isValid);
+    setErrors((prev) => ({
+      ...prev,
+      email: isValid ? '' : 'Invalid Email',
+    }));
+    return isValid;
   };
 
-  const validatePassword = (password) => {
-    if (password.length >= 8) {
-      setPasswordError('');
-      return true;
-    } else {
-      setPasswordError('Invalid Password');
-      return false;
-    }
+  const usernameVerification = (username) => {
+    const isValid = /^[a-zA-Z](\S){1,14}$/.test(username);
+    setUserNameFlag(isValid);
+    setErrors((prev) => ({
+      ...prev,
+      username: isValid ? '' : 'Invalid Username',
+    }));
+    return isValid;
   };
 
-  const validateRetypedPassword = (retypedPassword, password) => {
-    if (retypedPassword === password) {
-      setRetypePasswordError('');
-      return true;
-    } else {
-      setRetypePasswordError('Passwords do not match');
-      return false;
-    }
+  const passwordVerification = (password) => {
+    const isValid = password.length >= 8;
+    setPasswordFlag(isValid);
+    setErrors((prev) => ({
+      ...prev,
+      password: isValid ? '' : 'Password must be at least 8 characters',
+    }));
+    return isValid;
   };
 
-  const checkIfValidAccount = () => {
-    if (
-      validateFirstName(firstName) &&
-      validateLastName(lastName) &&
-      validateEmail(email) &&
-      validateUsername(username) &&
-      validatePassword(password) &&
-      validateRetypedPassword(retypedPassword, password)
-    ) {
-      setLink('/login');
-      return true;
-    } else {
-      setLink(null);
-      return false;
-    }
+  const retypePasswordVerification = (retypedPassword, password) => {
+    const isValid = retypedPassword === password;
+    setRetypeFlag(isValid);
+    setErrors((prev) => ({
+      ...prev,
+      retypePassword: isValid ? '' : 'Passwords do not match',
+    }));
+    return isValid;
   };
 
   const handleAccountTypeChange = (e) => {
-    setAccountType(e.target.value);
+    const isParent = e.target.value === 'parent';
+    setParentAccountFlag(isParent);
+    setFormData((prev) => ({
+      ...prev,
+      accountType: e.target.value,
+    }));
   };
 
-  const handleCreateNewStudent = () => {
-    setNewStudents([...newStudents, { firstName: '', lastName: '', username: '', email: '', password: '', retypedPassword: '' }]);
-    setNumNewStudents(numNewStudents + 1);
+  const handleAddStudent = () => {
+    const newStudent = {
+      id: Date.now(),
+      firstName: '',
+      lastName: '',
+      username: '',
+      email: '',
+      password: '',
+      retypedPassword: '',
+      errors: {},
+    };
+    setStudents((prev) => [...prev, newStudent]);
+    setShowStudentForm(true);
   };
 
-  const handleStudentChange = (index, field, value) => {
-    const updatedStudents = newStudents.map((student, i) =>
-      i === index ? { ...student, [field]: value } : student
+  const handleStudentInputChange = (studentId, field, value) => {
+    setStudents((prev) =>
+      prev.map((student) =>
+        student.id === studentId ? { ...student, [field]: value } : student
+      )
     );
-    setNewStudents(updatedStudents);
   };
 
-  const handleRemoveStudent = (index) => {
-    const updatedStudents = newStudents.filter((_, i) => i !== index);
-    setNewStudents(updatedStudents);
-    setNumNewStudents(numNewStudents - 1);
+  const handleRemoveStudent = (studentId) => {
+    setStudents((prev) => prev.filter((student) => student.id !== studentId));
+    if (students.length === 1) {
+      setShowStudentForm(false);
+    }
   };
 
-  const handleAddNewStudentForm = () => {
-    handleCreateNewStudent();
-  };
+  const handleSubmit = async () => {
+    console.log('Submit clicked', formData);
 
-  const handleTermsCheckboxChange = (e) => {
-    setTermsAccepted(e.target.checked);
-  };
+    const isValid =
+      firstNameFlag &&
+      lastNameFlag &&
+      emailFlag &&
+      userNameFlag &&
+      passwordFlag &&
+      retypeFlag;
 
-  const sendToDatabase = async (e) => {
-    e.preventDefault();
+    console.log('Validation status:', {
+      firstNameFlag,
+      lastNameFlag,
+      emailFlag,
+      userNameFlag,
+      passwordFlag,
+      retypeFlag,
+    });
 
-    if (!checkIfValidAccount() || !termsAccepted) {
+    if (!isValid) {
+      console.log('Form validation failed');
       return;
     }
 
-    const baseURL = environment.urls.middlewareURL;
-    if (!baseURL) {
-      console.error('Middleware URL is not defined');
-      return;
-    }
+    let url = '';
+    if (parentAccountFlag && students.length > 0) {
+      const studentsData = students.map((student) => ({
+        first: student.firstName,
+        last: student.lastName,
+        email: student.email,
+        username: student.username,
+        password: student.password,
+      }));
 
-    let url = `${baseURL}/user/?first=${firstName}&last=${lastName}&email=${email}&password=${password}&username=${username}&role=${accountType}`;
-
-    if (accountType === 'parent' && newStudents.length > 0) {
-      url += `&students=${encodeURIComponent(JSON.stringify(newStudents))}`;
+      url = `${environment.urls.middlewareURL}/user/?first=${
+        formData.firstName
+      }&last=${formData.lastName}&email=${formData.email}&password=${
+        formData.password
+      }&username=${formData.username}&role=${
+        formData.accountType
+      }&students=${JSON.stringify(studentsData)}`;
+    } else {
+      url = `${environment.urls.middlewareURL}/user/?first=${formData.firstName}&last=${formData.lastName}&email=${formData.email}&password=${formData.password}&username=${formData.username}&role=${formData.accountType}`;
     }
 
     console.log('Request URL:', url);
 
     try {
-      const response = await axios.post(url);
-      if (response.data === 'This username has been taken. Please choose another.') {
-        setLink('/signup');
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (data === 'This username has been taken. Please choose another.') {
+        setErrors((prev) => ({
+          ...prev,
+          username: 'Username already taken',
+        }));
       } else {
-        setLink('/login');
+        window.location.href = '/';
       }
     } catch (error) {
-      console.error('There was an error!', error);
+      console.error('Signup error:', error);
+      setErrors((prev) => ({
+        ...prev,
+        general: 'Signup failed. Please try again.',
+      }));
     }
   };
 
   return (
-    <form className="signupForm" onSubmit={sendToDatabase}>
+    <form className='signupForm' onSubmit={(e) => e.preventDefault()}>
       <h2>Sign up</h2>
-      <div className="errorMessages" style={{ display: (firstNameError || lastNameError || emailError || userNameError || passwordError || retypePasswordError) ? 'block' : 'none' }}>
-        <h3>{firstNameError}</h3>
-        <h3>{lastNameError}</h3>
-        <h3>{emailError}</h3>
-        <h3>{userNameError}</h3>
-        <h3>{passwordError}</h3>
-        <h3>{retypePasswordError}</h3>
-      </div>
-      <div className="formInputs">
-        <input
-          type="text"
-          placeholder="First name"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          onBlur={() => validateFirstName(firstName)}
-        />
-        <input
-          type="text"
-          placeholder="Last name"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          onBlur={() => validateLastName(lastName)}
-        />
-        <input
-          type="text"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onBlur={() => validateEmail(email)}
-        />
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          onBlur={() => validateUsername(username)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onBlur={() => validatePassword(password)}
-        />
-        <input
-          type="password"
-          placeholder="Re-type password"
-          value={retypedPassword}
-          onChange={(e) => setRetypedPassword(e.target.value)}
-          onBlur={() => validateRetypedPassword(retypedPassword, password)}
-        />
-        <p>Select Account Type</p>
-        <select value={accountType} onChange={handleAccountTypeChange}>
-          <option value="student">Student</option>
-          <option value="mentor">Mentor</option>
-          <option value="parent">Parent</option>
-        </select>
-        {accountType === 'parent' && (
-          <div>
-            <button type="button" id="create" onClick={handleCreateNewStudent}>
-              Create Student?
-            </button>
-            {newStudents.map((student, index) => (
-              <div key={index}>
-                <div className="errorMessages">
-                  <h3>{/* Error messages for students */}</h3>
-                </div>
-                <button type="button" className="x" onClick={() => handleRemoveStudent(index)}>
-                  X
-                </button>
-                <input
-                  type="text"
-                  placeholder="Student's first name"
-                  value={student.firstName}
-                  onChange={(e) => handleStudentChange(index, 'firstName', e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Student's last name"
-                  value={student.lastName}
-                  onChange={(e) => handleStudentChange(index, 'lastName', e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Student username"
-                  value={student.username}
-                  onChange={(e) => handleStudentChange(index, 'username', e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Student's email"
-                  value={student.email}
-                  onChange={(e) => handleStudentChange(index, 'email', e.target.value)}
-                />
-                <input
-                  type="password"
-                  placeholder="Student's password"
-                  value={student.password}
-                  onChange={(e) => handleStudentChange(index, 'password', e.target.value)}
-                />
-                <input
-                  type="password"
-                  placeholder="Re-type student's password"
-                  value={student.retypedPassword}
-                  onChange={(e) => handleStudentChange(index, 'retypedPassword', e.target.value)}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-        </div>
-          <div className="termsCheckbox">
-         
-          <input
-            type="checkbox"
-            id="termsCheckbox"
-            checked={termsAccepted}
-            onChange={handleTermsCheckboxChange}
-          />
-          <label htmlFor="termsCheckbox">I accept the terms and conditions</label>
 
+      <div className='errorMessages'>
+        {Object.values(errors).map((error, index) =>
+          error ? <h3 key={index}>{error}</h3> : null
+        )}
+      </div>
+
+      <div className='form-fields'>
+        <input
+          type='text'
+          name='firstName'
+          placeholder='First name'
+          value={formData.firstName}
+          onChange={handleInputChange}
+        />
+        <input
+          type='text'
+          name='lastName'
+          placeholder='Last name'
+          value={formData.lastName}
+          onChange={handleInputChange}
+        />
+        <input
+          type='text'
+          name='email'
+          placeholder='Email'
+          value={formData.email}
+          onChange={handleInputChange}
+        />
+        <input
+          type='text'
+          name='username'
+          placeholder='Username'
+          value={formData.username}
+          onChange={handleInputChange}
+        />
+        <input
+          type='password'
+          name='password'
+          placeholder='Password'
+          value={formData.password}
+          onChange={handleInputChange}
+        />
+        <input
+          type='password'
+          name='retypedPassword'
+          placeholder='Re-type password'
+          value={formData.retypedPassword}
+          onChange={handleInputChange}
+        />
+      </div>
+
+      <div className='account-type'>
+        <p>Select Account Type</p>
+        <select value={formData.accountType} onChange={handleAccountTypeChange}>
+          <option value='mentor'>Mentor</option>
+          <option value='parent'>Parent</option>
+        </select>
+      </div>
+
+      {parentAccountFlag && (
+        <div className='student-section'>
+          {!showStudentForm && (
+            <button
+              type='button'
+              className='add-student-btn'
+              onClick={handleAddStudent}
+            >
+              Create Student
+            </button>
+          )}
+
+          {students.map((student) => (
+            <div key={student.id} className='student-form'>
+              <button
+                type='button'
+                className='remove-student'
+                onClick={() => handleRemoveStudent(student.id)}
+              >
+                X
+              </button>
+
+              <input
+                type='text'
+                placeholder="Student's first name"
+                value={student.firstName}
+                onChange={(e) =>
+                  handleStudentInputChange(
+                    student.id,
+                    'firstName',
+                    e.target.value
+                  )
+                }
+              />
+              <input
+                type='text'
+                placeholder="Student's last name"
+                value={student.lastName}
+                onChange={(e) =>
+                  handleStudentInputChange(
+                    student.id,
+                    'lastName',
+                    e.target.value
+                  )
+                }
+              />
+              <input
+                type='text'
+                placeholder='Student username'
+                value={student.username}
+                onChange={(e) =>
+                  handleStudentInputChange(
+                    student.id,
+                    'username',
+                    e.target.value
+                  )
+                }
+              />
+              <input
+                type='text'
+                placeholder="Student's email"
+                value={student.email}
+                onChange={(e) =>
+                  handleStudentInputChange(student.id, 'email', e.target.value)
+                }
+              />
+              <input
+                type='password'
+                placeholder="Student's password"
+                value={student.password}
+                onChange={(e) =>
+                  handleStudentInputChange(
+                    student.id,
+                    'password',
+                    e.target.value
+                  )
+                }
+              />
+              <input
+                type='password'
+                placeholder="Re-type student's password"
+                value={student.retypedPassword}
+                onChange={(e) =>
+                  handleStudentInputChange(
+                    student.id,
+                    'retypedPassword',
+                    e.target.value
+                  )
+                }
+              />
+            </div>
+          ))}
         </div>
-  
-  {/* Submit Button */}
-  <button type="submit" id="button-signup">Submit</button>
+      )}
+
+      <div className='terms'>
+        <input type='checkbox' id='termsCheckbox' required />
+        <label htmlFor='termsCheckbox'>I accept the terms and conditions</label>
+      </div>
+
+      <button type='button' className='submit-btn' onClick={handleSubmit}>
+        Sign up
+      </button>
     </form>
-  );  
+  );
 };
 
 export default Signup;
-
