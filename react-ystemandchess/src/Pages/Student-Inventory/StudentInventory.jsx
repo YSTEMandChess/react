@@ -9,6 +9,114 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
     setActiveTab(tab);
   };
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "activity":
+        return (
+          <div
+            id="inventory-content-activity"
+            className="inventory-content active-content"
+          >
+            <div className="inventory-content-headingbar">
+              <h2>Activity</h2>
+              <h4>May 2024</h4>
+            </div>
+            <div className="inventory-content-body">
+              <div className="inventory-content-line"></div>
+              <article className="inventory-content-timecard">
+                <div className="inventory-content-col1"></div>
+                <div className="inventory-content-col2">
+                  <p>May 24 2024</p>
+                  <p>7:00 PM</p>
+                </div>
+                <div className="inventory-content-col3">
+                  <p>Solved 2 tactical puzzles.</p>
+                </div>
+              </article>
+              <article className="inventory-content-timecard">
+                <div className="inventory-content-col1"></div>
+                <div className="inventory-content-col2">
+                  <p>May 19 2024</p>
+                  <p>3:00 PM</p>
+                </div>
+                <div className="inventory-content-col3">
+                  <p>Practiced 7 positions on Piece Checkmates I.</p>
+                </div>
+              </article>
+              <article className="inventory-content-timecard">
+                <div className="inventory-content-col1"></div>
+                <div className="inventory-content-col2">
+                  <p>May 16 2024</p>
+                  <p>4:00 PM</p>
+                </div>
+                <div className="inventory-content-col3">
+                  <p>Completed 100 games of chess.</p>
+                </div>
+              </article>
+            </div>
+          </div>
+        );
+      case "mentor":
+        return (
+          <div id="inventory-content-mentor" className="inventory-content">
+            <h2>Mentor</h2>
+            <p>This is the content for the Mentor tab.</p>
+          </div>
+        );
+      case "learning":
+        return (
+          <div id="inventory-content-learning" className="inventory-content">
+            <h2>Learning</h2>
+            <p>This is the content for the Learning tab.</p>
+          </div>
+        );
+      case "chessLessons":
+        return (
+          <div id="inventory-content-lessons" className="inventory-content">
+            <h2>Chess Lessons</h2>
+            <p>This is the content for the Chess Lessons tab.</p>
+          </div>
+        );
+      case "games":
+        return (
+          <div id="inventory-content-games" className="inventory-content">
+            <h2>Games</h2>
+            <p>This is the content for the Games tab.</p>
+          </div>
+        );
+      case "puzzles":
+        return (
+          <div id="inventory-content-puzzles" className="inventory-content">
+            <h2>Puzzles</h2>
+            <p>This is the content for the Puzzles tab.</p>
+          </div>
+        );
+      case "playComputer":
+        return (
+          <div id="inventory-content-computer" className="inventory-content">
+            <h2>Play with Computer</h2>
+            <p>This is the content for the Play with Computer tab.</p>
+          </div>
+        );
+      case "recordings":
+        return (
+          <div id="inventory-content-recordings" className="inventory-content">
+            <h2>Recordings</h2>
+            <p>This is the content for the Recordings tab.</p>
+          </div>
+        );
+      case "backpack":
+        return (
+          <div id="inventory-content-backpack" className="inventory-content">
+            <h2>Backpack</h2>
+            <p>This is the content for the Backpack tab.</p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <main id="main-inventory-content">
       <section className="inv-intro">
@@ -30,36 +138,9 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
       </section>
 
       <section className="inv-inventory">
-
         <div className="inv-inventory-topbar">
           <h2>Your Progress</h2>
         </div>
-        <div className="inv-inventory-analytics">
-          <div className="inv-inventory-analytics-graph">
-            <img src={Images.lineGraphPlaceholder} alt="progress graph" />
-          </div>
-          <div className="inv-inventory-analytics-metrics">
-            <h3>Time Spent</h3>
-            <ul>
-              <li>
-                Website: <strong>45 Min</strong>
-              </li>
-              <li>
-                Playing: <strong>15 Min</strong>
-              </li>
-              <li>
-                Lessons: <strong>10 Min</strong>
-              </li>
-              <li>
-                Puzzle: <strong>5 Min</strong>
-              </li>
-              <li>
-                Mentoring: <strong>10 Min</strong>
-              </li>
-            </ul>
-          </div>
-        </div>
-
         <div className="inv-inventory-content-section">
           <nav className="inv-inventory-content-tabs">
             <ul>
@@ -68,8 +149,8 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
                   tab === "chessLessons"
                     ? "Chess Lessons"
                     : tab === "playComputer"
-                      ? "Play with Computer"
-                      : tab.charAt(0).toUpperCase() + tab.slice(1);
+                    ? "Play with Computer"
+                    : tab.charAt(0).toUpperCase() + tab.slice(1);
 
                 return (
                   <div
@@ -85,103 +166,9 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
             </ul>
           </nav>
 
-
-          <div className="inv-inventory-content-content">
-            <div
-              id="inventory-content-activity"
-              class="inventory-content active-content"
-            >
-              <div className="inventory-content-headingbar">
-                <h2>Activity</h2>
-                <h4>May 2024</h4>
-              </div>
-              <div className="inventory-content-body">
-                <div className="inventory-content-line"></div>
-                <article className="inventory-content-timecard">
-                  <div className="inventory-content-col1"></div>
-                  <div className="inventory-content-col2">
-                    <p>May 24 2024</p>
-                    <p>7:00 PM</p>
-                  </div>
-                  <div className="inventory-content-col3">
-                    <p>Solved 2 tactical puzzles.</p>
-                  </div>
-                </article>
-                <article className="inventory-content-timecard">
-                  <div className="inventory-content-col1"></div>
-                  <div className="inventory-content-col2">
-                    <p>May 19 2024</p>
-                    <p>3:00 PM</p>
-                  </div>
-                  <div className="inventory-content-col3">
-                    <p>Practiced 7 positions on Piece Checkmates I.</p>
-                  </div>
-                </article>
-                <article className="inventory-content-timecard">
-                  <div className="inventory-content-col1"></div>
-                  <div className="inventory-content-col2">
-                    <p>May 16 2024</p>
-                    <p>4:00 PM</p>
-                  </div>
-                  <div className="inventory-content-col3">
-                    <p>Completed 100 games of chess.</p>
-                  </div>
-                </article>
-              </div>
-            </div>
-            <div id="inventory-content-mentor" class="inventory-content">
-              <h2>Content 2</h2>
-              <p>This is the content for Tab 2.</p>
-            </div>
-            <div id="inventory-content-learning" class="inventory-content">
-              <h2>Content 3</h2>
-              <p>This is the content for Tab 3.</p>
-            </div>
-            <div id="inventory-content-lessons" class="inventory-content">
-              <h2>Content 4</h2>
-              <p>This is the content for Tab 4.</p>
-            </div>
-            <div id="inventory-content-games" class="inventory-content">
-              <h2>Content 4</h2>
-              <p>This is the content for Tab 4.</p>
-            </div>
-            <div id="inventory-content-puzzles" class="inventory-content">
-              <h2>Content 4</h2>
-              <p>This is the content for Tab 4.</p>
-            </div>
-            <div id="inventory-content-computer" class="inventory-content">
-              <h2>Content 4</h2>
-              <p>This is the content for Tab 4.</p>
-            </div>
-            <div id="inventory-content-recordings" class="inventory-content">
-              <h2>Content 4</h2>
-              <p>This is the content for Tab 4.</p>
-            </div>
-            <div id="inventory-content-backpack" class="inventory-content">
-              <h2>Content 4</h2>
-              <p>This is the content for Tab 4.</p>
-            </div>
-          </div>
+          <div className="inv-inventory-content-content">{renderTabContent()}</div>
         </div>
       </section>
-      <section className="inv-streaks">
-        <h2>Welcome to Your Streak Progress Page!</h2>
-        <div>
-          <h3>Streak Clock</h3>
-          <img src="" alt="streak clock graphic" />
-        </div>
-        <div>
-          <h3>Weekly Progress</h3>
-          <img src="" alt="weekly progress graphic" />
-        </div>
-        <div>
-          <h3>Calendar</h3>
-          <img src="" alt="calendar graphic" />
-        </div>
-      </section>
-      <section className="inv-growth-quest"></section>
-      <section className="inv-badges"></section>
-      <section className="inv-leaderboard"></section>
     </main>
   );
 };
