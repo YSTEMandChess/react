@@ -58,62 +58,66 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
         );
       case "mentor":
         return (
-          <div id="inventory-content-mentor" className="inventory-content">
+          <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
             <h2>Mentor</h2>
             <p>This is the content for the Mentor tab.</p>
           </div>
         );
       case "learning":
         return (
-          <div id="inventory-content-learning" className="inventory-content">
+          <div id="inventory-content-learning" className="inventory-content active-content">
             <h2>Learning</h2>
             <p>This is the content for the Learning tab.</p>
           </div>
         );
       case "chessLessons":
         return (
-          <div id="inventory-content-lessons" className="inventory-content">
+          <div id="inventory-content-lessons" className="inventory-content active-content">
             <h2>Chess Lessons</h2>
             <p>This is the content for the Chess Lessons tab.</p>
           </div>
         );
       case "games":
         return (
-          <div id="inventory-content-games" className="inventory-content">
+          <div id="inventory-content-games" className="inventory-content active-content">
             <h2>Games</h2>
             <p>This is the content for the Games tab.</p>
           </div>
         );
       case "puzzles":
         return (
-          <div id="inventory-content-puzzles" className="inventory-content">
+          <div id="inventory-content-puzzles" className="inventory-content active-content">
             <h2>Puzzles</h2>
             <p>This is the content for the Puzzles tab.</p>
           </div>
         );
       case "playComputer":
         return (
-          <div id="inventory-content-computer" className="inventory-content">
+          <div id="inventory-content-computer" className="inventory-content active-content">
             <h2>Play with Computer</h2>
             <p>This is the content for the Play with Computer tab.</p>
           </div>
         );
       case "recordings":
         return (
-          <div id="inventory-content-recordings" className="inventory-content">
+          <div id="inventory-content-recordings" className="inventory-content active-content">
             <h2>Recordings</h2>
             <p>This is the content for the Recordings tab.</p>
           </div>
         );
       case "backpack":
         return (
-          <div id="inventory-content-backpack" className="inventory-content">
+          <div id="inventory-content-backpack" className="inventory-content active-content">
             <h2>Backpack</h2>
             <p>This is the content for the Backpack tab.</p>
           </div>
         );
       default:
-        return null;
+        return (
+          <div className="inventory-content active-content">
+            <h2>Select a tab to view its content.</h2>
+          </div>
+        );
     }
   };
 
@@ -144,7 +148,9 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
         <div className="inv-inventory-content-section">
           <nav className="inv-inventory-content-tabs">
             <ul>
-              {["activity", "mentor", "learning", "chessLessons", "games", "puzzles", "playComputer", "recordings", "backpack"].map((tab) => {
+              {["activity", "mentor", "learning", 
+              "chessLessons", "games", "puzzles", 
+              "playComputer", "recordings", "backpack"].map((tab) => {
                 const displayName =
                   tab === "chessLessons"
                     ? "Chess Lessons"

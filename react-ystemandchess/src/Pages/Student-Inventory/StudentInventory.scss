@@ -160,6 +160,20 @@ $inventory-tab-active: linear-gradient(
     text-align: left;
     font-weight: 600;
     margin: 0 0 1rem 0;
+    cursor: pointer;
+
+    img {
+      filter: grayscale(1);
+      transition: filter 0.3s, transform 0.3s;
+    }
+  
+    &.active-tab {
+      img {
+        filter: none;
+        transform: scale(1.1);
+      }
+    }
+
   }
 
   .inv-inventory-content-content {
