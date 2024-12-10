@@ -9,7 +9,7 @@ COPY . .
 
 # Install dependencies (npm install runs in the container after copying the files)
 RUN npm install
-
+RUN npm install dotenv
 # Expose the desired port (e.g., 3000 if your app uses it)
 EXPOSE 4000
 

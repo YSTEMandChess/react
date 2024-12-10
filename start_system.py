@@ -38,7 +38,7 @@ def run_encoded_command(command, timeout=300):  # Increased timeout to 5 minutes
 
 
 # Removes, Builds, and Starts specified docker
-def start_docker_image(location, running_name, image_name):
+def start_docker_image(location, running_name, image_name, local_port, container_port):
     results = []
     commands = []
 
@@ -73,7 +73,7 @@ def start_docker_image(location, running_name, image_name):
 
         # Starting the docker
         print("running docker")
-        new_command = f'docker run -d --network {network_name} --name {running_name} {image_name}'  # Run in detached mode
+        new_command = f'docker run -d --network {network_name} -p {local_port}:{container_port} --name {running_name} {image_name}'  # Run in detached mode
         commands.append(new_command)
 
         result = run_encoded_command(new_command)
@@ -103,14 +103,13 @@ if __name__ == "__main__":
     # Compiling and starting transit UPDATER docker
     
     print("stating account database")
-    start_docker_image("account-db", "account-db-container", "account-db")
+    start_docker_image("account-db", "account-db-container", "account-db", 5000, 5000)
 
     print("starting account API node.js")
-    start_docker_image("account-api", "account-api-container", "account-api")
+    start_docker_image("account-api", "account-api-container", "account-api", 4000, 4000)
 
     print("starting login manager node.js")
-    start_docker_image("login-manager", "login-manager-container", "login-manager")
+    start_docker_image("login-manager", "login-manager-container", "login-manager", 3000, 3000)
 
     print("starting sign up manager node.js")
-    start_docker_image("signup-manager", "signup-manager-container", "signup-manager")
-
+    start_docker_image("signup-manager", "signup-manager-container", "signup-manager", 4001, 4001)
