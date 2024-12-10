@@ -689,7 +689,7 @@ const Lessons = () => {
 };
 
 // Create chess board
-function createChessBoard(
+export function createChessBoard(
   board,
   highlightedSquares,
   setHighlightedSquares,
@@ -760,7 +760,7 @@ function createChessBoard(
 }
 
 // Helper to check if a position is within board bounds
-function isInBounds(row, col) {
+export function isInBounds(row, col) {
   return row >= 0 && row < 8 && col >= 0 && col < 8;
 }
 
