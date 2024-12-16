@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agora Video Chat</title>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 80%;
+        }
+        video {
+            width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <div id="local-video"></div>
+        <div id="remote-video"></div>
+    </div>
+
+
+    <script>
+        const APP_ID = "your-app-id"; // Replace with your Agora App ID
+        const TOKEN = "your-token"; // Replace with your Token
+        const CHANNEL = "test-channel"; // Replace with the channel name to join
+        const UID = null; // Let Agora auto-assign a UID for this user
+
+        const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+        async function joinConference() {
+            try {
+                // Join the channel as a subscriber
+                await client.join(APP_ID, CHANNEL, TOKEN, UID);
+                console.log("Joined channel as subscriber.");
+
+                // Subscribe to any remote user who publishes media
+                client.on("user-published", async (user, mediaType) => {
+                    console.log("User published:", user.uid);
+
+                    // Subscribe to the user's media
+                    await client.subscribe(user, mediaType);
+                    console.log("Subscribed to user:", user.uid);
+
+                    if (mediaType === "video") {
+                        // Play the remote video
+                        const remoteVideoTrack = user.videoTrack;
+                        remoteVideoTrack.play("remote-video");
+                    }
+
+                    if (mediaType === "audio") {
+                        // Play the remote audio
+                        const remoteAudioTrack = user.audioTrack;
+                        remoteAudioTrack.play(); // Plays audio directly (no DOM element needed)
+                    }
+                });
+
+                // Handle a user leaving/unpublishing
+                client.on("user-unpublished", (user) => {
+                    console.log("User unpublished:", user.uid);
+                    document.getElementById("remote-video").innerHTML = ""; // Clear remote video
+                });
+
+                client.on("user-left", (user) => {
+                    console.log("User left:", user.uid);
+                });
+            } catch (error) {
+                console.error("Error joining conference:", error);
+            }
+        }
+
+        joinConference();
+    </script>
+
+    
+</body>
+</html>
