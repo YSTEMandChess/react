@@ -24,10 +24,7 @@ const ACCOUNTPORT = 4000;
 
 require("dotenv").config();
 
-const express = require("express");
-const http = require("https");
 const socketIo = require("socket.io");
-const cors = require("cors");
 
 
 
