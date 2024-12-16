@@ -18,8 +18,26 @@ const ACCOUNTAPI = "account-api-container";
 const ACCOUNTPORT = 4000;
 
 
+////////////
+
+
+
+require("dotenv").config();
+
+const express = require("express");
+const http = require("https");
+const socketIo = require("socket.io");
+const cors = require("cors");
+
+
+
+const { Client } = require('pg');
+
+
 console.log(network);
 console.log(PORT);
+
+app.use(express.json()); // This parses JSON request bodies into req.body
 
 // Use CORS middleware to allow all origins
 app.use(cors({
@@ -39,7 +57,7 @@ const loggedTeachers = {};
 
 app.post('/login', (req, res) => {
   // Retrieve data from the request body
-  const { email, pass } = req.data;
+  const { email, pass } = req.body;
   
   // Print the data if debugging (we don't want to print this data if we're actually operating)
   if (debugging) { console.log('Received data:', email, pass); } 
@@ -79,7 +97,7 @@ app.post('/login', (req, res) => {
 
 app.post('/get-user-info' , (req, res) => {
 
-  const {token} = req.data;
+  const {token} = req.body;
   exists = checkStudentToken(token);
 
   if (exists) {
@@ -93,7 +111,7 @@ app.post('/get-user-info' , (req, res) => {
 });
 
 // Execute all operations
-const checkStudentPasskey = async () => {
+const checkStudentPasskey = async (email, pass) => {
   try {
     const passMatch = await fetch(`${ACCOUNTAPI}:${ACCOUNTPORT}/test-user-pass`, {
       method: 'POST',

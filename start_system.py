@@ -110,6 +110,3 @@ if __name__ == "__main__":
 
     print("starting login manager node.js")
     start_docker_image("login-manager", "login-manager-container", "login-manager", 3000, 3000)
-
-    print("starting sign up manager node.js")
-    start_docker_image("signup-manager", "signup-manager-container", "signup-manager", 4001, 4001)

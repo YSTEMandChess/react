@@ -54,6 +54,8 @@ async function connectToDatabase(client) {
 
 connectToDatabase(client);
 
+app.use(express.json()); // This parses JSON request bodies into req.body
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Account server API is running on ${network}:${PORT}`);
@@ -471,7 +473,7 @@ const createTeacherTable = async () => {
     }
   }
 
-  const createPasskeyTable = async () => {
+const createPasskeyTable = async () => {
   
     // If we're debugging, drop the users table so we can add it again
 
