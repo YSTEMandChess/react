@@ -554,6 +554,64 @@ const addUser = async (username, email) => {
   }
 };
 
+const isMeetTime = async (studentID, mentorID) => {
+  try {
+    const insertQuery = `
+      SELECT
+        CASE
+          WHEN hour = $1 AND minute = $2 AND day = $3 THEN TRUE
+          ELSE FALSE
+        END AS is_meeting_time
+      FROM meets
+      WHERE hour = $1 AND minute = $2 AND day = $3
+      LIMIT 1;
+    `;
+    await client.query(insertQuery, [email, username]);
+    console.log('Entry added successfully!');
+    return true;
+  } catch (err) {
+    console.error('Error adding entry:', err);
+    return false;
+  }
+};
+
+const howLongTillMeet = async (studentID, mentorID) => {
+
+  try {
+    const currentDate = new Date();
+
+    const currentHour = currentDate.getHours();
+    const currentMinute = currentDate.getMinutes();
+    const currentDay = currentDate.getDay(); // 0 is Sunday, 6 is Saturday (adjust as necessary)
+
+    const insertQuery = `
+      SELECT
+        CASE
+          WHEN hour = $1 AND minute = $2 AND day = $3 THEN TRUE
+          ELSE FALSE
+        END AS is_meeting_time
+      FROM meets
+      WHERE hour = $1 AND minute = $2 AND day = $3
+      LIMIT 1;
+    `;
+    const result = await client.query(insertQuery, [currentHour, currentMinute, currentDay]);
+    
+    // Return the result: TRUE if meeting time, FALSE otherwise
+    if (result.rows.length > 0) {
+      console.log(result.rows[0].is_meeting_time);
+    } else {
+      console.log(false);
+    }
+    
+    console.log('Got time till meeting successfully');
+    return true;
+  } catch (err) {
+    console.error('Error adding entry:', err);
+    return false;
+  }
+
+}
+
 const addPasskey = async (user_id, passkey) => {
   try {
     const insertQuery = `
