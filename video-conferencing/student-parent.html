@@ -8,7 +8,7 @@
         // Send a message to the iframe
         function sendMessageToIframe() {
             const iframe = document.getElementById("myIframe");
-            const message = { action: "sayHello", payload: "Hello from Parent!" };
+            const message = { action: "start", mentor: "mentor", student: "student" };
             iframe.contentWindow.postMessage(message, "*");
         }
 
