@@ -8,9 +8,22 @@
         // Send a message to the iframe
         function sendMessageToIframe() {
             const iframe = document.getElementById("myIframe");
-            const message = { action: "sayHello", payload: "Hello from Parent!" };
+            const message = { action: "start", mentor: "mentor", student: "student" };
             iframe.contentWindow.postMessage(message, "*");
         }
+
+        // Listen for messages from the iframe
+        window.addEventListener("message", (event) => {
+            // Validate the message origin for security (optional)
+            // if (event.origin !== "http://trusted-origin.com") return;
+
+            console.log("Received message from iframe:", event.data);
+
+            // Handle specific actions from the iframe
+            if (event.data.action === "reply") {
+                alert("Iframe says: " + event.data.payload);
+            }
+        });
 
         // Listen for messages from the iframe
         window.addEventListener("message", (event) => {
