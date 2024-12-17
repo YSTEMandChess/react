@@ -46,8 +46,6 @@
 
         // Listen for messages from the parent window
         window.addEventListener("message", (e) => {
-            // Validate the message origin for security (optional)
-            // if (event.origin !== "http://trusted-origin.com") return;
 
             // parse message
             let data = JSON.parse(e.data);
@@ -70,6 +68,11 @@
                 // Join the channel as a subscriber
                 await client.join(APP_ID, CHANNEL, TOKEN, UID);
                 console.log("Joined channel as subscriber.");
+
+                const localTrack = await AgoraRTC.createCameraVideoTrack();
+
+                // Play the local video track
+                localTrack.play("local-video");
 
                 // Subscribe to any remote user who publishes media
                 client.on("user-published", async (user, mediaType) => {
