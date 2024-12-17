@@ -29,6 +29,8 @@
 </head>
 <body>
     <div id="video-container">
+        <p>MENTOR</p>
+
         <div id="local-video"></div>
         <div id="remote-video"></div>
     </div>
@@ -61,44 +63,39 @@
         });
 
 
-        async function joinConference() {
+        async function startVideoChat() {
             try {
-                // Join the channel as a subscriber
+                // Join the channel
                 await client.join(APP_ID, CHANNEL, TOKEN, UID);
-                console.log("Joined channel as subscriber.");
 
-                // Subscribe to any remote user who publishes media
+                // Create a local video track
+                const localTrack = await AgoraRTC.createCameraVideoTrack();
+
+                // Play the local video track
+                localTrack.play("local-video");
+
+                // Publish the local video track to the channel
+                await client.publish(localTrack);
+
+                console.log("Published local track.");
+
+                // Subscribe to remote users
                 client.on("user-published", async (user, mediaType) => {
-                    console.log("User published:", user.uid);
-
-                    // Subscribe to the user's media
                     await client.subscribe(user, mediaType);
-                    console.log("Subscribed to user:", user.uid);
+                    console.log("Subscribed to user:", user);
 
                     if (mediaType === "video") {
-                        // Play the remote video
-                        const remoteVideoTrack = user.videoTrack;
-                        remoteVideoTrack.play("remote-video");
-                    }
-
-                    if (mediaType === "audio") {
-                        // Play the remote audio
-                        const remoteAudioTrack = user.audioTrack;
-                        remoteAudioTrack.play(); // Plays audio directly (no DOM element needed)
+                        const remoteTrack = user.videoTrack;
+                        remoteTrack.play("remote-video");
                     }
                 });
 
-                // Handle a user leaving/unpublishing
                 client.on("user-unpublished", (user) => {
-                    console.log("User unpublished:", user.uid);
+                    console.log("User unpublished:", user);
                     document.getElementById("remote-video").innerHTML = ""; // Clear remote video
                 });
-
-                client.on("user-left", (user) => {
-                    console.log("User left:", user.uid);
-                });
             } catch (error) {
-                console.error("Error joining conference:", error);
+                console.error("Error starting video chat:", error);
             }
         }
     </script>
