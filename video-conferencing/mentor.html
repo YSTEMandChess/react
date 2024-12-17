@@ -35,12 +35,31 @@
 
 
     <script>
-        const APP_ID = "your-app-id"; // Replace with your Agora App ID
-        const TOKEN = "your-token"; // Replace with your Token
-        const CHANNEL = "test-channel"; // Replace with the channel name to join
+        const APP_ID = "0f03b7d5ff73444ba3331fc7297881b6"; // Replace with your Agora App ID
+        const TOKEN = null; // Replace with your Token
+        const CHANNEL = null; // Replace with the channel name to join
         const UID = null; // Let Agora auto-assign a UID for this user
 
         const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+        
+        // Listen for messages from the parent window
+        window.addEventListener("start", (e) => {
+            // Validate the message origin for security (optional)
+            // if (event.origin !== "http://trusted-origin.com") return;
+
+            // parse message
+            let data = JSON.parse(e.data);
+
+            // get command from parent and send to server
+            var mentorID = data.mentor;
+            CHANNEL = mentorID;
+
+            console.log("Received message from parent:", event.data);
+
+            startVideoChat();
+        });
+
 
         async function joinConference() {
             try {
@@ -82,8 +101,6 @@
                 console.error("Error joining conference:", error);
             }
         }
-
-        joinConference();
     </script>
 
     

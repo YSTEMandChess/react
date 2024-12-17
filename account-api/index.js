@@ -557,15 +557,12 @@ const addUser = async (username, email) => {
 const isMeetTime = async (studentID, mentorID) => {
   try {
     const insertQuery = `
-      SELECT
-        CASE
-          WHEN hour = $1 AND minute = $2 AND day = $3 THEN TRUE
-          ELSE FALSE
-        END AS is_meeting_time
+      SELECT hour, minute, day
       FROM meets
-      WHERE hour = $1 AND minute = $2 AND day = $3
-      LIMIT 1;
+      WHERE mentor_id = $1
+        AND student_id = $2;
     `;
+    
     await client.query(insertQuery, [email, username]);
     console.log('Entry added successfully!');
     return true;

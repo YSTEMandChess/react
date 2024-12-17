@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agora Video Chat</title>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 80%;
+        }
+        video {
+            width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <div id="local-video"></div>
+        <div id="remote-video"></div>
+    </div>
+
+
+    <script>
+
+        const APP_ID = "0f03b7d5ff73444ba3331fc7297881b6"; // Replace with your Agora App ID
+        const TOKEN = null;//"6aff97bc467b4bf59fb17c5f02d68e5f"; // Replace with your token
+        const CHANNEL = null; // Replace with your channel name
+        const UID = null; // Replace with person1's unique ID
+
+        const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+        // Listen for messages from the parent window
+        window.addEventListener("start", (e) => {
+            // Validate the message origin for security (optional)
+            // if (event.origin !== "http://trusted-origin.com") return;
+
+            // parse message
+            let data = JSON.parse(e.data);
+
+            // get command from parent and send to server
+            var mentorID = data.mentor;
+            var studentID = data.student;
+
+            CHANNEL = mentorID;
+            UID = studentID;
+
+            console.log("Received message from parent:", event.data);
+
+            startVideoChat();
+        });
+
+
+        async function startVideoChat() {
+            try {
+                // Join the channel
+                await client.join(APP_ID, CHANNEL, TOKEN, UID);
+
+                // Create a local video track
+                const localTrack = await AgoraRTC.createCameraVideoTrack();
+
+                // Play the local video track
+                localTrack.play("local-video");
+
+                // Publish the local video track to the channel
+                await client.publish(localTrack);
+
+                console.log("Published local track.");
+
+                // Subscribe to remote users
+                client.on("user-published", async (user, mediaType) => {
+                    await client.subscribe(user, mediaType);
+                    console.log("Subscribed to user:", user);
+
+                    if (mediaType === "video") {
+                        const remoteTrack = user.videoTrack;
+                        remoteTrack.play("remote-video");
+                    }
+                });
+
+                client.on("user-unpublished", (user) => {
+                    console.log("User unpublished:", user);
+                    document.getElementById("remote-video").innerHTML = ""; // Clear remote video
+                });
+            } catch (error) {
+                console.error("Error starting video chat:", error);
+            }
+        }
+    </script>
+
+    
+</body>
+</html>

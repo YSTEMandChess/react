@@ -4,12 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parent Window</title>
-    
+    <style>
+        body {
+            display: flex;
+            justify-content: space-between; /* Adds space between the iframes */
+            padding: 10px;
+        }
+        iframe {
+            width: 48%; /* Makes each iframe take up 48% of the container width */
+            height: 300px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
 <body>
     <h1>Parent Window</h1>
-    <iframe id="mentI" src="mentor.html" style="width: 100%; height: 300px; border: 1px solid #ccc;"></iframe>
-    <iframe id="studI" src="student.html" style="width: 100%; height: 300px; border: 1px solid #ccc;"></iframe>
-    
+    <iframe id="mentI" src="mentor-parent.html"></iframe>
+    <iframe id="studI" src="student-parent.html"></iframe>
 </body>
 </html>

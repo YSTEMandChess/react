@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Window</title>
+    <script>
+        // Send a message to the iframe
+        function sendMessageToIframe() {
+            const iframe = document.getElementById("myIframe");
+            const message = { action: "sayHello", payload: "Hello from Parent!" };
+            iframe.contentWindow.postMessage(message, "*");
+        }
+
+        // Listen for messages from the iframe
+        window.addEventListener("message", (event) => {
+            // Validate the message origin for security (optional)
+            // if (event.origin !== "http://trusted-origin.com") return;
+
+            console.log("Received message from iframe:", event.data);
+
+            // Handle specific actions from the iframe
+            if (event.data.action === "reply") {
+                alert("Iframe says: " + event.data.payload);
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>Parent Window</h1>
+    <button onclick="sendMessageToIframe()">Send Message to Iframe</button>
+    <iframe id="myIframe" src="student.html" style="width: 100%; height: 300px; border: 1px solid #ccc;"></iframe>
+</body>
+</html>
