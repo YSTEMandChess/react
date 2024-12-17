@@ -62,52 +62,55 @@
             joinConference();
         });
 
-
         async function joinConference() {
-            try {
-                // Join the channel as a subscriber
-                await client.join(APP_ID, CHANNEL, TOKEN, UID);
-                console.log("Joined channel as subscriber.");
+    try {
+        // Join the channel as a subscriber
+        await client.join(APP_ID, CHANNEL, TOKEN, UID);
+        console.log("Joined channel as subscriber.");
 
-                const localTrack = await AgoraRTC.createCameraVideoTrack();
+        const localTrack = await AgoraRTC.createCameraVideoTrack();
 
-                // Play the local video track
-                localTrack.play("local-video");
+        // Play the local video track
+        localTrack.play("local-video");
 
-                // Subscribe to any remote user who publishes media
-                client.on("user-published", async (user, mediaType) => {
-                    console.log("User published:", user.uid);
+        // Publish the local video track to the channel
+        await client.publish(localTrack);
+        console.log("Published local track.");
 
-                    // Subscribe to the user's media
-                    await client.subscribe(user, mediaType);
-                    console.log("Subscribed to user:", user.uid);
+        // Subscribe to any remote user who publishes media
+        client.on("user-published", async (user, mediaType) => {
+            console.log("User published:", user.uid);
 
-                    if (mediaType === "video") {
-                        // Play the remote video
-                        const remoteVideoTrack = user.videoTrack;
-                        remoteVideoTrack.play("remote-video");
-                    }
+            // Subscribe to the user's media
+            await client.subscribe(user, mediaType);
+            console.log("Subscribed to user:", user.uid);
 
-                    if (mediaType === "audio") {
-                        // Play the remote audio
-                        const remoteAudioTrack = user.audioTrack;
-                        remoteAudioTrack.play(); // Plays audio directly (no DOM element needed)
-                    }
-                });
-
-                // Handle a user leaving/unpublishing
-                client.on("user-unpublished", (user) => {
-                    console.log("User unpublished:", user.uid);
-                    document.getElementById("remote-video").innerHTML = ""; // Clear remote video
-                });
-
-                client.on("user-left", (user) => {
-                    console.log("User left:", user.uid);
-                });
-            } catch (error) {
-                console.error("Error joining conference:", error);
+            if (mediaType === "video") {
+                // Play the remote video
+                const remoteVideoTrack = user.videoTrack;
+                remoteVideoTrack.play("remote-video");
             }
-        }
+
+            if (mediaType === "audio") {
+                // Play the remote audio
+                const remoteAudioTrack = user.audioTrack;
+                remoteAudioTrack.play(); // Plays audio directly (no DOM element needed)
+            }
+        });
+
+        // Handle a user leaving/unpublishing
+        client.on("user-unpublished", (user) => {
+            console.log("User unpublished:", user.uid);
+            document.getElementById("remote-video").innerHTML = ""; // Clear remote video
+        });
+
+        client.on("user-left", (user) => {
+            console.log("User left:", user.uid);
+        });
+    } catch (error) {
+        console.error("Error joining conference:", error);
+    }
+}
     </script>
 
     
