@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agora Video Chat</title>
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.2.js"></script>    
     <style>
         body {
             display: flex;
@@ -37,16 +37,16 @@
 
 
     <script>
-        const APP_ID = "0f03b7d5ff73444ba3331fc7297881b6"; // Replace with your Agora App ID
-        const TOKEN = null; // Replace with your Token
-        const CHANNEL = null; // Replace with the channel name to join
-        const UID = null; // Let Agora auto-assign a UID for this user
+        var APP_ID = "0f03b7d5ff73444ba3331fc7297881b6"; // Replace with your Agora App ID
+        var TOKEN = null; // Replace with your Token
+        var CHANNEL = null; // Replace with the channel name to join
+        var UID = null; // Let Agora auto-assign a UID for this user
 
         const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
         
         // Listen for messages from the parent window
-        window.addEventListener("start", (e) => {
+        window.addEventListener("message", (e) => {
             // Validate the message origin for security (optional)
             // if (event.origin !== "http://trusted-origin.com") return;
 
