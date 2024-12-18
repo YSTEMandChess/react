@@ -113,20 +113,6 @@ async function publish(e) {
   // agora content inspect end ;
 };
 
-function subscribe() {
-  const uid = options.otherid;
-  const user = remoteUsers[uid];
-  if (!user) {
-    return message.error(`User:${uid} not found!`);
-  }
-
-  subscribe(user, "audio");
-
-  subscribe(user, "video");
-  
-  addSuccessIcon("#step-subscribe");
-  message.success("Subscribe and Play success!");
-};
 
 async function leave(e) {
   await leave();
@@ -261,7 +247,7 @@ async function subscribeToTrack(user, mediaType) {
     `);
 
     // Append the player element to the remote player list
-    $("#remote-playerlist").append(player);
+    $("#remote-player").append(player);
     
     // Play the remote video track in the created player
     user.videoTrack.play(`player-${uid}`);
@@ -287,6 +273,8 @@ function handleUserPublished(user, mediaType) {
     $("#remote-uid-select").append(`<option value="${id}" id="remote-option-${id}">${id}</option>`);
     $("#remote-uid-select").val(id);
   }
+
+  subscribe();
 }
 
 /*
@@ -377,28 +365,20 @@ window.addEventListener("message", async (e) => {
     options.uid = studentID;
     options.otherid = mentorID;
 
-
-    await create();
-    await join();
-    await publish();
-    while (true)
-    {
-      await subscribe();
-
-    }
-
   }
   else if (role == "mentor")
   {
     options.uid = mentorID;
     options.otherid = studentID;
 
-    await create();
-    await join();
-    await publish();
-    
-
   }
+
+  await create();
+  await join();
+  await publish();
+
+  await subscribe();
+
 
   console.log("Received message from parent:", e.data);
 
