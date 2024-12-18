@@ -12,7 +12,7 @@
         function sendMessageToIframe() {
             const iframe = document.getElementById("myIframe");
         
-            var data = {command: "userinfo", mentor: "mentor"};
+            var data = {command: "userinfo", channel: "ystem-chess", mentor: 4321, student: 1234, role:"mentor"};
             iframe.contentWindow.postMessage(JSON.stringify(data), '*');
 
             console.log("sent message to iframe");
@@ -23,6 +23,6 @@
 <body>
     <h1>Parent Window</h1>
     <button onclick="sendMessageToIframe()">Send Message to Iframe</button>
-    <iframe id="myIframe" src="mentor.html" style="width: 100%; height: 300px; border: 1px solid #ccc;"></iframe>
+    <iframe id="myIframe" src="index.html" style="width: 100%; height: 300px; border: 1px solid #ccc;"></iframe>
 </body>
 </html>

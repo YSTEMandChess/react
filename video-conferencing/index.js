@@ -3,6 +3,7 @@ var options = {
   appid: '0f03b7d5ff73444ba3331fc7297881b6', // set your actual Agora App ID here
   channel: 'ystem-chess',
   uid: 12345,
+  otherid: 54321,
   token: null, // or set token if you're using one
 };
 console.log("options set");
@@ -67,10 +68,10 @@ $(".cam-list").change(function (e) {
 
 function create(e) {
   createClient();
-  addSuccessIcon("#step-create");
+  //addSuccessIcon("#step-create");
   message.success("Create client success!");
-  $("#step-create").attr("disabled", true);
-  $("#step-join").attr("disabled", false);
+  //$("#step-create").attr("disabled", true);
+  //$("#step-join").attr("disabled", false);
 };
 
 async function join(e) {
@@ -87,11 +88,11 @@ async function join(e) {
     setOptionsToLocal(options);
     addSuccessIcon("#step-join");
     message.success("Join channel success!");
-    $("#step-join").attr("disabled", true);
-    $("#step-publish").attr("disabled", false);
-    $("#step-subscribe").attr("disabled", false);
-    $("#step-leave").attr("disabled", false);
-    $("#mirror-check").attr("disabled", false);
+    //$("#step-join").attr("disabled", true);
+    //$("#step-publish").attr("disabled", false);
+    //$("#step-subscribe").attr("disabled", false);
+    //$("#step-leave").attr("disabled", false);
+    //$("#mirror-check").attr("disabled", false);
   } catch (error) {
     if (error.code === 'CAN_NOT_GET_GATEWAY_SERVER') {
       return message.error("Token parameter error,please check your token.");
@@ -103,30 +104,26 @@ async function join(e) {
 
 async function publish(e) {
   await createTrackAndPublish();
-  addSuccessIcon("#step-publish");
   message.success("Create tracks and publish success!");
   initDevices();
-  $("#step-publish").attr("disabled", true);
-  $("#mirror-check").attr("disabled", true);
+  //$("#step-publish").attr("disabled", true);
+  //$("#mirror-check").attr("disabled", true);
   // agora content inspect start
   agoraContentInspect(localTracks.videoTrack);
   // agora content inspect end ;
 };
 
 function subscribe() {
-  const uid = $("#remote-uid-select").val();
+  const uid = options.otherid;
   const user = remoteUsers[uid];
   if (!user) {
     return message.error(`User:${uid} not found!`);
   }
-  const audioCheck = $("#audio-check").prop("checked");
-  const videoCheck = $("#video-check").prop("checked");
-  if (audioCheck) {
-    subscribe(user, "audio");
-  }
-  if (videoCheck) {
-    subscribe(user, "video");
-  }
+
+  subscribe(user, "audio");
+
+  subscribe(user, "video");
+  
   addSuccessIcon("#step-subscribe");
   message.success("Subscribe and Play success!");
 };
@@ -223,26 +220,56 @@ async function leave() {
  * @param  {IAgoraRTCRemoteUser} user - The {@link  https://docs.agora.io/en/Voice/API%20Reference/web_ng/interfaces/iagorartcremoteuser.html| remote user} to add.
  * @param {trackMediaType - The {@link https://docs.agora.io/en/Voice/API%20Reference/web_ng/interfaces/itrack.html#trackmediatype | media type} to add.
  */
-async function subscribe(user, mediaType) {
+// Replace the current subscribe function with the modified one
+async function subscribe() {
+  const uid = options.otherid; // Get the other user's ID
+  const user = remoteUsers[uid]; // Get the remote user based on the UID
+  
+  if (!user) {
+    return message.error(`User: ${uid} not found!`);
+  }
+
+  // Subscribe to the remote user's audio and video tracks
+  await subscribeToTrack(user, "audio");
+  await subscribeToTrack(user, "video");
+  
+  addSuccessIcon("#step-subscribe");
+  message.success("Subscribe and Play success!");
+}
+
+// A new function to handle subscription to audio and video tracks for the remote user
+async function subscribeToTrack(user, mediaType) {
   const uid = user.uid;
-  // subscribe to a remote user
+
+  // Subscribe to the remote user's media track (audio or video)
   await client.subscribe(user, mediaType);
-  console.log("subscribe success");
+  console.log(`${mediaType} subscribe success`);
+
+  // Check if the mediaType is "video"
   if (mediaType === "video") {
     if ($(`#player-${uid}`).length) {
-      return;
+      return; // If the player already exists, no need to add it again
     }
+
+    // Create a player element for the remote video stream
     const player = $(`
-     <div id="player-wrapper-${uid}">
-            <div id="player-${uid}" class="player">
-                 <div class="remote-player-name">uid: ${uid}</div>
-            </div>
-     </div>
+      <div id="player-wrapper-${uid}">
+        <div id="player-${uid}" class="player">
+          <div class="remote-player-name">uid: ${uid}</div>
+        </div>
+      </div>
     `);
+
+    // Append the player element to the remote player list
     $("#remote-playerlist").append(player);
+    
+    // Play the remote video track in the created player
     user.videoTrack.play(`player-${uid}`);
   }
+
+  // Check if the mediaType is "audio"
   if (mediaType === "audio") {
+    // Play the remote audio track
     user.audioTrack.play();
   }
 }
@@ -327,7 +354,52 @@ async function switchMicrophone(label) {
   await localTracks.audioTrack.setDevice(currentMic.deviceId);
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-create();
-join();
-publish();
+window.addEventListener("message", async (e) => {
+
+  // parse message
+  let data = JSON.parse(e.data);
+
+  // get command from parent and send to server
+  var mentorID = data.mentor;
+  var studentID = data.student;
+  
+  var channel = data.channel;
+  options.channel = channel;
+
+  var role = data.role;
+
+  if (role == "student")
+  {
+    options.uid = studentID;
+    options.otherid = mentorID;
+
+
+    await create();
+    await join();
+    await publish();
+    while (true)
+    {
+      await subscribe();
+
+    }
+
+  }
+  else if (role == "mentor")
+  {
+    options.uid = mentorID;
+    options.otherid = studentID;
+
+    await create();
+    await join();
+    await publish();
+    
+
+  }
+
+  console.log("Received message from parent:", e.data);
+
+});
