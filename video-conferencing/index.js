@@ -1,5 +1,14 @@
-AgoraRTC.enableLogUpload();
+console.log("Script started");
+var options = {
+  appid: '0f03b7d5ff73444ba3331fc7297881b6', // set your actual Agora App ID here
+  channel: 'ystem-chess',
+  uid: 12345,
+  token: null, // or set token if you're using one
+};
+console.log("options set");
 
+AgoraRTC.enableLogUpload();
+console.log("Agora started");
 
 var client;
 var localTracks = {
@@ -12,12 +21,7 @@ var mics = [];
 var cams = [];
 var remoteUsers = {};
 
-var options = {
-  appid: '0f03b7d5ff73444ba3331fc7297881b6', // set your actual Agora App ID here
-  channel: 'ystem-chess',
-  uid: 12345,
-  token: null, // or set token if you're using one
-};
+
 
 var curVideoProfile;
 
@@ -61,15 +65,15 @@ $(".cam-list").change(function (e) {
   switchCamera(this.value);
 });
 
-$("#step-create").click(function (e) {
+function create(e) {
   createClient();
   addSuccessIcon("#step-create");
   message.success("Create client success!");
   $("#step-create").attr("disabled", true);
   $("#step-join").attr("disabled", false);
-});
+};
 
-$("#step-join").click(async function (e) {
+async function join(e) {
   try {
     options.channel = $("#channel").val();
     options.uid = Number($("#uid").val());
@@ -95,9 +99,9 @@ $("#step-join").click(async function (e) {
     message.error(error.message);
     console.error(error);
   }
-});
+};
 
-$("#step-publish").click(async function (e) {
+async function publish(e) {
   await createTrackAndPublish();
   addSuccessIcon("#step-publish");
   message.success("Create tracks and publish success!");
@@ -107,9 +111,9 @@ $("#step-publish").click(async function (e) {
   // agora content inspect start
   agoraContentInspect(localTracks.videoTrack);
   // agora content inspect end ;
-});
+};
 
-$("#step-subscribe").click(function (e) {
+function subscribe() {
   const uid = $("#remote-uid-select").val();
   const user = remoteUsers[uid];
   if (!user) {
@@ -125,9 +129,9 @@ $("#step-subscribe").click(function (e) {
   }
   addSuccessIcon("#step-subscribe");
   message.success("Subscribe and Play success!");
-});
+};
 
-$("#step-leave").click(async function (e) {
+async function leave(e) {
   await leave();
   message.success("Leave channel success!");
   removeAllIcons();
@@ -143,7 +147,7 @@ $("#step-leave").click(async function (e) {
   $("#remote-playerlist").html("");
   $("#remote-uid-select option:not([disabled])").remove();
   $("#remote-uid-select").val("");
-});
+};
 
 function createClient() {
   // create Agora client
@@ -322,3 +326,8 @@ async function switchMicrophone(label) {
   // switch device of local audio track.
   await localTracks.audioTrack.setDevice(currentMic.deviceId);
 }
+
+
+create();
+join();
+publish();

@@ -424,6 +424,5 @@ async function agoraGetProjects() {
 
 // exec functions
 __queryUrlParams();
-__checkLocalOptions();
 __addAppInfoUI();
 __checkExperienceTime();
