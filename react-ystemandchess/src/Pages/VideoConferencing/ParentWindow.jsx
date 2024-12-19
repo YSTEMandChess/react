@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-const ParentWindow = ({ mentorId, studentId }) => {
+const ParentWindow = ({ mentorId, studentId, role }) => {
   // Create a reference for the iframe
   const iframeRef = useRef(null);
 
@@ -12,7 +12,7 @@ const ParentWindow = ({ mentorId, studentId }) => {
         channel: "system-chess",
         mentor: mentorId,
         student: studentId,
-        role: "mentor"
+        role: role
       };
       iframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
       console.log("Sent message to iframe:", data);
