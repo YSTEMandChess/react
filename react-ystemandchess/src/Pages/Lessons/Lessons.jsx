@@ -568,13 +568,13 @@ const Lessons = () => {
 
   return (
     <div className="lessons-page">
-      <div className="chessboard-container">
+      <div className="chessboard-container_L">
         <div className="button-container">
           <button className="lesson-button">Lesson</button>
           <button className="play-button">Play</button>
         </div>
 
-        <div className="chessboard">
+        <div className="chessboard_L">
           {createChessBoard(
             board,
             highlightedSquares,
@@ -608,7 +608,7 @@ const Lessons = () => {
 
       <div className="lesson-buttons-container">
         {/* Pawn Button and Scenarios */}
-        <button onClick={handlePawnClick} className="lesson-pawn-button">Pawn</button>
+        <button onClick={handlePawnClick} className="lesson-pawn-button_L">Pawn</button>
         {showScenarios.pawn && (
           <>
             <button className="choice-buttons" onClick={() => setupScenario('pawn', 'basic')}>Basic</button>
@@ -621,7 +621,7 @@ const Lessons = () => {
         )}
 
         {/* Bishop Button and Scenarios */}
-        <button onClick={handleBishopClick} className="lesson-bishop-button">Bishop</button>
+        <button onClick={handleBishopClick} className="lesson-bishop-button_L">Bishop</button>
         {showScenarios.bishop && (
           <>
             <button className="choice-buttons" onClick={() => setupScenario('bishop', 'basic')}>Basic</button>
@@ -634,7 +634,7 @@ const Lessons = () => {
         )}
 
         {/* Knight Button and Scenarios */}
-        <button onClick={handleKnightClick} className="lesson-knight-button">Knight</button>
+        <button onClick={handleKnightClick} className="lesson-knight-button_L">Knight</button>
         {showScenarios.knight && (
           <>
             <button className="choice-buttons" onClick={() => setupScenario('knight', 'basic')}>The Basic</button>
@@ -648,7 +648,7 @@ const Lessons = () => {
 
 
         {/* Rook Button and Scenarios */}
-        <button onClick={handleRookClick} className="lesson-rook-button">Rook</button>
+        <button onClick={handleRookClick} className="lesson-rook-button_L">Rook</button>
         {showScenarios.rook && (
           <>
             <button className="choice-buttons" onClick={() => setupScenario('rook', 'basic')}>The Basic</button>
@@ -661,7 +661,7 @@ const Lessons = () => {
         )}
 
         {/* Queen Button and Scenarios */}
-        <button onClick={handleQueenClick} className="lesson-queen-button">Queen</button>
+        <button onClick={handleQueenClick} className="lesson-queen-button_L">Queen</button>
         {showScenarios.queen && (
           <>
             <button className="choice-buttons" onClick={() => setupScenario('queen', 'basic')}>The Basic</button>
@@ -674,7 +674,7 @@ const Lessons = () => {
 
 
         {/* King Button and Scenarios */}
-        <button onClick={handleKingClick} className="lesson-king-button">King</button>
+        <button onClick={handleKingClick} className="lesson-king-button_L">King</button>
         {showScenarios.king && (
           <>
             <button className="choice-buttons" onClick={() => setupScenario('king', 'basic')}>The Basic</button>
@@ -720,7 +720,7 @@ export function createChessBoard(
       chessBoard.push(
         <div
           key={key}
-          className="square"
+          className="square_L"
           style={{
             backgroundColor: highlightedSquares.includes(key) ? 'transparent' : squareColor,
             position: 'relative', // Allow positioning for labels and circles
