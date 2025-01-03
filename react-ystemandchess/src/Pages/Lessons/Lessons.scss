@@ -34,7 +34,7 @@
 }
 
 .lesson-pawn-button_L, .lesson-rook-button_L,.lesson-bishop-button_L,
-.lesson-knight-button_L, .lesson-queen-button_L, .lesson-king-button_L{
+.lesson-knight-button_L, .lesson-queen-button_L, .lesson-king-button_L, .lesson-CM_1-button_L{
   padding: 10px 20px;
   margin: 5px;
   border: none;
@@ -74,6 +74,11 @@
 
 .lesson-king-button_L {
   top: 450px; /* Adjust the top value to position below pawn button */
+  right: 100px; /* Keep this to place on the right */
+}
+
+.lesson-CM_1-button_L {
+  top: 500px; /* Adjust the top value to position below pawn button */
   right: 100px; /* Keep this to place on the right */
 }
 

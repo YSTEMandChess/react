@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./StudentInventory.scss";
 import Images from "../../images/imageImporter";
-import {createChessBoard, isInBounds, getPawnMoves, getRookMoves, getKnightMoves, getBishopMoves, getKingMoves, getQueenMoves} from '../Lessons/Lessons.jsx'
+import { createChessBoard, isInBounds, getPawnMoves, getRookMoves, getKnightMoves, getBishopMoves, getKingMoves, getQueenMoves } from '../Lessons/Lessons.jsx'
 
 const StudentInventory = ({ userPortraitSrc, userName }) => {
   // bring chessboard
@@ -452,6 +452,70 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
         }
         break;
 
+      case 'basic_checkmate_1':
+        setpieceDescription("piece checkmate 1 Basic checkmates");
+        setScenarioDescription("Try this!");
+
+        switch (scenario) {
+          case 'queen_and_rook_mate':
+            updatedBoard[7][0] = 'wQ'; // a1
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[7][7] = 'wR'; // h1
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your queen and rook to restrict the king and deliver checkmate. Mate in 3 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          case 'two_rook_mate':
+            updatedBoard[7][0] = 'wR'; // a1
+            updatedBoard[7][7] = 'wR'; // h1
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your rooks to restrict the king and deliver checkmate. Mate in 4 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          case 'queen_and_bishop_mate':
+            updatedBoard[5][2] = 'wQ'; // c3
+            updatedBoard[5][3] = 'wB'; // d3
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your queen and bishop to restrict the king and deliver checkmate. Mate in 5 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          case 'queen_and_knight_mate':
+            updatedBoard[5][2] = 'wQ'; // c3
+            updatedBoard[5][3] = 'wN'; // d3
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your queen and knight to restrict the king and deliver checkmate. Mate in 5 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          case 'queen_mate':
+            updatedBoard[7][4] = 'wQ'; // e1
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your queen to restrict the king, force it to the edge of the board and deliver checkmate. The queen can't do it alone, so use your king to help. Mate in 6 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          case 'rook_mate':
+            updatedBoard[7][4] = 'wR'; // e1
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your rook to restrict the king, force it to the edge of the board and deliver checkmate. The rook can't do it alone, so use your king to help. Mate in 11 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          default:
+            console.error("Scenario not found.");
+            break;
+        }
+        break;
+
+
       default:
         break;
     }
@@ -644,117 +708,117 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
 
             <div className="chessboard-container">
 
-        <div className="chessboard">
-          {createChessBoard(
-            board,
-            highlightedSquares,
-            setHighlightedSquares,
-            handleSquareHover,
-            handleDragStart,
-            handleDrop,
-            handleDragOver,
-            draggingPiece
-          )}
-        </div>
-      </div>
+              <div className="chessboard">
+                {createChessBoard(
+                  board,
+                  highlightedSquares,
+                  setHighlightedSquares,
+                  handleSquareHover,
+                  handleDragStart,
+                  handleDrop,
+                  handleDragOver,
+                  draggingPiece
+                )}
+              </div>
+            </div>
 
-      {/* Popup for lesson completion */}
-      {showPopup && (
-        <div className="popup">
-          <div className="popup-content">
-            <p>Lesson Completed!</p>
-            <button onClick={handlePopupConfirm}>OK</button>
-          </div>
-        </div>
-      )}
+            {/* Popup for lesson completion */}
+            {showPopup && (
+              <div className="popup">
+                <div className="popup-content">
+                  <p>Lesson Completed!</p>
+                  <button onClick={handlePopupConfirm}>OK</button>
+                </div>
+              </div>
+            )}
 
-      {/* Description part */}
-      <div className="scenario-description">
-        <p className="piece_description">{pieceDescription}</p>
-        <p className="scenario_description">{scenarioDescription}</p>
-        <p className="scenario_description_2">{scenarioDescription_2}</p>
-      </div>
-
-
-      <div className="lesson-buttons-container">
-        {/* Pawn Button and Scenarios */}
-        <button onClick={handlePawnClick} className="lesson-pawn-button">Pawn</button>
-        {showScenarios.pawn && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'basic')}>Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'capture')}>Capture</button>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_1')}>Training 1</button>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_2')}>Training 2</button>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_3')}>Training 3</button>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'special_move')}>Special Move</button>
-          </>
-        )}
-
-        {/* Bishop Button and Scenarios */}
-        <button onClick={handleBishopClick} className="lesson-bishop-button">Bishop</button>
-        {showScenarios.bishop && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'basic')}>Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_1')}>Training 1</button>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_2')}>Training 2</button>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_3')}>Training 3</button>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_4')}>Training 4</button>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'final')}>Final</button>
-          </>
-        )}
-
-        {/* Knight Button and Scenarios */}
-        <button onClick={handleKnightClick} className="lesson-knight-button">Knight</button>
-        {showScenarios.knight && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'basic')}>The Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_1')}>Training 1</button>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_2')}>Training 2</button>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_3')}>Training 3</button>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_4')}>Training 4</button>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'final')}>Final</button>
-          </>
-        )}
+            {/* Description part */}
+            <div className="scenario-description">
+              <p className="piece_description">{pieceDescription}</p>
+              <p className="scenario_description">{scenarioDescription}</p>
+              <p className="scenario_description_2">{scenarioDescription_2}</p>
+            </div>
 
 
-        {/* Rook Button and Scenarios */}
-        <button onClick={handleRookClick} className="lesson-rook-button">Rook</button>
-        {showScenarios.rook && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'basic')}>The Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_1')}>Training 1</button>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_2')}>Training 2</button>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_3')}>Training 3</button>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_4')}>Training 4</button>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'final')}>Final</button>
-          </>
-        )}
+            <div className="lesson-buttons-container">
+              {/* Pawn Button and Scenarios */}
+              <button onClick={handlePawnClick} className="lesson-pawn-button">Pawn</button>
+              {showScenarios.pawn && (
+                <>
+                  <button className="choice-buttons" onClick={() => setupScenario('pawn', 'basic')}>Basic</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('pawn', 'capture')}>Capture</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_1')}>Training 1</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_2')}>Training 2</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_3')}>Training 3</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('pawn', 'special_move')}>Special Move</button>
+                </>
+              )}
 
-        {/* Queen Button and Scenarios */}
-        <button onClick={handleQueenClick} className="lesson-queen-button">Queen</button>
-        {showScenarios.queen && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('queen', 'basic')}>The Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('queen', 'training_1')}>Training 1</button>
-            <button className="choice-buttons" onClick={() => setupScenario('queen', 'training_2')}>Training 2</button>
-            <button className="choice-buttons" onClick={() => setupScenario('queen', 'training_3')}>Training 3</button>
-            <button className="choice-buttons" onClick={() => setupScenario('queen', 'final')}>Final</button>
-          </>
-        )}
+              {/* Bishop Button and Scenarios */}
+              <button onClick={handleBishopClick} className="lesson-bishop-button">Bishop</button>
+              {showScenarios.bishop && (
+                <>
+                  <button className="choice-buttons" onClick={() => setupScenario('bishop', 'basic')}>Basic</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_1')}>Training 1</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_2')}>Training 2</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_3')}>Training 3</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_4')}>Training 4</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('bishop', 'final')}>Final</button>
+                </>
+              )}
+
+              {/* Knight Button and Scenarios */}
+              <button onClick={handleKnightClick} className="lesson-knight-button">Knight</button>
+              {showScenarios.knight && (
+                <>
+                  <button className="choice-buttons" onClick={() => setupScenario('knight', 'basic')}>The Basic</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_1')}>Training 1</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_2')}>Training 2</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_3')}>Training 3</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_4')}>Training 4</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('knight', 'final')}>Final</button>
+                </>
+              )}
 
 
-        {/* King Button and Scenarios */}
-        <button onClick={handleKingClick} className="lesson-king-button">King</button>
-        {showScenarios.king && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('king', 'basic')}>The Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('king', 'training')}>Training</button>
-            <button className="choice-buttons" onClick={() => setupScenario('king', 'final')}>Final</button>
-          </>
-        )}
+              {/* Rook Button and Scenarios */}
+              <button onClick={handleRookClick} className="lesson-rook-button">Rook</button>
+              {showScenarios.rook && (
+                <>
+                  <button className="choice-buttons" onClick={() => setupScenario('rook', 'basic')}>The Basic</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_1')}>Training 1</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_2')}>Training 2</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_3')}>Training 3</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_4')}>Training 4</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('rook', 'final')}>Final</button>
+                </>
+              )}
 
-      </div>
-            
+              {/* Queen Button and Scenarios */}
+              <button onClick={handleQueenClick} className="lesson-queen-button">Queen</button>
+              {showScenarios.queen && (
+                <>
+                  <button className="choice-buttons" onClick={() => setupScenario('queen', 'basic')}>The Basic</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('queen', 'training_1')}>Training 1</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('queen', 'training_2')}>Training 2</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('queen', 'training_3')}>Training 3</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('queen', 'final')}>Final</button>
+                </>
+              )}
+
+
+              {/* King Button and Scenarios */}
+              <button onClick={handleKingClick} className="lesson-king-button">King</button>
+              {showScenarios.king && (
+                <>
+                  <button className="choice-buttons" onClick={() => setupScenario('king', 'basic')}>The Basic</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('king', 'training')}>Training</button>
+                  <button className="choice-buttons" onClick={() => setupScenario('king', 'final')}>Final</button>
+                </>
+              )}
+
+            </div>
+
           </div>
         );
       case "games":
@@ -828,27 +892,27 @@ const StudentInventory = ({ userPortraitSrc, userName }) => {
         <div className="inv-inventory-content-section">
           <nav className="inv-inventory-content-tabs">
             <ul>
-              {["activity", "mentor", "learning", 
-              "chessLessons", "games", "puzzles", 
-              "playComputer", "recordings", "backpack"].map((tab) => {
-                const displayName =
-                  tab === "chessLessons"
-                    ? "Chess Lessons"
-                    : tab === "playComputer"
-                    ? "Play with Computer"
-                    : tab.charAt(0).toUpperCase() + tab.slice(1);
+              {["activity", "mentor", "learning",
+                "chessLessons", "games", "puzzles",
+                "playComputer", "recordings", "backpack"].map((tab) => {
+                  const displayName =
+                    tab === "chessLessons"
+                      ? "Chess Lessons"
+                      : tab === "playComputer"
+                        ? "Play with Computer"
+                        : tab.charAt(0).toUpperCase() + tab.slice(1);
 
-                return (
-                  <div
-                    key={tab}
-                    className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
-                    onClick={() => handleTabClick(tab)}
-                  >
-                    <img src={Images[`${tab}Icon`]} alt={`${tab} icon`} />
-                    <li>{displayName}</li>
-                  </div>
-                );
-              })}
+                  return (
+                    <div
+                      key={tab}
+                      className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
+                      onClick={() => handleTabClick(tab)}
+                    >
+                      <img src={Images[`${tab}Icon`]} alt={`${tab} icon`} />
+                      <li>{displayName}</li>
+                    </div>
+                  );
+                })}
             </ul>
           </nav>
 

@@ -449,6 +449,69 @@ const Lessons = () => {
         }
         break;
 
+        case 'basic_checkmate_1':
+        setpieceDescription("piece checkmate 1 Basic checkmates");
+        setScenarioDescription("Try this!");
+
+        switch (scenario) {
+          case 'queen_and_rook_mate':
+            updatedBoard[7][0] = 'wQ'; // a1
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[7][7] = 'wR'; // h1
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your queen and rook to restrict the king and deliver checkmate. Mate in 3 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          case 'two_rook_mate':
+            updatedBoard[7][0] = 'wR'; // a1
+            updatedBoard[7][7] = 'wR'; // h1
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your rooks to restrict the king and deliver checkmate. Mate in 4 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          case 'queen_and_bishop_mate':
+            updatedBoard[5][2] = 'wQ'; // c3
+            updatedBoard[5][3] = 'wB'; // d3
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your queen and bishop to restrict the king and deliver checkmate. Mate in 5 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          case 'queen_and_knight_mate':
+            updatedBoard[5][2] = 'wQ'; // c3
+            updatedBoard[5][3] = 'wN'; // d3
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your queen and knight to restrict the king and deliver checkmate. Mate in 5 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          case 'queen_mate':
+            updatedBoard[7][4] = 'wQ'; // e1
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your queen to restrict the king, force it to the edge of the board and deliver checkmate. The queen can't do it alone, so use your king to help. Mate in 6 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          case 'rook_mate':
+            updatedBoard[7][4] = 'wR'; // e1
+            updatedBoard[5][4] = 'wK'; // e3
+            updatedBoard[2][3] = 'bK'; // d6
+            setScenarioDescription("Use your rook to restrict the king, force it to the edge of the board and deliver checkmate. The rook can't do it alone, so use your king to help. Mate in 11 if played perfectly.");
+            setTrainingStarted(true);
+            break;
+
+          default:
+            console.error("Scenario not found.");
+            break;
+        }
+        break;
+
       default:
         break;
     }
@@ -466,6 +529,7 @@ const Lessons = () => {
       knight: piece === 'knight',
       queen: piece === 'queen',
       king: piece === 'king',
+      CM1: piece === 'CM1',
     });
   };
 
@@ -475,6 +539,7 @@ const Lessons = () => {
   const handleKnightClick = () => handlePieceClick('knight');
   const handleQueenClick = () => handlePieceClick('queen');
   const handleKingClick = () => handlePieceClick('king');
+  const handleCM1Click = () => handlePieceClick('CM1')
 
   // Helper function to get possible moves for a piece
   const getPieceMoves = (piece, position) => {
@@ -680,6 +745,19 @@ const Lessons = () => {
             <button className="choice-buttons" onClick={() => setupScenario('king', 'basic')}>The Basic</button>
             <button className="choice-buttons" onClick={() => setupScenario('king', 'training')}>Training</button>
             <button className="choice-buttons" onClick={() => setupScenario('king', 'final')}>Final</button>
+          </>
+        )}
+
+        {/* basic_checkmate_1 Button and Scenarios */}
+        <button onClick={handleCM1Click} className="lesson-CM_1-button_L">Basic Checkmate_1</button>
+        {showScenarios.CM1 && (
+          <>
+            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_and_rook_mate')}>Queen & Rook Mate</button>
+            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'two_rook_mate')}>Two Rook Mate</button>
+            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_and_bishop_mate')}>Queen & Bishop Mate</button>
+            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_and_knight_mate')}>Queen & Knight Mate</button>
+            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_mate')}>Queen Mate</button>
+            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'rook_mate')}>Rook Mate</button>
           </>
         )}
 
