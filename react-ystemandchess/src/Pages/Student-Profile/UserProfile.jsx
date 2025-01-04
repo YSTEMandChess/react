@@ -274,6 +274,20 @@ return (
             frameBorder="0"
             allowFullScreen
           ></iframe>
+
+          <iframe
+            src="/VideoConferencing/student-parent.html" // URL of chess parent container
+            title="VideoConferencing"
+            width="600"
+            height="400"
+            frameBorder="0"
+            allowFullScreen
+          ></iframe>
+
+<iframe id="mentI" src="mentor-parent.html"></iframe>
+<iframe id="studI" src="student-parent.html"></iframe>
+
+
         </div>
   
         <div id="Professional_Development" className="tabcontent">

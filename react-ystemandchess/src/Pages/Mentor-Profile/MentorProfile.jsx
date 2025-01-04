@@ -271,6 +271,15 @@ const MentorProfile = () => {
                     frameBorder="0"
                     allowFullScreen
                   ></iframe>
+
+                  <iframe
+                    src="/VideoConferencing/mentor-parent.html" // URL of chess parent container
+                    title="VideoConferencing"
+                    width="600"
+                    height="400"
+                    frameBorder="0"
+                    allowFullScreen
+                  ></iframe>
                 </div>
       
                 <div id="Professional_Development" className="tabcontent">
