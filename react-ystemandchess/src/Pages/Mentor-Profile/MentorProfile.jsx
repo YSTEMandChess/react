@@ -264,8 +264,17 @@ const MentorProfile = () => {
                   <p>The project started in 2018 when someone needed something.</p>
 
                   <iframe
-                    src="http://127.0.0.1:5500/chessClient/parent.html" // URL of chess parent container
+                    src="/chess-client/parent.html" // URL of chess parent container
                     title="My Iframe"
+                    width="600"
+                    height="400"
+                    frameBorder="0"
+                    allowFullScreen
+                  ></iframe>
+
+                  <iframe
+                    src="/VideoConferencing/mentor-parent.html" // URL of chess parent container
+                    title="VideoConferencing"
                     width="600"
                     height="400"
                     frameBorder="0"

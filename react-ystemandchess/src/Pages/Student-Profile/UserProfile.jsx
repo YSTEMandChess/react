@@ -267,13 +267,27 @@ return (
         <div id="Mentor_Session" className="tabcontent">
           <h3>Mentor Session</h3>
           <iframe
-            src="http://127.0.0.1:5500/chessClient/parent.html" // URL of chess parent container
+            src="/chess-client/parent.html" // URL of chess parent container
             title="My Iframe"
             width="600"
             height="400"
             frameBorder="0"
             allowFullScreen
           ></iframe>
+
+          <iframe
+            src="/VideoConferencing/student-parent.html" // URL of chess parent container
+            title="VideoConferencing"
+            width="600"
+            height="400"
+            frameBorder="0"
+            allowFullScreen
+          ></iframe>
+
+<iframe id="mentI" src="mentor-parent.html"></iframe>
+<iframe id="studI" src="student-parent.html"></iframe>
+
+
         </div>
   
         <div id="Professional_Development" className="tabcontent">

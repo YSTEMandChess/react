@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="../../../assets/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Basic Video Call -- Agora</title>
+    <link rel="stylesheet" href="./assets/bootstrap.min.css" />
+    <link rel="stylesheet" href="./common/common.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- left -->
+      <!-- right -->
+      <section class="right row">
+        <!-- video -->
+        <div class="video-group">
+          <!-- local stream -->
+          <section class="card">
+            <div class="card-header">local stream</div>
+            <div class="card-body">
+              <div id="local-player" class="player">
+                <div class="card-text local-player-name" id="local-player-name"></div>
+              </div>
+            </div>
+          </section>
+          <!-- remote stream -->
+          <section class="card">
+            <div class="card-header">remote stream</div>
+            <div class="card-body">
+              <div id="remote-player" class="player">
+                <div class="card-text local-player-name" id="local-player-name"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <!-- form -->
+        <!-- app info -->
+        <div id="app-info"></div>
+      </section>
+    </div>
+
+    <script src="./assets/jquery-3.4.1.min.js"></script>
+    <script src="./assets/bootstrap.bundle.min.js"></script>
+    <script src="./common/constant.js"></script>
+    <script src="./common/utils.js"></script>
+    <script src="./common/left-menu.js"></script>
+    <script src="./i18n/language.js"></script>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>
