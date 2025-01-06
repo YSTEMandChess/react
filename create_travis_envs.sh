@@ -2,42 +2,42 @@
 
 printf "Creating environment files and variables\n\n"
 
-#Creating environment files and variables for YStemAndChess
-printf "Creating environment files for YStemAndChess\n"
-cd YStemAndChess/src && mkdir environments
+#Creating environment files and variables for react-ystemandchess
+printf "Creating environment files for react-ystemandchess\n"
+cd react-ystemandchess/src && mkdir environments
 cd environments
 
-#Creating and adding environment.ts file and variables
-touch environment.ts
-printf "export const environment = {\n" >> environment.ts
-printf "    production: false,\n" >> environment.ts
-printf "      agora: {\n" >> environment.ts
-printf "     appId: ' ',\n" >> environment.ts
-printf "    },\n" >> environment.ts
-printf "    urls: {\n" >> environment.ts
-printf "      middlewareURL: 'http://127.0.0.1:8000',\n" >> environment.ts
-printf "      chessClientURL: 'http://localhost',\n" >> environment.ts
-printf "      stockFishURL : 'http://127.0.0.1:8080',\n" >> environment.ts
-printf "      chessServerURL : 'http://127.0.0.1:3000'\n" >> environment.ts
-printf "    }\n" >> environment.ts
-printf "  };\n" >> environment.ts
+#Creating and adding environment.js file and variables
+touch environment.js
+printf "export const environment = {\n" >> environment.js
+printf "    production: false,\n" >> environment.js
+printf "      agora: {\n" >> environment.js
+printf "     appId: ' ',\n" >> environment.js
+printf "    },\n" >> environment.js
+printf "    urls: {\n" >> environment.js
+printf "      middlewareURL: 'http://127.0.0.1:8000',\n" >> environment.js
+printf "      chessClientURL: 'http://localhost',\n" >> environment.js
+printf "      stockFishURL : 'http://127.0.0.1:8080',\n" >> environment.js
+printf "      chessServerURL : 'http://127.0.0.1:3000'\n" >> environment.js
+printf "    }\n" >> environment.js
+printf "  };\n" >> environment.js
 
-#Creating and adding environment.prod.ts file and environment variables
-touch environment.prod.ts
-printf "export const environment = {\n" >> environment.prod.ts
-printf "    production: false,\n" >> environment.prod.ts
-printf "      agora: {\n" >> environment.prod.ts
-printf "     appId: ' ',\n" >> environment.prod.ts
-printf "    },\n" >> environment.prod.ts
-printf "    urls: {\n" >> environment.prod.ts
-printf "      middlewareURL: 'http://127.0.0.1:8000',\n" >> environment.prod.ts
-printf "      chessClientURL: 'http://localhost',\n" >> environment.prod.ts
-printf "      stockFishURL : 'http://127.0.0.1:8080',\n" >> environment.prod.ts
-printf "      chessServerURL : 'http://127.0.0.1:3000'\n" >> environment.prod.ts
-printf "    }\n" >> environment.prod.ts
-printf "  };\n" >> environment.prod.ts
+#Creating and adding environment.prod.js file and environment variables
+touch environment.prod.js
+printf "export const environment = {\n" >> environment.prod.js
+printf "    production: false,\n" >> environment.prod.js
+printf "      agora: {\n" >> environment.prod.js
+printf "     appId: ' ',\n" >> environment.prod.js
+printf "    },\n" >> environment.prod.js
+printf "    urls: {\n" >> environment.prod.js
+printf "      middlewareURL: 'http://127.0.0.1:8000',\n" >> environment.prod.js
+printf "      chessClientURL: 'http://localhost',\n" >> environment.prod.js
+printf "      stockFishURL : 'http://127.0.0.1:8080',\n" >> environment.prod.js
+printf "      chessServerURL : 'http://127.0.0.1:3000'\n" >> environment.prod.js
+printf "    }\n" >> environment.prod.js
+printf "  };\n" >> environment.prod.js
 
-printf "YStemAndChess env files completed!\n\n"
+printf "react-ystemandchess env files completed!\n\n"
 
 #Back to root
 cd ../../..
