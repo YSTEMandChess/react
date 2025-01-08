@@ -26,11 +26,19 @@ const Home = () => {
       "https://donorbox.org/y-stem-and-chess-inc-learning-platform";
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = (title="") => {
     // Handle the Buy Now button click event
-    alert("Buy Now button clicked!");
-  };
+    // alert("Buy Now button clicked!");
+    if (title === "How to Start a Tech-Based Nonprofit"){
+      window.open("https://www.amazon.com/How-Start-Tech-based-Nonprofit-Opportunity/dp/B0C4MML5WG", "_blank");
+    }
 
+    if (title === "The Zero Dollar Workforce"){
+      window.open("https://www.amazon.com/Zero-Dollar-Workforce-Company-Spend/dp/B09NGVLQSS", "_blank");
+    }
+
+
+  };
   return (
     <div className="home-container">
       <div className="home-content1">
@@ -141,7 +149,7 @@ const Home = () => {
                 alt={`${book.title} cover`}
                 className="book-image"
               />
-              <button className="buy-now" onClick={handleBuyNow}>
+              <button className="buy-now" onClick={() => handleBuyNow(book.title)}>
                 <img src={Images.BuyNow} alt="Buy Now" />
               </button>
             </div>
