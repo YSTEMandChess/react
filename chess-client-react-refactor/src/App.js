@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 
-const ParentWindow = (studentID, mentorID, role) => {
-  const [studentID, setStudentID] = useState('');
-  const [mentorID, setMentorID] = useState('');
-  const [role, setRole] = useState('student');
+const ParentWindow = (sID, mID, r) => {
+  const [studentID, setStudentID] = useState(sID);
+  const [mentorID, setMentorID] = useState(mID);
+  const [role, setRole] = useState(r);
   const [message, setMessage] = useState('Waiting for message...');
   const iframeRef = useRef(null);
 
@@ -36,7 +36,7 @@ const ParentWindow = (studentID, mentorID, role) => {
       <iframe
         id="chessboard"
         ref={iframeRef}
-        src="http://127.0.0.1:5500/chessClient/index.html"
+        src="/chessClient/index.html"
         width="400px"
         height="400px"
         title="Chessboard"
