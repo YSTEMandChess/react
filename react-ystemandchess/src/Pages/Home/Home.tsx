@@ -1,6 +1,8 @@
 import React from "react";
 import "./Home.css";
 import Images from "../../images/imageImporter";
+import { ButtonsCard } from "../../components/ui/tailwindcss-buttons";
+
 const books = [
   {
     image: Images.Book1,
@@ -28,14 +30,14 @@ const Home = () => {
       "https://donorbox.org/y-stem-and-chess-inc-learning-platform";
   };
 
-  const handleBuyNow = (title="") => {
+  const handleBuyNow = (title = "") => {
     // Handle the Buy Now button click event
     // alert("Buy Now button clicked!");
-    if (title === "How to Start a Tech-Based Nonprofit"){
+    if (title === "How to Start a Tech-Based Nonprofit") {
       window.open("https://www.amazon.com/How-Start-Tech-based-Nonprofit-Opportunity/dp/B0C4MML5WG", "_blank");
     }
 
-    if (title === "The Zero Dollar Workforce"){
+    if (title === "The Zero Dollar Workforce") {
       window.open("https://www.amazon.com/Zero-Dollar-Workforce-Company-Spend/dp/B09NGVLQSS", "_blank");
     }
 
@@ -56,9 +58,20 @@ const Home = () => {
             Science.
           </p>
 
-          <button className="donate-button" onClick={handleDonateButton}>
-            <strong>Donate</strong>
+          {/* <button className="donate-button" onClick={handleDonateButton}> */}
+          {/* <strong>Donate</strong> */}
+          {/* </button> */}
+
+          <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
+            <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
+              Donate
+            </span>
           </button>
+
+
+
+
         </div>
         <div className="pic">
           <img
@@ -116,7 +129,7 @@ const Home = () => {
           width="560"
           height="315"
           src="https://www.youtube.com/embed/SBr0bGgddIc"
-          style={{"border":"0"}}
+          style={{ "border": "0" }}
           allowFullScreen
         ></iframe>
       </div>
@@ -171,3 +184,5 @@ const Home = () => {
 };
 
 export default Home;
+
+
