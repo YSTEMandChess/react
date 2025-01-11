@@ -36,7 +36,7 @@
   text-align: left;
 }
 
-.donate-button {
+/* .donate-button {
   text-align: center;
   margin-right: 30%;
   margin-top: 5%;
@@ -54,7 +54,7 @@
   cursor: pointer;
   transform: scale(1.05);
   transition: 0.2s;
-}
+} */
 
 #tree-group-img {
   width: 110%;
@@ -105,7 +105,7 @@
   margin-top: 10%;
 }
 
-.card1 button {
+/* .card1 button {
   width: 40%;
   height: 10%;
   font-size: 160%;
@@ -120,7 +120,7 @@
   transform: scale(1.1);
   transition: 0.2s;
   cursor: pointer;
-}
+} */
 
 .card2 {
   width: 35%;
@@ -146,7 +146,7 @@
   margin-top: 10%;
 }
 
-.card2 button {
+/* .card2 button {
   width: 40%;
   height: 10%;
   font-size: 160%;
@@ -161,7 +161,7 @@
   transform: scale(1.1);
   cursor: pointer;
   transition: 0.2s;
-}
+} */
 
 /* ------------------------------------------------------------*/
 
@@ -209,7 +209,7 @@
   margin-top: 4%;
 }
 
-.home-content4-box button {
+/* .home-content4-box button {
   width: 20%;
   height: 10%;
   border: none;
@@ -225,7 +225,7 @@
   cursor: pointer;
   transform: scale(1.1);
   transition: 0.2s;
-}
+} */
 
 /* Logo Line Break */
 
