@@ -56,7 +56,7 @@ const ChessWindow = ({sID="student", mID="mentor", r="mentor"}) => {
       if (host == "3000") { role="student"; }
       else if (host == "3001") {role="mentor"; }
     } 
-    else { role = r; setRole(role); }
+    else { role = r;}
     console.log(host);
 
     // Set visuals
@@ -66,7 +66,6 @@ const ChessWindow = ({sID="student", mID="mentor", r="mentor"}) => {
 
     // Making a new chess game
     enterUsers();
-    newGame();
 
     // Starting video 
     newVideo();
@@ -96,8 +95,14 @@ const ChessWindow = ({sID="student", mID="mentor", r="mentor"}) => {
   };
 
   const enterUsers = () => {
-    const data = { command: 'userinfo', student: studentID, mentor: mentorID, role: role };
-    chessIframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
+    const sendUserData = () => {
+        const data = { command: 'userinfo', student: studentID, mentor: mentorID, role: role };
+        chessIframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
+    };
+
+    if (chessIframeRef.current) {
+        chessIframeRef.current.onload = sendUserData; // Wait for iframe to load
+    }
   };
 
   const endGame = () => {
