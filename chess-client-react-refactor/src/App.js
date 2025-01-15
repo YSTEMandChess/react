@@ -44,7 +44,7 @@ const ParentWindow = ({sID="student", mID="mentor", r="mentor"}) => {
 
   const [studentIdRef, setStudentId] = useState(null);
   const [mentorIdRef, setMentorId] = useState(null);
-  const [roleRef, setRole] = useState(null);
+  const [roleRef, setRole] = useState(role);
 
   useEffect( () => {
     studentID = sID;
@@ -67,18 +67,26 @@ const ParentWindow = ({sID="student", mID="mentor", r="mentor"}) => {
     enterUsers();
     newGame();
 
+    // Starting video 
+    newVideo();
+
   }, []);
 
   const newVideo = () => {
-    // Sending video iframe data 
-    console.log("Starting Video");
-    console.log(role);
-    console.log(studentID);
-    console.log(mentorID);
-
-    const data = {command: "userinfo", channel: "ystem-chess",  student: studentID, mentor: mentorID, role:role};
-    videoIframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
-
+    const sendVideoData = () => {
+      const data = {
+        command: "userinfo",
+        channel: "ystem-chess",
+        student: studentID,
+        mentor: mentorID,
+        role: role,
+      };
+      videoIframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
+    };
+  
+    if (videoIframeRef.current) {
+      videoIframeRef.current.onload = sendVideoData; // Wait for iframe to load
+    }
   };
 
   const newGame = () => {
@@ -112,20 +120,20 @@ const ParentWindow = ({sID="student", mID="mentor", r="mentor"}) => {
         {/* Row 1 */}
         <div style={{ display: 'flex', width: '100%' }}>
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>            
-            <img src='profile.png' width='100px'>
+            <img src='user.png' width='100px'>
             
             </img>
-            <p>{studentIdRef}</p>
+            <p>{roleRef}</p>
           </div>
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>            
               
               
               
-                            <iframe
+              <iframe
                 id="videoconference"
                 style={videoStyle}
                 ref={videoIframeRef}
-                src="/video-conferencing/index.html"
+                src="/videoConferencing/index.html"
                 
                 width="300px"
                 height="200px"
