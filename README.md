@@ -71,13 +71,15 @@ The purpose of the chess Client is to
 5. To see the chessBoard with parentWindow, right click on parent.html and select "run with live server"
 6. To see how both mentor and student interact, right click on both.html and select "run with live server"
 
-
 ### Chess Client React Refactor
 
 The purpose of the chessClient React Refactor folder is to hold the chess game react component that will be imported into react-ystemandchess that interfaces with the ChessClient. To start this individually, do the following : 
 
 1. Navigate to the 'chess-client-react-refactor'
 2. Run 'npm i dotenv' to install necessary dependencies.
-3. Start the react app by running 'npm start'
+3. Open src/app.js and make sure that debug mode is set to true
+4. Open a new terminal window (in same folder) and start the react app by running 'npm start' (for student)
+4. Open a new terminal window (in same folder) and start the react app by running 'npm start' (for mentor)
 
-That's it! You've set up your development environment for the Y STEM and Chess project. Happy coding!
+
+That's it! You've set up your development environment for the Y STEM and Chess project.
