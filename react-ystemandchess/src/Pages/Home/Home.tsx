@@ -68,10 +68,6 @@ const Home = () => {
               Donate
             </span>
           </button>
-
-
-
-
         </div>
         <div className="pic">
           <img
