@@ -659,6 +659,15 @@ const Lessons = () => {
         
         {/* div for elements on the right */}
         <div className='right-container'>
+          {/* Description part */}
+          <div className="description">
+            <div className="piece_description">{pieceDescription}</div>
+            <div className='scenario'>
+              <p className="scenario_description">{scenarioDescription}</p>
+              <p className="scenario_description 2">{scenarioDescription_2}</p>
+            </div>
+          </div>
+          
           <div className="lesson-buttons-container">
             {/* Pawn Button and Scenarios */}
             <button onClick={handlePawnClick} className="lesson-piece-button_L pawn">Pawn</button>
@@ -748,15 +757,6 @@ const Lessons = () => {
                 <button className="lesson-choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'rook_mate')}>Rook Mate</button>
               </>
             )}
-          </div>
-
-           {/* Description part */}
-          <div className="description">
-            <div className="piece_description">{pieceDescription}</div>
-            <div className='scenario'>
-              <p className="scenario_description">{scenarioDescription}</p>
-              <p className="scenario_description 2">{scenarioDescription_2}</p>
-            </div>
           </div>
         </div>
       </div>
