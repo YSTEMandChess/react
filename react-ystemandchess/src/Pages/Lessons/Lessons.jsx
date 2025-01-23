@@ -633,23 +633,131 @@ const Lessons = () => {
 
   return (
     <div className="lessons-page">
-      <div className="chessboard-container_L">
-        <div className="button-container">
-          <button className="lesson-button">Lesson</button>
-          <button className="play-button">Play</button>
-        </div>
 
-        <div className="chessboard_L">
-          {createChessBoard(
-            board,
-            highlightedSquares,
-            setHighlightedSquares,
-            handleSquareHover,
-            handleDragStart,
-            handleDrop,
-            handleDragOver,
-            draggingPiece
-          )}
+      <div className='left-right-container'>
+        {/* Div for elements on the left */}
+        <div className='left-container'>
+          <div className="chessboard-container_L">
+            <div className="button-container">
+              <button className="lesson-button">Lesson</button>
+              <button className="play-button">Play</button>
+            </div>
+            <div className="chessboard_L">
+              {createChessBoard(
+                board,
+                highlightedSquares,
+                setHighlightedSquares,
+                handleSquareHover,
+                handleDragStart,
+                handleDrop,
+                handleDragOver,
+                draggingPiece
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* div for elements on the right */}
+        <div className='right-container'>
+          <div className="lesson-buttons-container">
+            {/* Pawn Button and Scenarios */}
+            <button onClick={handlePawnClick} className="lesson-piece-button_L pawn">Pawn</button>
+            {showScenarios.pawn && (
+              <>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('pawn', 'basic')}>Basic</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('pawn', 'capture')}>Capture</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('pawn', 'training_1')}>Training 1</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('pawn', 'training_2')}>Training 2</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('pawn', 'training_3')}>Training 3</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('pawn', 'special_move')}>Special Move</button>
+              </>
+            )}
+
+            {/* Bishop Button and Scenarios */}
+            <button onClick={handleBishopClick} className="lesson-piece-button_L bishop">Bishop</button>
+            {showScenarios.bishop && (
+              <>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('bishop', 'basic')}>Basic</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('bishop', 'training_1')}>Training 1</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('bishop', 'training_2')}>Training 2</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('bishop', 'training_3')}>Training 3</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('bishop', 'training_4')}>Training 4</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('bishop', 'final')}>Final</button>
+              </>
+            )}
+
+            {/* Knight Button and Scenarios */}
+            <button onClick={handleKnightClick} className="lesson-piece-button_L knight">Knight</button>
+            {showScenarios.knight && (
+              <>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('knight', 'basic')}>The Basic</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('knight', 'training_1')}>Training 1</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('knight', 'training_2')}>Training 2</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('knight', 'training_3')}>Training 3</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('knight', 'training_4')}>Training 4</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('knight', 'final')}>Final</button>
+              </>
+            )}
+
+
+            {/* Rook Button and Scenarios */}
+            <button onClick={handleRookClick} className="lesson-piece-button_L rook">Rook</button>
+            {showScenarios.rook && (
+              <>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('rook', 'basic')}>The Basic</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('rook', 'training_1')}>Training 1</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('rook', 'training_2')}>Training 2</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('rook', 'training_3')}>Training 3</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('rook', 'training_4')}>Training 4</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('rook', 'final')}>Final</button>
+              </>
+            )}
+
+            {/* Queen Button and Scenarios */}
+            <button onClick={handleQueenClick} className="lesson-piece-button_L queen">Queen</button>
+            {showScenarios.queen && (
+              <>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('queen', 'basic')}>The Basic</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('queen', 'training_1')}>Training 1</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('queen', 'training_2')}>Training 2</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('queen', 'training_3')}>Training 3</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('queen', 'final')}>Final</button>
+              </>
+            )}
+
+
+            {/* King Button and Scenarios */}
+            <button onClick={handleKingClick} className="lesson-piece-button_L king">King</button>
+            {showScenarios.king && (
+              <>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('king', 'basic')}>The Basic</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('king', 'training')}>Training</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('king', 'final')}>Final</button>
+              </>
+            )}
+
+            {/* basic_checkmate_1 Button and Scenarios */}
+            <button onClick={handleCM1Click} className="lesson-piece-button_L basic-checkmate">Basic Checkmate_1</button>
+            {showScenarios.CM1 && (
+              <>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_and_rook_mate')}>Queen & Rook Mate</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'two_rook_mate')}>Two Rook Mate</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_and_bishop_mate')}>Queen & Bishop Mate</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_and_knight_mate')}>Queen & Knight Mate</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_mate')}>Queen Mate</button>
+                <button className="lesson-choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'rook_mate')}>Rook Mate</button>
+              </>
+            )}
+          </div>
+
+           {/* Description part */}
+          <div className="description">
+            <div className="piece_description">{pieceDescription}</div>
+            <div className='scenario'>
+              <p className="scenario_description">{scenarioDescription}</p>
+              <p className="scenario_description 2">{scenarioDescription_2}</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -662,106 +770,6 @@ const Lessons = () => {
           </div>
         </div>
       )}
-
-      {/* Description part */}
-      <div className="scenario-description">
-        <p className="piece_description">{pieceDescription}</p>
-        <p className="scenario_description">{scenarioDescription}</p>
-        <p className="scenario_description_2">{scenarioDescription_2}</p>
-      </div>
-
-
-      <div className="lesson-buttons-container">
-        {/* Pawn Button and Scenarios */}
-        <button onClick={handlePawnClick} className="lesson-pawn-button_L">Pawn</button>
-        {showScenarios.pawn && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'basic')}>Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'capture')}>Capture</button>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_1')}>Training 1</button>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_2')}>Training 2</button>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'training_3')}>Training 3</button>
-            <button className="choice-buttons" onClick={() => setupScenario('pawn', 'special_move')}>Special Move</button>
-          </>
-        )}
-
-        {/* Bishop Button and Scenarios */}
-        <button onClick={handleBishopClick} className="lesson-bishop-button_L">Bishop</button>
-        {showScenarios.bishop && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'basic')}>Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_1')}>Training 1</button>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_2')}>Training 2</button>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_3')}>Training 3</button>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'training_4')}>Training 4</button>
-            <button className="choice-buttons" onClick={() => setupScenario('bishop', 'final')}>Final</button>
-          </>
-        )}
-
-        {/* Knight Button and Scenarios */}
-        <button onClick={handleKnightClick} className="lesson-knight-button_L">Knight</button>
-        {showScenarios.knight && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'basic')}>The Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_1')}>Training 1</button>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_2')}>Training 2</button>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_3')}>Training 3</button>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'training_4')}>Training 4</button>
-            <button className="choice-buttons" onClick={() => setupScenario('knight', 'final')}>Final</button>
-          </>
-        )}
-
-
-        {/* Rook Button and Scenarios */}
-        <button onClick={handleRookClick} className="lesson-rook-button_L">Rook</button>
-        {showScenarios.rook && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'basic')}>The Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_1')}>Training 1</button>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_2')}>Training 2</button>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_3')}>Training 3</button>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'training_4')}>Training 4</button>
-            <button className="choice-buttons" onClick={() => setupScenario('rook', 'final')}>Final</button>
-          </>
-        )}
-
-        {/* Queen Button and Scenarios */}
-        <button onClick={handleQueenClick} className="lesson-queen-button_L">Queen</button>
-        {showScenarios.queen && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('queen', 'basic')}>The Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('queen', 'training_1')}>Training 1</button>
-            <button className="choice-buttons" onClick={() => setupScenario('queen', 'training_2')}>Training 2</button>
-            <button className="choice-buttons" onClick={() => setupScenario('queen', 'training_3')}>Training 3</button>
-            <button className="choice-buttons" onClick={() => setupScenario('queen', 'final')}>Final</button>
-          </>
-        )}
-
-
-        {/* King Button and Scenarios */}
-        <button onClick={handleKingClick} className="lesson-king-button_L">King</button>
-        {showScenarios.king && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('king', 'basic')}>The Basic</button>
-            <button className="choice-buttons" onClick={() => setupScenario('king', 'training')}>Training</button>
-            <button className="choice-buttons" onClick={() => setupScenario('king', 'final')}>Final</button>
-          </>
-        )}
-
-        {/* basic_checkmate_1 Button and Scenarios */}
-        <button onClick={handleCM1Click} className="lesson-CM_1-button_L">Basic Checkmate_1</button>
-        {showScenarios.CM1 && (
-          <>
-            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_and_rook_mate')}>Queen & Rook Mate</button>
-            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'two_rook_mate')}>Two Rook Mate</button>
-            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_and_bishop_mate')}>Queen & Bishop Mate</button>
-            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_and_knight_mate')}>Queen & Knight Mate</button>
-            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'queen_mate')}>Queen Mate</button>
-            <button className="choice-buttons" onClick={() => setupScenario('basic_checkmate_1', 'rook_mate')}>Rook Mate</button>
-          </>
-        )}
-
-      </div>
     </div>
   );
 };
@@ -800,8 +808,10 @@ export function createChessBoard(
           key={key}
           className="square_L"
           style={{
-            backgroundColor: highlightedSquares.includes(key) ? 'transparent' : squareColor,
+            backgroundColor: squareColor,
+            filter: highlightedSquares.includes(key) ? 'brightness(80%)' : 'brightness(100%)',
             position: 'relative', // Allow positioning for labels and circles
+            transition: 'filter 0.4s ease'
           }}
           onMouseEnter={() => handleSquareHover(key)} // Show possible moves on hover
           onMouseLeave={() => setHighlightedSquares([])} // Clear highlights when mouse leaves
