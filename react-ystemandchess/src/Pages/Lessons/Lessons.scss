@@ -6,6 +6,28 @@
   background-size: cover;
 }
 
+.left-right-container {
+  display: flex;
+}
+
+.left-container {
+  width: 50%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.right-container {
+  width: 50%;
+  height: 100%;
+  margin: auto 30px;
+  padding-top: 5rem;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+}
+
 /* Button styles */
 .lesson-button, .play-button {
   padding: 10px 20px;
@@ -15,82 +37,86 @@
   color: white;
   font-size: 1rem;
   cursor: pointer;
-  position: absolute; /* Place buttons relative to the container */
   z-index: 1; /* Ensure buttons appear above the chessboard */
+  display: inline;
+  justify-content: space-evenly;
 }
 
+.lesson-button {
+  margin-left: 2rem;
+}
+
+.play-button {
+  margin-right: 2rem;
+}
 .lesson-button:hover, .play-button:hover,.lesson-pawn-button:hover, .lesson-rook-button:hover {
   background-color: #45a049; /* Darker green on hover */
 }
 
-.lesson-button {
-  top: -50px; /* Position above the chessboard */
-  left: 10px; /* Slightly to the left */
+
+.lesson-buttons-container {
+  display: block;
 }
 
-.play-button {
-  top: -50px; /* Position above the chessboard */
-  right: 10px; /* Slightly to the right */
-}
-
-.lesson-pawn-button_L, .lesson-rook-button_L,.lesson-bishop-button_L,
-.lesson-knight-button_L, .lesson-queen-button_L, .lesson-king-button_L, .lesson-CM_1-button_L{
+.lesson-piece-button_L {
   padding: 10px 20px;
-  margin: 5px;
+  margin: 5px auto;
+  display: block;
   border: none;
   background-color: #4CAF50; /* Green background */
   color: white;
   font-size: 1rem;
   cursor: pointer;
-  position: absolute; /* Place buttons relative to the container */
   z-index: 1; /* Ensure buttons appear above the chessboard */
-  width: 100px;
+  width: 20%;
+  height: 55px;
+  border-radius: 10px;
+  transition: background-color 0.5s ease;
 }
 
-.lesson-pawn-button_L {
-  top: 200px; /* Adjust the top value to position below lesson button */
-  right: 100px; /* Keep this to place on the right */
+.lesson-piece-button_L:hover {
+  background-color: #3e8940;
+  transition: background-color 0.5s ease;
 }
 
-.lesson-bishop-button_L {
-  top: 250px; /* Adjust the top value to position below pawn button */
-  right: 100px; /* Keep this to place on the right */
-}
-
-.lesson-knight-button_L {
-  top: 300px; /* Adjust the top value to position below pawn button */
-  right: 100px; /* Keep this to place on the right */
-}
-
-.lesson-rook-button_L {
-  top: 350px; /* Adjust the top value to position below pawn button */
-  right: 100px; /* Keep this to place on the right */
-}
-
-.lesson-queen-button_L {
-  top: 400px; /* Adjust the top value to position below pawn button */
-  right: 100px; /* Keep this to place on the right */
-}
-
-.lesson-king-button_L {
-  top: 450px; /* Adjust the top value to position below pawn button */
-  right: 100px; /* Keep this to place on the right */
-}
-
-.lesson-CM_1-button_L {
-  top: 500px; /* Adjust the top value to position below pawn button */
-  right: 100px; /* Keep this to place on the right */
-}
-
-.choice-buttons_L {
-  background-color: #4CAF50; /* Green background */
-  width: 120px;
+.lesson-choice-buttons {
+  background-color: #4e674e; /* Green background */
   font-size: 1rem;
   cursor: pointer;
+  margin: 7px;
+  border-radius: 10px;
+  width: 25%;
+  transition: background-color 0.5 ease;
+}
+
+.lesson-choice-buttons:hover {
+  background-color: #080e09; /* Darker green on hover */
+  transition: background-color 0.5 ease;
+}
+
+.choice-buttons {
+  background-color: #4e674e; /* Green background */
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 4px;
 }
 
 .choice-buttons:hover {
-  background-color: #45a049; /* Darker green on hover */
+  background-color: #080e09; /* Darker green on hover */
+}
+
+.description {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  margin: 1rem;
+  border: 3px solid black;
+  background-color: beige;
+  border-radius: 30px;
+}
+
+.piece_description {
+  font-size: 2rem;
+  padding-top: 1rem;
+  font-weight: bold;
 }
 
 .popup {
@@ -115,13 +141,9 @@
 
 /* Chessboard Container */
 .chessboard-container_L {
-  align-items: flex-start;
   width: 40vw; /* Container width takes full space */
-  height: 40vw;
-  margin: 20px; /* Center container horizontally */
-  position: relative;
+  height: 100%;
   margin-left: 100px;
-  margin-top: 100px;
 }
 
 /* Chessboard styles */
@@ -175,5 +197,6 @@
   height: 90%;
   object-fit: contain; /* Ensure the image fits nicely within the square */
 }
+
 
 
