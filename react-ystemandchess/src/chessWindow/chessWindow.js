@@ -44,7 +44,7 @@ const ChessWindow = ({sID="student", mID="mentor", r="mentor"}) => {
 
   const [studentIdRef, setStudentId] = useState(null);
   const [mentorIdRef, setMentorId] = useState(null);
-  const [roleRef, setRole] = useState(role);
+  const [roleRef, setRole] = useState(r);
 
   useEffect( () => {
     studentID = sID;
@@ -55,7 +55,8 @@ const ChessWindow = ({sID="student", mID="mentor", r="mentor"}) => {
     if (debugMode) {
       if (host == "3000") { role="student"; }
       else if (host == "3001") {role="mentor"; }
-    }
+    } 
+    else { role = r;}
     console.log(host);
 
     // Set visuals
@@ -65,7 +66,6 @@ const ChessWindow = ({sID="student", mID="mentor", r="mentor"}) => {
 
     // Making a new chess game
     enterUsers();
-    newGame();
 
     // Starting video 
     newVideo();
@@ -95,8 +95,14 @@ const ChessWindow = ({sID="student", mID="mentor", r="mentor"}) => {
   };
 
   const enterUsers = () => {
-    const data = { command: 'userinfo', student: studentID, mentor: mentorID, role: role };
-    chessIframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
+    const sendUserData = () => {
+        const data = { command: 'userinfo', student: studentID, mentor: mentorID, role: role };
+        chessIframeRef.current.contentWindow.postMessage(JSON.stringify(data), '*');
+    };
+
+    if (chessIframeRef.current) {
+        chessIframeRef.current.onload = sendUserData; // Wait for iframe to load
+    }
   };
 
   const endGame = () => {
@@ -121,14 +127,10 @@ const ChessWindow = ({sID="student", mID="mentor", r="mentor"}) => {
         <div style={{ display: 'flex', width: '100%' }}>
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>            
             <img src='user.png' width='100px'>
-            
             </img>
             <p>{roleRef}</p>
           </div>
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>            
-              
-              
-              
               <iframe
                 id="videoconference"
                 style={videoStyle}
@@ -139,14 +141,7 @@ const ChessWindow = ({sID="student", mID="mentor", r="mentor"}) => {
                 height="200px"
                 title="Video"
               ></iframe>
-
-              
-
-
-
-
             </div>
-
         </div>
         {/* Row 2 */}
         <div style={{ display: 'flex', width: '100%' }}>

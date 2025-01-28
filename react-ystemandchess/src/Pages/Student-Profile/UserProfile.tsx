@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { SetPermissionLevel } from '../../globals'; 
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
+import ChessWindow from '../../chessWindow/chessWindow';
+
 import './UserProfile.scss';
+
 
 type PdfItem = {
   id: string;
@@ -288,14 +291,7 @@ return (
   
         <div id="Mentor_Session" className="tabcontent">
           <h3>Mentor Session</h3>
-          <iframe
-            src="http://127.0.0.1:5500/chessClient/parent.html" // URL of chess parent container
-            title="My Iframe"
-            width="600"
-            height="400"
-            frameBorder="0"
-            allowFullScreen
-          ></iframe>
+          <ChessWindow sid="student" mid="mentor" r="student"></ChessWindow>  
         </div>
   
         <div id="Professional_Development" className="tabcontent">
