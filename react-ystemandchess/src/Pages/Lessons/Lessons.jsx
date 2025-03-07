@@ -9,7 +9,7 @@ const Lessons = () => {
   // Description for each Scenarios
   const [scenarioDescription, setScenarioDescription] = useState("");
   const [scenarioDescription_2, setScenarioDescription_2] = useState("");
-  const [pieceDescription, setpieceDescription] = useState("");
+  const [pieceDescription, setpieceDescription] = useState("Choose a Lesson!");
 
   // State for showing scenario buttons for pieces
   const [showScenarios, setShowScenarios] = useState({
@@ -55,7 +55,7 @@ const Lessons = () => {
       setTrainingStarted(false); // Reset training state
       setScenarioDescription("");
       setScenarioDescription_2("");
-      setpieceDescription("");
+      setpieceDescription("Choose a lesson!");
     }
   };
 
