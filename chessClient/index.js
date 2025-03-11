@@ -35,6 +35,8 @@ const mouseImage = 'img/cursor.png';
 var opponentMouseX = 0;
 var opponentMouseY = 0;
 
+var nextPuzzleMove = [];
+
 // Listen for mouse position change 
 document.addEventListener('mousemove', (event) => {
   myMouseX = event.clientX;
@@ -306,7 +308,25 @@ window.addEventListener('message', (e) => {
     // parse message
     let data = JSON.parse(e.data);
 
+    console.log("Apache recieved: ", data);
 
+    // move a piece
+    // used to move a piece in puzzles
+    if ("from" in data && "to" in data && "nextMove" in data) {
+      var source = data.from;
+      var target = data.to;
+      nextPuzzleMove = data.nextMove;
+      
+      currentState.move({from: source, to:target});
+      sendMove(source,target);
+
+      // move highlight
+      highlightMove(data.from, data.to, "lastmove");
+
+      updateStatus();
+      board.position(currentState.fen());
+      sendToParent(currentState.fen());
+    }
     
     // get command from parent and send to server
     var command = data.command;
@@ -323,6 +343,26 @@ window.addEventListener('message', (e) => {
       console.log(data);
     } else if (command == "undo") { sendUndo(); }
 
+    // check if puzzle
+    if (data.PuzzleId) {
+      console.log("loading puzzle: ", data.PuzzleId);
+      currentState.load(data.FEN);
+      board.position(data.FEN);
+
+      // find the starting color
+      var activeColor = data.FEN.split(" ")[1];
+      // the computer makes the first move
+      // change board orientation accordingly
+      // i.e. if active color is w, then player is black, and vice versa
+      if (activeColor === 'w'){
+        board.orientation('black');
+      }
+      else{
+        board.orientation('white');
+      }
+
+      sendToParent(currentState.fen());
+    }
 
     // get and set lessonflag
     lessonFlag = data.lessonFlag;
@@ -387,27 +427,12 @@ window.addEventListener('message', (e) => {
     }
       */
 
-    /*
-    // console.log("client evenet: ", e); // uncomment for debugging
-    
-
-    // move a piece if it's a move message
-    if ("from" in data && "to" in data) {
-      currentState.move({ from: data.from, to: data.to });
-
-      // move highlight
-      highlightMove(data.from, data.to);
-
-      updateStatus();
-      sendToParent(currentState.fen());
-    }
-
     // highlight message
-    if ("highlightFrom" in data && "highlightTo" in data) {
-      highlightMove(data.highlightFrom, data.highlightTo);
-    }
+    // if ("highlightFrom" in data && "highlightTo" in data) {
+    //   highlightMove(data.highlightFrom, data.highlightTo);
+    // }
 
-      */
+    
   },
   false,
 );
@@ -441,8 +466,6 @@ function onDragStart(source, piece, position, orientation) {
     // if it's your turn
     if (playerColor == currentState.turn())
       {
-        
-        
 
         // do not pick up pieces if the game is over
         if (isLesson == false) {
@@ -483,7 +506,18 @@ function onDrop(source, target, draggedPieceSource) {
   // if we're not in freeplay
   if (!freemoveFlag)
   {
-      
+    
+    // if we're doing a puzzle, check if the move is correct
+    if (nextPuzzleMove.length == 2) {
+      // incorrect move, snapback
+      if (source !== nextPuzzleMove[0] || target !== nextPuzzleMove[1]) {
+        return "snapback";
+      }
+      // correct move, clear the next expected move
+      else
+        nextPuzzleMove = [];
+    }
+
     // see if the move is legal
     var move = currentState.move({
       from: source,
