@@ -15,17 +15,17 @@ var prevFEN;
 // List of Puzzles
 // Temporary implementation, without accessing database
 const puzzleArray = [
-    // {
-    //   "PuzzleId":"YzaYa",
-    //   "FEN":"2kr3r/1pp2ppp/p1pb1n2/4q3/NPP1P3/P2P1P1P/5P2/R1BQ1RK1 w - - 1 16",
-    //   "Moves":"d3d4 e5h2",
-    //   "Rating":910,
-    //   "RatingDeviation":76,
-    //   "Popularity":96,
-    //   "NbPlays":128,
-    //   "Themes":"mate mateIn1 middlegame oneMove",
-    //   "GameUrl":"https://lichess.org/nPeulvcd#31"
-    // },
+    {
+      "PuzzleId":"YzaYa",
+      "FEN":"2kr3r/1pp2ppp/p1pb1n2/4q3/NPP1P3/P2P1P1P/5P2/R1BQ1RK1 w - - 1 16",
+      "Moves":"d3d4 e5h2",
+      "Rating":910,
+      "RatingDeviation":76,
+      "Popularity":96,
+      "NbPlays":128,
+      "Themes":"mate mateIn1 middlegame oneMove",
+      "GameUrl":"https://lichess.org/nPeulvcd#31"
+    },
     {
       "PuzzleId":"XVtvX",
       "FEN":"5rk1/4QNb1/1q4rp/p2pPR2/1p1P2N1/7P/PP4P1/7K b - - 2 30",

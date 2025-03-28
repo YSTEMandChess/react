@@ -3,6 +3,7 @@ import { SetPermissionLevel } from '../../globals';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import './UserProfile.scss';
+import Puzzles from '../Puzzles/Puzzles';
 
 type PdfItem = {
   id: string;
@@ -312,6 +313,7 @@ return (
   
         <div id="Puzzles" className="tabcontent">
           <h3>Puzzles</h3>
+          <Puzzles />
         </div>
   
         <div id="computer" className="tabcontent">
