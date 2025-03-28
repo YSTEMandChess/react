@@ -214,9 +214,6 @@ const NavBar = () => {
         <Link to="/lessons" className="links">
           Lessons/Play
         </Link>
-        <Link to="/puzzles" className="links">
-          Puzzles
-        </Link>
         {!username && (
           <Link to="/login" className="links">
             Login
