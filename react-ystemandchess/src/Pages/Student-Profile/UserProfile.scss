@@ -190,20 +190,23 @@ body {
   }
   
   .tab-image {
-    width: 231px;
-    height: 46px;
     border-top-left-radius: 5px;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
   }
   
   .tab-image2 {
-    width: 231px;
-    height: 46px;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
   }
   
   .tab-image3 {
-    width: 231px;
-    height: 46px;
     border-bottom-left-radius: 5px;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
   }
   
   .tab button.tab1 {
@@ -215,6 +218,7 @@ body {
     border: none;
     outline: none;
     cursor: pointer;
+    background-color: transparent;
   }
   
   .tab button.tab2 {
@@ -226,6 +230,7 @@ body {
     border: none;
     outline: none;
     cursor: pointer;
+    background-color: transparent;
   }
   
   .tab button.tab3 {
@@ -238,6 +243,7 @@ body {
     border: none;
     outline: none;
     cursor: pointer;
+    background-color: transparent;
   }
   
   .rb-container {

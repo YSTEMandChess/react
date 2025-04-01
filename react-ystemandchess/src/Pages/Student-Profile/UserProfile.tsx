@@ -5,6 +5,16 @@ import { environment } from '../../environments/environment';
 import './UserProfile.scss';
 import Puzzles from '../Puzzles/Puzzles';
 
+const image_chart = require('../../images/student/chart.PNG');
+const image_activity = require('../../images/student/activity_tab.png');
+const image_mento = require('../../images/student/mento_tab.PNG');
+const image_prodev = require('../../images/student/prodev_tab.PNG');
+const image_chess = require('../../images/student/chess_tab.PNG');
+const image_games = require('../../images/student/games_tab.PNG');
+const image_puzzles = require('../../images/student/puzzles_tab.PNG');
+const image_play = require('../../images/student/play_tab.PNG');
+const image_recordings = require('../../images/student/recordings_tab.PNG');
+
 type PdfItem = {
   id: string;
   FileName: string;
@@ -208,14 +218,14 @@ return (
       </header>
       <div className="container">
         <div className="myDiv">
-          <h2>{firstName} {lastName}</h2>
+          <h2>Hello, {firstName} {lastName}!</h2>
         </div>
       </div>
   
       <div className="container">
         <div className="row">
           <div className="col-12">
-            <img src="../../../assets/images/student/chart.PNG" alt="Chart" />
+            <img src={image_chart} alt="Chart" />
           </div>
         </div>
         <div className="col-12">
@@ -241,28 +251,28 @@ return (
   
         <div className="tab">
           <button className="tablinks tab1" onClick={(e) => openTab(e, 'Activity')} id="defaultOpen">
-            <img src="../../../assets/images/student/activity_tab.png" className="tab-image" alt="Activity Tab" />
+            <img src={image_activity} className="tab-image" alt="Activity Tab" />
           </button>
           <button className="tablinks tab2" onClick={(e) => openTab(e, 'Mentor_Session')}>
-            <img src="../../../assets/images/student/mento_tab.PNG" className="tab-image2" alt="Mentor Session Tab" />
+            <img src={image_mento} className="tab-image2" alt="Mentor Session Tab" />
           </button>
           <button className="tablinks tab2" onClick={(e) => openTab(e, 'Professional_Development')}>
-            <img src="../../../assets/images/student/prodev_tab.PNG" className="tab-image2" alt="Professional Development Tab" />
+            <img src={image_prodev} className="tab-image2" alt="Professional Development Tab" />
           </button>
           <button className="tablinks tab2" onClick={(e) => openTab(e, 'Chess_Lession')}>
-            <img src="../../../assets/images/student/chess_tab.PNG" className="tab-image2" alt="Chess Lesson Tab" />
+            <img src={image_chess} className="tab-image2" alt="Chess Lesson Tab" />
           </button>
           <button className="tablinks tab2" onClick={(e) => openTab(e, 'Games')}>
-            <img src="../../../assets/images/student/games_tab.PNG" className="tab-image2" alt="Games Tab" />
+            <img src={image_games} className="tab-image2" alt="Games Tab" />
           </button>
           <button className="tablinks tab2" onClick={(e) => openTab(e, 'Puzzles')}>
-            <img src="../../../assets/images/student/puzzles_tab.PNG" className="tab-image2" alt="Puzzles Tab" />
+            <img src={image_puzzles} className="tab-image2" alt="Puzzles Tab" />
           </button>
           <button className="tablinks tab2" onClick={(e) => openTab(e, 'computer')}>
-            <img src="../../../assets/images/student/play_tab.PNG" className="tab-image2" alt="Computer Tab" />
+            <img src={image_play} className="tab-image2" alt="Computer Tab" />
           </button>
           <button className="tablinks tab3" onClick={(e) => openTab(e, 'Recordings')}>
-            <img src="../../../assets/images/student/recordings_tab.PNG" className="tab-image3" alt="Recordings Tab" />
+            <img src={image_recordings} className="tab-image3" alt="Recordings Tab" />
           </button>
         </div>
   
