@@ -24,7 +24,6 @@
   overflow: scroll;
   border: 2px solid black;
   border-radius: 30px;
-  background: radial-gradient(rgb(143, 123, 210), rgb(153, 113, 200));
 }
 
 .button-container {
@@ -37,7 +36,7 @@
   padding: 10px 20px;
   margin: 5px;
   border: none;
-  background-color: #4CAF50; /* Green background */
+  background-color: #7FCC26; /* Green background */
   color: white;
   font-size: 1rem;
   cursor: pointer;
@@ -59,32 +58,32 @@
 
 
 .lesson-buttons-container {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
 }
 
 .lesson-piece-button_L {
-  padding: 10px 20px;
-  margin: 5px auto;
-  display: block;
-  border: 1px solid black;
-  background-color: #4CAF50; /* Green background */
+  margin: 5rem 0;
+  background-color: #666565; /* Green background */
   color: white;
   font-size: 1rem;
   cursor: pointer;
   z-index: 1; /* Ensure buttons appear above the chessboard */
-  width: 25%;
+  width: 200px;
   height: 55px;
-  border-radius: 10px;
+  border-radius: 0;
   transition: background-color 0.5s ease;
 }
 
 .lesson-piece-button_L:hover {
-  background-color: #3e8940;
+  background-color: #4f4e4e;
   transition: background-color 0.5s ease;
 }
 
 .lesson-choice-buttons {
-  background-color: #4e674e; /* Green background */
+  background-color: #7FCC26; /* Green background */
   border: 1px solid black;
   font-size: 1rem;
   height: 50px;
@@ -117,7 +116,7 @@
 }
 
 .description {
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-family: 'Lato', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
   margin: 1rem;
   border: 3px solid black;
   background-color: beige;
