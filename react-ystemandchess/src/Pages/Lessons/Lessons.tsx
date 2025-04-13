@@ -7,9 +7,9 @@ const Lessons = () => {
   const [draggingPiece, setDraggingPiece] = useState(null); // Track which piece is being dragged
 
   // Description for each Scenarios
-  const [scenarioDescription, setScenarioDescription] = useState("");
-  const [scenarioDescription_2, setScenarioDescription_2] = useState("");
-  const [pieceDescription, setpieceDescription] = useState("Choose a Lesson!");
+  const [lessonTitle, setLessonTitle] = useState("Sample Title");
+  const [lessonDescription, setLessonDescription] = useState("White pawn moves one square only. But when they reach the other side of the board, they become a stronger piece!");
+  const [pieceDescription, setpieceDescription] = useState("Pawns");
 
   // State for showing scenario buttons for pieces
   const [showScenarios, setShowScenarios] = useState({
@@ -59,8 +59,8 @@ const Lessons = () => {
       setShowPopup(false);
       setBoard(initializeBoard()); // Reset the chessboard
       setTrainingStarted(false); // Reset training state
-      setScenarioDescription("");
-      setScenarioDescription_2("");
+      setLessonTitle("");
+      setLessonDescription("");
       setpieceDescription("Choose a lesson!");
     }
   };
@@ -195,7 +195,6 @@ const Lessons = () => {
 
   return (
     <div className="lessons-page">
-
       <div className='left-right-container'>
         {/* Div for elements on the left */}
         <div className='left-container'>
@@ -222,33 +221,35 @@ const Lessons = () => {
         {/* div for elements on the right */}
         <div className='right-container'>
           {/* Description part */}
-          <div className="description">
-            <div className="piece_description">{pieceDescription}</div>
-            <div className='scenario'>
-              <p className="scenario_description">{scenarioDescription}</p>
-              <p className="scenario_description 2">{scenarioDescription_2}</p>
-            </div>
+          <div className='lesson-header'>
+            <h1 className="piece_description">{pieceDescription}</h1>
+            <button className='reset-lesson'>
+              <h1>reset (placeholder)</h1>
+            </button>
+          </div>
+
+          <h1 className='subheading'>Basic</h1>
+          <p className="lesson-description">{lessonDescription}</p>
+
+          <div className='prev-next-button-container'>
+            <button className="prevNextLessonButton prev">Previous</button>
+            <button className="prevNextLessonButton next">Next</button>
           </div>
         </div>
+
       </div>
 
       <div className="lesson-buttons-container">
             {/* Pawn Button and Scenarios */}
             <button onClick={handlePawnClick} className="lesson-piece-button_L pawn">Basic</button>
-
             {/* Bishop Button and Scenarios */}
             <button onClick={handleBishopClick} className="lesson-piece-button_L bishop">Capture</button>
-
             {/* Knight Button and Scenarios */}
             <button onClick={handleKnightClick} className="lesson-piece-button_L knight">Training 1</button>
-
             {/* Rook Button and Scenarios */}
             <button onClick={handleRookClick} className="lesson-piece-button_L rook">Training 2</button>
-
             {/* Queen Button and Scenarios */}
             <button onClick={handleQueenClick} className="lesson-piece-button_L queen">Training 3</button>
-
-
             {/* King Button and Scenarios */}
             <button onClick={handleKingClick} className="lesson-piece-button_L king">Special Move</button>
         </div>
