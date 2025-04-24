@@ -241,7 +241,7 @@ const Lessons = () => {
 
       <div className="lesson-buttons-container">
             {/* Pawn Button and Scenarios */}
-            <button onClick={handlePawnClick} className="lesson-piece-button_L pawn">Basic</button>
+            <button onClick={handlePawnClick} className="lesson-piece-button_L basic">Basic</button>
             {/* Bishop Button and Scenarios */}
             <button onClick={handleBishopClick} className="lesson-piece-button_L bishop">Capture</button>
             {/* Knight Button and Scenarios */}
