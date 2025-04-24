@@ -1,3 +1,9 @@
+* {
+  // border: 1px solid gold;
+  --green-color: #7FCC26;
+  --gray-color: #666565;
+}
+
 .lessons-page {
   padding-top: 5%;
   padding-bottom: 10%;
@@ -11,25 +17,9 @@
 }
 
 .left-container {
-  width: 50%;
+  width: 60%;
   height: 100%;
   box-sizing: border-box;
-}
-
-.right-container {
-  box-sizing: border-box;
-  width: 50%;
-  height: 700px;
-  margin: 50px 30px 0px 0px;
-  overflow: scroll;
-  border: 2px solid black;
-  border-radius: 30px;
-  background: radial-gradient(rgb(143, 123, 210), rgb(153, 113, 200));
-}
-
-.button-container {
-  display: flex;
-  justify-content: space-between;
 }
 
 /* Button styles */
@@ -37,7 +27,7 @@
   padding: 10px 20px;
   margin: 5px;
   border: none;
-  background-color: #4CAF50; /* Green background */
+  background-color: var(--green-color); /* Green background */
   color: white;
   font-size: 1rem;
   cursor: pointer;
@@ -46,45 +36,134 @@
   justify-content: space-evenly;
 }
 
+.lesson-button, .play-button {
+  background-color: transparent;
+  font-size: 40px;
+  font-weight: bolder;
+}
+
 .lesson-button {
-  margin-left: 2rem;
+  color: var(--green-color);
+  margin-left: -1rem;
 }
 
 .play-button {
-  margin-right: 2rem;
-}
-.lesson-button:hover, .play-button:hover,.lesson-pawn-button:hover, .lesson-rook-button:hover {
-  background-color: #45a049; /* Darker green on hover */
+  color: #4f4e4e;
+  margin-right: -1rem;
 }
 
+.lesson-button:hover, .play-button:hover {
+  background-color: transparent;
+  color: black;
+}
+
+.right-container {
+  box-sizing: border-box;
+  width: 33%;
+  margin: 6rem 30px 0px 0px;
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  text-align: left;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.lesson-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.description {
+  margin: 1rem;
+}
+
+.subheading {
+  font-size: 2rem;
+  margin: 3rem 0;
+  text-align: left;
+}
+
+.reset-lesson {
+  background-color: var(--green-color);
+  margin: auto 0;
+}
+
+.piece_description {
+  font-size: 3rem;
+  padding-top: 1rem;
+  font-weight: bold;
+}
+
+.lesson-description {
+  font-size: 2rem;
+  color: var(--gray-color);
+}
+
+.prev-next-button-container {
+  display: flex;
+  justify-content: space-between;
+  margin: auto -1rem 5rem -1rem;
+  margin-top: auto;
+  margin-bottom: 5rem;
+
+}
+
+.prevNextLessonButton {
+  width: 200px;
+  border-radius: 5px;
+}
+
+.next {
+  background-color: var(--green-color);
+}
+
+.next:hover {
+  background-color: #5d971b;
+  transition: background-color 100ms linear;
+}
+
+.prev {
+  background-color: #4f4e4e;
+}
+
+.prev:hover {
+  background-color: rgb(50, 49, 49);
+  transition: background-color 100ms linear;
+}
 
 .lesson-buttons-container {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
 }
 
 .lesson-piece-button_L {
-  padding: 10px 20px;
-  margin: 5px auto;
-  display: block;
-  border: 1px solid black;
-  background-color: #4CAF50; /* Green background */
+  margin: 5rem 0;
+  background-color: var(--gray-color); /* Gray background */
   color: white;
   font-size: 1rem;
   cursor: pointer;
   z-index: 1; /* Ensure buttons appear above the chessboard */
-  width: 25%;
-  height: 55px;
-  border-radius: 10px;
+  width: 250px;
+  height: 40px;
+  border-radius: 0;
   transition: background-color 0.5s ease;
+  font-weight: bold;
 }
 
 .lesson-piece-button_L:hover {
-  background-color: #3e8940;
+  background-color: #4f4e4e;
   transition: background-color 0.5s ease;
 }
 
 .lesson-choice-buttons {
-  background-color: #4e674e; /* Green background */
+  background-color: #7FCC26; /* Green background */
   border: 1px solid black;
   font-size: 1rem;
   height: 50px;
@@ -95,40 +174,26 @@
   transition: background-color 0.5 ease;
 }
 
-::-webkit-scrollbar {
-  width: 0px;
-  background: transparent; /* make scrollbar transparent */
-}
+// ::-webkit-scrollbar {
+//   width: 0px;
+//   background: transparent; /* make scrollbar transparent */
+// }
 
-.lesson-choice-buttons:hover {
-  background-color: #080e09; /* Darker green on hover */
-  transition: background-color 0.5 ease;
-}
+// .lesson-choice-buttons:hover {
+//   background-color: #080e09; /* Darker green on hover */
+//   transition: background-color 0.5 ease;
+// }
 
-.choice-buttons {
-  background-color: #4e674e; /* Green background */
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 4px;
-}
+// .choice-buttons {
+//   background-color: #4e674e; /* Green background */
+//   font-size: 1rem;
+//   cursor: pointer;
+//   margin-top: 4px;
+// }
 
-.choice-buttons:hover {
-  background-color: #080e09; /* Darker green on hover */
-}
-
-.description {
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  margin: 1rem;
-  border: 3px solid black;
-  background-color: beige;
-  border-radius: 30px;
-}
-
-.piece_description {
-  font-size: 2rem;
-  padding-top: 1rem;
-  font-weight: bold;
-}
+// .choice-buttons:hover {
+//   background-color: #080e09; /* Darker green on hover */
+// }
 
 .popup {
   position: fixed;
@@ -152,7 +217,7 @@
 
 /* Chessboard Container */
 .chessboard-container_L {
-  width: 40vw; /* Container width takes full space */
+  width: 44vw; /* Container width takes full space */
   height: 100%;
   margin-left: 100px;
 }
@@ -162,8 +227,8 @@
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: repeat(8, 5vw); /* 8 columns with equal width */
-  grid-template-rows: repeat(8, 5vw);    /* 8 rows with equal height */
+  grid-template-columns: repeat(8, 5.5vw); /* 8 columns with equal width */
+  grid-template-rows: repeat(8, 5.5vw);    /* 8 rows with equal height */
   box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
 }
 
@@ -190,7 +255,7 @@
   position: absolute;
   top: 4px; /* Top-left corner */
   left: 4px;
-  font-size: 12px;
+  font-size: 1rem;
   color: #333;
 }
 
@@ -199,7 +264,7 @@
   position: absolute;
   bottom: 4px; /* Bottom-right corner */
   right: 4px;
-  font-size: 12px;
+  font-size: 1rem;
   color: #333;
 }
 
