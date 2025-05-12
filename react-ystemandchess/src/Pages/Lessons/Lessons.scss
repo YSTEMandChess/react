@@ -162,7 +162,7 @@
   margin-left: 100px;
 }
 
-.lesson-piece-button_L {
+.lesson-buttons {
   margin: 3rem 0;
   background-color: var(--gray-color); /* Gray background */
   color: white;
@@ -176,43 +176,10 @@
   font-weight: bold;
 }
 
-.lesson-piece-button_L:hover {
+.lesson-buttons:hover {
   background-color: #4f4e4e;
   transition: background-color 0.5s ease;
 }
-
-.lesson-choice-buttons {
-  background-color: #7FCC26; /* Green background */
-  border: 1px solid black;
-  font-size: 1rem;
-  height: 50px;
-  cursor: pointer;
-  margin: 7px;
-  border-radius: 10px;
-  width: 25%;
-  transition: background-color 0.5 ease;
-}
-
-// ::-webkit-scrollbar {
-//   width: 0px;
-//   background: transparent; /* make scrollbar transparent */
-// }
-
-// .lesson-choice-buttons:hover {
-//   background-color: #080e09; /* Darker green on hover */
-//   transition: background-color 0.5 ease;
-// }
-
-// .choice-buttons {
-//   background-color: #4e674e; /* Green background */
-//   font-size: 1rem;
-//   cursor: pointer;
-//   margin-top: 4px;
-// }
-
-// .choice-buttons:hover {
-//   background-color: #080e09; /* Darker green on hover */
-// }
 
 .popup {
   position: fixed;
