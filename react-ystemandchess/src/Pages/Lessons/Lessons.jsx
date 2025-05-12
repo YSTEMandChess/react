@@ -1,5 +1,5 @@
 import "./Lessons.scss";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ReactComponent as RedoIcon } from './icon_redo.svg';
 import { ReactComponent as BackIcon} from './icon_back.svg';
 import { ReactComponent as NextIcon } from './icon_next.svg';
@@ -14,6 +14,9 @@ const Lessons = () => {
   const [lessonDescription, setLessonDescription] = useState("Try this!");
   const [pieceDescription, setpieceDescription] = useState("Pawn");
 
+  const initBoardRef = useRef(null); // Original board for current training lesson in order to restry
+  const counterRef = useRef(0); // Counter for updating different scenarios
+
   // State for showing scenario buttons for pieces
   const [showScenarios, setShowScenarios] = useState({
     pawn: true,
@@ -22,12 +25,7 @@ const Lessons = () => {
     knight: false,
     queen: false,
     king: false,
-    CM1: false,
-    CM2: false,
-    CP1: false,
-    CP2: false,
-    CP3: false,
-    CP4: false
+    CM1: false
   });
 
   const [showPopup, setShowPopup] = useState(false); // Popup state
@@ -73,6 +71,7 @@ const Lessons = () => {
     checkBlackPieces();
   }, [board]);
 
+  // Set up the board for different scenarios
   const setupScenario = (piece, scenario) => {
     const updatedBoard = initializeBoard(); // Reset board
 
@@ -487,7 +486,7 @@ const Lessons = () => {
         setpieceDescription("Basic checkmates");
 
         switch (scenario) {
-          case 'queen_and_rook_mate':
+          case 'qr_mate':
             updatedBoard[7][0] = 'wQ'; // a1
             updatedBoard[5][4] = 'wK'; // e3
             updatedBoard[7][7] = 'wR'; // h1
@@ -497,7 +496,7 @@ const Lessons = () => {
             setTrainingStarted(true);
             break;
 
-          case 'two_rook_mate':
+          case 'rr_mate':
             updatedBoard[7][0] = 'wR'; // a1
             updatedBoard[7][7] = 'wR'; // h1
             updatedBoard[5][4] = 'wK'; // e3
@@ -507,7 +506,7 @@ const Lessons = () => {
             setTrainingStarted(true);
             break;
 
-          case 'queen_and_bishop_mate':
+          case 'qb_mate':
             updatedBoard[5][2] = 'wQ'; // c3
             updatedBoard[5][3] = 'wB'; // d3
             updatedBoard[5][4] = 'wK'; // e3
@@ -517,7 +516,7 @@ const Lessons = () => {
             setTrainingStarted(true);
             break;
 
-          case 'queen_and_knight_mate':
+          case 'qk_mate':
             updatedBoard[5][2] = 'wQ'; // c3
             updatedBoard[5][3] = 'wN'; // d3
             updatedBoard[5][4] = 'wK'; // e3
@@ -527,7 +526,7 @@ const Lessons = () => {
             setTrainingStarted(true);
             break;
 
-          case 'queen_mate':
+          case 'q_mate':
             updatedBoard[7][4] = 'wQ'; // e1
             updatedBoard[5][4] = 'wK'; // e3
             updatedBoard[2][3] = 'bK'; // d6
@@ -536,7 +535,7 @@ const Lessons = () => {
             setTrainingStarted(true);
             break;
 
-          case 'rook_mate':
+          case 'r_mate':
             updatedBoard[7][4] = 'wR'; // e1
             updatedBoard[5][4] = 'wK'; // e3
             updatedBoard[2][3] = 'bK'; // d6
@@ -556,7 +555,53 @@ const Lessons = () => {
         break;
     }
     setBoard(updatedBoard);
+    initBoardRef.current = JSON.parse(JSON.stringify(updatedBoard));
     setHighlightedSquares([]); // clear highlight
+  };
+
+  // Going back and forth between different scenarios, x: -1 or 1
+  const rotateScenario = (x) => {
+    const keys = Object.keys(showScenarios);
+    const currentIndex = keys.findIndex(key => showScenarios[key]);
+    console.log(currentIndex)
+    const nextIndex = (currentIndex + x + keys.length) % keys.length;
+
+    const newState = {};
+    keys.forEach((key, index) => {
+      newState[key] = index === nextIndex;
+    });
+
+    setTrainingStarted(false);
+    setShowScenarios(newState);
+    setLessonTitle("");
+    setLessonDescription("Try this!");
+    setBoard(initializeBoard());
+
+    switch (Object.keys(showScenarios)[nextIndex]) {
+      case 'pawn':
+        setpieceDescription("Pawn");
+        break;
+      case 'rook':
+        setpieceDescription("Rook");
+        break;
+      case 'bishop':
+        setpieceDescription("Bishop");
+        break;
+      case 'knight':
+        setpieceDescription("Knight");
+        break;
+      case 'queen':
+        setpieceDescription("Queen");
+        break;
+      case 'king':
+        setpieceDescription("King");
+        break;
+      case 'CM1':
+        setpieceDescription("Basic checkmates");
+        break;
+      default:
+        setpieceDescription("");
+    }
   };
 
   // Update the setupScenario function to handle both Pawn and Rook
@@ -682,6 +727,13 @@ const Lessons = () => {
     setBoard(updatedBoard); // Set the new board state
   }
 
+  // Reset moved pieces to their original positions to restart the training
+  const resetBoard = () => {
+    if (initBoardRef.current) {
+      setBoard(JSON.parse(JSON.stringify(initBoardRef.current)))
+    }
+  }
+
   return (
     <div className="lessons-page">
       <div className='left-right-container'>
@@ -712,7 +764,7 @@ const Lessons = () => {
           {/* Description part */}
           <div className='lesson-header'>
             <h1 className="piece_description">{pieceDescription}</h1>
-            <button className='reset-lesson'>
+            <button className='reset-lesson' onClick={resetBoard}>
               <RedoIcon/>
             </button>
           </div>
@@ -721,11 +773,11 @@ const Lessons = () => {
           <p className="lesson-description">{lessonDescription}</p>
 
           <div className='prev-next-button-container'>
-            <button className="prevNextLessonButton prev">
+            <button className="prevNextLessonButton prev" onClick={() => rotateScenario(-1)}>
               <BackIcon/>
               <p className="button-description">Back</p>
             </button>
-            <button className="prevNextLessonButton next">
+            <button className="prevNextLessonButton next" onClick={() => rotateScenario(1)}>
               <p className="button-description">Next</p>
               <NextIcon/>
             </button>
@@ -807,6 +859,17 @@ const Lessons = () => {
               <button className="lesson-buttons" onClick={() => setupScenario('king', 'basic')}>The Basic</button>
               <button className="lesson-buttons" onClick={() => setupScenario('king', 'training')}>Training</button>
               <button className="lesson-buttons" onClick={() => setupScenario('king', 'final')}>Final</button>
+            </>
+            )}
+
+            {showScenarios.CM1 && (
+            <>
+              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'qr_mate')}>Queen-rook</button>
+              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'rr_mate')}>Two-rook</button>
+              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'qb_mate')}>Queen-bishop</button>
+              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'qk_mate')}>Queen-knight</button>
+              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'q_mate')}>Queen</button>
+              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'r_mate')}>Rook</button>
             </>
             )}
         </div>
