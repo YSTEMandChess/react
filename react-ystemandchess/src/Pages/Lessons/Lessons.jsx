@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ReactComponent as RedoIcon } from './icon_redo.svg';
 import { ReactComponent as BackIcon} from './icon_back.svg';
 import { ReactComponent as NextIcon } from './icon_next.svg';
+import { getScenario } from "./Scenarios";
 
 const Lessons = () => {
   const [board, setBoard] = useState(initializeBoard()); // Initialize the board with chess pieces
@@ -10,6 +11,8 @@ const Lessons = () => {
   const [draggingPiece, setDraggingPiece] = useState(null); // Track which piece is being dragged
 
   // Description for each Scenarios
+  const [scenario, setScenario] = useState(null)
+  const [lesson, setLesson] = useState(null)
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonDescription, setLessonDescription] = useState("Try this!");
   const [pieceDescription, setpieceDescription] = useState("Pawn");
@@ -604,39 +607,6 @@ const Lessons = () => {
     }
   };
 
-  // Update the setupScenario function to handle both Pawn and Rook
-  // Button click handlers
-  // Generic function to handle all piece button clicks
-  const handlePieceClick = (piece) => {
-    setShowScenarios({
-      pawn: piece === 'pawn',
-      rook: piece === 'rook',
-      bishop: piece === 'bishop',
-      knight: piece === 'knight',
-      queen: piece === 'queen',
-      king: piece === 'king',
-      CM1: piece === 'CM1',
-      CP1: piece === 'CP1',
-      CP2: piece === 'CP2',
-      CP3: piece === 'CP3',
-      CP4: piece === 'CP4',
-      CM2: piece === 'CM2',
-    });
-  };
-
-  const handlePawnClick = () => handlePieceClick('pawn');
-  const handleRookClick = () => handlePieceClick('rook');
-  const handleBishopClick = () => handlePieceClick('bishop');
-  const handleKnightClick = () => handlePieceClick('knight');
-  const handleQueenClick = () => handlePieceClick('queen');
-  const handleKingClick = () => handlePieceClick('king');
-  const handleCM1Click = () => handlePieceClick('CM1')
-  const handleCP1Click = () => handlePieceClick('CP1')
-  const handleCP2Click = () => handlePieceClick('CP2')
-  const handleCP3Click = () => handlePieceClick('CP3')
-  const handleCP4Click = () => handlePieceClick('CP4')
-  const handleCM2Click = () => handlePieceClick('CM2')
-
   // Helper function to get possible moves for a piece
   const getPieceMoves = (piece, position) => {
     const color = piece[0]; // Get color from the piece (first character)
@@ -732,6 +702,7 @@ const Lessons = () => {
     if (initBoardRef.current) {
       setBoard(JSON.parse(JSON.stringify(initBoardRef.current)))
     }
+    console.log(getScenario(1))
   }
 
   return (
@@ -769,8 +740,8 @@ const Lessons = () => {
             </button>
           </div>
 
-          <h1 className='subheading'>{lessonTitle}</h1>
-          <p className="lesson-description">{lessonDescription}</p>
+          <h1 className='subheading'>{lesson.name}</h1>
+          <p className="lesson-description">{lesson.info}</p>
 
           <div className='prev-next-button-container'>
             <button className="prevNextLessonButton prev" onClick={() => rotateScenario(-1)}>
