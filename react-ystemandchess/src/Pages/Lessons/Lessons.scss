@@ -180,8 +180,9 @@
   font-weight: bold;
 }
 
-.lesson-buttons:hover {
-  background-color: #4f4e4e;
+.lesson-buttons.active {
+  background-color: var(--green-color);
+  color: black;
   transition: background-color 0.5s ease;
 }
 

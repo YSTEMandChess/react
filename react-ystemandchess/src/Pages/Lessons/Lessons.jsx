@@ -6,33 +6,18 @@ import { ReactComponent as NextIcon } from './icon_next.svg';
 import { getScenario } from "./Scenarios";
 
 const Lessons = () => {
-  const [board, setBoard] = useState(initializeBoard()); // Initialize the board with chess pieces
+  const [board, setBoard] = useState(getScenario(0).subSections[0].board); // Initialize the board with chess pieces
   const [highlightedSquares, setHighlightedSquares] = useState([]);
   const [draggingPiece, setDraggingPiece] = useState(null); // Track which piece is being dragged
 
   // Description for each Scenarios
-  const [scenario, setScenario] = useState(null)
-  const [lesson, setLesson] = useState(null)
-  const [lessonTitle, setLessonTitle] = useState("");
-  const [lessonDescription, setLessonDescription] = useState("Try this!");
-  const [pieceDescription, setpieceDescription] = useState("Pawn");
+  const [scenario, setScenario] = useState(getScenario(0))
+  const [lesson, setLesson] = useState(getScenario(0).subSections[0])
 
-  const initBoardRef = useRef(null); // Original board for current training lesson in order to restry
   const counterRef = useRef(0); // Counter for updating different scenarios
 
-  // State for showing scenario buttons for pieces
-  const [showScenarios, setShowScenarios] = useState({
-    pawn: true,
-    rook: false,
-    bishop: false,
-    knight: false,
-    queen: false,
-    king: false,
-    CM1: false
-  });
-
   const [showPopup, setShowPopup] = useState(false); // Popup state
-  const [trainingStarted, setTrainingStarted] = useState(false); // Training state
+  const [trainingStarted, setTrainingStarted] = useState(true); // Training state
 
   // Initialize the chessboard
   function initializeBoard() {
@@ -63,9 +48,6 @@ const Lessons = () => {
       setShowPopup(false);
       setBoard(initializeBoard()); // Reset the chessboard
       setTrainingStarted(false); // Reset training state
-      setLessonTitle("");
-      setLessonDescription("");
-      setpieceDescription("Choose a lesson!");
     }
   };
 
@@ -75,536 +57,20 @@ const Lessons = () => {
   }, [board]);
 
   // Set up the board for different scenarios
-  const setupScenario = (piece, scenario) => {
-    const updatedBoard = initializeBoard(); // Reset board
-
-    // setup the board by scenario
-    switch (piece) {
-      case 'pawn':
-        setpieceDescription("Pawn")
-        switch (scenario) {
-          case 'basic':
-            updatedBoard[4][0] = 'wP'; // a5
-            updatedBoard[5][5] = 'bP'; // f3
-            setLessonTitle("Basic")
-            setLessonDescription("White pawn moves one square only. But when they reach the other side of the board, they become a stronger piece!");
-            setTrainingStarted(true); // Mark training as started
-            break;
-          case 'capture':
-            updatedBoard[5][4] = 'wP'; // e3
-            updatedBoard[3][3] = 'bP'; // d5
-            updatedBoard[2][2] = 'bP'; // c6
-            updatedBoard[1][3] = 'bP'; // d7
-            setLessonTitle("Capture")
-            setLessonDescription("A pawn on the second rank can move 2 squares at once!");
-            setTrainingStarted(true); // Mark training as started
-            break;
-          case 'training_1':
-            updatedBoard[5][1] = 'wP'; // b3
-            updatedBoard[1][2] = 'bP'; // c7
-            updatedBoard[2][1] = 'bP'; // b6
-            updatedBoard[2][2] = 'bP'; // c6
-            updatedBoard[2][3] = 'bP'; // d6
-            updatedBoard[4][1] = 'bP'; // b4
-            updatedBoard[4][2] = 'bP'; // c4
-            setLessonTitle("Training 1")
-            setLessonDescription("Capture black pawns and promote!");
-            setTrainingStarted(true); // Mark training as started
-            break;
-          case 'training_2':
-            updatedBoard[5][3] = 'wP'; // d3
-            updatedBoard[0][2] = 'bP'; // c8
-            updatedBoard[1][3] = 'bP'; // d7
-            updatedBoard[2][1] = 'bP'; // b6
-            updatedBoard[2][4] = 'bP'; // e6
-            updatedBoard[3][1] = 'bP'; // b5
-            updatedBoard[3][3] = 'bP'; // d5
-            updatedBoard[4][2] = 'bP'; // c4
-            setLessonTitle("Training 2")
-            setLessonDescription("Capture black pawns and promote!");
-            setTrainingStarted(true); // Mark training as started
-            break;
-          case 'training_3':
-            updatedBoard[5][0] = 'wP'; // a3
-            updatedBoard[5][2] = 'wP'; // c3
-            updatedBoard[5][3] = 'wP'; // d3
-            updatedBoard[5][7] = 'wP'; // h3
-            updatedBoard[3][1] = 'bP'; // b5
-            updatedBoard[3][2] = 'bP'; // c5
-            updatedBoard[3][4] = 'bP'; // e5
-            updatedBoard[4][3] = 'bP'; // d4
-            updatedBoard[4][6] = 'bP'; // g4
-            setLessonTitle("Training 3")
-            setLessonDescription("No need to promote. Capture all black pawns.");
-            setTrainingStarted(true); // Mark training as started
-            break;
-          case 'special_move':
-            updatedBoard[6][4] = 'wP'; // e2
-            updatedBoard[2][3] = 'bP'; // d6
-            setLessonTitle("Special Move")
-            setLessonDescription("A pawn on the second rank can move two squares forward.");
-            setTrainingStarted(true); // Mark training as started
-            break;
-          default:
-            break;
-        }
-        break;
-      case 'rook':
-        setpieceDescription("Rook")
-        switch (scenario) {
-          case 'basic':
-            updatedBoard[6][4] = 'wR'; // e2
-            updatedBoard[2][4] = 'bP'; // e6
-            setLessonTitle("Basic")
-            setLessonDescription("Click on the rook to bring it to the pawn!");
-            setTrainingStarted(true);
-            break;
-          case 'training_1':
-            updatedBoard[1][2] = 'wR'; // c7
-            updatedBoard[3][2] = 'bP'; // c5
-            updatedBoard[3][5] = 'bP'; // f5
-            setLessonTitle("Training 1")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-          case 'training_2':
-            updatedBoard[5][4] = 'wR'; // e3
-            updatedBoard[5][1] = 'bP'; // b3
-            updatedBoard[6][7] = 'bP'; // h2
-            updatedBoard[5][7] = 'bP'; // h3
-            setLessonTitle("Training 2")
-            setLessonDescription("The fewer moves you make, the better!");
-            setTrainingStarted(true);
-            break;
-          case 'training_3':
-            updatedBoard[0][7] = 'wR'; // h8
-            updatedBoard[0][5] = 'bP'; // f8
-            updatedBoard[7][6] = 'bP'; // g1
-            updatedBoard[1][6] = 'bP'; // g7
-            updatedBoard[0][6] = 'bP'; // g8
-            updatedBoard[1][7] = 'bP'; // h7
-            setLessonTitle("Training 3")
-            setLessonDescription("The fewer moves you make, the better!");
-            setTrainingStarted(true);
-            break;
-          case 'training_4':
-            updatedBoard[1][2] = 'wR'; // c7
-            updatedBoard[4][4] = 'wR'; // e4
-            updatedBoard[4][0] = 'bP'; // a4
-            updatedBoard[5][6] = 'bP'; // g3
-            updatedBoard[1][6] = 'bP'; // g7
-            updatedBoard[4][7] = 'bP'; // h4
-            setLessonTitle("Training 4")
-            setLessonDescription("Use two rooks to speed things up!");
-            setTrainingStarted(true);
-            break;
-          case 'final':
-            updatedBoard[7][0] = 'wR'; // a1
-            updatedBoard[5][5] = 'wR'; // f3
-            updatedBoard[1][1] = 'bP'; // b7
-            updatedBoard[7][3] = 'bP'; // d1
-            updatedBoard[3][3] = 'bP'; // d5
-            updatedBoard[6][5] = 'bP'; // f2
-            updatedBoard[1][5] = 'bP'; // f7
-            updatedBoard[3][6] = 'bP'; // g4
-            updatedBoard[1][6] = 'bP'; // g7
-            setLessonTitle("Final")
-            setLessonDescription("Use two rooks to speed things up!");
-            setTrainingStarted(true);
-            break;
-
-          default:
-            break;
-        }
-        break;
-      case "bishop":
-        setpieceDescription("Bishop");
-        switch (scenario) {
-          case 'basic':
-            updatedBoard[6][6] = 'wB'; // g2
-            updatedBoard[1][7] = 'bP'; // h7
-            updatedBoard[4][4] = 'bP'; // e4
-            setLessonTitle("Basic")
-            setLessonDescription("Grab all the black pawns!");
-            setTrainingStarted(true);
-            break;
-          case 'training_1':
-            updatedBoard[5][1] = 'wB'; // b3
-            updatedBoard[6][0] = 'bP'; // a2
-            updatedBoard[7][1] = 'bP'; // b1
-            updatedBoard[3][1] = 'bP'; // b5
-            updatedBoard[7][3] = 'bP'; // d1
-            updatedBoard[5][3] = 'bP'; // d3
-            updatedBoard[6][4] = 'bP'; // e2
-            setLessonTitle("Training 1")
-            setLessonDescription("The fewer moves you make, the better!");
-            setTrainingStarted(true);
-            break;
-          case 'training_2':
-            updatedBoard[4][2] = 'wB'; // c4
-            updatedBoard[4][0] = 'bP'; // a4
-            updatedBoard[7][1] = 'bP'; // b1
-            updatedBoard[5][1] = 'bP'; // b3
-            updatedBoard[6][2] = 'bP'; // c2
-            updatedBoard[5][3] = 'bP'; // d3
-            updatedBoard[4][4] = 'bP'; // e2
-            setLessonTitle("Training 2")
-            setLessonDescription("Grab all the black pawns!");
-            setTrainingStarted(true);
-            break;
-          case 'training_3':
-            updatedBoard[7][2] = 'wB'; // c1
-            updatedBoard[7][5] = 'wB'; // f1
-            updatedBoard[5][3] = 'bP'; // d3
-            updatedBoard[5][4] = 'bP'; // e3
-            updatedBoard[4][3] = 'bP'; // d4
-            updatedBoard[4][4] = 'bP'; // e4
-            updatedBoard[3][3] = 'bP'; // d5
-            updatedBoard[3][4] = 'bP'; // e5
-            setLessonTitle("Training 3")
-            setLessonDescription("One light-squared bishop, one dark-squared bishop. You need both!");
-            setTrainingStarted(true);
-            break;
-          case 'training_4':
-            updatedBoard[4][3] = 'wB'; // d4
-            updatedBoard[7][0] = 'bP'; // a1
-            updatedBoard[2][1] = 'bP'; // b6
-            updatedBoard[7][2] = 'bP'; // c1
-            updatedBoard[5][4] = 'bP'; // e3
-            updatedBoard[1][6] = 'bP'; // g7
-            updatedBoard[2][7] = 'bP'; // h6
-            setLessonTitle("Training 4")
-            setLessonDescription("Grab all the black pawns!");
-            setTrainingStarted(true);
-            break;
-          case 'final':
-            updatedBoard[5][2] = 'wB'; // c3
-            updatedBoard[1][3] = 'wB'; // d7
-            updatedBoard[5][0] = 'bP'; // a3
-            updatedBoard[6][2] = 'bP'; // c2
-            updatedBoard[1][4] = 'bP'; // e7
-            updatedBoard[3][5] = 'bP'; // f5
-            updatedBoard[2][5] = 'bP'; // f6
-            updatedBoard[0][6] = 'bP'; // g8
-            updatedBoard[4][7] = 'bP'; // h4
-            updatedBoard[1][7] = 'bP'; // h7
-            setLessonTitle("Training 5")
-            setLessonDescription("One light-squared bishop, one dark-squared bishop. You need both!");
-            setTrainingStarted(true);
-            break;
-          default:
-            break;
-        }
-        break;
-
-      case 'knight':
-        setpieceDescription("Knight");
-        switch (scenario) {
-          case 'basic':
-            updatedBoard[4][4] = 'wN'; // e4
-            updatedBoard[3][2] = 'bP'; // c5
-            updatedBoard[1][3] = 'bP'; // d7
-            setLessonTitle("Basic")
-            setLessonDescription("Knights have a fancy way of jumping around!");
-            setTrainingStarted(true);
-            break;
-
-          case 'training_1':
-            updatedBoard[7][1] = 'wN'; // b1
-            updatedBoard[5][2] = 'bP'; // c3
-            updatedBoard[4][3] = 'bP'; // d4
-            updatedBoard[6][4] = 'bP'; // e2
-            updatedBoard[5][5] = 'bP'; // f3
-            updatedBoard[3][6] = 'bP'; // g5
-            updatedBoard[1][5] = 'bP'; // f7
-            updatedBoard[0][7] = 'bP'; // h8
-            setLessonTitle("Training 1")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-
-          case 'training_2':
-            updatedBoard[1][2] = 'wN'; // c7
-            updatedBoard[2][1] = 'bP'; // b6
-            updatedBoard[3][3] = 'bP'; // d5
-            updatedBoard[1][3] = 'bP'; // d7
-            updatedBoard[2][4] = 'bP'; // e6
-            updatedBoard[4][5] = 'bP'; // f4
-            setLessonTitle("Training 2")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-
-          case 'training_3':
-            updatedBoard[5][5] = 'wN'; // f3
-            updatedBoard[6][4] = 'bP'; // e2
-            updatedBoard[5][4] = 'bP'; // e3
-            updatedBoard[4][4] = 'bP'; // e4
-            updatedBoard[6][5] = 'bP'; // f2
-            updatedBoard[4][5] = 'bP'; // f4
-            updatedBoard[6][6] = 'bP'; // g2
-            updatedBoard[5][6] = 'bP'; // g3
-            updatedBoard[4][6] = 'bP'; // g4
-            setLessonTitle("Training 3")
-            setLessonDescription("Knights can jump over obstacles! Escape and vanquish the pawns!");
-            setTrainingStarted(true);
-            break;
-
-          case 'training_4':
-            updatedBoard[5][3] = 'wN'; // d3
-            updatedBoard[5][2] = 'bP'; // c3
-            updatedBoard[6][4] = 'bP'; // e2
-            updatedBoard[4][4] = 'bP'; // e4
-            updatedBoard[6][5] = 'bP'; // f2
-            updatedBoard[4][5] = 'bP'; // f4
-            updatedBoard[2][6] = 'bP'; // g6
-            setLessonTitle("Training 4")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-
-          case 'final':
-            updatedBoard[1][2] = 'wN'; // c7
-            updatedBoard[4][1] = 'bP'; // b4
-            updatedBoard[3][1] = 'bP'; // b5
-            updatedBoard[2][2] = 'bP'; // c6
-            updatedBoard[0][2] = 'bP'; // c8
-            updatedBoard[4][3] = 'bP'; // d4
-            updatedBoard[3][3] = 'bP'; // d5
-            updatedBoard[5][4] = 'bP'; // e3
-            updatedBoard[1][4] = 'bP'; // e7
-            updatedBoard[3][5] = 'bP'; // f5
-            setLessonTitle("Final")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-
-        }
-        break;
-
-      case 'queen':
-        setpieceDescription("Queen");
-        switch (scenario) {
-          case 'basic':
-            updatedBoard[6][4] = 'wQ'; // e2
-            updatedBoard[1][2] = 'bP'; // c7
-            updatedBoard[3][4] = 'bP'; // e5
-            setLessonTitle("Basic")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-          case 'training_1':
-            updatedBoard[4][3] = 'wQ'; // d4
-            updatedBoard[5][0] = 'bP'; // a3
-            updatedBoard[6][5] = 'bP'; // f2
-            updatedBoard[0][5] = 'bP'; // f8
-            updatedBoard[5][7] = 'bP'; // h3
-            setLessonTitle("Training 1")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-          case 'training_2':
-            updatedBoard[4][2] = 'wQ'; // c4
-            updatedBoard[5][0] = 'bP'; // a3
-            updatedBoard[2][3] = 'bP'; // d6
-            updatedBoard[7][5] = 'bP'; // f1
-            updatedBoard[0][5] = 'bP'; // f8
-            updatedBoard[5][6] = 'bP'; // g3
-            updatedBoard[2][7] = 'bP'; // h6
-            setLessonTitle("Training 2")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-          case 'training_3':
-            updatedBoard[1][6] = 'wQ'; // g7
-            updatedBoard[6][0] = 'bP'; // a2
-            updatedBoard[3][1] = 'bP'; // b5
-            updatedBoard[5][3] = 'bP'; // d3
-            updatedBoard[7][6] = 'bP'; // g1
-            updatedBoard[0][6] = 'bP'; // g8
-            updatedBoard[6][7] = 'bP'; // h2
-            updatedBoard[3][7] = 'bP'; // h5
-            setLessonTitle("Training 3")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-          case 'final':
-            updatedBoard[7][4] = 'wQ'; // e1
-            updatedBoard[2][0] = 'bP'; // a6
-            updatedBoard[7][3] = 'bP'; // d1
-            updatedBoard[6][5] = 'bP'; // f2
-            updatedBoard[2][5] = 'bP'; // f6
-            updatedBoard[2][6] = 'bP'; // g6
-            updatedBoard[0][6] = 'bP'; // g8
-            updatedBoard[7][7] = 'bP'; // h1
-            updatedBoard[4][7] = 'bP'; // h4
-            setLessonTitle("Final")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-
-          default:
-            break;
-        }
-        break;
-
-      case 'king':
-        setpieceDescription("King - The most important piece");
-        switch (scenario) {
-          case 'basic':
-            updatedBoard[6][3] = 'wK'; // d2
-            updatedBoard[2][3] = 'bP'; // d6
-            setLessonTitle("Basic")
-            setLessonDescription("The king is slow.");
-            setTrainingStarted(true);
-            break;
-          case 'training':
-            updatedBoard[7][4] = 'wK'; // e1
-            updatedBoard[6][2] = 'bP'; // c2
-            updatedBoard[5][3] = 'bP'; // d3
-            updatedBoard[6][4] = 'bP'; // e2
-            setLessonTitle("Training")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-          case 'final':
-            updatedBoard[3][4] = 'wK'; // e5
-            updatedBoard[4][2] = 'bP'; // c4
-            updatedBoard[3][2] = 'bP'; // c5
-            updatedBoard[3][3] = 'bP'; // d5
-            updatedBoard[5][4] = 'bP'; // e3
-            updatedBoard[5][5] = 'bP'; // f3
-            updatedBoard[4][6] = 'bP'; // g4
-            setLessonTitle("Final")
-            setLessonDescription("Grab all the pawns!");
-            setTrainingStarted(true);
-            break;
-
-          default:
-            break;
-        }
-        break;
-
-      case 'CM1':
-        setpieceDescription("Basic checkmates");
-
-        switch (scenario) {
-          case 'qr_mate':
-            updatedBoard[7][0] = 'wQ'; // a1
-            updatedBoard[5][4] = 'wK'; // e3
-            updatedBoard[7][7] = 'wR'; // h1
-            updatedBoard[2][3] = 'bK'; // d6
-            setLessonTitle("Queen and rook mate")
-            setLessonDescription("Use your queen and rook to restrict the king and deliver checkmate. Mate in 3 if played perfectly.");
-            setTrainingStarted(true);
-            break;
-
-          case 'rr_mate':
-            updatedBoard[7][0] = 'wR'; // a1
-            updatedBoard[7][7] = 'wR'; // h1
-            updatedBoard[5][4] = 'wK'; // e3
-            updatedBoard[2][3] = 'bK'; // d6
-            setLessonTitle("Two-rook mate")
-            setLessonDescription("Use your rooks to restrict the king and deliver checkmate. Mate in 4 if played perfectly.");
-            setTrainingStarted(true);
-            break;
-
-          case 'qb_mate':
-            updatedBoard[5][2] = 'wQ'; // c3
-            updatedBoard[5][3] = 'wB'; // d3
-            updatedBoard[5][4] = 'wK'; // e3
-            updatedBoard[2][3] = 'bK'; // d6
-            setLessonTitle("Queen and bishop mate")
-            setLessonDescription("Use your queen and bishop to restrict the king and deliver checkmate. Mate in 5 if played perfectly.");
-            setTrainingStarted(true);
-            break;
-
-          case 'qk_mate':
-            updatedBoard[5][2] = 'wQ'; // c3
-            updatedBoard[5][3] = 'wN'; // d3
-            updatedBoard[5][4] = 'wK'; // e3
-            updatedBoard[2][3] = 'bK'; // d6
-            setLessonTitle("Queen and knight mate")
-            setLessonDescription("Use your queen and knight to restrict the king and deliver checkmate. Mate in 5 if played perfectly.");
-            setTrainingStarted(true);
-            break;
-
-          case 'q_mate':
-            updatedBoard[7][4] = 'wQ'; // e1
-            updatedBoard[5][4] = 'wK'; // e3
-            updatedBoard[2][3] = 'bK'; // d6
-            setLessonTitle("Queen mate")
-            setLessonDescription("Use your queen to restrict the king, force it to the edge of the board and deliver checkmate. The queen can't do it alone, so use your king to help. Mate in 6 if played perfectly.");
-            setTrainingStarted(true);
-            break;
-
-          case 'r_mate':
-            updatedBoard[7][4] = 'wR'; // e1
-            updatedBoard[5][4] = 'wK'; // e3
-            updatedBoard[2][3] = 'bK'; // d6
-            setLessonTitle("Rook mate")
-            setLessonDescription("Use your rook to restrict the king, force it to the edge of the board and deliver checkmate. The rook can't do it alone, so use your king to help. Mate in 11 if played perfectly.");
-            setTrainingStarted(true);
-            break;
-
-          default:
-            console.error("Scenario not found.");
-            break;
-        }
-        break;
-
-
-      default:
-        break;
-    }
-    setBoard(updatedBoard);
-    initBoardRef.current = JSON.parse(JSON.stringify(updatedBoard));
-    setHighlightedSquares([]); // clear highlight
+  const setupScenario = (section) => {
+    setLesson(section)
+    setBoard(JSON.parse(JSON.stringify(section.board)))
+    setTrainingStarted(true)
+    setHighlightedSquares([]);
   };
 
   // Going back and forth between different scenarios, x: -1 or 1
   const rotateScenario = (x) => {
-    const keys = Object.keys(showScenarios);
-    const currentIndex = keys.findIndex(key => showScenarios[key]);
-    console.log(currentIndex)
-    const nextIndex = (currentIndex + x + keys.length) % keys.length;
-
-    const newState = {};
-    keys.forEach((key, index) => {
-      newState[key] = index === nextIndex;
-    });
-
-    setTrainingStarted(false);
-    setShowScenarios(newState);
-    setLessonTitle("");
-    setLessonDescription("Try this!");
-    setBoard(initializeBoard());
-
-    switch (Object.keys(showScenarios)[nextIndex]) {
-      case 'pawn':
-        setpieceDescription("Pawn");
-        break;
-      case 'rook':
-        setpieceDescription("Rook");
-        break;
-      case 'bishop':
-        setpieceDescription("Bishop");
-        break;
-      case 'knight':
-        setpieceDescription("Knight");
-        break;
-      case 'queen':
-        setpieceDescription("Queen");
-        break;
-      case 'king':
-        setpieceDescription("King");
-        break;
-      case 'CM1':
-        setpieceDescription("Basic checkmates");
-        break;
-      default:
-        setpieceDescription("");
-    }
+    counterRef.current += x
+    setScenario(getScenario(counterRef.current))
+    setLesson(getScenario(counterRef.current).subSections[0])
+    setTrainingStarted(true);
+    setBoard(getScenario(counterRef.current).subSections[0].board);
   };
 
   // Helper function to get possible moves for a piece
@@ -699,10 +165,10 @@ const Lessons = () => {
 
   // Reset moved pieces to their original positions to restart the training
   const resetBoard = () => {
-    if (initBoardRef.current) {
-      setBoard(JSON.parse(JSON.stringify(initBoardRef.current)))
+    if (lesson) {
+      setBoard(JSON.parse(JSON.stringify(lesson.board)))
+      setTrainingStarted(true)
     }
-    console.log(getScenario(1))
   }
 
   return (
@@ -734,7 +200,7 @@ const Lessons = () => {
         <div className='right-container'>
           {/* Description part */}
           <div className='lesson-header'>
-            <h1 className="piece_description">{pieceDescription}</h1>
+            <h1 className="piece_description">{scenario.name}</h1>
             <button className='reset-lesson' onClick={resetBoard}>
               <RedoIcon/>
             </button>
@@ -758,91 +224,15 @@ const Lessons = () => {
       </div>
       <div>
         <div className="lesson-buttons-container">
-            {/* Pawn Button and Scenarios */}
-            {/* <button onClick={handlePawnClick} className="lesson-piece-button_L basic">Basic</button> */}
-            {/* Bishop Button and Scenarios */}
-            {/* <button onClick={handleBishopClick} className="lesson-piece-button_L bishop">Capture</button> */}
-            {/* Knight Button and Scenarios */}
-            {/* <button onClick={handleKnightClick} className="lesson-piece-button_L knight">Training 1</button> */}
-            {/* Rook Button and Scenarios */}
-            {/* <button onClick={handleRookClick} className="lesson-piece-button_L rook">Training 2</button> */}
-            {/* Queen Button and Scenarios */}
-            {/* <button onClick={handleQueenClick} className="lesson-piece-button_L queen">Training 3</button> */}
-            {/* King Button and Scenarios */}
-            {/* <button onClick={handleKingClick} className="choice-buttons">Special Move</button> */}
-
-            {showScenarios.pawn && (
-                <>
-                  <button className="lesson-buttons" onClick={() => setupScenario('pawn', 'basic')}>Basic</button>
-                  <button className="lesson-buttons" onClick={() => setupScenario('pawn', 'capture')}>Capture</button>
-                  <button className="lesson-buttons" onClick={() => setupScenario('pawn', 'training_1')}>Training 1</button>
-                  <button className="lesson-buttons" onClick={() => setupScenario('pawn', 'training_2')}>Training 2</button>
-                  <button className="lesson-buttons" onClick={() => setupScenario('pawn', 'training_3')}>Training 3</button>
-                  <button className="lesson-buttons" onClick={() => setupScenario('pawn', 'special_move')}>Special Move</button>
-                </>
-              )}
-            
-            {showScenarios.bishop && (
-              <>
-                <button className="lesson-buttons" onClick={() => setupScenario('bishop', 'basic')}>Basic</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('bishop', 'training_1')}>Training 1</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('bishop', 'training_2')}>Training 2</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('bishop', 'training_3')}>Training 3</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('bishop', 'training_4')}>Training 4</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('bishop', 'final')}>Final</button>
-              </>
-            )}
-
-            {showScenarios.knight && (
-              <>
-                <button className="lesson-buttons" onClick={() => setupScenario('knight', 'basic')}>The Basic</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('knight', 'training_1')}>Training 1</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('knight', 'training_2')}>Training 2</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('knight', 'training_3')}>Training 3</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('knight', 'training_4')}>Training 4</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('knight', 'final')}>Final</button>
-              </>
-            )}
-
-            {showScenarios.rook && (
-              <>
-                <button className="lesson-buttons" onClick={() => setupScenario('rook', 'basic')}>The Basic</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('rook', 'training_1')}>Training 1</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('rook', 'training_2')}>Training 2</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('rook', 'training_3')}>Training 3</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('rook', 'training_4')}>Training 4</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('rook', 'final')}>Final</button>
-              </>
-            )}
-
-            {showScenarios.queen && (
-              <>
-                <button className="lesson-buttons" onClick={() => setupScenario('queen', 'basic')}>The Basic</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('queen', 'training_1')}>Training 1</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('queen', 'training_2')}>Training 2</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('queen', 'training_3')}>Training 3</button>
-                <button className="lesson-buttons" onClick={() => setupScenario('queen', 'final')}>Final</button>
-              </>
-            )}
-
-            {showScenarios.king && (
-            <>
-              <button className="lesson-buttons" onClick={() => setupScenario('king', 'basic')}>The Basic</button>
-              <button className="lesson-buttons" onClick={() => setupScenario('king', 'training')}>Training</button>
-              <button className="lesson-buttons" onClick={() => setupScenario('king', 'final')}>Final</button>
-            </>
-            )}
-
-            {showScenarios.CM1 && (
-            <>
-              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'qr_mate')}>Queen-rook</button>
-              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'rr_mate')}>Two-rook</button>
-              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'qb_mate')}>Queen-bishop</button>
-              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'qk_mate')}>Queen-knight</button>
-              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'q_mate')}>Queen</button>
-              <button className="lesson-buttons" onClick={() => setupScenario('CM1', 'r_mate')}>Rook</button>
-            </>
-            )}
+          {scenario.subSections?.map((section, index) => (
+            <button 
+              key={index}
+              className={section.name == lesson.name ? "lesson-buttons active" : "lesson-buttons"}  
+              onClick={() => setupScenario(section)}
+            >
+              {section.name}
+            </button>
+          ))}
         </div>
       </div>
 
