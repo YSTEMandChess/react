@@ -7,7 +7,7 @@
 }
 
 .lessons-page {
-  padding-top: 2%;
+  padding: 3% 0;
   background-image: url("chess_background.png");
   background-repeat: no-repeat;
   background-size: cover;
@@ -80,7 +80,7 @@
 .lesson-header {
   display: flex;
   justify-content: space-between;
-  align-items:last baseline;
+  align-items:first baseline;
 }
 
 .description {
@@ -89,7 +89,7 @@
 
 .subheading {
   font-size: 24px;
-  margin: 1rem 0;
+  margin: 3px 0;
   text-align: left;
   font-weight: bold;
 }
@@ -99,9 +99,11 @@
   width: 60px;
   height: 60px;
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  padding: 0rem;
+  font-size: 50px;
+  padding: 5px;
 }
 
 .reset-lesson:hover {
@@ -109,22 +111,22 @@
 }
 
 .piece_description {
-  font-size: 40px;
-  font-weight: bold;
+  text-align: left;
+  font-size: 30px;
 }
 
 .lesson-description {
-  font-size: 24px;
+  font-size: 19px;
   color: var(--gray-color);
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .prev-next-button-container {
   display: flex;
   justify-content: space-between;
-  margin: auto -1rem 5rem -1rem;
   margin-top: auto;
-  margin-bottom: 5rem;
-
 }
 
 .prevNextLessonButton {
@@ -132,6 +134,16 @@
   height: 60px;
   border-radius: 5px;
   color: black;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prevNextLessonButton-inactive {
+  width: 160px;
+  height: 60px;
+  border-radius: 5px;
+  color: rgb(173, 169, 169);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -162,18 +174,22 @@
 
 .lesson-buttons-container {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   margin-left: 100px;
+  margin-right: 100px;
+  margin-top: 50px;
 }
 
 .lesson-buttons {
-  margin: 3rem 0;
+  margin: 0 0;
   background-color: var(--gray-color); /* Gray background */
   color: white;
   font-size: 1rem;
   cursor: pointer;
   z-index: 1; /* Ensure buttons appear above the chessboard */
-  width: 180px;
+  width: fit-content;
+  min-width: 120px;
   height: 40px;
   border-radius: 0;
   transition: background-color 0.5s ease;
@@ -199,12 +215,65 @@
 }
 
 .popup-content {
+  width: 450px;
+  height: 280px;
   background-color: white;
   padding: 20px;
   border-radius: 10px;
   text-align: center;
 }
 
+.success-checkmark {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.circle {
+  stroke-dasharray: 410;
+  stroke-dashoffset: 410;
+  animation: drawCircle 0.8s ease-in-out forwards;
+}
+
+.checkmark {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: drawCheck 0.6s ease-in-out 0.8s forwards;
+}
+
+@keyframes drawCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drawCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.popup-header {
+  color: rgb(108, 107, 107);
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+.popup-subheading {
+  color: rgb(108, 107, 107);
+  font-size: 20px;
+}
+
+.popup-button {
+  border-radius: 9px;
+  background-color: rgb(74, 145, 221);
+  border: 3px solid rgb(156, 184, 214);
+}
+
+.popup-button:hover {
+  background-color: rgb(68, 133, 203);
+}
 
 /* Chessboard Container */
 .chessboard-container_L {

@@ -2,13 +2,17 @@ import "./Lessons.scss";
 import React, { useState, useEffect, useRef } from 'react';
 import { ReactComponent as RedoIcon } from './icon_redo.svg';
 import { ReactComponent as BackIcon} from './icon_back.svg';
+import { ReactComponent as BackIconInactive} from './icon_back_inactive.svg';
 import { ReactComponent as NextIcon } from './icon_next.svg';
+import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
 import { getScenario } from "./Scenarios";
 
 const Lessons = () => {
   const [board, setBoard] = useState(getScenario(0).subSections[0].board); // Initialize the board with chess pieces
   const [highlightedSquares, setHighlightedSquares] = useState([]);
   const [draggingPiece, setDraggingPiece] = useState(null); // Track which piece is being dragged
+  const [leftEnded, setLeftEnded] = useState(true);
+  const [rightEnded, setRightEnded] = useState(false);
 
   // Description for each Scenarios
   const [scenario, setScenario] = useState(getScenario(0))
@@ -70,7 +74,9 @@ const Lessons = () => {
     setScenario(getScenario(counterRef.current))
     setLesson(getScenario(counterRef.current).subSections[0])
     setTrainingStarted(true);
-    setBoard(getScenario(counterRef.current).subSections[0].board);
+    setBoard(JSON.parse(JSON.stringify(getScenario(counterRef.current).subSections[0].board)));
+    setLeftEnded(getScenario(counterRef.current).subSections[0].left_ended)
+    setRightEnded(getScenario(counterRef.current).subSections[0].right_ended)
   };
 
   // Helper function to get possible moves for a piece
@@ -202,7 +208,7 @@ const Lessons = () => {
           <div className='lesson-header'>
             <h1 className="piece_description">{scenario.name}</h1>
             <button className='reset-lesson' onClick={resetBoard}>
-              <RedoIcon/>
+              <RedoIcon className='reset-icon'/>
             </button>
           </div>
 
@@ -210,14 +216,32 @@ const Lessons = () => {
           <p className="lesson-description">{lesson.info}</p>
 
           <div className='prev-next-button-container'>
-            <button className="prevNextLessonButton prev" onClick={() => rotateScenario(-1)}>
-              <BackIcon/>
-              <p className="button-description">Back</p>
-            </button>
-            <button className="prevNextLessonButton next" onClick={() => rotateScenario(1)}>
-              <p className="button-description">Next</p>
-              <NextIcon/>
-            </button>
+            {
+              leftEnded? (
+                <button className="prevNextLessonButton-inactive prev">
+                  <BackIconInactive/>
+                  <p className="button-description">Back</p>
+                </button>
+              ) : (
+                <button className="prevNextLessonButton prev" onClick={() => rotateScenario(-1)}>
+                  <BackIcon/>
+                  <p className="button-description">Back</p>
+                </button>
+              )
+            }
+
+            {rightEnded? (
+                <button className="prevNextLessonButton-inactive next">
+                  <p className="button-description">Next</p>
+                  <NextIconInactive/>
+                </button>
+              ) : (
+                <button className="prevNextLessonButton next" onClick={() => rotateScenario(1)}>
+                  <p className="button-description">Next</p>
+                  <NextIcon/>
+                </button>
+              )
+            }
           </div>
         </div>
 
@@ -240,8 +264,15 @@ const Lessons = () => {
       {showPopup && (
         <div className="popup">
           <div className="popup-content">
-            <p>Lesson Completed!</p>
-            <button onClick={handlePopupConfirm}>OK</button>
+            <div className="success-checkmark">
+              <svg width="80" height="80" viewBox="0 0 120 120">
+                <circle className="circle" cx="60" cy="60" r="54" fill="none" stroke="#beea8b" stroke-width="6"></circle>
+                <path className="checkmark" d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+            <p className="popup-header">Lesson completed</p>
+            <p className="popup-subheading">Good job</p>
+            <button className="popup-button" onClick={handlePopupConfirm}>OK</button>
           </div>
         </div>
       )}

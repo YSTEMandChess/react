@@ -1,6 +1,6 @@
 export const scenariosArray = [
 {
-    name: 'Pawn-It moves forward only',
+    name: 'Pawn - It moves forward only',
     subSections: [
     {
         name: 'Basic',
@@ -143,7 +143,7 @@ export const scenariosArray = [
     ],
 },
 {
-    name: 'Queen - Queen = rook + bishop  ',
+    name: 'Queen - Queen = Rook + Bishop  ',
     subSections: [
     {
         name: 'The Basic',
@@ -193,7 +193,7 @@ export const scenariosArray = [
     ],
 },
 {
-    name: 'piece checkmate 1 Basic checkmates',
+    name: 'Piece Checkmate 1 Basic checkmates',
     subSections: [
     {
         name: 'Queen and rook mate',
@@ -228,7 +228,7 @@ export const scenariosArray = [
     ],
 },
 {
-    name: 'checkmate pattern I Recognize the patterns',
+    name: 'Checkmate Pattern 1 Recognize the patterns',
     subSections: [
     {
         name: "Back-Rank  Mate #1",
@@ -323,12 +323,12 @@ export const scenariosArray = [
     ]
 },
 {
-    name: "Checkmate Patterns II Recognize the patterns",
+    name: "Checkmate Pattern 2 Recognize the patterns",
     subSections: [
     {
         name: "Double Bishop Mate #1",
         fen: "7k/5B1p/8/8/8/8/8/5KB1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move"
+        info: "Checkmate the opponent in 1 move."
     },
     {
         name: "Double Bishop Mate #2",
@@ -443,7 +443,7 @@ export const scenariosArray = [
     ]
 },
 {
-    name: "Checkmate Patterns III Recognize the patterns",
+    name: "Checkmate Pattern 3 Recognize the patterns",
     subSections: [
     {
         name: "Opera Mate #1",
@@ -538,7 +538,7 @@ export const scenariosArray = [
     ]
 },
 {
-    name: "Checkmate Pattern IV Recognize the patterns",
+    name: "Checkmate Pattern 4 Recognize the patterns",
     subSections: [
     {
         name: "Suffocation Mate #1",
@@ -618,7 +618,7 @@ export const scenariosArray = [
     ]
 },
 {
-    name: "Piece checkmates II Challenging checkmates",
+    name: "Piece checkmates 2 Challenging checkmates",
     subSections: [
     {
         name: "Queen vs bishop mate",
@@ -1805,7 +1805,9 @@ export function getScenario(index) {
     let scenario = scenariosArray[index]
     scenario.subSections = scenario.subSections.map(sub => ({
         ...sub,
-        board: parseFEN(sub.fen)
+        board: parseFEN(sub.fen),
+        left_ended: index == 0,
+        right_ended: index == scenariosArray.length - 1
     }))
     return scenario
 }
