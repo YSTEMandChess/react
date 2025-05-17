@@ -27,12 +27,10 @@ http.createServer((req, res) => {
 
   engine.stdout.on("data", (data) => {
     const line = data.toString().trim();
-    console.log(line)
+    console.log("engine output:", line)
 
     if (line.includes("bestmove")) {
-      const tokens = line.split(" ");
-      const move = tokens[tokens.length - 3];
-      console.log("engine output:", move);
+      const move = getBestMove(line);
       const game = new chess.Chess(params.fen);
       const result = game.move(move, { sloppy: true });
 
@@ -69,3 +67,13 @@ http.createServer((req, res) => {
   console.log(`Stockfish server listening on port ${process.env.PORT || 8080}`);
 });
 
+function getBestMove(output) {
+  const lines = output.split('\n');
+  for (const line of lines) {
+    if (line.startsWith('bestmove')) {
+      const parts = line.split(' ');
+      return parts[1];
+    }
+  }
+  return null;
+}
