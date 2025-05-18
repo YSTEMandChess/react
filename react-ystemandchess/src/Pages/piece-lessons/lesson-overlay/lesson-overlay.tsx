@@ -109,7 +109,8 @@ const LessonOverlay = () => {
 
     const getTotalLesson = async () => {
         const url = `${environment.urls.middlewareURL}/getTotalPieceLesson.php/?jwt=${cookies.login}&piece=${piece}`;
-        httpGetAsync(url, (response: any) => {
+        httpGetAsync(url, (response) => {
+            console.log(response)
             const data = JSON.parse(response);
             setTotalLessons(data);
         });
