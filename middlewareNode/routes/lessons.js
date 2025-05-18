@@ -8,6 +8,8 @@ require('dotenv').config();
 
 const client = new MongoClient(config.get("mongoURI"));
 
+// Get the number of lessons completed for a chess piece for a specific user
+// example: `${environment.urls.middlewareURL}/lessons/getCompletedLesson?piece=pawn`
 router.get(
   "/getCompletedLesson",
   passport.authenticate("jwt", { session: false }),
@@ -51,6 +53,8 @@ router.get(
   }
 );
 
+// Get how many lessons there are for a specific piece
+// example: `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=pawn`
 router.get(
   "/getTotalPieceLesson",
   passport.authenticate("jwt", { session: false }),
@@ -77,6 +81,9 @@ router.get(
   }
 );
 
+// Get the lesson content for a piece, note that parameter lessonNum is # of lessons completed
+// so lessonNum=0 will get lesson #1 and lessonNum=1 will get lesson #2
+// example: `${environment.urls.middlewareURL}/lessons/getLesson?piece=pawn&lessonNum=0`
 router.get(
   "/getLesson",
   passport.authenticate("jwt", { session: false }),
@@ -118,6 +125,9 @@ router.get(
   }
 );
 
+// Update a user's progress in lessons for a chess piece
+// Note that lessonNum is current progress, passing lessonNum=0 will update progress to 1
+// example: `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=pawn&lessonNum=0`
 router.get(
   "/updateLessonCompletion",
   passport.authenticate("jwt", { session: false }),
