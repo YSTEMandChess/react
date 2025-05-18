@@ -40,6 +40,22 @@ const usersSchema = new mongoose.Schema(
       required: false,
       default: 0,
     },
+    lessonsCompleted: {
+      type: [
+        {
+          piece: String,
+          lessonNumber: Number,
+        },
+      ],
+      default: () => [
+        { piece: "rook", lessonNumber: 0 },
+        { piece: "bishop", lessonNumber: 0 },
+        { piece: "queen", lessonNumber: 0 },
+        { piece: "king", lessonNumber: 0 },
+        { piece: "pawn", lessonNumber: 0 },
+        { piece: "horse", lessonNumber: 0 },
+      ],
+    },
   },
   { versionKey: false },
 );
