@@ -1,54 +1,150 @@
-import "./PieceLessons.scss";
-import React, { useState, useEffect } from 'react';
-import {environment} from "../../environments/environment.js";
+import React, {useState, useEffect} from 'react';
+import { useCookies } from 'react-cookie';
+import { environment } from "../../environments/environment.js";
 
 const PieceLessons = () => {
-  const [board, setBoard] = useState(initializeBoard()); // Initialize the board with chess pieces
+  const [board, setBoard] = useState(initializeBoard());
   const [highlightedSquares, setHighlightedSquares] = useState([]);
-  const [draggingPiece, setDraggingPiece] = useState(null); // Track which piece is being dragged
-
-  const [showPopup, setShowPopup] = useState(false); // Popup state
-  const [lessonStarted, setLessonStarted] = useState(true); // Training state
+  const [draggingPiece, setDraggingPiece] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [lessonStarted, setLessonStarted] = useState(true);
   const [playerTurn, setPlayerTurn] = useState(true);
   const [level, setLevel] = useState(5);
-
+  const [lessonNum, setLessonNum] = useState(0);
+  const [totalLessons, setTotalLessons] = useState(0);
+  const [lessonStartFEN, setLessonStartFEN] = useState('');
+  const [lessonEndFEN, setLessonEndFEN] = useState('');
+  const [displayLessonNum, setDisplayLessonNum] = useState(0);
+  const [endSquare, setEndSquare] = useState('');
+  const [previousEndSquare, setPreviousEndSquare] = useState('');
+  const [cookies] = useCookies(['piece', 'login']);
+  const piece = cookies.piece || 'P'; // Default to pawn if no cookie is set
+  
   // Initialize the chessboard
   function initializeBoard() {
     return [
-      [null, null, null, null, null, null, null, null],  // Empty row
-      [null, null, null, null, null, null, null, null],  // Empty row
-      ["wP", null, null, null, null, null, "bN", null],  // Empty row
-      [null, null, null, null, null, null, null, null],  // Empty row
-      [null, null, "wQ", null, null, "bP", null, null],  // Empty row
-      [null, null, null, null, null, null, null, null],  // Empty row
-      [null, null, null, null, "wK", null, null, null],  // Empty row
-      [null, null, null, null, null, null, null, "bK"],  // Empty row
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
+      [null, null, null, null, null, null, null, null],
     ];
   }
-
-  // Popup
-  // Function to check if all black pieces are removed
-  const checkBlackPieces = () => {
-    const blackPieces = board.flat().filter(piece => piece && piece[0] === 'b'); // Filter out black pieces
-    if (blackPieces.length === 0 && lessonStarted === true) {
-      setShowPopup(true); // Show the popup
-    }
-  };
-
-  // Reset the chessboard when the popup confirm button is clicked
-  const handlePopupConfirm = () => {
-    if (lessonStarted === true) {
-      setShowPopup(false);
-      setBoard(initializeBoard()); // Reset the chessboard
-      setLessonStarted(false); // Reset training state
-    }
-  };
-
-  // Check for black pieces every time the board state changes
+  
+  // Load lessons when component mounts
   useEffect(() => {
-    // checkBlackPieces();
+    getLessonsCompleted();
+    getTotalLesson();
+  }, []);
+  
+  // Update the board when lesson changes
+  useEffect(() => {
+    if (lessonStartFEN) {
+      setBoard(fen2board(lessonStartFEN));
+      // Reset player turn to allow them to go first
+      setPlayerTurn(true);
+    }
+  }, [lessonStartFEN]);
+  
+  // Check for lesson completion
+  useEffect(() => {
+    checkLessonCompletion();
   }, [board]);
-
+  
+  const getLessonsCompleted = async () => {
+    if (!cookies.login || !piece) return;
+    
+    const url = `${environment.urls.middlewareURL}/getCompletedLesson.php/?jwt=${cookies.login}&piece=${piece}`;
+    httpGetAsync(url, (response) => {
+      const data = JSON.parse(response);
+      setLessonNum(data);
+      getCurrentLesson(data);
+    });
+  };
+  
+  const getCurrentLesson = async (lessonNumber) => {
+    if (!cookies.login || !piece) return;
+    
+    const url = `${environment.urls.middlewareURL}/getLesson.php/?jwt=${cookies.login}&piece=${piece}&lessonNumber=${lessonNumber || lessonNum}`;
+    setPreviousEndSquare(endSquare);
+    httpGetAsync(url, (response) => {
+      const data = JSON.parse(response);
+      setLessonStartFEN(data.startFen);
+      setLessonEndFEN(data.endFen);
+      setDisplayLessonNum(data.lessonNumber);
+      setEndSquare(data.endSquare);
+      
+      if (data.lessonNumber === undefined) {
+        alert(
+          'Congratulations all current lessons for this piece have been completed!\n' +
+          'Come back soon for more lessons or go over previous lessons.'
+        );
+      }
+    });
+  };
+  
+  const getTotalLesson = async () => {
+    if (!cookies.login || !piece) return;
+    
+    const url = `${environment.urls.middlewareURL}/getTotalPieceLesson.php/?jwt=${cookies.login}&piece=${piece}`;
+    httpGetAsync(url, (response) => {
+      const data = JSON.parse(response);
+      setTotalLessons(data);
+    });
+  };
+  
+  const updateLessonCompletion = async () => {
+    if (!cookies.login || !piece) return;
+    
+    const url = `${environment.urls.middlewareURL}/updateLessonCompletion.php/?jwt=${cookies.login}&piece=${piece}&lessonNumber=${lessonNum}`;
+    httpGetAsync(url, () => {
+      // After completing current lesson, move to next one
+      if (lessonNum + 1 < totalLessons) {
+        setLessonNum(prevNum => prevNum + 1);
+        getCurrentLesson(lessonNum + 1);
+      }
+    });
+  };
+  
+  const checkLessonCompletion = () => {
+    if (!lessonEndFEN) return;
+    
+    const currentFEN = board2fen(board).split(' ')[0]; // Only compare the board position
+    const targetFEN = lessonEndFEN.split(' ')[0];
+    
+    if (currentFEN === targetFEN && lessonStarted) {
+      setShowPopup(true);
+    }
+  };
+  
+  // Handle popup confirmation
+  const handlePopupConfirm = () => {
+    setShowPopup(false);
+    updateLessonCompletion();
+    // Reset the lesson state
+    setLessonStarted(true);
+  };
+  
+  // Navigation functions
+  const previousLesson = () => {
+    if (lessonNum > 0) {
+      setLessonNum(prevNum => prevNum - 1);
+      setPreviousEndSquare(endSquare);
+      getCurrentLesson(lessonNum - 1);
+    }
+  };
+  
+  const nextLesson = () => {
+    if (lessonNum + 1 < totalLessons) {
+      setLessonNum(prevNum => prevNum + 1);
+      setPreviousEndSquare(endSquare);
+      getCurrentLesson(lessonNum + 1);
+    }
+  };
+  
   // Helper function to get possible moves for a piece
   const getPieceMoves = (piece, position) => {
     const color = piece[0]; // Get color from the piece (first character)
@@ -56,103 +152,147 @@ const PieceLessons = () => {
       case 'P':
         return getPawnMoves(position, color === 'w', board);
       case 'R':
-        return getRookMoves(position, color === 'w', board); // Pass color directly
+        return getRookMoves(position, color === 'w', board);
       case 'N':
-        return getKnightMoves(position, color === 'w', board); // Pass color directly
+        return getKnightMoves(position, color === 'w', board);
       case 'B':
-        return getBishopMoves(position, color === 'w', board); // Pass color directly
+        return getBishopMoves(position, color === 'w', board);
       case 'K':
-        return getKingMoves(position, color === 'w', board); // Pass color directly
+        return getKingMoves(position, color === 'w', board);
       case 'Q':
-        return getQueenMoves(position, color === 'w', board); // Pass color directly
+        return getQueenMoves(position, color === 'w', board);
       default:
         return [];
     }
   };
-
+  
   // Handle hover to show possible moves
   const handleSquareHover = (key) => {
+    if (!playerTurn) return; // Only show highlights on player's turn
+    
     const [row, col] = key.split('-').map(Number);
     const piece = board[row][col];
-
+    
     // Clear previous highlights
     setHighlightedSquares([]);
-
-    if (piece) {
+    
+    if (piece && piece[0] === 'w') { // Only highlight white pieces (player's pieces)
       const possibleMoves = getPieceMoves(piece, key);
       setHighlightedSquares(possibleMoves); // Highlight valid move squares
-    } else {
-      // Check if the square has an opponent's piece
-      const targetPiece = board[row][col];
-      if (targetPiece && targetPiece[0] !== draggingPiece?.piece[0]) {
-        setHighlightedSquares((prev) => [...prev, key]); // Highlight the opponent's piece square
-      }
     }
   };
-
+  
   // Handle drag start
   const handleDragStart = (e, piece, position) => {
+    if (!playerTurn) return; // Only allow dragging on player's turn
+    if (piece[0] !== 'w') return; // Only allow dragging white pieces
+    
     setDraggingPiece({ piece, position });
-    e.dataTransfer.setDragImage(e.target, 20, 20); // Set the drag image with a specified offset
+    e.dataTransfer.setDragImage(e.target, 20, 20);
   };
-
+  
   // Handle drop on a square
   const handleDrop = (key) => {
+    if (!playerTurn || !draggingPiece) return;
+    
     if (highlightedSquares.includes(key)) {
       const [startRow, startCol] = draggingPiece.position.split('-').map(Number);
       const [endRow, endCol] = key.split('-').map(Number);
-
-      const targetPiece = board[endRow][endCol];
-
-      if (targetPiece && targetPiece.color !== draggingPiece.piece.color) {
-        console.log(`Captured ${targetPiece.type}`);
-      }
-
-      const updatedBoard = [...board];
-      updatedBoard[endRow][endCol] = draggingPiece.piece; // Move piece to new square
-      updatedBoard[startRow][startCol] = null;            // Clear old square
-
+      
+      // Create a copy of the board
+      const updatedBoard = board.map(row => [...row]);
+      
+      // Move piece to new square
+      updatedBoard[endRow][endCol] = draggingPiece.piece;
+      updatedBoard[startRow][startCol] = null;
+      
       // Check if the moved piece is a pawn reaching the promotion rank
-      if (draggingPiece.piece[1] === 'P' && (endRow === 0 || endRow === 7)) {
-        promotePawn(key); // Call promote function
-      } else {
-        setBoard(updatedBoard); // Update board state
-        moveBlackPiece(updatedBoard)
+      if (draggingPiece.piece[1] === 'P' && endRow === 0) {
+        updatedBoard[endRow][endCol] = 'wQ'; // Promote to Queen
       }
+      
+      // Update board state
+      setBoard(updatedBoard);
+      
+      // It's now the computer's turn
+      setPlayerTurn(false);
+      
+      // Check if the lesson is completed after the player's move
+      setTimeout(() => {
+        const currentFEN = board2fen(updatedBoard);
+        if (currentFEN.split(' ')[0] === lessonEndFEN.split(' ')[0]) {
+          // Lesson completed by player's move
+          setShowPopup(true);
+        } else {
+          // Make Stockfish respond with a move
+          moveBlackPiece(updatedBoard);
+        }
+      }, 500);
     }
+    
     setDraggingPiece(null);
     setHighlightedSquares([]);
   };
-
+  
   // Handle drag over a square (allow dropping)
   const handleDragOver = (e) => {
     e.preventDefault(); // Prevent default behavior to allow dropping
   };
-
-  // Update promotePawn function to set the board state
-  const promotePawn = (position) => {
-    const [row, col] = position.split('-').map(Number);
-    const updatedBoard = [...board];
-    const color = board[row][col][0]; // Determine color of the pawn
-    const newPiece = color === 'w' ? 'wQ' : 'bQ'; // Promote to Queen
-
-    updatedBoard[row][col] = newPiece; // Update the board with the new queen
-    setBoard(updatedBoard); // Set the new board state
-    moveBlackPiece(updatedBoard)
-  }
-
+  
+  // Make the computer (black) move
   const moveBlackPiece = (updatedBoard) => {
-    const updatedFen = board2fen(updatedBoard)
-    console.log(updatedFen)
+    const updatedFen = board2fen(updatedBoard);
     const url = `${environment.urls.stockFishURL}?level=${level}&fen=${updatedFen}`;
-    httpPostAsync(url, (response) => {
-        console.log(JSON.parse(response).fen)
-        setBoard(fen2board(JSON.parse(response).fen))
+    
+    httpGetAsync(url, (response) => {
+      const responseData = JSON.parse(response);
+      const newBoard = fen2board(responseData.fen);
+      setBoard(newBoard);
+      setPlayerTurn(true); // It's now the player's turn again
+      
+      // Check if the lesson is completed after Stockfish's move
+      setTimeout(() => {
+        const currentFEN = responseData.fen.split(' ')[0];
+        if (currentFEN === lessonEndFEN.split(' ')[0]) {
+          setShowPopup(true);
+        }
+      }, 500);
+    });
+  };
+  
+  // HTTP helper function
+  const httpGetAsync = (url, callback) => {
+    fetch(url, {
+      method: 'POST',
     })
-  }
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then((text) => {
+        callback(text);
+      })
+      .catch((error) => {
+        console.error('Fetch error:', error);
+      });
+  };
 
   return (
     <div className="lessons-page">
+      <div className="lesson-header">
+        <h2>{piece.toUpperCase()} Lesson {displayLessonNum} of {totalLessons}</h2>
+        <div className="lesson-navigation">
+          <button onClick={previousLesson} disabled={lessonNum <= 0}>
+            &lt; Previous
+          </button>
+          <button onClick={nextLesson} disabled={lessonNum >= totalLessons - 1}>
+            Next &gt;
+          </button>
+        </div>
+      </div>
+      
       <div className='left-right-container'>
         {/* Div for elements on the left */}
         <div className='left-container'>
@@ -171,16 +311,25 @@ const PieceLessons = () => {
             </div>
           </div>
         </div>
+        
+        {/* Div for lesson instructions */}
+        <div className='right-container'>
+          <div className="lesson-instructions">
+            <h3>Instructions</h3>
+            <p>Make your move and Stockfish will respond. Complete the lesson by reaching the correct position.</p>
+            <p>{!playerTurn ? "Stockfish is thinking..." : "Your turn to move"}</p>
+          </div>
+        </div>
       </div>
-
+      
       {/* Popup for lesson completion */}
       {showPopup && (
         <div className="popup">
           <div className="popup-content">
             <div className="success-checkmark">
               <svg width="80" height="80" viewBox="0 0 120 120">
-                <circle className="circle" cx="60" cy="60" r="54" fill="none" stroke="#beea8b" stroke-width="6"></circle>
-                <path className="checkmark" d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>
+                <circle className="circle" cx="60" cy="60" r="54" fill="none" stroke="#beea8b" strokeWidth="6"></circle>
+                <path className="checkmark" d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"></path>
               </svg>
             </div>
             <p className="popup-header">Lesson completed</p>
@@ -207,21 +356,19 @@ export function createChessBoard(
   const rows = 8;
   const cols = 8;
   const chessBoard = [];
-
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']; // a-h labels
   const ranks = ['8', '7', '6', '5', '4', '3', '2', '1']; // 1-8 labels, reversed
-
+  
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
       const key = `${i}-${j}`;
       const isLightSquare = (i + j) % 2 === 0;
       const squareColor = isLightSquare ? '#f0d9b5' : '#b58863';
-
       const piece = board[i][j]; // Get piece at current position
       const pieceImage = piece
         ? `/assets/images/chesspieces/wikipedia/${piece}.png`
         : null; // Construct image path
-
+      
       chessBoard.push(
         <div
           key={key}
@@ -239,16 +386,16 @@ export function createChessBoard(
         >
           {/* Show gray circle for possible moves on hover */}
           {highlightedSquares.includes(key) && <div className="highlight-circle" />}
-
+          
           {/* If there is a piece here, show the circle for the opponent's piece */}
           {piece && piece[0] !== draggingPiece?.piece[0] && highlightedSquares.includes(key) && (
             <div className="highlight-circle" />
           )}
-
+          
           {/* Add rank and file labels */}
           {j === 0 && <span className="rank-label">{ranks[i]}</span>} {/* Rank labels (1-8) */}
           {i === 7 && <span className="file-label">{files[j]}</span>} {/* File labels (a-h) */}
-
+          
           {/* Display piece image */}
           {pieceImage && (
             <img
@@ -263,6 +410,7 @@ export function createChessBoard(
       );
     }
   }
+  
   return chessBoard;
 }
 
@@ -275,39 +423,34 @@ export function isInBounds(row, col) {
 export function getPawnMoves(position, isWhite, board) {
   // Prevent black pawns from moving
   if (!isWhite) return [];
-
+  
   const [row, col] = position.split('-').map(Number);
   const direction = -1; // White pawns only move upwards
   const possibleMoves = [];
-
+  
   // Check forward move (1 square)
   if (isInBounds(row + direction, col) && board[row + direction][col] === null) {
     possibleMoves.push(`${row + direction}-${col}`);
-
+    
     // Check forward move (2 squares) if in starting position
     const startingRow = 6; // White pawns start at row 6
     if (row === startingRow && isInBounds(row + 2 * direction, col) && board[row + 2 * direction][col] === null) {
       possibleMoves.push(`${row + 2 * direction}-${col}`);
     }
   }
-
+  
   // Check for captures (diagonal moves)
   const captureMoves = [
     { row: row + direction, col: col - 1 }, // Capture left
     { row: row + direction, col: col + 1 }  // Capture right
   ];
-
+  
   captureMoves.forEach(({ row, col }) => {
-    if (isInBounds(row, col) && board[row][col] && board[row][col][0] !== 'w') { // Check color
+    if (isInBounds(row, col) && board[row][col] && board[row][col][0] !== 'w') {
       possibleMoves.push(`${row}-${col}`); // Add capture move if there's an opponent's piece
     }
   });
-
-  // Check for promotion if the pawn reaches the last row
-  if (row === 0) {
-    return possibleMoves.concat('promote'); // Indicate promotion to queen for white
-  }
-
+  
   return possibleMoves;
 }
 
@@ -315,10 +458,10 @@ export function getPawnMoves(position, isWhite, board) {
 export function getRookMoves(position, isWhite, board) {
   // Prevent black pieces from moving
   if (!isWhite) return [];
-
+  
   const [row, col] = position.split('-').map(Number);
   const moves = [];
-
+  
   // Horizontal and vertical movement
   const directions = [
     { r: 1, c: 0 }, // Down
@@ -326,13 +469,14 @@ export function getRookMoves(position, isWhite, board) {
     { r: 0, c: 1 }, // Right
     { r: 0, c: -1 }  // Left
   ];
-
+  
   directions.forEach(({ r, c }) => {
     for (let i = 1; i < 8; i++) {
       const newRow = row + r * i;
       const newCol = col + c * i;
+      
       if (!isInBounds(newRow, newCol)) break; // Stop if out of bounds
-
+      
       if (!board[newRow][newCol]) {
         moves.push(`${newRow}-${newCol}`);
       } else {
@@ -343,7 +487,7 @@ export function getRookMoves(position, isWhite, board) {
       }
     }
   });
-
+  
   return moves;
 }
 
@@ -351,22 +495,23 @@ export function getRookMoves(position, isWhite, board) {
 export function getKnightMoves(position, isWhite, board) {
   // Prevent black pieces from moving
   if (!isWhite) return [];
-
+  
   const [row, col] = position.split('-').map(Number);
   const moves = [];
+  
   const knightMoves = [
     [row - 2, col - 1], [row - 2, col + 1],
     [row - 1, col - 2], [row - 1, col + 2],
     [row + 1, col - 2], [row + 1, col + 2],
     [row + 2, col - 1], [row + 2, col + 1]
   ];
-
+  
   for (const [r, c] of knightMoves) {
     if (isInBounds(r, c) && (!board[r][c] || board[r][c][0] !== 'w')) {
       moves.push(`${r}-${c}`);
     }
   }
-
+  
   return moves;
 }
 
@@ -374,10 +519,10 @@ export function getKnightMoves(position, isWhite, board) {
 export function getBishopMoves(position, isWhite, board) {
   // Prevent black pieces from moving
   if (!isWhite) return [];
-
+  
   const [row, col] = position.split('-').map(Number);
   const moves = [];
-
+  
   // Diagonal movement (Top-right, Top-left, Bottom-right, Bottom-left)
   const directions = [
     { r: 1, c: 1 },  // Bottom-right
@@ -385,13 +530,14 @@ export function getBishopMoves(position, isWhite, board) {
     { r: -1, c: 1 }, // Top-right
     { r: -1, c: -1 } // Top-left
   ];
-
+  
   directions.forEach(({ r, c }) => {
     for (let i = 1; i < 8; i++) {
       const newRow = row + r * i;
       const newCol = col + c * i;
+      
       if (!isInBounds(newRow, newCol)) break; // Stop if out of bounds
-
+      
       if (!board[newRow][newCol]) {
         moves.push(`${newRow}-${newCol}`);
       } else {
@@ -402,7 +548,7 @@ export function getBishopMoves(position, isWhite, board) {
       }
     }
   });
-
+  
   return moves;
 }
 
@@ -410,20 +556,21 @@ export function getBishopMoves(position, isWhite, board) {
 export function getKingMoves(position, isWhite, board) {
   // Prevent black pieces from moving
   if (!isWhite) return [];
-
+  
   const [row, col] = position.split('-').map(Number);
   const moves = [];
+  
   const kingMoves = [
     [row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1], // Vertical and horizontal
     [row - 1, col - 1], [row - 1, col + 1], [row + 1, col - 1], [row + 1, col + 1] // Diagonal
   ];
-
+  
   for (const [r, c] of kingMoves) {
     if (isInBounds(r, c) && (!board[r][c] || board[r][c][0] !== 'w')) {
       moves.push(`${r}-${c}`);
     }
   }
-
+  
   return moves;
 }
 
@@ -431,38 +578,21 @@ export function getKingMoves(position, isWhite, board) {
 export function getQueenMoves(position, isWhite, board) {
   // Prevent black pieces from moving
   if (!isWhite) return [];
-
+  
   return [...getRookMoves(position, isWhite, board), ...getBishopMoves(position, isWhite, board)];
 }
 
-export function httpPostAsync(url, callback) {
-  fetch(url, {
-    method: 'POST',
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.text();
-    })
-    .then((text) => {
-      callback(text);
-    })
-    .catch((error) => {
-      console.error('Fetch error:', error);
-    });
-}
-
+// Convert FEN to board
 function board2fen(board) {
   const pieceMap = {
     'wP': 'P', 'wN': 'N', 'wB': 'B', 'wR': 'R', 'wQ': 'Q', 'wK': 'K',
     'bP': 'p', 'bN': 'n', 'bB': 'b', 'bR': 'r', 'bQ': 'q', 'bK': 'k'
   };
-
+  
   let fenRows = board.map(row => {
     let fenRow = '';
     let emptyCount = 0;
-
+    
     row.forEach(cell => {
       if (cell === null) {
         emptyCount++;
@@ -474,23 +604,25 @@ function board2fen(board) {
         fenRow += pieceMap[cell] || '?';
       }
     });
-
+    
     if (emptyCount > 0) {
       fenRow += emptyCount;
     }
-
+    
     return fenRow;
   });
-
+  
   return fenRows.join('/') + ' b - - 0 1';
 }
 
+// Convert board to FEN
 function fen2board(fen) {
   const board = [];
   const rows = fen.split(' ')[0].split('/');
-
+  
   for (let row of rows) {
     const parsedRow = [];
+    
     for (let char of row) {
       if (!isNaN(char)) {
         parsedRow.push(...Array(parseInt(char)).fill(null));
@@ -502,9 +634,10 @@ function fen2board(fen) {
         }
       }
     }
+    
     board.push(parsedRow);
   }
-
+  
   return board;
 }
 

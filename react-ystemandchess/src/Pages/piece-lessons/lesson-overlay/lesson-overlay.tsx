@@ -113,6 +113,7 @@ const LessonOverlay = () => {
             console.log(response)
             const data = JSON.parse(response);
             setTotalLessons(data);
+            console.log(data);
         });
     };
 
