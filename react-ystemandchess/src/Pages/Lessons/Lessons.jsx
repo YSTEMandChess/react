@@ -5,23 +5,22 @@ import { ReactComponent as BackIcon} from './icon_back.svg';
 import { ReactComponent as BackIconInactive} from './icon_back_inactive.svg';
 import { ReactComponent as NextIcon } from './icon_next.svg';
 import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
-import { getScenario } from "./Scenarios";
+import { getScenario, getScenarioLength } from "./Scenarios";
 
 const Lessons = () => {
   const [board, setBoard] = useState(getScenario(0).subSections[0].board); // Initialize the board with chess pieces
   const [highlightedSquares, setHighlightedSquares] = useState([]);
   const [draggingPiece, setDraggingPiece] = useState(null); // Track which piece is being dragged
-  const [leftEnded, setLeftEnded] = useState(true);
-  const [rightEnded, setRightEnded] = useState(false);
-
-  // Description for each Scenarios
-  const [scenario, setScenario] = useState(getScenario(0))
-  const [lesson, setLesson] = useState(getScenario(0).subSections[0])
-
-  const counterRef = useRef(0); // Counter for updating different scenarios
-
+  
+  const [leftEnded, setLeftEnded] = useState(true); // track whether there are any more previous scenarios 
+  const [rightEnded, setRightEnded] = useState(false); // track whether there are any more upcoming scenarios 
   const [showPopup, setShowPopup] = useState(false); // Popup state
-  const [trainingStarted, setTrainingStarted] = useState(true); // Training state
+
+  const [scenario, setScenario] = useState(getScenario(0)) // Current scenario like "pawn", "checkmates", etc.
+  const [lesson, setLesson] = useState(getScenario(0).subSections[0]) // Current lesson / subsection under the scenario
+  const [lessonEnded, setLessonEnded] = useState(false)
+
+  const counterRef = useRef(0); // Current counter that indexes current scenario in scenariosArray
 
   // Initialize the chessboard
   function initializeBoard() {
@@ -41,18 +40,15 @@ const Lessons = () => {
   // Function to check if all black pieces are removed
   const checkBlackPieces = () => {
     const blackPieces = board.flat().filter(piece => piece && piece[0] === 'b'); // Filter out black pieces
-    if (blackPieces.length === 0 && trainingStarted === true) {
+    if (blackPieces.length === 0 && !lessonEnded) {
       setShowPopup(true); // Show the popup
     }
   };
 
   // Reset the chessboard when the popup confirm button is clicked
   const handlePopupConfirm = () => {
-    if (trainingStarted === true) {
-      setShowPopup(false);
-      setBoard(initializeBoard()); // Reset the chessboard
-      setTrainingStarted(false); // Reset training state
-    }
+    setShowPopup(false);
+    goToNextLesson();
   };
 
   // Check for black pieces every time the board state changes
@@ -60,23 +56,49 @@ const Lessons = () => {
     checkBlackPieces();
   }, [board]);
 
-  // Set up the board for different scenarios
-  const setupScenario = (section) => {
+  // Set up the board for a different lesson, under same scenario
+  const setupLesson = (section) => {
+    setLessonEnded(false) // start lesson if not
     setLesson(section)
     setBoard(JSON.parse(JSON.stringify(section.board)))
-    setTrainingStarted(true)
     setHighlightedSquares([]);
   };
 
-  // Going back and forth between different scenarios, x: -1 or 1
-  const rotateScenario = (x) => {
-    counterRef.current += x
+  // Switching to previous / next scenario, x: -1 or 1
+  const setupScenario = (x) => {
+    counterRef.current += x // update scenario index
+    setLessonEnded(false) // start lesson if not
+
+    //update lessons & board
     setScenario(getScenario(counterRef.current))
     setLesson(getScenario(counterRef.current).subSections[0])
-    setTrainingStarted(true);
     setBoard(JSON.parse(JSON.stringify(getScenario(counterRef.current).subSections[0].board)));
+
+    // check if there are any previous/next scenarios to update button color
     setLeftEnded(getScenario(counterRef.current).subSections[0].left_ended)
     setRightEnded(getScenario(counterRef.current).subSections[0].right_ended)
+  };
+
+  // Auto load to next lesson
+  const goToNextLesson = () => {
+    // get index of current lesson
+    const currentLessonIndex = scenario.subSections.findIndex(l => l.name === lesson.name);
+    if (currentLessonIndex === -1) {
+      console.error("Current lesson not found in scenario.");
+      return;
+    }
+
+    if (currentLessonIndex >= scenario.subSections.length - 1) {
+      // all lessons in this scenario have been displayed, so go to next scenario
+      if (!rightEnded) setupScenario(1);
+      else { // if no more scenarios left
+        setBoard(initializeBoard())
+        setLessonEnded(true)
+      }
+    } else {
+      // display next lesson in this scenario
+      setupLesson(scenario.subSections[currentLessonIndex + 1])
+    }
   };
 
   // Helper function to get possible moves for a piece
@@ -172,8 +194,8 @@ const Lessons = () => {
   // Reset moved pieces to their original positions to restart the training
   const resetBoard = () => {
     if (lesson) {
+      setLessonEnded(false) // start lesson if not
       setBoard(JSON.parse(JSON.stringify(lesson.board)))
-      setTrainingStarted(true)
     }
   }
 
@@ -223,7 +245,7 @@ const Lessons = () => {
                   <p className="button-description">Back</p>
                 </button>
               ) : (
-                <button className="prevNextLessonButton prev" onClick={() => rotateScenario(-1)}>
+                <button className="prevNextLessonButton prev" onClick={() => setupScenario(-1)}>
                   <BackIcon/>
                   <p className="button-description">Back</p>
                 </button>
@@ -236,7 +258,7 @@ const Lessons = () => {
                   <NextIconInactive/>
                 </button>
               ) : (
-                <button className="prevNextLessonButton next" onClick={() => rotateScenario(1)}>
+                <button className="prevNextLessonButton next" onClick={() => setupScenario(1)}>
                   <p className="button-description">Next</p>
                   <NextIcon/>
                 </button>
@@ -252,7 +274,7 @@ const Lessons = () => {
             <button 
               key={index}
               className={section.name == lesson.name ? "lesson-buttons active" : "lesson-buttons"}  
-              onClick={() => setupScenario(section)}
+              onClick={() => setupLesson(section)}
             >
               {section.name}
             </button>

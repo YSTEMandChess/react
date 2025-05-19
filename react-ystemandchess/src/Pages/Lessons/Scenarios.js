@@ -1800,6 +1800,12 @@ export const scenariosArray = [
 },
 ];
 
+// return length of scenariosArray
+export function getScenarioLength(){
+    return scenariosArray.length
+}
+
+// get the scenario from array by index
 export function getScenario(index) {
     index = index % scenariosArray.length
     let scenario = scenariosArray[index]
@@ -1812,6 +1818,7 @@ export function getScenario(index) {
     return scenario
 }
 
+// fen to board 2d array
 function parseFEN(fen) {
   const board = [];
   const rows = fen.split(' ')[0].split('/');
