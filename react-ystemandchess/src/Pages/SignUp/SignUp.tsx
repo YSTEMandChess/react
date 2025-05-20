@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './SignUp.scss';
 import { environment } from '../../environments/environment';
+// Test comment
 
 console.log('Environment URL:', environment.urls.middlewareURL);
 
