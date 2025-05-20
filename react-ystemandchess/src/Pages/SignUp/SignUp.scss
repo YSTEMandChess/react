@@ -2,6 +2,8 @@ h2 {
   margin-top: 5rem;
 }
 
+
+
 .signupForm {
   display: flex;
   flex-direction: column;
@@ -9,27 +11,79 @@ h2 {
   justify-content: center;
   min-height: 100vh; /* Centers form vertically */
   width: 100%;
+
+  .sign-up-title {
+    font-size: 3rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .submit-btn {
+    border: 1px solid black;
+    color: lightgreen;
+    width: 30%;
+    background-color: whitesmoke;
+  }
+
+  .submit-btn:hover {
+    background-color: lightgreen;
+    color: whitesmoke;
+  }
 }
 
-#button-signup {
-  border: 2px solid;      // Sets the border width and style
-  border-color: #3a7cca;
-  width: 15%;
-  outline-style: none;
-  padding-left: 2%;
-  padding-right: 2%;
-  font-family: Roboto;
-  font-size: 22px;
-  font-style: normal;
-  font-weight: 700;
-  background-color: #fff;
-  color: #1a63ab;
-  border-radius: 33px;
+div.student-form input{
+  display: flex;
+  width: 20rem;
+  border: 2px solid black;
+  border-radius: 1rem;
 }
 
-button:hover {
-  background-color: #3a7cca;
-  color: #fff;
+.student-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .remove-student {
+    margin-top: 0.5rem;
+    border: 1px solid black;
+    color: white;
+    width: 80%;
+    background-color: lightcoral;
+  }
+
+  .remove-student:hover {
+    color: lightcoral;
+    background-color: white;
+  }
+}
+
+.student-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .add-student-btn {
+    border: 1px solid black;
+      color: lightgreen;
+      height: 3rem;
+      font-size: 1rem;
+      width: 10rem;
+      background-color: whitesmoke;
+      margin-top: 0.5rem;
+  }
+
+  .add-student-btn:hover {
+    background-color: lightgreen;
+    color: whitesmoke;
+  }
+
+}
+
+div.form-fields input {
+  display: flex;
+  width: 20rem;
+  border: 2px solid black;
+  border-radius: 1rem;
 }
 
 .termsCheckbox {
@@ -60,60 +114,6 @@ button:hover {
     color: red; // Styling for error messages
     text-align: center; // Center the error message text
   }
-}
-
-.formInputs {
-  display: flex;
-  flex-direction: column;
-  align-items: center; // Center the content horizontally
-  
-
-  // Styling for the terms and conditions checkbox
-  > div {
-    display: flex;
-    align-items: center; // Center the checkbox and label vertically
-    margin-bottom: 15px; // Space below the terms section
-  }
-
-  // Center the dropdown
-  select {
-    width: 100%; // Full width for better aesthetics
-    max-width: 300px; // Limit max width for better control
-    padding: 10px; // Add padding for comfort
-    margin: 10px 0; // Add vertical margin
-  }
-
-  // Center the submit button
-  input[type="submit"] {
-    margin-top: 10px; // Space above the button
-    align-self: center; // Center the button horizontally
-  }
-}
-
-.formInputs {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem; /* Adds space between each input */
-  width: 100%;
-  max-width: 20rem; /* Limits max width for centered appearance */
-  
-}
-
-.formInputs input,
-.formInputs select,
-.formInputs button {
-  width: 80%; /* Ensures inputs and select span full width */
-  padding: 0.5rem;
-}
-
-.formInputs label {
-  margin-top: 0.5rem;
-}
-
-.formInputs div {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .input-container {

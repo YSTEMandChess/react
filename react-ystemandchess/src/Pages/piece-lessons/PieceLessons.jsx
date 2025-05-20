@@ -8,12 +8,10 @@ const PieceLessons = () => {
   const [draggingPiece, setDraggingPiece] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [lessonStarted, setLessonStarted] = useState(true);
-  const [playerTurn, setPlayerTurn] = useState(true);
   const [level, setLevel] = useState(5);
   const [lessonNum, setLessonNum] = useState(0);
   const [totalLessons, setTotalLessons] = useState(0);
   const [lessonStartFEN, setLessonStartFEN] = useState('');
-  const [lessonEndFEN, setLessonEndFEN] = useState('');
   const [displayLessonNum, setDisplayLessonNum] = useState(0);
   const [endSquare, setEndSquare] = useState('');
   const [previousEndSquare, setPreviousEndSquare] = useState('');
@@ -39,86 +37,77 @@ const PieceLessons = () => {
     getLessonsCompleted();
     getTotalLesson();
   }, []);
+
+  const checkBlackPieces = () => {
+    const blackPieces = board.flat().filter(piece => piece && piece[0] === 'b'); // Filter out black pieces
+    if (blackPieces.length === 0 && trainingStarted === true) {
+      setShowPopup(true); // Show the popup
+    }
+  };
   
   // Update the board when lesson changes
   useEffect(() => {
     if (lessonStartFEN) {
       setBoard(fen2board(lessonStartFEN));
       // Reset player turn to allow them to go first
-      setPlayerTurn(true);
     }
   }, [lessonStartFEN]);
   
   // Check for lesson completion
   useEffect(() => {
-    checkLessonCompletion();
+    checkBlackPieces();
   }, [board]);
   
-  const getLessonsCompleted = async () => {
-    if (!cookies.login || !piece) return;
-    
-    const url = `${environment.urls.middlewareURL}/getCompletedLesson.php/?jwt=${cookies.login}&piece=${piece}`;
-    httpGetAsync(url, (response) => {
-      const data = JSON.parse(response);
-      setLessonNum(data);
-      getCurrentLesson(data);
-    });
-  };
+  // List of all chess pieces
+  const pieces = ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'];
   
-  const getCurrentLesson = async (lessonNumber) => {
-    if (!cookies.login || !piece) return;
-    
-    const url = `${environment.urls.middlewareURL}/getLesson.php/?jwt=${cookies.login}&piece=${piece}&lessonNumber=${lessonNumber || lessonNum}`;
-    setPreviousEndSquare(endSquare);
-    httpGetAsync(url, (response) => {
-      const data = JSON.parse(response);
-      setLessonStartFEN(data.startFen);
-      setLessonEndFEN(data.endFen);
-      setDisplayLessonNum(data.lessonNumber);
-      setEndSquare(data.endSquare);
-      
-      if (data.lessonNumber === undefined) {
-        alert(
-          'Congratulations all current lessons for this piece have been completed!\n' +
-          'Come back soon for more lessons or go over previous lessons.'
+  useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        // Fetch total lessons for each piece
+        const totalPromises = pieces.map(piece => 
+          fetch(`${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=${piece}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${cookies.login}`
+            },
+          }).then(res => res.json())
         );
+        
+        // Fetch completed lessons for each piece
+        const completedPromises = pieces.map(piece => 
+          fetch(`${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${piece}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${cookies.login}`
+            }
+          }).then(res => res.json())
+        );
+        
+        // Wait for all requests to complete
+        const totals = await Promise.all(totalPromises);
+        const completed = await Promise.all(completedPromises);
+        
+        // Create objects with the results
+        const totalObj = {};
+        const progressObj = {};
+        
+        pieces.forEach((piece, index) => {
+          totalObj[piece] = totals[index];
+          progressObj[piece] = completed[index];
+        });
+        
+        setTotalLessons(totalObj);
+        setPieceProgress(progressObj);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching progress:', error);
+        setLoading(false);
       }
-    });
-  };
-  
-  const getTotalLesson = async () => {
-    if (!cookies.login || !piece) return;
+    };
     
-    const url = `${environment.urls.middlewareURL}/getTotalPieceLesson.php/?jwt=${cookies.login}&piece=${piece}`;
-    httpGetAsync(url, (response) => {
-      const data = JSON.parse(response);
-      setTotalLessons(data);
-    });
-  };
-  
-  const updateLessonCompletion = async () => {
-    if (!cookies.login || !piece) return;
-    
-    const url = `${environment.urls.middlewareURL}/updateLessonCompletion.php/?jwt=${cookies.login}&piece=${piece}&lessonNumber=${lessonNum}`;
-    httpGetAsync(url, () => {
-      // After completing current lesson, move to next one
-      if (lessonNum + 1 < totalLessons) {
-        setLessonNum(prevNum => prevNum + 1);
-        getCurrentLesson(lessonNum + 1);
-      }
-    });
-  };
-  
-  const checkLessonCompletion = () => {
-    if (!lessonEndFEN) return;
-    
-    const currentFEN = board2fen(board).split(' ')[0]; // Only compare the board position
-    const targetFEN = lessonEndFEN.split(' ')[0];
-    
-    if (currentFEN === targetFEN && lessonStarted) {
-      setShowPopup(true);
-    }
-  };
+    fetchProgress();
+  }, [cookies.login]);
   
   // Handle popup confirmation
   const handlePopupConfirm = () => {
@@ -167,9 +156,7 @@ const PieceLessons = () => {
   };
   
   // Handle hover to show possible moves
-  const handleSquareHover = (key) => {
-    if (!playerTurn) return; // Only show highlights on player's turn
-    
+  const handleSquareHover = (key) => {    
     const [row, col] = key.split('-').map(Number);
     const piece = board[row][col];
     
@@ -184,7 +171,6 @@ const PieceLessons = () => {
   
   // Handle drag start
   const handleDragStart = (e, piece, position) => {
-    if (!playerTurn) return; // Only allow dragging on player's turn
     if (piece[0] !== 'w') return; // Only allow dragging white pieces
     
     setDraggingPiece({ piece, position });
@@ -193,7 +179,7 @@ const PieceLessons = () => {
   
   // Handle drop on a square
   const handleDrop = (key) => {
-    if (!playerTurn || !draggingPiece) return;
+    if (!draggingPiece) return;
     
     if (highlightedSquares.includes(key)) {
       const [startRow, startCol] = draggingPiece.position.split('-').map(Number);
@@ -213,10 +199,7 @@ const PieceLessons = () => {
       
       // Update board state
       setBoard(updatedBoard);
-      
-      // It's now the computer's turn
-      setPlayerTurn(false);
-      
+            
       // Check if the lesson is completed after the player's move
       setTimeout(() => {
         const currentFEN = board2fen(updatedBoard);
@@ -237,27 +220,6 @@ const PieceLessons = () => {
   // Handle drag over a square (allow dropping)
   const handleDragOver = (e) => {
     e.preventDefault(); // Prevent default behavior to allow dropping
-  };
-  
-  // Make the computer (black) move
-  const moveBlackPiece = (updatedBoard) => {
-    const updatedFen = board2fen(updatedBoard);
-    const url = `${environment.urls.stockFishURL}?level=${level}&fen=${updatedFen}`;
-    
-    httpGetAsync(url, (response) => {
-      const responseData = JSON.parse(response);
-      const newBoard = fen2board(responseData.fen);
-      setBoard(newBoard);
-      setPlayerTurn(true); // It's now the player's turn again
-      
-      // Check if the lesson is completed after Stockfish's move
-      setTimeout(() => {
-        const currentFEN = responseData.fen.split(' ')[0];
-        if (currentFEN === lessonEndFEN.split(' ')[0]) {
-          setShowPopup(true);
-        }
-      }, 500);
-    });
   };
   
   // HTTP helper function
@@ -316,8 +278,7 @@ const PieceLessons = () => {
         <div className='right-container'>
           <div className="lesson-instructions">
             <h3>Instructions</h3>
-            <p>Make your move and Stockfish will respond. Complete the lesson by reaching the correct position.</p>
-            <p>{!playerTurn ? "Stockfish is thinking..." : "Your turn to move"}</p>
+            <p>Capture the black pieces!</p>
           </div>
         </div>
       </div>

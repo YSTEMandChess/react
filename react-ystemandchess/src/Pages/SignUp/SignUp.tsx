@@ -249,7 +249,7 @@ const Signup = () => {
 
   return (
     <form className='signupForm' onSubmit={(e) => e.preventDefault()}>
-      <h2>Sign up</h2>
+      <h2 className="sign-up-title">Sign up</h2>
 
       <div className='errorMessages'>
         {Object.values(errors).map((error, index) =>
@@ -329,7 +329,7 @@ const Signup = () => {
                 className='remove-student'
                 onClick={() => handleRemoveStudent(student.id)}
               >
-                X
+                Delete student
               </button>
 
               <input
