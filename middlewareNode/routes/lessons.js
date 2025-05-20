@@ -12,9 +12,9 @@ const client = new MongoClient(config.get("mongoURI"));
 // example: `${environment.urls.middlewareURL}/lessons/getCompletedLesson?piece=pawn`
 router.get(
   "/getCompletedLesson",
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", { session: false }), //authenticate jwt
   async (req, res) => {
-    const { username } = req.user;
+    const { username } = req.user; // get username from jwt
     const piece = decodeURIComponent(req.query.piece);
 
     if (!piece) {
@@ -23,9 +23,9 @@ router.get(
     try {
       await client.connect();
       const db = client.db("ystem");
-      const users = db.collection("users");
+      const users = db.collection("users"); // get users collection
 
-      const userDoc = await users.findOne(
+      const userDoc = await users.findOne( // get the userDoc according to username
         { username: username },
         { projection: { lessonsCompleted: 1 } }
       );
@@ -37,7 +37,7 @@ router.get(
 
       for (const chessPiece of userDoc.lessonsCompleted) {
         if (chessPiece.piece === piece) {
-          lessonNum = chessPiece.lessonNumber;
+          lessonNum = chessPiece.lessonNumber; // the number of lessons completed for the piece
           break;
         }
       }
@@ -57,9 +57,9 @@ router.get(
 // example: `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=pawn`
 router.get(
   "/getTotalPieceLesson",
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", { session: false }), //authenticate jwt
   async (req, res) => {
-    const piece = decodeURIComponent(req.query.piece);
+    const piece = decodeURIComponent(req.query.piece); // get the chess piece
 
     if (!piece) {
       return res.status(400).json("Error: 400. Please provide a piece.");
@@ -68,9 +68,9 @@ router.get(
     try {
       await client.connect();
       const db = client.db("ystem");
-      const lessonsCollection = db.collection("lessons");
+      const lessonsCollection = db.collection("lessons"); // get lessons collection
 
-      const total = await lessonsCollection.countDocuments({ piece });
+      const total = await lessonsCollection.countDocuments({ piece }); // get # of lessons for that piece
       res.json(total);
     } catch (err) {
       console.error(err);
@@ -86,8 +86,9 @@ router.get(
 // example: `${environment.urls.middlewareURL}/lessons/getLesson?piece=pawn&lessonNum=0`
 router.get(
   "/getLesson",
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", { session: false }), //authenticate jwt
   async (req, res) => {
+    // get piece & lessonNum from query
     const piece = decodeURIComponent(req.query.piece);
     const lessonNum = Number(decodeURIComponent(req.query.lessonNum));
 
@@ -98,22 +99,21 @@ router.get(
     try {
       await client.connect();
       const db = client.db("ystem");
-      const lessons = db.collection("lessons");
+      const lessons = db.collection("lessons"); // get lessons collection
 
-      const lessonDoc = await lessons.findOne(
+      const lessonDoc = await lessons.findOne( // get lessonDoc for specific chess piece
         { piece: piece }
       );
       if (!lessonDoc) return res.status(400).json("Error: 400. Invalid piece.");;
 
       let found = false;
-      for (const lesson of lessonDoc.lessons) {
-        console.log(typeof lesson.lessonNumber, lesson.lessonNumber);
-        console.log(typeof lessonNum, lessonNum);
+      for (const lesson of lessonDoc.lessons) { // try to find lesson content for that lessonNum
         if (lesson.lessonNumber === lessonNum + 1) {
-          res.json(lesson);
+          res.json(lesson); // put lesson in response
           found = true;
           break;
         }
+      // not found
       if (!found) return res.status(400).json("Error: 400. No more lessons left.");
       }
     } catch (err) {
@@ -130,9 +130,10 @@ router.get(
 // example: `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=pawn&lessonNum=0`
 router.get(
   "/updateLessonCompletion",
-  passport.authenticate("jwt", { session: false }),
+  passport.authenticate("jwt", { session: false }), // authenticate jwt
   async (req, res) => {
-    const { username } = req.user;
+    const { username } = req.user; // get username from jwt
+    // get parameters from query
     const piece = decodeURIComponent(req.query.piece);
     const lessonNum = Number(decodeURIComponent(req.query.lessonNum));
 
@@ -142,9 +143,9 @@ router.get(
     try {
       await client.connect();
       const db = client.db("ystem");
-      const users = db.collection("users");
+      const users = db.collection("users"); // get users collection
 
-      const userDoc = await users.findOne(
+      const userDoc = await users.findOne( // get userDoc by username
         { username: username },
         { projection: { lessonsCompleted: 1 } }
       );
@@ -152,14 +153,14 @@ router.get(
       if (!userDoc) throw new Error("User does not exist");
       if (!userDoc.lessonsCompleted) throw new Error("User does not have lesson record");
 
-      let index = -1;
-      userDoc.lessonsCompleted.forEach((lesson, i) => {
+      let index = -1; // index for that piece
+      userDoc.lessonsCompleted.forEach((lesson, i) => { // try finding user's progress for that piece
         if (lesson.piece === piece) {
           index = i;
         }
       });
 
-      if (index === -1) {
+      if (index === -1) { // piece progress not found
         return res.status(404).json("Piece not found in lessonsCompleted");
       }
 
@@ -169,11 +170,13 @@ router.get(
         $set: {
           [`lessonsCompleted.${index}`]: {
             piece,
-            lessonNumber: lessonNum + 1,
+            lessonNumber: lessonNum + 1, // update user's lesson progress for the piece
           },
         },
       }
     );
+
+    // check if changes have been made in db
     if (updateResult.modifiedCount > 0) {
       res.status(200).json("Lesson progress updated");
     } else {
