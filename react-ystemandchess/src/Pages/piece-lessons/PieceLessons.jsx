@@ -16,6 +16,9 @@ const PieceLessons = () => {
   const [endSquare, setEndSquare] = useState('');
   const [previousEndSquare, setPreviousEndSquare] = useState('');
   const [cookies] = useCookies(['piece', 'login']);
+  const [pieceProgress, setPieceProgress] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [currentLesson, setCurrentLesson] = useState(null);
   const piece = cookies.piece || 'P'; // Default to pawn if no cookie is set
   
   // Initialize the chessboard
@@ -32,24 +35,124 @@ const PieceLessons = () => {
     ];
   }
   
-  // Load lessons when component mounts
-  useEffect(() => {
-    getLessonsCompleted();
-    getTotalLesson();
-  }, []);
+// Replace empty useEffect with this
+useEffect(() => {
+  // Load lesson data when the component mounts
+  getLessonsCompleted();
+  getTotalLesson();
+},  []);
+
+// Add these functions for lesson tracking
+const getLessonsCompleted = async () => {
+  if (!cookies.login || !piece) return;
+  
+  try {
+    const response = await fetch(
+      `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${piece}`, 
+      {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${cookies.login}` }
+      }
+    );
+    
+    const completedCount = await response.json();
+    
+    // The next lesson is the first uncompleted one (completed count + 1)
+    // But we index from 0, so just use the completedCount directly
+    setLessonNum(completedCount);
+    getCurrentLesson(completedCount);
+  } catch (error) {
+    console.error('Error fetching completed lessons:', error);
+  }
+};
+
+const getCurrentLesson = async (lessonNumber) => {
+  if (!cookies.login || !piece) return;
+  
+  try {
+    const response = await fetch(
+      `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNumber=${lessonNumber || lessonNum}`,
+      {
+        method: 'GET', 
+        headers: { 'Authorization': `Bearer ${cookies.login}` }
+      }
+    );
+    
+    const lessonData = await response.json();
+    
+    // Update the lesson data
+    setLessonStartFEN(lessonData.startFen);
+    setDisplayLessonNum(lessonNumber + 1); 
+    
+    // Store the current lesson for reference
+    setCurrentLesson(lessonData);
+    
+    // Check if we've reached the end of lessons, same approach I saw earlier.
+    if (!lessonData || lessonData.lessonNumber === undefined) {
+      alert('Congratulations! You have completed all lessons for this piece.');
+    }
+  } catch (error) {
+    console.error('Error fetching lesson:', error);
+  }
+};
+
+const getTotalLesson = async () => {
+  if (!cookies.login || !piece) return;
+  
+  try {
+    const response = await fetch(
+      `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=${piece}`,
+      {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${cookies.login}` }
+      }
+    );
+    
+    const total = await response.json();
+    setTotalLessons(total);
+  } catch (error) {
+    console.error('Error fetching total lessons:', error);
+  }
+};
+
+
+
+// Update the lesson completion function
+const updateLessonCompletion = async () => {
+  if (!cookies.login || !piece) return;
+  
+  try {
+    await fetch(
+      `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=${piece}&lessonNumber=${lessonNum}`,
+      {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${cookies.login}` }
+      }
+    );
+    
+    // Move to next lesson if available, otherwise throw an error.
+    if (lessonNum + 1 < totalLessons) {
+      setLessonNum(prevNum => prevNum + 1);
+      getCurrentLesson(lessonNum + 1);
+    } else {
+      alert('Congratulations! You have completed all lessons for this piece!');
+    }
+  } catch (error) {
+    console.error('Error updating lesson completion:', error);
+  }
+};
 
   const checkBlackPieces = () => {
     const blackPieces = board.flat().filter(piece => piece && piece[0] === 'b'); // Filter out black pieces
-    if (blackPieces.length === 0 && trainingStarted === true) {
+    if (blackPieces.length === 0 && lessonStarted === true) {
       setShowPopup(true); // Show the popup
     }
   };
-  
-  // Update the board when lesson changes
+
+  // Update the board when lesson changes.
   useEffect(() => {
     if (lessonStartFEN) {
       setBoard(fen2board(lessonStartFEN));
-      // Reset player turn to allow them to go first
     }
   }, [lessonStartFEN]);
   
@@ -60,54 +163,6 @@ const PieceLessons = () => {
   
   // List of all chess pieces
   const pieces = ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'];
-  
-  useEffect(() => {
-    const fetchProgress = async () => {
-      try {
-        // Fetch total lessons for each piece
-        const totalPromises = pieces.map(piece => 
-          fetch(`${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=${piece}`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${cookies.login}`
-            },
-          }).then(res => res.json())
-        );
-        
-        // Fetch completed lessons for each piece
-        const completedPromises = pieces.map(piece => 
-          fetch(`${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${piece}`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${cookies.login}`
-            }
-          }).then(res => res.json())
-        );
-        
-        // Wait for all requests to complete
-        const totals = await Promise.all(totalPromises);
-        const completed = await Promise.all(completedPromises);
-        
-        // Create objects with the results
-        const totalObj = {};
-        const progressObj = {};
-        
-        pieces.forEach((piece, index) => {
-          totalObj[piece] = totals[index];
-          progressObj[piece] = completed[index];
-        });
-        
-        setTotalLessons(totalObj);
-        setPieceProgress(progressObj);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching progress:', error);
-        setLoading(false);
-      }
-    };
-    
-    fetchProgress();
-  }, [cookies.login]);
   
   // Handle popup confirmation
   const handlePopupConfirm = () => {
@@ -199,18 +254,6 @@ const PieceLessons = () => {
       
       // Update board state
       setBoard(updatedBoard);
-            
-      // Check if the lesson is completed after the player's move
-      setTimeout(() => {
-        const currentFEN = board2fen(updatedBoard);
-        if (currentFEN.split(' ')[0] === lessonEndFEN.split(' ')[0]) {
-          // Lesson completed by player's move
-          setShowPopup(true);
-        } else {
-          // Make Stockfish respond with a move
-          moveBlackPiece(updatedBoard);
-        }
-      }, 500);
     }
     
     setDraggingPiece(null);
