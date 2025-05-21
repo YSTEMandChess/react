@@ -7,6 +7,8 @@ import { ReactComponent as NextIcon } from './icon_next.svg';
 import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
 import { getScenario, getScenarioLength } from "./Scenarios";
 
+type Board = (string | null)[][];
+
 const Lessons = () => {
   const [board, setBoard] = useState(getScenario(0).subSections[0].board); // Initialize the board with chess pieces
   const [highlightedSquares, setHighlightedSquares] = useState([]);

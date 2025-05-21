@@ -6,12 +6,20 @@ const jwt = require('jsonwebtoken');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
-const client = new MongoClient(config.get("mongoURI"));
+let cachedClient = null;
+
+async function getDb() {
+  if (!cachedClient) {
+    cachedClient = new MongoClient(config.get("mongoURI"));
+    await cachedClient.connect();
+  }
+  return cachedClient.db("ystem");
+}
 
 // Get the number of lessons completed for a chess piece for a specific user
-// example: `${environment.urls.middlewareURL}/lessons/getCompletedLesson?piece=pawn`
+// example: `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=pawn`
 router.get(
-  "/getCompletedLesson",
+  "/getCompletedLessonCount",
   async (req, res, next) => {
     passport.authenticate("jwt", { session: false }, async (err, user, info) => {
       req.user = user || null;
@@ -25,10 +33,9 @@ router.get(
       return res.status(400).json("Error: 400. Please provide a piece.");
     }
     try {
-      await client.connect();
-      const db = client.db("ystem");
+      const db = await getDb();
       const users = db.collection("users"); // get users collection
-      const guests = db.collection("guests"); // get guests collection
+      const guests = db.collection("guest"); // get guests collection
 
       if (req.user) {
         const { username } = req.user; // get username from jwt
@@ -78,11 +85,10 @@ router.get(
         );
 
         const guestDoc = await guests.findOne(
-          { ip: clientIp },
-          { projection: { lessonsCompleted: 1 } }
+          { ip: clientIp }
         );
 
-        let lessonNum = 0;
+        let lessonNum = -1;
 
         if (!guestDoc) throw new Error("Guest does not exist");
 
@@ -92,14 +98,12 @@ router.get(
             break;
           }
         }
-        
-        res.json(lessonNum);
+        if(lessonNum == -1) return res.status(400).json("Error: 400. Invalid piece.");
+        else res.json(lessonNum);
       }
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: err.message });
-    } finally {
-      await client.close();
     }
   }
 );
@@ -108,7 +112,12 @@ router.get(
 // example: `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=pawn`
 router.get(
   "/getTotalPieceLesson",
-  passport.authenticate("jwt", { session: false }), //authenticate jwt
+  async (req, res, next) => {
+    passport.authenticate("jwt", { session: false }, async (err, user, info) => {
+      req.user = user || null;
+      next();
+    })(req, res, next) // authenticate jwt
+  },
   async (req, res) => {
     const piece = decodeURIComponent(req.query.piece); // get the chess piece
 
@@ -117,17 +126,14 @@ router.get(
     }
 
     try {
-      await client.connect();
-      const db = client.db("ystem");
-      const lessonsCollection = db.collection("lessons"); // get lessons collection
+      const db = await getDb();
+      const lessons= db.collection("lessons"); // get lessons collection
+      const lessonDoc = await lessons.findOne({ piece: piece });
 
-      const total = await lessonsCollection.countDocuments({ piece }); // get # of lessons for that piece
-      res.json(total);
+      res.json(lessonDoc.lessons.length);
     } catch (err) {
       console.error(err);
       res.status(500).json("Internal server error.");
-    } finally {
-      await client.close();
     }
   }
 );
@@ -137,7 +143,12 @@ router.get(
 // example: `${environment.urls.middlewareURL}/lessons/getLesson?piece=pawn&lessonNum=0`
 router.get(
   "/getLesson",
-  passport.authenticate("jwt", { session: false }), //authenticate jwt
+  async (req, res, next) => {
+    passport.authenticate("jwt", { session: false }, async (err, user, info) => {
+      req.user = user || null;
+      next();
+    })(req, res, next) // authenticate jwt
+  },
   async (req, res) => {
     // get piece & lessonNum from query
     const piece = decodeURIComponent(req.query.piece);
@@ -148,30 +159,22 @@ router.get(
     }
 
     try {
-      await client.connect();
-      const db = client.db("ystem");
+      const db = await getDb();
       const lessons = db.collection("lessons"); // get lessons collection
+      const allLessons = await lessons.find({}).toArray();
 
-      const lessonDoc = await lessons.findOne( // get lessonDoc for specific chess piece
-        { piece: piece }
-      );
+      const lessonDoc = await lessons.findOne({ piece: piece });
+
       if (!lessonDoc) return res.status(400).json("Error: 400. Invalid piece.");;
 
-      let found = false;
-      for (const lesson of lessonDoc.lessons) { // try to find lesson content for that lessonNum
-        if (lesson.lessonNumber === lessonNum + 1) {
-          res.json(lesson); // put lesson in response
-          found = true;
-          break;
-        }
-      // not found
-      if (!found) return res.status(400).json("Error: 400. No more lessons left.");
+      if (lessonNum < 0 || lessonNum >= lessonDoc.lessons.length) {
+        return res.status(404).json("Lesson index out of range");
+      } else {
+        res.json(lessonDoc.lessons[lessonNum]); 
       }
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: err.message });
-    } finally {
-      await client.close();
     }
   }
 );
@@ -196,12 +199,13 @@ router.get(
       return res.status(400).json("Error: 400. Missing or invalid parameters.");
     }
     try {
-      await client.connect();
-      const db = client.db("ystem");
+      const db = await getDb();
       const users = db.collection("users"); // get users collection
       const guests = db.collection("guest"); // get users collection
 
       if (req.user){
+        const { username } = req.user;
+
         const userDoc = await users.findOne( // get userDoc by username
           { username: username },
           { projection: { lessonsCompleted: 1 } }
@@ -265,27 +269,43 @@ router.get(
           { upsert: true }
         );
 
-        const updateResult = await guests.updateOne(
-          { ip: clientIp, "lessonsCompleted.piece": piece },
-          {
-            $inc: {
-              "lessonsCompleted.$.lessonNumber": 1,
-            },
-          }
-        )
+        const guestDoc = await guests.findOne( // get userDoc by ip
+          { ip: clientIp }
+        );
 
-        if (updateResult.modifiedCount === 0) {
-          console.warn("Lesson not updated. Piece may not exist in lessonsCompleted.");
+        let index = -1; // index for that piece
+        guestDoc.lessonsCompleted.forEach((lesson, i) => { // try finding user's progress for that piece
+          if (lesson.piece === piece) {
+            index = i;
+          }
+        });
+
+        if (index === -1) { // piece progress not found
+          return res.status(404).json("Piece not found in lessonsCompleted");
         }
 
-        console.log(await guests.find({}).toArray())
-        return res.status(200).json("Guest lesson progress saved");
+        const updateResult = await guests.updateOne(
+          { ip: clientIp },
+          {
+            $set: {
+              [`lessonsCompleted.${index}`]: {
+                piece,
+                lessonNumber: lessonNum + 1, // update user's lesson progress for the piece
+              },
+            },
+          }
+        );
+
+        // check if changes have been made in db
+        if (updateResult.modifiedCount > 0) {
+          res.status(200).json("Lesson progress updated");
+        } else {
+          res.status(304).json("No changes made");
+        }
       }
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: err.message });
-    } finally {
-      await client.close();
     }
   }
 );
