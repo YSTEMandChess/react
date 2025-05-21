@@ -19,7 +19,7 @@ const PieceLessons = () => {
   const [pieceProgress, setPieceProgress] = useState({});
   const [loading, setLoading] = useState(true);
   const [currentLesson, setCurrentLesson] = useState(null);
-  const piece = cookies.piece || 'P'; // Default to pawn if no cookie is set
+  const piece = cookies.piece || 'queen'; // Default to pawn if no cookie is set
   
   // Initialize the chessboard
   function initializeBoard() {
@@ -44,7 +44,7 @@ useEffect(() => {
 
 // Add these functions for lesson tracking
 const getLessonsCompleted = async () => {
-  if (!cookies.login || !piece) return;
+  //if (!cookies.login || !piece) return;
   
   try {
     const response = await fetch(
@@ -54,9 +54,9 @@ const getLessonsCompleted = async () => {
         headers: { 'Authorization': `Bearer ${cookies.login}` }
       }
     );
-    
     const completedCount = await response.json();
-    
+    console.log("completed how many lessons", completedCount)
+
     // The next lesson is the first uncompleted one (completed count + 1)
     // But we index from 0, so just use the completedCount directly
     setLessonNum(completedCount);
@@ -67,11 +67,11 @@ const getLessonsCompleted = async () => {
 };
 
 const getCurrentLesson = async (lessonNumber) => {
-  if (!cookies.login || !piece) return;
+  //if (!cookies.login || !piece) return;
   
   try {
     const response = await fetch(
-      `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNumber=${lessonNumber || lessonNum}`,
+      `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber || lessonNum}`,
       {
         method: 'GET', 
         headers: { 'Authorization': `Bearer ${cookies.login}` }
@@ -79,7 +79,7 @@ const getCurrentLesson = async (lessonNumber) => {
     );
     
     const lessonData = await response.json();
-    
+    console.log("lesson data", lessonData)
     // Update the lesson data
     setLessonStartFEN(lessonData.startFen);
     setDisplayLessonNum(lessonNumber + 1); 
@@ -97,7 +97,7 @@ const getCurrentLesson = async (lessonNumber) => {
 };
 
 const getTotalLesson = async () => {
-  if (!cookies.login || !piece) return;
+  //if (!cookies.login || !piece) return;
   
   try {
     const response = await fetch(
@@ -109,6 +109,7 @@ const getTotalLesson = async () => {
     );
     
     const total = await response.json();
+    console.log("total lesson for this piece", total)
     setTotalLessons(total);
   } catch (error) {
     console.error('Error fetching total lessons:', error);
@@ -119,17 +120,19 @@ const getTotalLesson = async () => {
 
 // Update the lesson completion function
 const updateLessonCompletion = async () => {
-  if (!cookies.login || !piece) return;
+  //if (!cookies.login || !piece) return;
+  console.log(lessonNum)
   
   try {
     await fetch(
-      `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=${piece}&lessonNumber=${lessonNum}`,
+      `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=${piece}&lessonNum=${lessonNum}`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: { 'Authorization': `Bearer ${cookies.login}` }
       }
     );
     
+    console.log("updated lesson successful")
     // Move to next lesson if available, otherwise throw an error.
     if (lessonNum + 1 < totalLessons) {
       setLessonNum(prevNum => prevNum + 1);
