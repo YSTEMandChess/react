@@ -12,9 +12,13 @@ const client = new MongoClient(config.get("mongoURI"));
 // example: `${environment.urls.middlewareURL}/lessons/getCompletedLesson?piece=pawn`
 router.get(
   "/getCompletedLesson",
-  passport.authenticate("jwt", { session: false }), //authenticate jwt
+  async (req, res, next) => {
+    passport.authenticate("jwt", { session: false }, async (err, user, info) => {
+      req.user = user || null;
+      next();
+    })(req, res, next) // authenticate jwt
+  },
   async (req, res) => {
-    const { username } = req.user; // get username from jwt
     const piece = decodeURIComponent(req.query.piece);
 
     if (!piece) {
@@ -24,26 +28,73 @@ router.get(
       await client.connect();
       const db = client.db("ystem");
       const users = db.collection("users"); // get users collection
+      const guests = db.collection("guests"); // get guests collection
 
-      const userDoc = await users.findOne( // get the userDoc according to username
-        { username: username },
-        { projection: { lessonsCompleted: 1 } }
-      );
+      if (req.user) {
+        const { username } = req.user; // get username from jwt
 
-      let lessonNum = 0;
+        const userDoc = await users.findOne( // get the userDoc according to username
+          { username: username },
+          { projection: { lessonsCompleted: 1 } }
+        );
 
-      if (!userDoc) throw new Error("User does not exist");
-      if (!userDoc.lessonsCompleted) throw new Error("User does not have lesson record");
+        let lessonNum = 0;
 
-      for (const chessPiece of userDoc.lessonsCompleted) {
-        if (chessPiece.piece === piece) {
-          lessonNum = chessPiece.lessonNumber; // the number of lessons completed for the piece
-          break;
+        if (!userDoc) throw new Error("User does not exist");
+        if (!userDoc.lessonsCompleted) throw new Error("User does not have lesson record");
+
+        for (const chessPiece of userDoc.lessonsCompleted) {
+          if (chessPiece.piece === piece) {
+            lessonNum = chessPiece.lessonNumber; // the number of lessons completed for the piece
+            break;
+          }
         }
+
+        res.json(lessonNum);
+      } else {
+        const clientIp = getClientIp(req);
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        await guests.updateOne(
+          { ip: clientIp },
+          {
+            $set: {
+              ip: clientIp,
+              updatedAt: new Date(),
+              expiresAt,
+            },
+            $setOnInsert: {
+              lessonsCompleted: [
+                { piece: "rook", lessonNumber: 0 },
+                { piece: "bishop", lessonNumber: 0 },
+                { piece: "queen", lessonNumber: 0 },
+                { piece: "king", lessonNumber: 0 },
+                { piece: "pawn", lessonNumber: 0 },
+                { piece: "horse", lessonNumber: 0 },
+              ],
+            },
+          },
+          { upsert: true }
+        );
+
+        const guestDoc = await guests.findOne(
+          { ip: clientIp },
+          { projection: { lessonsCompleted: 1 } }
+        );
+
+        let lessonNum = 0;
+
+        if (!guestDoc) throw new Error("Guest does not exist");
+
+        for (const chessPiece of guestDoc.lessonsCompleted) {
+          if (chessPiece.piece === piece) {
+            lessonNum = chessPiece.lessonNumber; // the number of lessons completed for the piece
+            break;
+          }
+        }
+        
+        res.json(lessonNum);
       }
-
-      res.json(lessonNum);
-
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: err.message });
@@ -130,9 +181,13 @@ router.get(
 // example: `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=pawn&lessonNum=0`
 router.get(
   "/updateLessonCompletion",
-  passport.authenticate("jwt", { session: false }), // authenticate jwt
+  async (req, res, next) => {
+    passport.authenticate("jwt", { session: false }, async (err, user, info) => {
+      req.user = user || null;
+      next();
+    })(req, res, next) // authenticate jwt
+  },
   async (req, res) => {
-    const { username } = req.user; // get username from jwt
     // get parameters from query
     const piece = decodeURIComponent(req.query.piece);
     const lessonNum = Number(decodeURIComponent(req.query.lessonNum));
@@ -144,45 +199,88 @@ router.get(
       await client.connect();
       const db = client.db("ystem");
       const users = db.collection("users"); // get users collection
+      const guests = db.collection("guest"); // get users collection
 
-      const userDoc = await users.findOne( // get userDoc by username
-        { username: username },
-        { projection: { lessonsCompleted: 1 } }
-      );
+      if (req.user){
+        const userDoc = await users.findOne( // get userDoc by username
+          { username: username },
+          { projection: { lessonsCompleted: 1 } }
+        );
 
-      if (!userDoc) throw new Error("User does not exist");
-      if (!userDoc.lessonsCompleted) throw new Error("User does not have lesson record");
+        if (!userDoc) throw new Error("User does not exist");
+        if (!userDoc.lessonsCompleted) throw new Error("User does not have lesson record");
 
-      let index = -1; // index for that piece
-      userDoc.lessonsCompleted.forEach((lesson, i) => { // try finding user's progress for that piece
-        if (lesson.piece === piece) {
-          index = i;
+        let index = -1; // index for that piece
+        userDoc.lessonsCompleted.forEach((lesson, i) => { // try finding user's progress for that piece
+          if (lesson.piece === piece) {
+            index = i;
+          }
+        });
+
+        if (index === -1) { // piece progress not found
+          return res.status(404).json("Piece not found in lessonsCompleted");
         }
-      });
 
-      if (index === -1) { // piece progress not found
-        return res.status(404).json("Piece not found in lessonsCompleted");
-      }
+        const updateResult = await users.updateOne(
+          { username },
+          {
+            $set: {
+              [`lessonsCompleted.${index}`]: {
+                piece,
+                lessonNumber: lessonNum + 1, // update user's lesson progress for the piece
+              },
+            },
+          }
+        );
 
-      const updateResult = await users.updateOne(
-      { username },
-      {
-        $set: {
-          [`lessonsCompleted.${index}`]: {
-            piece,
-            lessonNumber: lessonNum + 1, // update user's lesson progress for the piece
+        // check if changes have been made in db
+        if (updateResult.modifiedCount > 0) {
+          res.status(200).json("Lesson progress updated");
+        } else {
+          res.status(304).json("No changes made");
+        }
+      } else {
+        const clientIp = getClientIp(req);
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        await guests.updateOne(
+          { ip: clientIp },
+          {
+            $set: {
+              ip: clientIp,
+              updatedAt: new Date(),
+              expiresAt,
+            },
+            $setOnInsert: {
+              lessonsCompleted: [
+                { piece: "rook", lessonNumber: 0 },
+                { piece: "bishop", lessonNumber: 0 },
+                { piece: "queen", lessonNumber: 0 },
+                { piece: "king", lessonNumber: 0 },
+                { piece: "pawn", lessonNumber: 0 },
+                { piece: "horse", lessonNumber: 0 },
+              ],
+            },
           },
-        },
+          { upsert: true }
+        );
+
+        const updateResult = await guests.updateOne(
+          { ip: clientIp, "lessonsCompleted.piece": piece },
+          {
+            $inc: {
+              "lessonsCompleted.$.lessonNumber": 1,
+            },
+          }
+        )
+
+        if (updateResult.modifiedCount === 0) {
+          console.warn("Lesson not updated. Piece may not exist in lessonsCompleted.");
+        }
+
+        console.log(await guests.find({}).toArray())
+        return res.status(200).json("Guest lesson progress saved");
       }
-    );
-
-    // check if changes have been made in db
-    if (updateResult.modifiedCount > 0) {
-      res.status(200).json("Lesson progress updated");
-    } else {
-      res.status(304).json("No changes made");
-    }
-
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: err.message });
@@ -191,5 +289,9 @@ router.get(
     }
   }
 );
+
+function getClientIp(req) {
+  return req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+}
 
 module.exports = router;
