@@ -6,10 +6,13 @@ import { ReactComponent as BackIconInactive} from './icon_back_inactive.svg';
 import { ReactComponent as NextIcon } from './icon_next.svg';
 import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
 import { getScenario, getScenarioLength } from "./Scenarios";
+import { Navigate, useNavigate } from 'react-router-dom';
+
 
 type Board = (string | null)[][];
 
 const Lessons = () => {
+  const navigate = useNavigate();
   const [board, setBoard] = useState(getScenario(0).subSections[0].board); // Initialize the board with chess pieces
   const [highlightedSquares, setHighlightedSquares] = useState([]);
   const [draggingPiece, setDraggingPiece] = useState(null); // Track which piece is being dragged
@@ -194,6 +197,7 @@ const Lessons = () => {
     setBoard(updatedBoard); // Set the new board state
   }
 
+
   // Reset moved pieces to their original positions to restart the training
   const resetBoard = () => {
     if (lesson) {
@@ -209,7 +213,7 @@ const Lessons = () => {
         <div className='left-container'>
           <div className="chessboard-container_L">
             <div className="button-container">
-              <button className="lesson-button">Lesson</button>
+              <button className="lesson-button" onClick={() => navigate('/lessons-selection')}>Lesson</button>
               <button className="play-button">Play</button>
             </div>
             <div className="chessboard_L">

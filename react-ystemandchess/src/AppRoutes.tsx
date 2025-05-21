@@ -22,6 +22,7 @@ import Student from './Pages/Student/Student';
 import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
 import UserProfile from './Pages/Student-Profile/UserProfile';
 import AboutUs from './Pages/About-Us/AboutUs/AboutUs';
+import LessonSelection from "./Pages/LessonsSelection/LessonsSelection"
 
 // Variables and Mutable Data
 import userPortraitImg from './images/user-portrait-placeholder.svg';
@@ -45,6 +46,7 @@ const AppRoutes = () => {
       <Route path='/mission' element={<Mission />} />
       <Route path='/mentor' element={<Mentor />} />
       <Route path='/financial' element={<Financial />} />
+      <Route path='/lessons-selection' element={<LessonSelection />} />
       <Route path='/lessons' element={<Lessons />} />
       <Route path='/sponsors&partners' element={<SponsorsPartners />} />
       <Route path='/board' element={<Board />} />
