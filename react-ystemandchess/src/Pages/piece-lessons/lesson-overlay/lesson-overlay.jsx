@@ -5,21 +5,19 @@ import PlayLesson from '../play-lesson/PlayLesson';
 import './lesson-overlay.scss';
 
 const LessonOverlay = () => {
-    const [lessonStartFEN, setLessonStartFEN] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    const [lessonStartFEN, setLessonStartFEN] = useState("rnbqkb2/pppppp2/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     const [lessonEndFEN, setLessonEndFEN] = useState("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2");
-    const [lessonStarted, setLessonStarted] = useState(false);
     const [endSquare, setEndSquare] = useState('');
     const [previousEndSquare, setPreviousEndSquare] = useState('');
     const [lessonNum, setLessonNum] = useState(0);
     const [totalLessons, setTotalLessons] = useState(0);
     const [currentFEN, setCurrentFEN] = useState('');
-    const [messageQueue, setMessageQueue] = useState([]);
-    const [color, setColor] = useState('white');
     const [level, setLevel] = useState(5);
-    const [isReady, setIsReady] = useState(false);
     const [cookies] = useCookies(['piece', 'login']);
     const piece = cookies.piece;
     const [displayLessonNum, setDisplayLessonNum] = useState(0);
+    let isReady = false;
+    let lessonStarted = false;
 
     useEffect(() => {
         const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
@@ -28,34 +26,36 @@ const LessonOverlay = () => {
 
         const handleMessage = async (e) => {
             if (e.origin === environment.urls.chessClientURL) {
+                console.log("e.data", e.data)
                 if (e.data === 'ReadyToRecieve') {
-                    setIsReady(true);
-                    sendFromQueue();
+                    isReady = true;
                 }
-
                 if (!lessonStarted) {
                     // await getLessonsCompleted();
                     sendLessonToChessBoard()
-                    setLessonStarted(true);
+                    lessonStarted = true;
                 } else if (e.data === lessonEndFEN) {
                     // updateLessonCompletion();
                     alert(`Lesson ${displayLessonNum} completed!`);
                     // await getLessonsCompleted();
-                } else if (!(e.data).startsWith("piece") && !(e.data).startsWith("target")) {
+                } else if (looksLikeFEN(e.data)) {
+                    console.log("valid fen")
                     setCurrentFEN(e.data);
                     let newLevel = level;
                     if (newLevel <= 1) newLevel = 1;
                     else if (newLevel >= 30) newLevel = 30;
 
+                    const chessBoard = document.getElementById('chessBd').contentWindow;
+
                     httpGetAsync(
                         `${environment.urls.stockFishURL}/?level=${newLevel}&fen=${e.data}`,
                         (response) => {
-                            const chessBoard = document.getElementById('chessBd').contentWindow;
-                            const message = JSON.stringify({ boardState: response, color });
+                            const data = JSON.parse(response)
+                            const message = JSON.stringify({ boardState: data.fen, color: "white", lessonFlag: false});
+                            console.log(message)
                             if (isReady) {
+                                console.log("ready")
                                 chessBoard.postMessage(message, environment.urls.chessClientURL);
-                            } else {
-                                setMessageQueue([...messageQueue, message]);
                             }
                         }
                     );
@@ -68,9 +68,13 @@ const LessonOverlay = () => {
         // getTotalLesson();
 
         return () => {
-            eventer(messageEvent, handleMessage, false);
+            window.removeEventListener('message', handleMessage);
         };
-    }, [lessonStarted, lessonEndFEN, currentFEN, isReady, level, messageQueue]);
+    }, []);
+
+    function looksLikeFEN(str) {
+        return typeof str === 'string' && str.split(' ').length === 6;
+    }
 
     // const getLessonsCompleted = async () => {
     //     const url = `${environment.urls.middlewareURL}/getCompletedLesson.php/?jwt=${cookies.login}&piece=${piece}`;
@@ -115,13 +119,6 @@ const LessonOverlay = () => {
     //     });
     // };
 
-    const sendFromQueue = () => {
-        messageQueue.forEach((element) => {
-            const chessBoard = document.getElementById('chessBd').contentWindow;
-            chessBoard.postMessage(element, environment.urls.chessClientURL);
-        });
-    };
-
     // const newGameInit = () => {
     //     setCurrentFEN(lessonStartFEN);
 
@@ -129,8 +126,6 @@ const LessonOverlay = () => {
     //     const message = JSON.stringify({ boardState: lessonStartFEN, color });
     //     if (isReady) {
     //         chessBoard.postMessage(message, environment.urls.chessClientURL);
-    //     } else {
-    //         setMessageQueue([...messageQueue, message]);
     //     }
 
     //     if (color === 'white') {
@@ -147,8 +142,6 @@ const LessonOverlay = () => {
     //                 const message = JSON.stringify({ boardState: response, color: 'black' });
     //                 if (isReady) {
     //                     chessBoard.postMessage(message, environment.urls.chessClientURL);
-    //                 } else {
-    //                     setMessageQueue([...messageQueue, message]);
     //                 }
     //             }
     //         );
@@ -162,7 +155,7 @@ const LessonOverlay = () => {
             endState: lessonEndFEN,
             lessonFlag: true,
             endSquare,
-            color,
+            color: "white",
             previousEndSquare,
         });
         chessBoard.postMessage(message, environment.urls.chessClientURL);
