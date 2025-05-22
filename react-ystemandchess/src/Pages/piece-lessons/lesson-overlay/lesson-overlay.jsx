@@ -201,10 +201,6 @@ const LessonOverlay = () => {
     return (
         <div id="lesson-container">
             <div id="chess-board">
-                <div id="chess-board-top">
-                    <button className="lesson-button">Lesson</button>
-                    <button className="play-button">Play</button>
-                </div>
                 <PlayLesson chessLessonSrc={environment.urls.chessClientURL} />
             </div>
             <div id="lesson-content">
@@ -221,14 +217,6 @@ const LessonOverlay = () => {
                         Next &gt;
                     </button>
                 </div>
-            </div>
-            <div id="lesson-selector">
-                <button className="lesson-tab">Basic</button>
-                <button className="lesson-tab">Capture</button>
-                <button className="lesson-tab">Training 1</button>
-                <button className="lesson-tab">Training 2</button>
-                <button className="lesson-tab">Training 3</button>
-                <button className="lesson-tab">Special Move</button>
             </div>
         </div>
     );
