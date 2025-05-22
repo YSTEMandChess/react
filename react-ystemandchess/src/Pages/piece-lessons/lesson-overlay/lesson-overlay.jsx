@@ -5,8 +5,8 @@ import PlayLesson from '../play-lesson/PlayLesson';
 import './lesson-overlay.scss';
 
 const LessonOverlay = () => {
-    const [lessonStartFEN, setLessonStartFEN] = useState('8/8/8/8/P7/5p2/8/8');
-    const [lessonEndFEN, setLessonEndFEN] = useState('');
+    const [lessonStartFEN, setLessonStartFEN] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    const [lessonEndFEN, setLessonEndFEN] = useState("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2");
     const [lessonStarted, setLessonStarted] = useState(false);
     const [endSquare, setEndSquare] = useState('');
     const [previousEndSquare, setPreviousEndSquare] = useState('');
@@ -19,7 +19,6 @@ const LessonOverlay = () => {
     const [isReady, setIsReady] = useState(false);
     const [cookies] = useCookies(['piece', 'login']);
     const piece = cookies.piece;
-    const displayPiece = piece ? piece.toUpperCase() : 'UNKNOWN PIECE';
     const [displayLessonNum, setDisplayLessonNum] = useState(0);
 
     useEffect(() => {
@@ -35,20 +34,21 @@ const LessonOverlay = () => {
                 }
 
                 if (!lessonStarted) {
-                    await getLessonsCompleted();
+                    // await getLessonsCompleted();
+                    sendLessonToChessBoard()
                     setLessonStarted(true);
                 } else if (e.data === lessonEndFEN) {
-                    updateLessonCompletion();
+                    // updateLessonCompletion();
                     alert(`Lesson ${displayLessonNum} completed!`);
-                    await getLessonsCompleted();
-                } else {
+                    // await getLessonsCompleted();
+                } else if (!(e.data).startsWith("piece") && !(e.data).startsWith("target")) {
                     setCurrentFEN(e.data);
                     let newLevel = level;
                     if (newLevel <= 1) newLevel = 1;
                     else if (newLevel >= 30) newLevel = 30;
 
                     httpGetAsync(
-                        `${environment.urls.stockFishURL}/?level=${newLevel}&fen=${currentFEN}`,
+                        `${environment.urls.stockFishURL}/?level=${newLevel}&fen=${e.data}`,
                         (response) => {
                             const chessBoard = document.getElementById('chessBd').contentWindow;
                             const message = JSON.stringify({ boardState: response, color });
@@ -65,55 +65,55 @@ const LessonOverlay = () => {
 
         eventer(messageEvent, handleMessage, false);
 
-        getTotalLesson();
+        // getTotalLesson();
 
         return () => {
             eventer(messageEvent, handleMessage, false);
         };
     }, [lessonStarted, lessonEndFEN, currentFEN, isReady, level, messageQueue]);
 
-    const getLessonsCompleted = async () => {
-        const url = `${environment.urls.middlewareURL}/getCompletedLesson.php/?jwt=${cookies.login}&piece=${piece}`;
-        httpGetAsync(url, (response) => {
-            const data = JSON.parse(response);
-            setLessonNum(data);
-            getCurrentLesson();
-        });
-    };
+    // const getLessonsCompleted = async () => {
+    //     const url = `${environment.urls.middlewareURL}/getCompletedLesson.php/?jwt=${cookies.login}&piece=${piece}`;
+    //     httpGetAsync(url, (response) => {
+    //         const data = JSON.parse(response);
+    //         setLessonNum(data);
+    //         getCurrentLesson();
+    //     });
+    // };
 
-    const getCurrentLesson = async () => {
-        const url = `${environment.urls.middlewareURL}/getLesson.php/?jwt=${cookies.login}&piece=${piece}&lessonNumber=${lessonNum}`;
-        setPreviousEndSquare(endSquare);
-        httpGetAsync(url, (response) => {
-            const data = JSON.parse(response);
-            setLessonStartFEN(data.startFen);
-            setLessonEndFEN(data.endFen);
-            setDisplayLessonNum(data.lessonNumber);
-            if (checkIfLessonsAreCompleted()) return;
-            setEndSquare(data.endSquare);
-            sendLessonToChessBoard();
-        });
-    };
+    // const getCurrentLesson = async () => {
+    //     const url = `${environment.urls.middlewareURL}/getLesson.php/?jwt=${cookies.login}&piece=${piece}&lessonNumber=${lessonNum}`;
+    //     setPreviousEndSquare(endSquare);
+    //     httpGetAsync(url, (response) => {
+    //         const data = JSON.parse(response);
+    //         setLessonStartFEN(data.startFen);
+    //         setLessonEndFEN(data.endFen);
+    //         setDisplayLessonNum(data.lessonNumber);
+    //         if (checkIfLessonsAreCompleted()) return;
+    //         setEndSquare(data.endSquare);
+    //         sendLessonToChessBoard();
+    //     });
+    // };
 
-    const checkIfLessonsAreCompleted = () => {
-        if (displayLessonNum === undefined) {
-            alert(
-                'Congratulations all current lessons for this piece have been completed!\n' +
-                'Come back soon for more lessons or go over previous lessons.'
-            );
-            return true;
-        }
-        return false;
-    };
+    // const checkIfLessonsAreCompleted = () => {
+    //     if (displayLessonNum === undefined) {
+    //         alert(
+    //             'Congratulations all current lessons for this piece have been completed!\n' +
+    //             'Come back soon for more lessons or go over previous lessons.'
+    //         );
+    //         return true;
+    //     }
+    //     return false;
+    // };
 
-    const getTotalLesson = async () => {
-        const url = `${environment.urls.middlewareURL}/getTotalPieceLesson.php/?jwt=${cookies.login}&piece=${piece}`;
-        httpGetAsync(url, (response) => {
-            console.log(response)
-            const data = JSON.parse(response);
-            setTotalLessons(data);
-        });
-    };
+    // const getTotalLesson = async () => {
+    //     const url = `${environment.urls.middlewareURL}/getTotalPieceLesson.php/?jwt=${cookies.login}&piece=${piece}`;
+    //     httpGetAsync(url, (response) => {
+    //         console.log(response)
+    //         const data = JSON.parse(response);
+    //         setTotalLessons(data);
+    //     });
+    // };
 
     const sendFromQueue = () => {
         messageQueue.forEach((element) => {
@@ -122,38 +122,38 @@ const LessonOverlay = () => {
         });
     };
 
-    const newGameInit = () => {
-        setCurrentFEN(lessonStartFEN);
+    // const newGameInit = () => {
+    //     setCurrentFEN(lessonStartFEN);
 
-        const chessBoard = document.getElementById('chessBd').contentWindow;
-        const message = JSON.stringify({ boardState: lessonStartFEN, color });
-        if (isReady) {
-            chessBoard.postMessage(message, environment.urls.chessClientURL);
-        } else {
-            setMessageQueue([...messageQueue, message]);
-        }
+    //     const chessBoard = document.getElementById('chessBd').contentWindow;
+    //     const message = JSON.stringify({ boardState: lessonStartFEN, color });
+    //     if (isReady) {
+    //         chessBoard.postMessage(message, environment.urls.chessClientURL);
+    //     } else {
+    //         setMessageQueue([...messageQueue, message]);
+    //     }
 
-        if (color === 'white') {
-            setLevel(5);
-            setColor('black');
-            let newLevel = level;
-            if (newLevel <= 1) newLevel = 1;
-            else if (newLevel >= 30) newLevel = 30;
+    //     if (color === 'white') {
+    //         setLevel(5);
+    //         setColor('black');
+    //         let newLevel = level;
+    //         if (newLevel <= 1) newLevel = 1;
+    //         else if (newLevel >= 30) newLevel = 30;
 
-            httpGetAsync(
-                `${environment.urls.stockFishURL}/?level=${newLevel}&fen=${currentFEN}`,
-                (response) => {
-                    const chessBoard = document.getElementById('chessBd').contentWindow;
-                    const message = JSON.stringify({ boardState: response, color: 'black' });
-                    if (isReady) {
-                        chessBoard.postMessage(message, environment.urls.chessClientURL);
-                    } else {
-                        setMessageQueue([...messageQueue, message]);
-                    }
-                }
-            );
-        }
-    };
+    //         httpGetAsync(
+    //             `${environment.urls.stockFishURL}/?level=${newLevel}&fen=${currentFEN}`,
+    //             (response) => {
+    //                 const chessBoard = document.getElementById('chessBd').contentWindow;
+    //                 const message = JSON.stringify({ boardState: response, color: 'black' });
+    //                 if (isReady) {
+    //                     chessBoard.postMessage(message, environment.urls.chessClientURL);
+    //                 } else {
+    //                     setMessageQueue([...messageQueue, message]);
+    //                 }
+    //             }
+    //         );
+    //     }
+    // };
 
     const sendLessonToChessBoard = () => {
         const chessBoard = document.getElementById('chessBd').contentWindow;
@@ -168,26 +168,26 @@ const LessonOverlay = () => {
         chessBoard.postMessage(message, environment.urls.chessClientURL);
     };
 
-    const previousLesson = () => {
-        if (lessonNum > 0) {
-            setLessonNum(lessonNum - 1);
-            setPreviousEndSquare(endSquare);
-            getCurrentLesson();
-        }
-    };
+    // const previousLesson = () => {
+    //     if (lessonNum > 0) {
+    //         setLessonNum(lessonNum - 1);
+    //         setPreviousEndSquare(endSquare);
+    //         getCurrentLesson();
+    //     }
+    // };
 
-    const nextLesson = () => {
-        if (lessonNum + 1 < totalLessons) {
-            setLessonNum(lessonNum + 1);
-            setPreviousEndSquare(endSquare);
-            getCurrentLesson();
-        }
-    };
+    // const nextLesson = () => {
+    //     if (lessonNum + 1 < totalLessons) {
+    //         setLessonNum(lessonNum + 1);
+    //         setPreviousEndSquare(endSquare);
+    //         getCurrentLesson();
+    //     }
+    // };
 
-    const updateLessonCompletion = async () => {
-        const url = `${environment.urls.middlewareURL}/updateLessonCompletion.php/?jwt=${cookies.login}&piece=${piece}&lessonNumber=${lessonNum}`;
-        httpGetAsync(url, () => {});
-    };
+    // const updateLessonCompletion = async () => {
+    //     const url = `${environment.urls.middlewareURL}/updateLessonCompletion.php/?jwt=${cookies.login}&piece=${piece}&lessonNumber=${lessonNum}`;
+    //     httpGetAsync(url, () => {});
+    // };
 
     const httpGetAsync = (theUrl, callback) => {
         const xmlHttp = new XMLHttpRequest();
@@ -210,10 +210,10 @@ const LessonOverlay = () => {
                     <p>Pawns move one square only. But when they reach the other side of the board, they become a stronger piece!</p>
                 </div>
                 <div id="bottom">
-                    <button type="button" id="previous" onClick={previousLesson}>
+                    <button type="button" id="previous">
                         &lt; Back
                     </button>
-                    <button type="button" id="next" onClick={nextLesson}>
+                    <button type="button" id="next">
                         Next &gt;
                     </button>
                 </div>

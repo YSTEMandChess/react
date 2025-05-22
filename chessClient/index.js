@@ -45,7 +45,7 @@ function greySquare(square) {
 eventer(
   messageEvent,
   (e) => {
-    // console.log("client evenet: ", e); // uncomment for debugging
+    console.log("client event: ", e); // uncomment for debugging
     let data = JSON.parse(e.data);
     lessonFlag = data.lessonFlag;
     if (lessonFlag == true) {
