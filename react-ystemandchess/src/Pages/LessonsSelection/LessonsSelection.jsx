@@ -1,13 +1,64 @@
-import { BrowserRouter as Router, Route, Link, Routes } from 'react-router-dom';
-
+import "./LessonsStyle.css";
+import { useNavigate } from "react-router";
 
 export default function LessonSelection() {
+    const navigate = useNavigate();
     return(
         <div className="whole-page">
-            <h1>Pawn</h1>
-        <ul>
-            <li>item 1</li>
-        </ul>
+            <div className="block">
+                <h1 className="header">Pawn</h1>
+                <ul className="list">
+                    <li onClick={() => navigate("./lessons", {state: {piece: "pawn", scenario: "basic"}})}>Basic</li>
+                    <li>Capture</li>
+                    <li>Training 1</li>
+                    <li>Training 2</li>
+                    <li>Training 3</li>
+                    <li>Special Move</li>
+                </ul>
+            </div>
+            <div className="block">
+                <h1 className="header">Bishop</h1>
+                <ul className="list">
+                    <li>The Basic</li>
+                    <li>Training 1</li>
+                    <li>Training 2</li>
+                    <li>Training 3</li>
+                    <li>Training 4</li>
+                    <li>Final</li>
+                </ul>
+            </div>
+            <div className="block">
+                <h1 className="header">Knight</h1>
+                <ul className="list">
+                    <li>The Basic</li>
+                    <li>Training 1</li>
+                    <li>Training 2</li>
+                    <li>Training 3</li>
+                    <li>Training 4</li>
+                    <li>Final</li>
+                </ul>
+            </div>
+            <div className="block">
+                <h1 className="header">Rook</h1>
+                <ul className="list">
+                    <li>The Basic</li>
+                    <li>Training 1</li>
+                    <li>Training 2</li>
+                    <li>Training 3</li>
+                    <li>Training 4</li>
+                    <li>Final</li>
+                </ul>
+            </div>
+            <div className="block">
+                <h1 className="header">Queen</h1>
+                <ul className="list">
+                    <li>The Basic</li>
+                    <li>Training 1</li>
+                    <li>Training 2</li>
+                    <li>Training 3</li>
+                    <li>Final</li>
+                </ul>
+            </div>
         </div>
     );
 }

@@ -213,7 +213,7 @@ const Lessons = () => {
         <div className='left-container'>
           <div className="chessboard-container_L">
             <div className="button-container">
-              <button className="lesson-button" onClick={() => navigate('/lessons-selection')}>Lesson</button>
+              <button className="lesson-button" onClick={() => navigate('/lessons-selection')}>Lessons</button>
               <button className="play-button">Play</button>
             </div>
             <div className="chessboard_L">
