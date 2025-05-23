@@ -101,31 +101,35 @@
             }
         }
 
+        button {
+            flex: 1;
+            margin: 0 5px;
+            font-family: 'Lato', sans-serif;
+            font-weight: 900;
+            font-size: 18px;
+            padding: 10px;
+            color: #FFF;
+            background-color: #7fcc26;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        button:hover {
+            color: #7fcc26;
+            background-color: #fff;
+            border: 1px solid #7fcc26;
+        }
+
         #bottom {
             display: flex;
             justify-content: space-between;
             padding-top: 20px;
+        }
 
-            button {
-                flex: 1;
-                margin: 0 5px;
-                font-family: 'Lato', sans-serif;
-                font-weight: 900;
-                font-size: 18px;
-                padding: 10px;
-                color: #FFF;
-                background-color: #7fcc26;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                transition: background-color 0.3s, color 0.3s;
-            }
-
-            button:hover {
-                color: #7fcc26;
-                background-color: #fff;
-                border: 1px solid #7fcc26;
-            }
+        .reset-btn {
+            margin-top: 10px;
         }
     }
 
