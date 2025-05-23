@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../../environments/environment';
 import PlayLesson from '../play-lesson/PlayLesson';
@@ -6,8 +6,8 @@ import './lesson-overlay.scss';
 import MoveTracker from '../move-tracker/MoveTracker';
 
 const LessonOverlay = () => {
-    const [lessonStartFEN, setLessonStartFEN] = useState("rnbqkb2/pppppp2/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    const [lessonEndFEN, setLessonEndFEN] = useState("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2");
+    const lessonStartFENRef = useRef("rnbqkb2/pppppp2/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    let lessonEndFEN = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
     const [endSquare, setEndSquare] = useState('');
     const [previousEndSquare, setPreviousEndSquare] = useState('');
     const [lessonNum, setLessonNum] = useState(0);
@@ -15,9 +15,8 @@ const LessonOverlay = () => {
     const [currentFEN, setCurrentFEN] = useState('');
     const [level, setLevel] = useState(5);
     const [cookies] = useCookies(['piece', 'login']);
-    const piece = cookies.piece;
+    const piece = "Piece Checkmate 1 Basic checkmates";
     const [displayLessonNum, setDisplayLessonNum] = useState(0);
-    const [moves, setMoves] = useState([])
     let isReady = false;
     let lessonStarted = false;
 
@@ -28,20 +27,20 @@ const LessonOverlay = () => {
 
         const handleMessage = async (e) => {
             if (e.origin === environment.urls.chessClientURL) {
-                console.log("e.data", e.data)
+                console.log("front end received", e.data)
                 if (e.data === 'ReadyToRecieve') {
                     isReady = true;
                 }
                 if (!lessonStarted) {
-                    // await getLessonsCompleted();
-                    sendLessonToChessBoard()
+                    await getLessonsCompleted();
                     lessonStarted = true;
-                } else if (e.data === lessonEndFEN) {
-                    // updateLessonCompletion();
-                    alert(`Lesson ${displayLessonNum} completed!`);
-                    // await getLessonsCompleted();
-                } else if (looksLikeFEN(e.data)) {
-                    console.log("valid fen")
+                } else if (e.data === lessonEndFEN || e.data.startsWith("next")) {
+                    updateLessonCompletion();
+                    alert("lesson completed")
+                    await getLessonsCompleted();
+                } else if (e.data.startsWith("restart")){
+                    alert("try again")
+                }  else if (looksLikeFEN(e.data)) {
                     setCurrentFEN(e.data);
                     let newLevel = level;
                     if (newLevel <= 1) newLevel = 1;
@@ -54,7 +53,6 @@ const LessonOverlay = () => {
                         (response) => {
                             const data = JSON.parse(response)
                             const message = JSON.stringify({ boardState: data.fen, color: "white", lessonFlag: false});
-                            console.log(message)
                             if (isReady) {
                                 console.log("ready")
                                 chessBoard.postMessage(message, environment.urls.chessClientURL);
@@ -67,7 +65,7 @@ const LessonOverlay = () => {
 
         eventer(messageEvent, handleMessage, false);
 
-        // getTotalLesson();
+        getTotalLesson();
 
         return () => {
             window.removeEventListener('message', handleMessage);
@@ -79,34 +77,60 @@ const LessonOverlay = () => {
     }
 
     function handleReset() {
-        console.log("Resetting...")
         const chessBoard = document.getElementById('chessBd').contentWindow
-        const message = JSON.stringify({ boardState: lessonStartFEN, color: "white", lessonFlag: false});
+        const message = JSON.stringify({ boardState: lessonStartFENRef.current, color: "white", lessonFlag: false});
         chessBoard.postMessage(message, environment.urls.chessClientURL);
     }
 
-    // const getLessonsCompleted = async () => {
-    //     const url = `${environment.urls.middlewareURL}/getCompletedLesson.php/?jwt=${cookies.login}&piece=${piece}`;
-    //     httpGetAsync(url, (response) => {
-    //         const data = JSON.parse(response);
-    //         setLessonNum(data);
-    //         getCurrentLesson();
-    //     });
-    // };
+    const getLessonsCompleted = async () => {
+        try {
+            logTime("get # of completed lessons")
+            const response = await fetch(
+            `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${piece}`, 
+            {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${cookies.login}` }
+            }
+            );
+            const completedCount = await response.json();
 
-    // const getCurrentLesson = async () => {
-    //     const url = `${environment.urls.middlewareURL}/getLesson.php/?jwt=${cookies.login}&piece=${piece}&lessonNumber=${lessonNum}`;
-    //     setPreviousEndSquare(endSquare);
-    //     httpGetAsync(url, (response) => {
-    //         const data = JSON.parse(response);
-    //         setLessonStartFEN(data.startFen);
-    //         setLessonEndFEN(data.endFen);
-    //         setDisplayLessonNum(data.lessonNumber);
-    //         if (checkIfLessonsAreCompleted()) return;
-    //         setEndSquare(data.endSquare);
-    //         sendLessonToChessBoard();
-    //     });
-    // };
+            // The next lesson is the first uncompleted one (completed count + 1)
+            // But we index from 0, so just use the completedCount directly
+            setLessonNum(completedCount);
+            getCurrentLesson(completedCount);
+        } catch (error) {
+            console.error('Error fetching completed lessons:', error);
+        }
+    };
+
+    const getCurrentLesson = async (lessonNumber) => {
+        // setPreviousEndSquare(endSquare);
+        try {
+            logTime("fetching current lesson")
+            const response = await fetch(
+            `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber}`,
+            {
+                method: 'GET', 
+                headers: { 'Authorization': `Bearer ${cookies.login}` }
+            }
+            );
+                const lessonData = await response.json();
+                // Update the lesson data
+                setDisplayLessonNum(lessonNumber + 1);
+                lessonStartFENRef.current = lessonData.startFen
+                // setLessonEndFEN(data.endFen); 
+                
+                // Check if we've reached the end of lessons, same approach I saw earlier.
+                if (!lessonData || lessonData.lessonNum === undefined) {
+                    alert('Congratulations! You have completed all lessons for this piece.');
+                    return
+                }
+                // setEndSquare(data.endSquare);
+                sendLessonToChessBoard();
+            } catch (error) {
+                console.error('Error fetching lesson:', error);
+        }
+    };
 
     // const checkIfLessonsAreCompleted = () => {
     //     if (displayLessonNum === undefined) {
@@ -119,14 +143,22 @@ const LessonOverlay = () => {
     //     return false;
     // };
 
-    // const getTotalLesson = async () => {
-    //     const url = `${environment.urls.middlewareURL}/getTotalPieceLesson.php/?jwt=${cookies.login}&piece=${piece}`;
-    //     httpGetAsync(url, (response) => {
-    //         console.log(response)
-    //         const data = JSON.parse(response);
-    //         setTotalLessons(data);
-    //     });
-    // };
+    const getTotalLesson = async () => {
+        try {
+            const response = await fetch(
+            `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=${piece}`,
+            {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${cookies.login}` }
+            }
+            );
+            
+            const total = await response.json();
+            setTotalLessons(total);
+        } catch (error) {
+            console.error('Error fetching total lessons:', error);
+        }
+    };
 
     // const newGameInit = () => {
     //     setCurrentFEN(lessonStartFEN);
@@ -158,9 +190,10 @@ const LessonOverlay = () => {
     // };
 
     const sendLessonToChessBoard = () => {
+        logTime("Sending Lesson to board")
         const chessBoard = document.getElementById('chessBd').contentWindow;
         const message = JSON.stringify({
-            boardState: lessonStartFEN,
+            boardState: lessonStartFENRef.current,
             endState: lessonEndFEN,
             lessonFlag: true,
             endSquare,
@@ -170,26 +203,48 @@ const LessonOverlay = () => {
         chessBoard.postMessage(message, environment.urls.chessClientURL);
     };
 
-    // const previousLesson = () => {
-    //     if (lessonNum > 0) {
-    //         setLessonNum(lessonNum - 1);
-    //         setPreviousEndSquare(endSquare);
-    //         getCurrentLesson();
-    //     }
-    // };
+    // Navigation functions
+    const previousLesson = () => {
+        if (lessonNum > 0) {
+            logTime("Previous lesson")
+            setLessonNum(prevNum => prevNum - 1);
+            setPreviousEndSquare(endSquare);
+            getCurrentLesson(lessonNum - 1);
+        }
+    };
+    
+    const nextLesson = () => {
+        if (lessonNum + 1 < totalLessons) {
+            logTime("Next lesson")
+            setLessonNum(prevNum => prevNum + 1);
+            setPreviousEndSquare(endSquare);
+            getCurrentLesson(lessonNum + 1);
+        }
+    };
 
-    // const nextLesson = () => {
-    //     if (lessonNum + 1 < totalLessons) {
-    //         setLessonNum(lessonNum + 1);
-    //         setPreviousEndSquare(endSquare);
-    //         getCurrentLesson();
-    //     }
-    // };
-
-    // const updateLessonCompletion = async () => {
-    //     const url = `${environment.urls.middlewareURL}/updateLessonCompletion.php/?jwt=${cookies.login}&piece=${piece}&lessonNumber=${lessonNum}`;
-    //     httpGetAsync(url, () => {});
-    // };
+    // Update the lesson completion function
+    const updateLessonCompletion = async () => {
+        try {
+            await fetch(
+            `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=${piece}&lessonNum=${lessonNum}`,
+            {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${cookies.login}` }
+            }
+            );
+            
+            console.log("updated lesson successful")
+            // Move to next lesson if available, otherwise throw an error.
+            if (lessonNum + 1 < totalLessons) {
+            setLessonNum(prevNum => prevNum + 1);
+            getCurrentLesson(lessonNum + 1);
+            } else {
+            alert('Congratulations! You have completed all lessons for this piece!');
+            }
+        } catch (error) {
+            console.error('Error updating lesson completion:', error);
+        }
+    };
 
     const httpGetAsync = (theUrl, callback) => {
         const xmlHttp = new XMLHttpRequest();
@@ -212,10 +267,10 @@ const LessonOverlay = () => {
                     <p>Pawns move one square only. But when they reach the other side of the board, they become a stronger piece!</p>
                 </div>
                 <div id="bottom">
-                    <button type="button" id="previous">
+                    <button type="button" id="previous" onClick={previousLesson}>
                         &lt; Back
                     </button>
-                    <button type="button" id="next">
+                    <button type="button" id="next" onClick={nextLesson}>
                         Next &gt;
                     </button>
                 </div>
@@ -227,3 +282,9 @@ const LessonOverlay = () => {
 };
 
 export default LessonOverlay;
+
+const logTime = (label, data = '') => {
+    const timestamp = new Date().toISOString();
+    const perfTime = performance.now().toFixed(2);
+    console.log(`🕐 [${timestamp}] [${perfTime}ms] ${label}`, data);
+};
