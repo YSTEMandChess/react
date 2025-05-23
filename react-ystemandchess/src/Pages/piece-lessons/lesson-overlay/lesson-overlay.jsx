@@ -3,6 +3,7 @@ import { useCookies } from 'react-cookie';
 import { environment } from '../../../environments/environment';
 import PlayLesson from '../play-lesson/PlayLesson';
 import './lesson-overlay.scss';
+import MoveTracker from '../move-tracker/MoveTracker';
 
 const LessonOverlay = () => {
     const [lessonStartFEN, setLessonStartFEN] = useState("rnbqkb2/pppppp2/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -16,6 +17,7 @@ const LessonOverlay = () => {
     const [cookies] = useCookies(['piece', 'login']);
     const piece = cookies.piece;
     const [displayLessonNum, setDisplayLessonNum] = useState(0);
+    const [moves, setMoves] = useState([])
     let isReady = false;
     let lessonStarted = false;
 
@@ -74,6 +76,13 @@ const LessonOverlay = () => {
 
     function looksLikeFEN(str) {
         return typeof str === 'string' && str.split(' ').length === 6;
+    }
+
+    function handleReset() {
+        console.log("Resetting...")
+        const chessBoard = document.getElementById('chessBd').contentWindow
+        const message = JSON.stringify({ boardState: lessonStartFEN, color: "white", lessonFlag: false});
+        chessBoard.postMessage(message, environment.urls.chessClientURL);
     }
 
     // const getLessonsCompleted = async () => {
@@ -210,7 +219,9 @@ const LessonOverlay = () => {
                         Next &gt;
                     </button>
                 </div>
+                <button onClick={handleReset} className="reset-btn">Reset</button>
             </div>
+            <MoveTracker />
         </div>
     );
 };
