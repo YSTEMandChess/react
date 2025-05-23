@@ -8,9 +8,9 @@ export default function LessonSelection() {
             <div className="block">
                 <h1 className="header">Pawn</h1>
                 <ul className="list">
-                    <li onClick={() => navigate("./lessons", {state: {piece: "pawn", scenario: "basic"}})}>Basic</li>
-                    <li>Capture</li>
-                    <li>Training 1</li>
+                    <li onClick={() => navigate("/lessons", {state: {scenario: "Pawn", lesson: "Basic"}})}>Basic</li>
+                    <li onClick={() => navigate("/lessons", {state: {scenario: "Pawn", lesson: "Capture"}})}>Capture</li>
+                    <li onClick={() => navigate("/lessons", {state: {scenario: "Pawn", lesson: "Training 1"}})}>Training 1</li>
                     <li>Training 2</li>
                     <li>Training 3</li>
                     <li>Special Move</li>

@@ -1,7 +1,12 @@
 import "./Lessons.scss";
+import { useLocation } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 
 const Lessons = () => {
+  const location = useLocation();
+  const passedPiece = location.state?.piece;
+  const passedScenario = location.state?.scenario;
+
   const [board, setBoard] = useState(initializeBoard()); // Initialize the board with chess pieces
   const [highlightedSquares, setHighlightedSquares] = useState([]);
   const [draggingPiece, setDraggingPiece] = useState(null); // Track which piece is being dragged
@@ -69,6 +74,18 @@ const Lessons = () => {
   useEffect(() => {
     checkBlackPieces();
   }, [board]);
+
+  useEffect(() => {
+    if (passedPiece && passedScenario) {
+      setupScenario(passedPiece, passedScenario);
+      // Optionally, you might want to update the showScenarios state
+      // to reflect the selected piece if needed for UI feedback.
+      setShowScenarios(prevState => ({
+        ...prevState,
+        [passedPiece]: true,
+      }));
+    }
+  }, [passedPiece, passedScenario, setupScenario]);
 
   // Update the setupScenario function to handle both Pawn and Rook
   const setupScenario = (piece, scenario) => {

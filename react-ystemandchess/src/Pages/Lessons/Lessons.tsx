@@ -6,7 +6,7 @@ import { ReactComponent as BackIconInactive} from './icon_back_inactive.svg';
 import { ReactComponent as NextIcon } from './icon_next.svg';
 import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
 import { getScenario, getScenarioLength } from "./Scenarios";
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 
 type Board = (string | null)[][];
@@ -26,6 +26,10 @@ const Lessons = () => {
   const [lessonEnded, setLessonEnded] = useState(false)
 
   const counterRef = useRef(0); // Current counter that indexes current scenario in scenariosArray
+
+  const location = useLocation();
+  const passedScenarioName = location.state?.scenario;
+  const passedLessonName = location.state?.lesson;
 
   // Initialize the chessboard
   function initializeBoard(): Board {
@@ -68,6 +72,59 @@ const Lessons = () => {
     setBoard(JSON.parse(JSON.stringify(section.board)))
     setHighlightedSquares([]);
   };
+
+  useEffect(() => {
+    const initializeLesson = async () => { // Make async to use await (if needed later)
+      if (passedScenarioName && passedLessonName) {
+        try {
+          // 1. Find the scenario (using a more robust approach)
+          let foundScenarioIndex = -1;
+          for (let i = 0; i < getScenarioLength(); i++) {
+            if (getScenario(i).name.includes(passedScenarioName)) {
+              foundScenarioIndex = i;
+              break;
+            }
+          }
+
+          if (foundScenarioIndex !== -1) {
+            const foundScenario = getScenario(foundScenarioIndex);
+
+            // 2. Find the lesson within the scenario
+            const foundLesson = foundScenario.subSections.find(l => l.name === passedLessonName);
+
+            if (foundLesson) {
+              // 3. Set state
+              setScenario(foundScenario);
+              setLesson(foundLesson);
+              setBoard(JSON.parse(JSON.stringify(foundLesson.board)));
+              counterRef.current = foundScenarioIndex;
+              setLeftEnded(foundScenario.subSections[0].left_ended);
+              setRightEnded(foundScenario.subSections[0].right_ended);
+            } else {
+              console.error(`Lesson "${passedLessonName}" not found in scenario "${passedScenarioName}"`);
+              // Handle error (e.g., redirect)
+            }
+          } else {
+            console.error(`Scenario "${passedScenarioName}" not found`);
+            // Handle error
+          }
+        } catch (error) {
+          console.error("Error initializing lesson:", error);
+          // Handle error (e.g., redirect)
+        }
+      } else {
+        // Default initialization
+        const defaultScenario = getScenario(0);
+        setScenario(defaultScenario);
+        setLesson(defaultScenario.subSections[0]);
+        setBoard(JSON.parse(JSON.stringify(defaultScenario.subSections[0].board)));
+        setLeftEnded(defaultScenario.subSections[0].left_ended);
+        setRightEnded(defaultScenario.subSections[0].right_ended);
+      }
+    };
+
+    initializeLesson();
+  }, [location]);
 
   // Switching to previous / next scenario, x: -1 or 1
   const setupScenario = (x) => {
