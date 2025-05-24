@@ -4,15 +4,19 @@ import { environment } from '../../../environments/environment';
 import PlayLesson from '../play-lesson/PlayLesson';
 import './lesson-overlay.scss';
 import MoveTracker from '../move-tracker/MoveTracker';
+import { Chess } from 'chess.js';
 
 const LessonOverlay = () => {
-    const lessonStartFENRef = useRef("rnbqkb2/pppppp2/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    const lessonStartFENRef = useRef("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     let lessonEndFEN = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
     const [endSquare, setEndSquare] = useState('');
     const [previousEndSquare, setPreviousEndSquare] = useState('');
     const [lessonNum, setLessonNum] = useState(0);
     const [totalLessons, setTotalLessons] = useState(0);
-    const [currentFEN, setCurrentFEN] = useState('');
+    const prevFenRef = useRef(null)
+    const currentFenRef = useRef(lessonStartFENRef.current);
+    const [moves, setMoves] = useState([])
+    const [moveIndex, setMoveIndex] = useState(1)
     const [level, setLevel] = useState(5);
     const [cookies] = useCookies(['piece', 'login']);
     const piece = "Piece Checkmate 1 Basic checkmates";
@@ -41,7 +45,14 @@ const LessonOverlay = () => {
                 } else if (e.data.startsWith("restart")){
                     alert("try again")
                 }  else if (looksLikeFEN(e.data)) {
-                    setCurrentFEN(e.data);
+
+                    // update fens
+                    prevFenRef.current = currentFenRef.current
+                    currentFenRef.current = e.data
+
+                    // process the move for tracking
+                    processMove()
+
                     let newLevel = level;
                     if (newLevel <= 1) newLevel = 1;
                     else if (newLevel >= 30) newLevel = 30;
@@ -53,6 +64,13 @@ const LessonOverlay = () => {
                         (response) => {
                             const data = JSON.parse(response)
                             const message = JSON.stringify({ boardState: data.fen, color: "white", lessonFlag: false});
+                            // update fens
+                            prevFenRef.current = currentFenRef.current
+                            currentFenRef.current = data.fen
+
+                            // process the move for tracking
+                            processMove()
+
                             if (isReady) {
                                 console.log("ready")
                                 chessBoard.postMessage(message, environment.urls.chessClientURL);
@@ -80,6 +98,7 @@ const LessonOverlay = () => {
         const chessBoard = document.getElementById('chessBd').contentWindow
         const message = JSON.stringify({ boardState: lessonStartFENRef.current, color: "white", lessonFlag: false});
         chessBoard.postMessage(message, environment.urls.chessClientURL);
+        setMoves([])
     }
 
     const getLessonsCompleted = async () => {
@@ -131,6 +150,40 @@ const LessonOverlay = () => {
                 console.error('Error fetching lesson:', error);
         }
     };
+
+    function processMove() {
+        if (prevFenRef.current) {
+            const move = getMoveFromFens(prevFenRef.current, currentFenRef.current)
+            console.log(move)
+            setMoves(prev => [...prev, move])
+        }
+    }
+
+    function getMoveFromFens(prevFEN, currFEN) {
+        const chess = new Chess(prevFEN)
+        const moves = chess.moves({verbose: true})
+
+        console.log(getPositionKey(prevFEN), getPositionKey(currFEN))
+
+        for (let i = 0; i < moves.length; i++) {
+            const possibleChess = new Chess(prevFEN)
+            possibleChess.move(moves[i])
+            
+            if (getPositionKey(possibleChess.fen()) === getPositionKey(currFEN)) {
+                console.log("move found!")
+                return moves[i].san
+            }
+        }
+
+        // move not found
+        console.log("move not found :(")
+        return null
+    }
+
+    function getPositionKey(fen) {
+    // only compare the first 4 parts of the FEN (board, active color, castling, en passant)
+    return fen.split(" ").slice(0, 4).join(" ")
+    }
 
     // const checkIfLessonsAreCompleted = () => {
     //     if (displayLessonNum === undefined) {
@@ -276,7 +329,7 @@ const LessonOverlay = () => {
                 </div>
                 <button onClick={handleReset} className="reset-btn">Reset</button>
             </div>
-            <MoveTracker />
+            <MoveTracker moves={moves} />
         </div>
     );
 };

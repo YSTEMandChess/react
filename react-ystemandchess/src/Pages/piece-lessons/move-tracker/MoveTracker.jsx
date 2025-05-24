@@ -2,7 +2,7 @@ import React from "react"
 
 export default function MoveTracker({ moves }) {
 
-    const moveElements = null
+    let moveElements = null
 
     if (moves) {
         moveElements = moves.map((move, index) => <li key={index}>{move}</li>)
