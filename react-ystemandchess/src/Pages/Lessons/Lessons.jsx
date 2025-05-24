@@ -1,10 +1,10 @@
 import "./Lessons.scss";
 import React, { useState, useEffect, useRef } from 'react';
-import { ReactComponent as RedoIcon } from './icon_redo.svg';
-import { ReactComponent as BackIcon} from './icon_back.svg';
-import { ReactComponent as BackIconInactive} from './icon_back_inactive.svg';
-import { ReactComponent as NextIcon } from './icon_next.svg';
-import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
+import { ReactComponent as RedoIcon } from '../../images/icons/icon_redo.svg';
+import { ReactComponent as BackIcon} from '../../images/icons/icon_back.svg';
+import { ReactComponent as BackIconInactive} from '../../images/icons/icon_back_inactive.svg';
+import { ReactComponent as NextIcon } from '../../images/icons/icon_next.svg';
+import { ReactComponent as NextIconInactive } from '../../images/icons/icon_next_inactive.svg';
 import { getScenario } from "./Scenarios";
 
 const Lessons = () => {

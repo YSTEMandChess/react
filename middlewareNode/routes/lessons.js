@@ -290,10 +290,10 @@ router.get(
 
       if (!lessonDoc) return res.status(400).json("Error: 400. Invalid piece.");;
 
-      if (lessonNum < 0 || lessonNum >= lessonDoc.lessons.length) {
+      if (lessonNum <= 0 || lessonNum > lessonDoc.lessons.length) {
         return res.status(404).json("Lesson index out of range");
       } else {
-        res.json(lessonDoc.lessons[lessonNum]); 
+        res.json(lessonDoc.lessons[lessonNum - 1]); 
       }
     } catch (err) {
       console.error(err);

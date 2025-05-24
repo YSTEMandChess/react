@@ -5,22 +5,33 @@ import PlayLesson from '../play-lesson/PlayLesson';
 import './lesson-overlay.scss';
 import MoveTracker from '../move-tracker/MoveTracker';
 import { Chess } from 'chess.js';
+import { ReactComponent as RedoIcon } from '../../../images/icons/icon_redo.svg';
+import { ReactComponent as BackIcon} from '../../../images/icons/icon_back.svg';
+import { ReactComponent as BackIconInactive} from '../../../images/icons/icon_back_inactive.svg';
+import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg';
+import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
 
 const LessonOverlay = () => {
     const lessonStartFENRef = useRef("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    const [totalLessons, setTotalLessons] = useState(0);
     let lessonEndFEN = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
     const [endSquare, setEndSquare] = useState('');
     const [previousEndSquare, setPreviousEndSquare] = useState('');
     const [lessonNum, setLessonNum] = useState(0);
-    const [totalLessons, setTotalLessons] = useState(0);
     const prevFenRef = useRef(null)
     const currentFenRef = useRef(lessonStartFENRef.current);
     const [moves, setMoves] = useState([])
     const [moveIndex, setMoveIndex] = useState(1)
     const [level, setLevel] = useState(5);
+    const [showVPopup, setShowVPopup] = useState(false);
+    const [showXPopup, setShowXPopup] = useState(false);
     const [cookies] = useCookies(['piece', 'login']);
+    const [name, setName] = useState("");
+    const [info, setInfo] = useState("");
     const piece = "Piece Checkmate 1 Basic checkmates";
-    const [displayLessonNum, setDisplayLessonNum] = useState(0);
+    const updateCompletionRef = useRef(() => {});
+    const getTotalLessonsRef = useRef(() => {});
+    const getCurrentLessonsRef = useRef(() => {});
     let isReady = false;
     let lessonStarted = false;
 
@@ -39,11 +50,9 @@ const LessonOverlay = () => {
                     await getLessonsCompleted();
                     lessonStarted = true;
                 } else if (e.data === lessonEndFEN || e.data.startsWith("next")) {
-                    updateLessonCompletion();
-                    alert("lesson completed")
-                    await getLessonsCompleted();
+                    setShowVPopup(true);
                 } else if (e.data.startsWith("restart")){
-                    alert("try again")
+                    setShowXPopup(true)
                 }  else if (looksLikeFEN(e.data)) {
 
                     // update fens
@@ -51,7 +60,7 @@ const LessonOverlay = () => {
                     currentFenRef.current = e.data
 
                     // process the move for tracking
-                    processMove()
+                    // processMove()
 
                     let newLevel = level;
                     if (newLevel <= 1) newLevel = 1;
@@ -69,7 +78,7 @@ const LessonOverlay = () => {
                             currentFenRef.current = data.fen
 
                             // process the move for tracking
-                            processMove()
+                            // processMove()
 
                             if (isReady) {
                                 console.log("ready")
@@ -83,7 +92,7 @@ const LessonOverlay = () => {
 
         eventer(messageEvent, handleMessage, false);
 
-        getTotalLesson();
+        getTotalLessonsRef.current()
 
         return () => {
             window.removeEventListener('message', handleMessage);
@@ -116,16 +125,16 @@ const LessonOverlay = () => {
             // The next lesson is the first uncompleted one (completed count + 1)
             // But we index from 0, so just use the completedCount directly
             setLessonNum(completedCount);
-            getCurrentLesson(completedCount);
+            getCurrentLessonsRef.current(completedCount);
         } catch (error) {
             console.error('Error fetching completed lessons:', error);
         }
     };
 
-    const getCurrentLesson = async (lessonNumber) => {
+    getCurrentLessonsRef.current = async (lessonNumber) => {
         // setPreviousEndSquare(endSquare);
         try {
-            logTime("fetching current lesson")
+            logTime("fetching current lesson", lessonNumber)
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber}`,
             {
@@ -135,8 +144,9 @@ const LessonOverlay = () => {
             );
                 const lessonData = await response.json();
                 // Update the lesson data
-                setDisplayLessonNum(lessonNumber + 1);
                 lessonStartFENRef.current = lessonData.startFen
+                setInfo(lessonData.info)
+                setName(lessonData.name)
                 // setLessonEndFEN(data.endFen); 
                 
                 // Check if we've reached the end of lessons, same approach I saw earlier.
@@ -185,18 +195,7 @@ const LessonOverlay = () => {
     return fen.split(" ").slice(0, 4).join(" ")
     }
 
-    // const checkIfLessonsAreCompleted = () => {
-    //     if (displayLessonNum === undefined) {
-    //         alert(
-    //             'Congratulations all current lessons for this piece have been completed!\n' +
-    //             'Come back soon for more lessons or go over previous lessons.'
-    //         );
-    //         return true;
-    //     }
-    //     return false;
-    // };
-
-    const getTotalLesson = async () => {
+    getTotalLessonsRef.current = async () => {
         try {
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=${piece}`,
@@ -212,35 +211,6 @@ const LessonOverlay = () => {
             console.error('Error fetching total lessons:', error);
         }
     };
-
-    // const newGameInit = () => {
-    //     setCurrentFEN(lessonStartFEN);
-
-    //     const chessBoard = document.getElementById('chessBd').contentWindow;
-    //     const message = JSON.stringify({ boardState: lessonStartFEN, color });
-    //     if (isReady) {
-    //         chessBoard.postMessage(message, environment.urls.chessClientURL);
-    //     }
-
-    //     if (color === 'white') {
-    //         setLevel(5);
-    //         setColor('black');
-    //         let newLevel = level;
-    //         if (newLevel <= 1) newLevel = 1;
-    //         else if (newLevel >= 30) newLevel = 30;
-
-    //         httpGetAsync(
-    //             `${environment.urls.stockFishURL}/?level=${newLevel}&fen=${currentFEN}`,
-    //             (response) => {
-    //                 const chessBoard = document.getElementById('chessBd').contentWindow;
-    //                 const message = JSON.stringify({ boardState: response, color: 'black' });
-    //                 if (isReady) {
-    //                     chessBoard.postMessage(message, environment.urls.chessClientURL);
-    //                 }
-    //             }
-    //         );
-    //     }
-    // };
 
     const sendLessonToChessBoard = () => {
         logTime("Sending Lesson to board")
@@ -258,25 +228,25 @@ const LessonOverlay = () => {
 
     // Navigation functions
     const previousLesson = () => {
-        if (lessonNum > 0) {
+        if (lessonNum > 1) {
             logTime("Previous lesson")
             setLessonNum(prevNum => prevNum - 1);
             setPreviousEndSquare(endSquare);
-            getCurrentLesson(lessonNum - 1);
+            getCurrentLessonsRef.current(lessonNum - 1);
         }
     };
     
     const nextLesson = () => {
-        if (lessonNum + 1 < totalLessons) {
+        if (lessonNum < totalLessons) {
             logTime("Next lesson")
             setLessonNum(prevNum => prevNum + 1);
             setPreviousEndSquare(endSquare);
-            getCurrentLesson(lessonNum + 1);
+            getCurrentLessonsRef.current(lessonNum + 1);
         }
     };
 
     // Update the lesson completion function
-    const updateLessonCompletion = async () => {
+    updateCompletionRef.current = async () => {
         try {
             await fetch(
             `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=${piece}&lessonNum=${lessonNum}`,
@@ -286,13 +256,11 @@ const LessonOverlay = () => {
             }
             );
             
-            console.log("updated lesson successful")
             // Move to next lesson if available, otherwise throw an error.
             if (lessonNum + 1 < totalLessons) {
-            setLessonNum(prevNum => prevNum + 1);
-            getCurrentLesson(lessonNum + 1);
-            } else {
-            alert('Congratulations! You have completed all lessons for this piece!');
+                console.log("lessonNum!!", lessonNum)
+                setLessonNum(prevNum => prevNum + 1);
+                getCurrentLessonsRef.current(lessonNum + 1);
             }
         } catch (error) {
             console.error('Error updating lesson completion:', error);
@@ -308,13 +276,26 @@ const LessonOverlay = () => {
         xmlHttp.send(null);
     };
 
+    const handleVPopup = () => {
+        setShowVPopup(false);
+        updateCompletionRef.current();
+    }
+
+    const handleXPopup = () => {
+        setShowXPopup(false);
+        handleReset()
+    }
+
     return (
         <div id="lesson-container">
+            <div className='left-right-container'>
+
+            </div>
             <div id="chess-board">
                 <PlayLesson chessLessonSrc={environment.urls.chessClientURL} />
             </div>
-            <div id="lesson-content">
-                <h2>Pawn-It moves forward only</h2>
+            {/* <div id="lesson-content">
+                <h2>{piece}</h2>
                 <div id="try-this">
                     <p>Try this!</p>
                     <p>Pawns move one square only. But when they reach the other side of the board, they become a stronger piece!</p>
@@ -328,8 +309,105 @@ const LessonOverlay = () => {
                     </button>
                 </div>
                 <button onClick={handleReset} className="reset-btn">Reset</button>
+            </div> */}
+            <div className='right-container'>
+                {/* Description part */}
+                <div className='lesson-header'>
+                <h1 className="piece_description">{piece}</h1>
+                <button className='reset-lesson' onClick={handleReset}>
+                    <RedoIcon className='reset-icon'/>
+                </button>
+                </div>
+    
+                <h1 className='subheading'>{lessonNum} / {totalLessons}: {name}</h1>
+                <p className="lesson-description">{info}</p>
+    
+                <div className='prev-next-button-container'>
+                {
+                    lessonNum == 1? (
+                    <button className="prevNextLessonButton-inactive prev">
+                        <BackIconInactive/>
+                        <p className="button-description">Back</p>
+                    </button>
+                    ) : (
+                    <button className="prevNextLessonButton prev" onClick={previousLesson}>
+                        <BackIcon/>
+                        <p className="button-description">Back</p>
+                    </button>
+                    )
+                }
+    
+                {lessonNum == totalLessons? (
+                    <button className="prevNextLessonButton-inactive next">
+                        <p className="button-description">Next</p>
+                        <NextIconInactive/>
+                    </button>
+                    ) : (
+                    <button className="prevNextLessonButton next" onClick={nextLesson}>
+                        <p className="button-description">Next</p>
+                        <NextIcon/>
+                    </button>
+                    )
+                }
+                </div>
+                <MoveTracker moves={moves} />
             </div>
-            <MoveTracker moves={moves} />
+            
+            {showVPopup && (
+                <div className="popup">
+                <div className="popup-content">
+                    <div className="success-checkmark">
+                    <svg width="80" height="80" viewBox="0 0 120 120">
+                        <circle className="circle" cx="60" cy="60" r="54" fill="none" stroke="#beea8b" stroke-width="6"></circle>
+                        <path className="checkmark" d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                    </div>
+                    <p className="popup-header">Lesson completed</p>
+                    <p className="popup-subheading">Good job</p>
+                    <button className="popup-button" onClick={handleVPopup}>OK</button>
+                </div>
+                </div>
+            )}
+
+            {showXPopup && (
+                <div className="popup">
+                    <div className="popup-content">
+                    <div className="error-cross">
+                        <svg width="80" height="80" viewBox="0 0 120 120">
+                        <circle
+                            className="circle"
+                            cx="60"
+                            cy="60"
+                            r="54"
+                            fill="none"
+                            stroke="#f57c7c"
+                            strokeWidth="6"
+                        ></circle>
+                        <path
+                            className="cross-line1"
+                            d="M40 40 L80 80"
+                            fill="none"
+                            stroke="#f57c7c"
+                            strokeWidth="8"
+                            strokeLinecap="round"
+                        />
+                        <path
+                            className="cross-line2"
+                            d="M80 40 L40 80"
+                            fill="none"
+                            stroke="#f57c7c"
+                            strokeWidth="8"
+                            strokeLinecap="round"
+                        />
+                        </svg>
+                    </div>
+                    <p className="popup-header">Lesson failed</p>
+                    <p className="popup-subheading">Please try again</p>
+                    <button className="popup-button" onClick={handleXPopup}>OK</button>
+                    </div>
+                </div>
+                )}
+
         </div>
     );
 };
