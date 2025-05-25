@@ -216,3 +216,44 @@
 .popup-button:hover {
   background-color: rgb(68, 133, 203);
 }
+
+// BEGIN MOVE TRACK STYLES
+
+.move-list {
+  border: 2px solid #357D96;
+  width: min-content;
+  min-width: 300px;
+  border-radius: 4px;
+  background-color: white;
+  padding: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+}
+
+.move-title {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #357D96;
+  margin-bottom: 10px;
+}
+
+.move-item {     
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;           
+  align-items: center; 
+  margin-bottom: 0.5rem; 
+}
+
+.move {
+  background-color: #f0f0f0;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-family: sans-serif;
+}
+
+// END MOVE TRACK STYLES

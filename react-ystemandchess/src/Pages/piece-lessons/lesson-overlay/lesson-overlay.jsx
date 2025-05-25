@@ -60,7 +60,7 @@ const LessonOverlay = () => {
                     currentFenRef.current = e.data
 
                     // process the move for tracking
-                    // processMove()
+                    processMove()
 
                     let newLevel = level;
                     if (newLevel <= 1) newLevel = 1;
@@ -78,7 +78,7 @@ const LessonOverlay = () => {
                             currentFenRef.current = data.fen
 
                             // process the move for tracking
-                            // processMove()
+                            processMove()
 
                             if (isReady) {
                                 console.log("ready")
@@ -192,7 +192,7 @@ const LessonOverlay = () => {
 
     function getPositionKey(fen) {
     // only compare the first 4 parts of the FEN (board, active color, castling, en passant)
-    return fen.split(" ").slice(0, 4).join(" ")
+    return fen.split(" ").slice(0, 3).join(" ")
     }
 
     getTotalLessonsRef.current = async () => {
