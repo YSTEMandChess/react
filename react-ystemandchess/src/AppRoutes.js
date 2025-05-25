@@ -20,6 +20,7 @@ import Student from "./Pages/Student/Student";
 import MentorProfile from "./Pages/Mentor-Profile/MentorProfile";
 import UserProfile from "./Pages/Student-Profile/UserProfile";
 import PieceLessons from "./Pages/piece-lessons/PieceLessons";
+import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
 import LessonsSelection from "./Pages/LessonsSelection/LessonsSelection"
 
 
@@ -63,7 +64,7 @@ const AppRoutes = () => {
       <Route path="/student" element={<Student/>} />
       <Route path="/mentor-profile" element={<MentorProfile />} />
       <Route path="/student-profile" element={<UserProfile />} />
-      {/* <Route path="/learnings" element={<LessonOverlay />} /> */}
+      <Route path="/learnings" element={<LessonOverlay />} />
     </Routes>
   );
 };

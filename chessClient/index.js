@@ -301,9 +301,10 @@ function deleteAllCookies() {
 
 
 // Listen to message from parent window
-window.addEventListener('message', (e) => {
-
-    // parse message
+eventer(
+  messageEvent,
+  (e) => {
+    console.log("client event: ", e); // uncomment for debugging
     let data = JSON.parse(e.data);
 
 
