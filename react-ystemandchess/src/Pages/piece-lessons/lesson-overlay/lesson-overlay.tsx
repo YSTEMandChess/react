@@ -10,8 +10,11 @@ import { ReactComponent as BackIcon} from '../../../images/icons/icon_back.svg';
 import { ReactComponent as BackIconInactive} from '../../../images/icons/icon_back_inactive.svg';
 import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg';
 import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
+import { useNavigate, useLocation } from 'react-router';
 
 const LessonOverlay = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const lessonStartFENRef = useRef("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     const [totalLessons, setTotalLessons] = useState(0);
     let lessonEndFEN = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
@@ -28,12 +31,15 @@ const LessonOverlay = () => {
     const [cookies] = useCookies(['piece', 'login']);
     const [name, setName] = useState("");
     const [info, setInfo] = useState("");
-    const piece = "Piece Checkmate 1 Basic checkmates";
+    let piece = "Piece Checkmate 1 Basic checkmates";
     const updateCompletionRef = useRef(() => {});
     const getTotalLessonsRef = useRef(() => {});
     const getCurrentLessonsRef = useRef<(input: number) => void>(() => {});
     let isReady = false;
     let lessonStarted = false;
+
+    const passedPieceName = location.state?.piece;
+    const passedLessonNumber = location.state?.lessonNum;
 
     useEffect(() => {
         const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
@@ -47,7 +53,14 @@ const LessonOverlay = () => {
                     isReady = true;
                 }
                 if (!lessonStarted) {
-                    await getLessonsCompleted();
+                    if (passedLessonNumber != null && passedPieceName != null) {
+                        // Fetch the specific lesson
+                        piece = passedPieceName;
+                        await getCurrentLessonsRef.current(passedLessonNumber);
+                        } else {
+                        // Otherwise, fetch the default lesson
+                        await getLessonsCompleted();
+                        }
                     lessonStarted = true;
                 } else if (e.data === lessonEndFEN || e.data.startsWith("next")) {
                     setShowVPopup(true);
@@ -93,7 +106,14 @@ const LessonOverlay = () => {
 
         eventer(messageEvent, handleMessage, false);
 
-        getTotalLessonsRef.current()
+        // Check if passedLessonNumber and passedPieceName are available
+        if (passedLessonNumber != null && passedPieceName != null) {
+            // Fetch the specific lesson
+                getTotalLessonsRef.current()
+                getCurrentLessonsRef.current(passedLessonNumber);
+            } else {
+                getTotalLessonsRef.current()
+            }
 
         return () => {
             window.removeEventListener('message', handleMessage);
@@ -292,7 +312,7 @@ const LessonOverlay = () => {
     return (
         <div id="lesson-container">
             <div className='left-right-container'>
-
+                <div className="switchLesson" onClick={() => navigate("/lessons-selection")}>Switch Lesson</div>
             </div>
             <div id="chess-board">
                 <PlayLesson chessLessonSrc={environment.urls.chessClientURL} />

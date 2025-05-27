@@ -20,6 +20,19 @@
         //make all content centered
         margin: 0 auto;
     }
+
+    .left-right-container {
+      .switchLesson {
+        color: green;
+        font-size: 2rem;
+        text-decoration: underline;
+        font-family:Verdana, Geneva, Tahoma, sans-serif;
+      }
+
+      .switchLesson:hover {
+        cursor: pointer;
+      }
+    }
 }
 
 #movesAhead {
