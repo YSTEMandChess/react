@@ -23,6 +23,7 @@ import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
 import UserProfile from './Pages/Student-Profile/UserProfile';
 import AboutUs from './Pages/About-Us/AboutUs/AboutUs';
 import LessonSelection from "./Pages/LessonsSelection/LessonsSelection"
+import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
 
 // Variables and Mutable Data
 import userPortraitImg from './images/user-portrait-placeholder.svg';
@@ -67,7 +68,7 @@ const AppRoutes = () => {
       <Route path='/student-profile' element={<UserProfile />} />
       <Route path='/about-us' element={<AboutUs />} />
 
-      {/* <Route path="/learnings" element={<LessonOverlay />} /> */}
+      <Route path="/learnings" element={<LessonOverlay />} />
     </Routes>
   );
 };

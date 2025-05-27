@@ -31,7 +31,7 @@ const LessonOverlay = () => {
     const piece = "Piece Checkmate 1 Basic checkmates";
     const updateCompletionRef = useRef(() => {});
     const getTotalLessonsRef = useRef(() => {});
-    const getCurrentLessonsRef = useRef(() => {});
+    const getCurrentLessonsRef = useRef<(input: number) => void>(() => {});
     let isReady = false;
     let lessonStarted = false;
 
@@ -66,7 +66,8 @@ const LessonOverlay = () => {
                     if (newLevel <= 1) newLevel = 1;
                     else if (newLevel >= 30) newLevel = 30;
 
-                    const chessBoard = document.getElementById('chessBd').contentWindow;
+                    const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
+                    const chessBoard = iframe?.contentWindow;
 
                     httpGetAsync(
                         `${environment.urls.stockFishURL}/?level=${newLevel}&fen=${e.data}`,
@@ -104,7 +105,8 @@ const LessonOverlay = () => {
     }
 
     function handleReset() {
-        const chessBoard = document.getElementById('chessBd').contentWindow
+        const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
+        const chessBoard = iframe?.contentWindow;
         const message = JSON.stringify({ boardState: lessonStartFENRef.current, color: "white", lessonFlag: false});
         chessBoard.postMessage(message, environment.urls.chessClientURL);
         setMoves([])
@@ -134,7 +136,7 @@ const LessonOverlay = () => {
     getCurrentLessonsRef.current = async (lessonNumber) => {
         // setPreviousEndSquare(endSquare);
         try {
-            logTime("fetching current lesson", lessonNumber)
+            logTime("fetching current lesson", lessonNumber.toString())
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber}`,
             {
@@ -214,7 +216,8 @@ const LessonOverlay = () => {
 
     const sendLessonToChessBoard = () => {
         logTime("Sending Lesson to board")
-        const chessBoard = document.getElementById('chessBd').contentWindow;
+        const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
+        const chessBoard = iframe?.contentWindow;
         const message = JSON.stringify({
             boardState: lessonStartFENRef.current,
             endState: lessonEndFEN,
@@ -294,22 +297,6 @@ const LessonOverlay = () => {
             <div id="chess-board">
                 <PlayLesson chessLessonSrc={environment.urls.chessClientURL} />
             </div>
-            {/* <div id="lesson-content">
-                <h2>{piece}</h2>
-                <div id="try-this">
-                    <p>Try this!</p>
-                    <p>Pawns move one square only. But when they reach the other side of the board, they become a stronger piece!</p>
-                </div>
-                <div id="bottom">
-                    <button type="button" id="previous" onClick={previousLesson}>
-                        &lt; Back
-                    </button>
-                    <button type="button" id="next" onClick={nextLesson}>
-                        Next &gt;
-                    </button>
-                </div>
-                <button onClick={handleReset} className="reset-btn">Reset</button>
-            </div> */}
             <div className='right-container'>
                 {/* Description part */}
                 <div className='lesson-header'>
