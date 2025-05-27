@@ -12,19 +12,20 @@ import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg'
 import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
 
 const LessonOverlay = () => {
-    const lessonStartFENRef = useRef("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    const lessonStartFENRef = useRef("");
     const [totalLessons, setTotalLessons] = useState(0);
-    let lessonEndFEN = "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
+    let lessonEndFEN = "";
     const [endSquare, setEndSquare] = useState('');
     const [previousEndSquare, setPreviousEndSquare] = useState('');
     const [lessonNum, setLessonNum] = useState(0);
     const prevFenRef = useRef(null)
-    const currentFenRef = useRef(lessonStartFENRef.current);
+    const currentFenRef = useRef(null);
     const [moves, setMoves] = useState([])
     const [moveIndex, setMoveIndex] = useState(1)
     const [level, setLevel] = useState(5);
     const [showVPopup, setShowVPopup] = useState(false);
     const [showXPopup, setShowXPopup] = useState(false);
+    const [showLPopup, setShowLPopup] = useState(true);
     const [cookies] = useCookies(['piece', 'login']);
     const [name, setName] = useState("");
     const [info, setInfo] = useState("");
@@ -42,7 +43,6 @@ const LessonOverlay = () => {
 
         const handleMessage = async (e) => {
             if (e.origin === environment.urls.chessClientURL) {
-                console.log("front end received", e.data)
                 if (e.data === 'ReadyToRecieve') {
                     isReady = true;
                 }
@@ -82,7 +82,6 @@ const LessonOverlay = () => {
                             processMove()
 
                             if (isReady) {
-                                console.log("ready")
                                 chessBoard.postMessage(message, environment.urls.chessClientURL);
                             }
                         }
@@ -110,11 +109,11 @@ const LessonOverlay = () => {
         const message = JSON.stringify({ boardState: lessonStartFENRef.current, color: "white", lessonFlag: false});
         chessBoard.postMessage(message, environment.urls.chessClientURL);
         setMoves([])
+        currentFenRef.current = lessonStartFENRef.current
     }
 
     const getLessonsCompleted = async () => {
         try {
-            logTime("get # of completed lessons")
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${piece}`, 
             {
@@ -136,6 +135,8 @@ const LessonOverlay = () => {
     getCurrentLessonsRef.current = async (lessonNumber) => {
         // setPreviousEndSquare(endSquare);
         try {
+            
+            setShowLPopup(true)
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber + 1}`,
             {
@@ -143,20 +144,23 @@ const LessonOverlay = () => {
                 headers: { 'Authorization': `Bearer ${cookies.login}` }
             }
             );
-                const lessonData = await response.json();
-                // Update the lesson data
-                lessonStartFENRef.current = lessonData.startFen
-                setInfo(lessonData.info)
-                setName(lessonData.name)
-                // setLessonEndFEN(data.endFen); 
-                
-                // Check if we've reached the end of lessons, same approach I saw earlier.
-                if (!lessonData || lessonData.lessonNum === undefined) {
-                    alert('Congratulations! You have completed all lessons for this piece.');
-                    return
-                }
-                // setEndSquare(data.endSquare);
-                sendLessonToChessBoard();
+
+            const lessonData = await response.json();
+            // Update the lesson data
+            lessonStartFENRef.current = lessonData.startFen
+            if(!currentFenRef.current) currentFenRef.current = lessonData.startFen
+            setInfo(lessonData.info)
+            setName(lessonData.name)
+            setShowLPopup(false)
+            // setLessonEndFEN(data.endFen); 
+            
+            // Check if we've reached the end of lessons, same approach I saw earlier.
+            if (!lessonData || lessonData.lessonNum === undefined) {
+                alert('Congratulations! You have completed all lessons for this piece.');
+                return
+            }
+            // setEndSquare(data.endSquare);
+            sendLessonToChessBoard();
             } catch (error) {
                 console.error('Error fetching lesson:', error);
         }
@@ -165,7 +169,6 @@ const LessonOverlay = () => {
     function processMove() {
         if (prevFenRef.current) {
             const move = getMoveFromFens(prevFenRef.current, currentFenRef.current)
-            console.log(move)
             setMoves(prev => [...prev, move])
         }
     }
@@ -174,20 +177,22 @@ const LessonOverlay = () => {
         const chess = new Chess(prevFEN)
         const moves = chess.moves({verbose: true})
 
-        console.log(getPositionKey(prevFEN), getPositionKey(currFEN))
+        // console.log(getPositionKey(prevFEN), getPositionKey(currFEN))
+        console.log("prevFen", getPositionKey(prevFEN))
+        console.log("currFen", getPositionKey(currFEN))
 
         for (let i = 0; i < moves.length; i++) {
             const possibleChess = new Chess(prevFEN)
             possibleChess.move(moves[i])
             
             if (getPositionKey(possibleChess.fen()) === getPositionKey(currFEN)) {
-                console.log("move found!")
+                // console.log("move found!")
                 return moves[i].san
             }
         }
 
         // move not found
-        console.log("move not found :(")
+        // console.log("move not found :(")
         return null
     }
 
@@ -215,7 +220,6 @@ const LessonOverlay = () => {
     };
 
     const sendLessonToChessBoard = () => {
-        logTime("Sending Lesson to board")
         const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
         const chessBoard = iframe?.contentWindow;
         const message = JSON.stringify({
@@ -236,6 +240,7 @@ const LessonOverlay = () => {
             setPreviousEndSquare(endSquare);
             getCurrentLessonsRef.current(lessonNum - 1);
             setMoves([])
+            currentFenRef.current = null;
         }
     };
     
@@ -245,6 +250,7 @@ const LessonOverlay = () => {
             setPreviousEndSquare(endSquare);
             getCurrentLessonsRef.current(lessonNum + 1);
             setMoves([])
+            currentFenRef.current = null;
         }
     };
 
@@ -282,6 +288,7 @@ const LessonOverlay = () => {
         setShowVPopup(false);
         updateCompletionRef.current();
         setMoves([])
+        currentFenRef.current = lessonStartFENRef.current
     }
 
     const handleXPopup = () => {
@@ -394,6 +401,28 @@ const LessonOverlay = () => {
                     </div>
                 </div>
                 )}
+            
+            {showLPopup && (
+                <div className="popup">
+                    <div className="popup-content">
+                    <div className="loading-spinner">
+                        <svg width="80" height="80" viewBox="0 0 120 120">
+                        <circle
+                            className="spinner"
+                            cx="60"
+                            cy="60"
+                            r="54"
+                            fill="none"
+                            stroke="#a3d0ff"
+                            strokeWidth="6"
+                        ></circle>
+                        </svg>
+                    </div>
+                    <p className="popup-header">Loading lesson...</p>
+                    <p className="popup-subheading">Please wait</p>
+                    </div>
+                </div>
+            )}
 
         </div>
     );

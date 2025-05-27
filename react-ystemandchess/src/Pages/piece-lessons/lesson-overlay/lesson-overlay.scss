@@ -159,7 +159,7 @@
 
 .popup-content {
   width: 450px;
-  height: 280px;
+  height: fit-content;
   background-color: white;
   padding: 20px;
   border-radius: 10px;
@@ -196,6 +196,11 @@
   }
 }
 
+.error-cross {
+  display: flex;
+  justify-content: center;
+}
+
 .popup-header {
   color: rgb(108, 107, 107);
   font-size: 30px;
@@ -208,22 +213,52 @@
   font-size: 20px;
 }
 
-.popup-button {
-  border-radius: 9px;
-  background-color: rgb(74, 145, 221);
-  border: 3px solid rgb(156, 184, 214);
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  svg {
+    animation: rotate 2s linear infinite;
+  }
+
+  .spinner {
+    stroke-dasharray: 339.292; // approx. circumference of r=54
+    stroke-dashoffset: 0;
+    transform-origin: 60px 60px;
+    animation: dash 1.5s ease-in-out infinite;
+  }
 }
 
-.popup-button:hover {
-  background-color: rgb(68, 133, 203);
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
 }
+
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 339.292;
+  }
+  50% {
+    stroke-dashoffset: 84.823;
+    transform: rotate(45deg);
+  }
+  100% {
+    stroke-dashoffset: 339.292;
+    transform: rotate(360deg);
+  }
+}
+
 
 // BEGIN MOVE TRACK STYLES
 
 .move-list {
-  border: 2px solid #357D96;
+  border: 2px solid var(--dark-green-color);
   width: min-content;
   min-width: 300px;
+  max-height: 130px;
+  overflow: scroll;
   border-radius: 4px;
   background-color: white;
   padding: 10px;
@@ -237,7 +272,7 @@
   text-underline-offset: 2px;
   font-size: 20px;
   font-weight: bold;
-  color: #357D96;
+  color: var(--dark-green-color);
   margin-bottom: 10px;
 }
 
