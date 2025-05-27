@@ -14,7 +14,7 @@
         justify-content: center;
         align-items: center;
         border-radius: 10px;
-        padding: 10px;
+        padding: 8px;
         //make all content smaller
         width: 50%;
         //make all content centered
@@ -36,6 +36,7 @@
 }
 
 .right-container {
+  margin-top: 30px;
   box-sizing: border-box;
   width: 100%;
   display: flex;

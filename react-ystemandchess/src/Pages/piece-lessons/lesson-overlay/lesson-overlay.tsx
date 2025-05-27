@@ -136,9 +136,8 @@ const LessonOverlay = () => {
     getCurrentLessonsRef.current = async (lessonNumber) => {
         // setPreviousEndSquare(endSquare);
         try {
-            logTime("fetching current lesson", lessonNumber.toString())
             const response = await fetch(
-            `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber}`,
+            `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber + 1}`,
             {
                 method: 'GET', 
                 headers: { 'Authorization': `Bearer ${cookies.login}` }
@@ -193,8 +192,9 @@ const LessonOverlay = () => {
     }
 
     function getPositionKey(fen) {
-    // only compare the first 4 parts of the FEN (board, active color, castling, en passant)
-    return fen.split(" ").slice(0, 3).join(" ")
+        // only compare the first 4 parts of the FEN (board, active color, castling, en passant)
+        if(!fen) return;
+        return fen.split(" ").slice(0, 3).join(" ")
     }
 
     getTotalLessonsRef.current = async () => {
@@ -231,20 +231,20 @@ const LessonOverlay = () => {
 
     // Navigation functions
     const previousLesson = () => {
-        if (lessonNum > 1) {
-            logTime("Previous lesson")
+        if (lessonNum > 0) {
             setLessonNum(prevNum => prevNum - 1);
             setPreviousEndSquare(endSquare);
             getCurrentLessonsRef.current(lessonNum - 1);
+            setMoves([])
         }
     };
     
     const nextLesson = () => {
-        if (lessonNum < totalLessons) {
-            logTime("Next lesson")
+        if (lessonNum < totalLessons - 1) {
             setLessonNum(prevNum => prevNum + 1);
             setPreviousEndSquare(endSquare);
             getCurrentLessonsRef.current(lessonNum + 1);
+            setMoves([])
         }
     };
 
@@ -261,7 +261,6 @@ const LessonOverlay = () => {
             
             // Move to next lesson if available, otherwise throw an error.
             if (lessonNum + 1 < totalLessons) {
-                console.log("lessonNum!!", lessonNum)
                 setLessonNum(prevNum => prevNum + 1);
                 getCurrentLessonsRef.current(lessonNum + 1);
             }
@@ -282,6 +281,7 @@ const LessonOverlay = () => {
     const handleVPopup = () => {
         setShowVPopup(false);
         updateCompletionRef.current();
+        setMoves([])
     }
 
     const handleXPopup = () => {
@@ -306,12 +306,12 @@ const LessonOverlay = () => {
                 </button>
                 </div>
     
-                <h1 className='subheading'>{lessonNum} / {totalLessons}: {name}</h1>
+                <h1 className='subheading'>{lessonNum + 1} / {totalLessons}: {name}</h1>
                 <p className="lesson-description">{info}</p>
     
                 <div className='prev-next-button-container'>
                 {
-                    lessonNum == 1? (
+                    lessonNum <= 0? (
                     <button className="prevNextLessonButton-inactive prev">
                         <BackIconInactive/>
                         <p className="button-description">Back</p>
@@ -324,7 +324,7 @@ const LessonOverlay = () => {
                     )
                 }
     
-                {lessonNum == totalLessons? (
+                {lessonNum >= totalLessons - 1? (
                     <button className="prevNextLessonButton-inactive next">
                         <p className="button-description">Next</p>
                         <NextIconInactive/>
