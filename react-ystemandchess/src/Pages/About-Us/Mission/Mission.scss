@@ -1,0 +1,107 @@
+$caption-color: rgb(83, 83, 83);
+$brand-color-primary: #ffffff;
+$brand-color-secondary: #ffffff;
+
+#main-content {
+  background-color: $brand-color-primary;
+  font-family: "Roboto", sans-serif;
+  padding-bottom: 48px;
+  text-align: left;
+}
+
+.text-title-md h1 {
+  font-size: 1.3rem;
+  margin-top: 80px;
+  margin-bottom: 0;
+  padding-left: 0;
+  line-height: 26px;
+}
+
+.text-normal p {
+  font-size: 16px;
+  line-height: 26px;
+  margin-top: 0;
+  text-align: left;
+  padding-left: 0; // Ensure the paragraph aligns with the heading
+  text-indent: 0;
+  // Reset text indent if it's causing an offset
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.text-title-md2 h1 {
+  font-size: 1.3rem;
+  margin-top: -170px;
+  margin-bottom: 0;
+  padding-left: 0;
+  line-height: 26px;
+  padding-left: 220px;
+}
+// Remove any additional padding from the containers
+.text-title-md,
+.text-normal {
+  padding: 0;
+  padding-left: 220px;
+}
+
+.picture {
+  object-fit: contain;
+  width: max(100%, 180px);
+  height: 270px;
+  padding-left: 410px;
+  padding-top: 0px;
+  margin-top: -100px;
+}
+
+.picture2 {
+  object-fit: contain;
+  width: max(100%, 70px);
+  height: 105px;
+  padding-right: 400px;
+  padding-top: 0px;
+  margin-top: 20px;
+}
+
+.picture3 {
+  object-fit: contain;
+  width: max(100%, 400px);
+  height: 600px;
+  padding-right: 400px;
+  padding-top: 0px;
+  margin-top: 10px;
+}
+
+.picture4 {
+  object-fit: contain;
+  width: max(100%, 25px);
+  height: 50px;
+  padding-right: 400px;
+  padding-top: 0px;
+  margin-top: 10px;
+}
+
+.picture5 {
+  object-fit: contain;
+  width: max(100%, 160px);
+  height: 240px;
+  padding-left: -500px;
+  margin-left: -200px;
+  padding-top: 0px;
+  margin-top: 10px;
+}
+
+.picture6 {
+  object-fit: contain;
+  width: max(100%, 160px);
+  height: 240px;
+  padding-left: -500px;
+  margin-left: 200px;
+  padding-top: -10px;
+  margin-top: -900px;
+}
+
+.picture5,
+.picture6 {
+  padding: 0;
+  margin-bottom: 10px;
+}

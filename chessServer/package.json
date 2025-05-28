@@ -1,0 +1,25 @@
+{
+  "name": "chessServer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chess.js": "^1.0.0-beta.8",
+    "dotenv": "^8.6.0",
+    "express": "^4.21.0",
+    "jest": "^29.7.0",
+    "nodemon": "^2.0.6",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.8.0",
+    "supertest": "^7.0.0"
+  },
+  "volta": {
+    "node": "14.21.3"
+  }
+}

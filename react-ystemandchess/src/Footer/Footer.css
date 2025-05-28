@@ -1,0 +1,61 @@
+.footer-container {
+  width: 100%;
+  height: auto;
+  background-color: #bfd99e;
+  display: flex;
+  justify-content: center;
+  gap: 10em;
+}
+.footer-info {
+  width: 25%;
+  height: 100%;
+}
+.footer-info .footer-icons {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  gap: 2em;
+  margin-top: 70px;
+}
+.footer-email {
+  margin-bottom: -7vh;
+}
+.footer-phone {
+  margin-bottom: -4vh;
+}
+.footer-icons #twitter-icon {
+  width: 30%;
+}
+.footer-icons #instagram-icon {
+  width: 30%;
+}
+.footer-icons #facebook-icon {
+  width: 20%;
+}
+.footer-icons #google-icon {
+  width: 30%;
+}
+.footer-sponsors {
+  width: 20%;
+  height: 100%;
+  text-align: center;
+}
+.sponsors-list {
+  list-style-type: none;
+  padding-right: 30px;
+}
+.sponsors-list li {
+  margin-bottom: 1vh;
+}
+.footer-PH {
+  width: 30%;
+}
+.footer-partners {
+  width: 20%;
+  height: 100%;
+  text-align: center;
+}
+.partners-list-1 {
+  list-style-type: none;
+  padding-right: 30px;
+}

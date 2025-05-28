@@ -1,0 +1,226 @@
+h2 {
+  margin-top: 5rem;
+}
+
+.signupForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; /* Centers form vertically */
+  width: 100%;
+}
+
+#button-signup {
+  border: 2px solid;      // Sets the border width and style
+  border-color: #3a7cca;
+  width: 15%;
+  outline-style: none;
+  padding-left: 2%;
+  padding-right: 2%;
+  font-family: Roboto;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 700;
+  background-color: #fff;
+  color: #1a63ab;
+  border-radius: 33px;
+}
+
+button:hover {
+  background-color: #3a7cca;
+  color: #fff;
+}
+
+.termsCheckbox {
+  display: flex;                      // Use flexbox for alignment
+  align-items: center;               // Center items vertically
+  justify-content: center;            // Center items horizontally (optional)
+  margin: 15px 0;                    // Space above and below the terms checkbox
+  
+  input[type="checkbox"] {
+    margin-right: 10px;              // Space between checkbox and label
+  }
+}
+
+.errorMessages {
+  color: red;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.errorMessages {
+  display: none; // Default to not displaying any error messages
+
+  &.visible {
+    display: block; // Only show when the .visible class is added
+  }
+
+  h3 {
+    color: red; // Styling for error messages
+    text-align: center; // Center the error message text
+  }
+}
+
+.formInputs {
+  display: flex;
+  flex-direction: column;
+  align-items: center; // Center the content horizontally
+  
+
+  // Styling for the terms and conditions checkbox
+  > div {
+    display: flex;
+    align-items: center; // Center the checkbox and label vertically
+    margin-bottom: 15px; // Space below the terms section
+  }
+
+  // Center the dropdown
+  select {
+    width: 100%; // Full width for better aesthetics
+    max-width: 300px; // Limit max width for better control
+    padding: 10px; // Add padding for comfort
+    margin: 10px 0; // Add vertical margin
+  }
+
+  // Center the submit button
+  input[type="submit"] {
+    margin-top: 10px; // Space above the button
+    align-self: center; // Center the button horizontally
+  }
+}
+
+.formInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Adds space between each input */
+  width: 100%;
+  max-width: 20rem; /* Limits max width for centered appearance */
+  
+}
+
+.formInputs input,
+.formInputs select,
+.formInputs button {
+  width: 80%; /* Ensures inputs and select span full width */
+  padding: 0.5rem;
+}
+
+.formInputs label {
+  margin-top: 0.5rem;
+}
+
+.formInputs div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+
+  .email-detail {
+    min-width: 41.5rem;
+
+    #email {
+      min-width: 41.5rem;
+    }
+  }
+
+  .terms-container {
+    font-size: 1.2rem;
+    display: flex;
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+
+    input {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+  }
+  .account-details-container {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+
+    .account-type-container {
+      display: flex;
+      gap: 0.5rem;
+      font-size: 1.2rem;
+      align-items: center;
+      position: relative;
+
+      select {
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        padding: 0.5rem;
+
+        option {
+          padding: 0.5rem;
+        }
+      }
+    }
+  }
+  .account-detail {
+    width: 100%;
+    height: 40px;
+    position: relative;
+    width: 20rem;
+    display: flex;
+    justify-content: center;
+
+    input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-bottom: 2px solid silver;
+      font-size: 1.1rem;
+      outline: none;
+    }
+
+    input:focus ~ label,
+    input:valid ~ label {
+      transform: translateY(-25px);
+      border: none;
+      color: black;
+    }
+
+    .underline {
+      position: absolute;
+      bottom: -2px;
+      height: 3px;
+      width: 100%;
+    }
+    .underline:before {
+      position: absolute;
+      content: "";
+      height: 100%;
+      width: 100%;
+      background: black;
+      transform: scale(0);
+      bottom: -3px;
+      left: 2px;
+    }
+
+    input:focus ~ .underline:before,
+    input:valid ~ .underline:before {
+      width: 100%;
+      transform: scale(1.01);
+      transition: transform 0.4s ease;
+    }
+
+    label {
+      position: absolute;
+      bottom: 5px;
+      left: 1px;
+      color: grey;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+  }
+}
