@@ -33,7 +33,8 @@ const LessonOverlay = () => {
     const [cookies] = useCookies(['piece', 'login']);
     const [name, setName] = useState("");
     const [info, setInfo] = useState("");
-    let piece = "Piece Checkmate 1 Basic checkmates";
+    const [piece, setPiece] = useState("Piece Checkmate 1 Basic checkmates");
+    const getLessonsCompletedRef = useRef(() => {});
     const updateCompletionRef = useRef(() => {});
     const getTotalLessonsRef = useRef(() => {});
     const getCurrentLessonsRef = useRef<(input: number) => void>(() => {});
@@ -52,15 +53,15 @@ const LessonOverlay = () => {
             if (e.origin === environment.urls.chessClientURL) {
                 if (e.data === 'ReadyToRecieve') {
                     isReady = true;
+                    getTotalLessonsRef.current()
                 }
                 if (!lessonStarted) {
                     if (passedLessonNumber != null && passedPieceName != null) {
                         // Fetch the specific lesson
-                        piece = passedPieceName;
                         await getCurrentLessonsRef.current(passedLessonNumber);
                         } else {
                         // Otherwise, fetch the default lesson
-                        await getLessonsCompleted();
+                        await getLessonsCompletedRef.current();
                         }
                     lessonStarted = true;
                 } else if (e.data === lessonEndFEN || e.data.startsWith("next")) {
@@ -109,10 +110,9 @@ const LessonOverlay = () => {
         // Check if passedLessonNumber and passedPieceName are available
         if (passedLessonNumber != null && passedPieceName != null) {
             // Fetch the specific lesson
-                getTotalLessonsRef.current()
-                getCurrentLessonsRef.current(passedLessonNumber);
-            } else {
-                getTotalLessonsRef.current()
+                setLessonNum(passedLessonNumber)
+                setPiece(passedPieceName)
+                
             }
 
         return () => {
@@ -133,7 +133,7 @@ const LessonOverlay = () => {
         currentFenRef.current = lessonStartFENRef.current
     }
 
-    const getLessonsCompleted = async () => {
+    getLessonsCompletedRef.current = async () => {
         try {
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${piece}`, 
@@ -307,6 +307,7 @@ const LessonOverlay = () => {
 
     const handleVPopup = () => {
         setShowVPopup(false);
+        setShowLPopup(true)
         updateCompletionRef.current();
         setMoves([])
         currentFenRef.current = lessonStartFENRef.current
