@@ -1,9 +1,15 @@
 * {
-  // border: 1px solid gold;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
   --green-color: #7FCC26;
   --gray-color: #7A7A7A;
   --light-gray-color: #D4DDDD;
   --dark-green-color: #5d971b;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --border-radius: 10px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .lessons-page {
@@ -25,42 +31,49 @@
 
 /* Button styles */
 .lesson-button, .play-button {
-  padding: 10px 20px;
-  margin: 5px;
+  padding: 10px 28px;
+  margin: 5px 10px;
   border: none;
-  background-color: var(--green-color); /* Green background */
-  color: white;
-  font-size: 1rem;
+  background: none;
+  font-size: 2.2rem;
+  font-weight: 800;
+  border-radius: 8px;
+  transition: 
+    color 0.2s var(--transition),
+    background-color 0.2s var(--transition),
+    box-shadow 0.2s var(--transition);
   cursor: pointer;
-  z-index: 1; /* Ensure buttons appear above the chessboard */
-  display: inline;
-  justify-content: space-evenly;
-}
-
-.lesson-button, .play-button {
-  background-color: transparent;
-  font-size: 40px;
-  font-weight: bolder;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  outline: none;
 }
 
 .lesson-button {
   color: var(--green-color);
-  margin-left: -1rem;
+  margin-left: -0.5rem;
+  border: 2px solid var(--green-color);
+  background-color: rgba(127,204,38,0.08);
+}
+
+.lesson-button:hover, .lesson-button:focus {
+  color: var(--dark-green-color);
+  background-color: rgba(127,204,38,0.18);
+  box-shadow: 0 2px 8px rgba(127,204,38,0.12);
 }
 
 .play-button {
   color: var(--gray-color);
-  margin-right: -1rem;
+  margin-right: -0.5rem;
+  border: 2px solid var(--gray-color);
+  background-color: rgba(122,122,122,0.08);
 }
 
-.lesson-button:hover {
-  background-color: transparent;
-  color: var(--dark-green-color)
-}
-
-.play-button:hover {
-  background-color: transparent;
-  color: black
+.play-button:hover, .play-button:focus {
+  color: black;
+  background-color: rgba(122,122,122,0.18);
+  box-shadow: 0 2px 8px rgba(122,122,122,0.12);
 }
 
 .right-container {
@@ -70,11 +83,17 @@
   flex-direction: column;
   font-weight: bold;
   text-align: left;
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  background: rgba(255,255,255,0.85);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
 }
 
 .button-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 18px;
+  margin-top: 1.5rem;
 }
 
 .lesson-header {
@@ -118,7 +137,7 @@
 .lesson-description {
   font-size: 26px;
   color: var(--gray-color);
-  max-height: 270px;
+  max-height: 500px;
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -179,6 +198,9 @@
   margin-left: 100px;
   margin-right: 100px;
   margin-top: 50px;
+  background-color: var(--gray-color);
+  border-radius: 4px;
+  padding: 0;
 }
 
 .lesson-buttons {
@@ -191,7 +213,7 @@
   width: fit-content;
   min-width: 120px;
   height: 40px;
-  border-radius: 0;
+  border-radius: 6px;
   transition: background-color 0.5s ease;
   font-weight: bold;
 }
@@ -334,5 +356,38 @@
   object-fit: contain; /* Ensure the image fits nicely within the square */
 }
 
+// STYLES FOR PRROMOTION POPUP
 
+.promotion-popup {
+  border: 1px solid var(--gray-color);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: large;
+  z-index: 1000; /* Ensure it appears above other content */
+}
 
+.promotion-options {
+  padding: 20px;
+  border: 1px solid var(--gray-color);
+  background-color: var(--light-gray-color);
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.promotion-option {
+  background-color: var(--green-color);
+}
+
+.promotion-option:hover {
+  background-color: var(--dark-green-color);
+} 

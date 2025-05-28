@@ -45,7 +45,7 @@ const LessonOverlay = () => {
                     if (newLevel <= 1) newLevel = 1;
                     else if (newLevel >= 30) newLevel = 30;
 
-                    const chessBoard = document.getElementById('chessBd').contentWindow;
+                    const chessBoard = (document.getElementById('chessBd') as HTMLIFrameElement).contentWindow;
 
                     httpGetAsync(
                         `${environment.urls.stockFishURL}/?level=${newLevel}&fen=${e.data}`,
