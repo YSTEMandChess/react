@@ -3,6 +3,7 @@ import { useCookies } from 'react-cookie';
 import { environment } from '../../../environments/environment';
 import PlayLesson from '../play-lesson/PlayLesson';
 import './lesson-overlay.scss';
+// @ts-ignore
 import MoveTracker from '../move-tracker/MoveTracker';
 import { Chess } from 'chess.js';
 import { ReactComponent as RedoIcon } from '../../../images/icons/icon_redo.svg';

@@ -7,6 +7,7 @@ import { ReactComponent as NextIcon } from './icon_next.svg';
 import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
 import { getScenario, getScenarioLength } from "./Scenarios";
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
+// @ts-ignore
 import PromotionPopup from "./PromotionPopup";
 
 
