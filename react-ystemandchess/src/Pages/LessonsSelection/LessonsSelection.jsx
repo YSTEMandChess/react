@@ -32,6 +32,8 @@ export default function LessonSelection() {
     const [scenarios, setScenarios] = useState([]);
     const [lessons, setLessons] = useState([]);
 
+    const [lessonNum, setLessonNum] = useState(null);
+
     useEffect(() => {
         const scenarioList = [];
         for (let i = 0; i < getScenarioLength(); i++) {
@@ -39,6 +41,20 @@ export default function LessonSelection() {
         }
         setScenarios(scenarioList);
     }, []);
+
+    const getLessonNum = (scenario, lesson) => {
+        for(let i = 0; i < getScenarioLength(); i++) {
+            if (getScenario(i).name === scenario) {
+                for(let j =0; j < getScenario(i).subSections.length; j++) {
+                    if (getScenario(i).subSections[j] === lesson) {
+                        return j;
+                    }
+                }
+                break;
+            }
+        }
+        return -1;
+    }
 
     const handleScenarioClick = (scenario) => {
         setShowLessons(false);
@@ -99,7 +115,7 @@ export default function LessonSelection() {
             )}
 
             <button className="enterInfo" onClick={() => {
-                navigate("/lessons", {state: {scenario: selectedScenario, lesson: selectedLesson}});
+                navigate("/lessons", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
             }}>
                 Go!
             </button>
