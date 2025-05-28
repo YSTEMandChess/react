@@ -117,7 +117,7 @@ export default function LessonSelection() {
             )}
 
             <button className="enterInfo" onClick={() => {
-                navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
+                navigate("/lessons", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
             }}>
                 Go!
             </button>

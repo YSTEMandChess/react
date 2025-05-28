@@ -30,6 +30,7 @@ const LessonOverlay = () => {
     const [showVPopup, setShowVPopup] = useState(false);
     const [showXPopup, setShowXPopup] = useState(false);
     const [showLPopup, setShowLPopup] = useState(true);
+    const [showInstruction, setShowInstruction] = useState(false);
     const [cookies] = useCookies(['piece', 'login']);
     const [name, setName] = useState("");
     const [info, setInfo] = useState("");
@@ -173,6 +174,7 @@ const LessonOverlay = () => {
             setInfo(lessonData.info)
             setName(lessonData.name)
             setShowLPopup(false)
+            setShowInstruction(true)
             // setLessonEndFEN(data.endFen); 
             
             // Check if we've reached the end of lessons, same approach I saw earlier.
@@ -318,6 +320,10 @@ const LessonOverlay = () => {
         handleReset()
     }
 
+    const handleShowInstruction = () => {
+        setShowInstruction(false);
+    }
+
     return (
         <div id="lesson-container">
             <div className='left-right-container'>
@@ -442,6 +448,16 @@ const LessonOverlay = () => {
                     </div>
                     <p className="popup-header">Loading lesson...</p>
                     <p className="popup-subheading">Please wait</p>
+                    </div>
+                </div>
+            )}
+
+            {showInstruction && (
+                <div className="popup">
+                    <div className="popup-content">
+                    <p className="popup-header">Read this instruction:</p>
+                    <p className="popup-subheading">{info}</p>
+                    <button className="popup-button" onClick={handleShowInstruction}>Finished reading!</button>
                     </div>
                 </div>
             )}

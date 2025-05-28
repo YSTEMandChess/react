@@ -179,6 +179,16 @@
   text-align: center;
 }
 
+.popup-button {
+  background-color: var(--green-color);
+  color: black;
+  font-weight: bold;
+}
+
+.popup-button:hover {
+  background-color: var(--dark-green-color);
+}
+
 .success-checkmark {
   display: flex;
   justify-content: center;
@@ -224,6 +234,8 @@
 .popup-subheading {
   color: rgb(108, 107, 107);
   font-size: 20px;
+  max-height: 300px;
+  overflow: scroll;
 }
 
 .loading-spinner {
