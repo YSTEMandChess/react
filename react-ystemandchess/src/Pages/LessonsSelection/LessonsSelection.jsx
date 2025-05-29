@@ -9,7 +9,7 @@ import { getScenarioLength, getScenario} from "../Lessons/Scenarios";
 function ScenarioTemplate({ scenario, onClick }) { // You can pass down references, like onClick!
     return (
       <div className="item-template" onClick={onClick}>
-        <div>Title: {scenario.name}</div>
+        <div>{scenario.name}</div>
       </div>
     );
   }
@@ -17,7 +17,7 @@ function ScenarioTemplate({ scenario, onClick }) { // You can pass down referenc
   function LessonTemplate({ lesson, onClick }) {
     return (
       <div className="item-template" onClick={onClick}>
-        <div>Title: {lesson.name}</div>
+        <div>{lesson.name}</div>
       </div>
     );
   }
@@ -86,6 +86,9 @@ export default function LessonSelection() {
     const navigate = useNavigate();      
     return(
         <div className="whole-page">
+            <div className="title">
+                Lesson Selection
+            </div>
             <div className="selector scenario-selector" onClick={() => {
                 setShowScenarios(!showScenarios);
             }}>

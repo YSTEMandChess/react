@@ -7,6 +7,12 @@
     flex-direction: column;
 }
 
+.title {
+    font-size: 3rem;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 1000;
+}
+
 .header {
     font-size: 2.3rem;
 }
@@ -23,16 +29,18 @@
 
 .item-template {
     background-color: whitesmoke;
-    color: green;
+    color: black;
     width: 100%;
-    height: 7vh;
-    border: 0.05rem solid black;
-    justify-content: center;
+    height: 5vh;
+    text-align: left;
+    padding-left: 0.1rem;
     align-items: center;
+    justify-content: center;
 }
 
 .item-template:hover {
     cursor: pointer;
+    background-color: lightgray;
 }
 
 .subsections-list {
@@ -60,7 +68,7 @@
     width: 10vw;
     height: 10vh;
     border-radius: 1rem;
-    font-size: 2.5rem;
+    font-size: clamp(0.5rem, 3vw, 2.5rem);
     background-color: green;
 }
 
@@ -74,7 +82,7 @@
     background-color: #FAF9F6;
     align-items: center;
     padding-left: 0.3rem;
-    font-size: 2rem;
+    font-size: clamp(0.5rem, 3vw, 2rem);
     justify-content: space-between;
     margin-top: 1rem;
 }
