@@ -7,6 +7,8 @@ import { ReactComponent as NextIcon } from './icon_next.svg';
 import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
 import { getScenario, getScenarioLength } from "./Scenarios";
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
+// @ts-ignore
+import PromotionPopup from "./PromotionPopup";
 
 
 type Board = (string | null)[][];
@@ -30,6 +32,9 @@ const Lessons = () => {
   const location = useLocation();
   const passedScenarioName = location.state?.scenario;
   const passedLessonName = location.state?.lesson;
+
+  const [isPromoting, setIsPromoting] = useState(false); // State to track if a pawn is being promoted
+  const [promotionPosition, setPromotionPosition] = useState(null); // Position of the pawn being promoted
 
   // Initialize the chessboard
   function initializeBoard(): Board {
@@ -228,8 +233,9 @@ const Lessons = () => {
       updatedBoard[startRow][startCol] = null;            // Clear old square
 
       // Check if the moved piece is a pawn reaching the promotion rank
-      if (draggingPiece?.piece.type === 'P' && (endRow === 0 || endRow === 7)) {
-        promotePawn(key); // Call promote function
+      if ((draggingPiece.piece === 'wP' && endRow === 0) || (draggingPiece.piece === 'bP' && endRow === 7)) {
+        setPromotionPosition(key); // Set the position for promotion
+        setIsPromoting(true); // Set promoting state to true  
       } else {
         setBoard(updatedBoard); // Update board state
       }
@@ -244,14 +250,15 @@ const Lessons = () => {
   };
 
   // Update promotePawn function to set the board state
-  function promotePawn(position: any) {
+  function promotePawn(position: any, piece: string) {
     const [row, col] = position.split('-').map(Number);
     const updatedBoard = [...board];
     const color = board[row][col] !== null ? board[row][col]![0] : ''; // Safely accessing the color
-    const newPiece = color === 'w' ? 'wQ' : 'bQ'; // Promote to Queen
+    const newPiece = color === 'w' ? `w${piece}` : `b${piece}`; // Promote to selected piece
 
     updatedBoard[row][col] = newPiece; // Update the board with the new queen
     setBoard(updatedBoard); // Set the new board state
+    setIsPromoting(false); // Close the promotion popup
   }
 
 
@@ -285,6 +292,7 @@ const Lessons = () => {
                 draggingPiece
               )}
             </div>
+            {isPromoting ? <PromotionPopup position={promotionPosition} promoteToPiece={promotePawn} /> : null /* Show promotion popup if needed */}
           </div>
         </div>
 
