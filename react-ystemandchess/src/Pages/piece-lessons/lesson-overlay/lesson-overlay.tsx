@@ -22,6 +22,7 @@ const LessonOverlay = () => {
     const [endSquare, setEndSquare] = useState('');
     const [previousEndSquare, setPreviousEndSquare] = useState('');
     const [lessonNum, setLessonNum] = useState(0);
+    const [completedNum, setCompletedNum] = useState(0);
     const prevFenRef = useRef(null)
     const currentFenRef = useRef(null);
     const [moves, setMoves] = useState([])
@@ -34,7 +35,7 @@ const LessonOverlay = () => {
     const [cookies] = useCookies(['piece', 'login']);
     const [name, setName] = useState("");
     const [info, setInfo] = useState("");
-    const [piece, setPiece] = useState("Piece Checkmate 1 Basic checkmates");
+    const [piece, setPiece] = useState("Checkmate Pattern 1 Recognize the patterns");
     const getLessonsCompletedRef = useRef(() => {});
     const updateCompletionRef = useRef(() => {});
     const getTotalLessonsRef = useRef(() => {});
@@ -57,13 +58,7 @@ const LessonOverlay = () => {
                     getTotalLessonsRef.current()
                 }
                 if (!lessonStarted) {
-                    if (passedLessonNumber != null && passedPieceName != null) {
-                        // Fetch the specific lesson
-                        await getCurrentLessonsRef.current(passedLessonNumber);
-                        } else {
-                        // Otherwise, fetch the default lesson
-                        await getLessonsCompletedRef.current();
-                        }
+                    getLessonsCompletedRef.current();
                     lessonStarted = true;
                 } else if (e.data === lessonEndFEN || e.data.startsWith("next")) {
                     setShowVPopup(true);
@@ -147,8 +142,15 @@ const LessonOverlay = () => {
 
             // The next lesson is the first uncompleted one (completed count + 1)
             // But we index from 0, so just use the completedCount directly
-            setLessonNum(completedCount);
-            getCurrentLessonsRef.current(completedCount);
+            setCompletedNum(completedCount);
+            if (passedLessonNumber != null && passedPieceName != null) {
+            // Fetch the specific lesson
+                getCurrentLessonsRef.current(passedLessonNumber);
+            } else {
+            // Otherwise, fetch the default lesson
+                setLessonNum(completedCount);
+                getCurrentLessonsRef.current(completedCount);
+            }
         } catch (error) {
             console.error('Error fetching completed lessons:', error);
         }
@@ -170,7 +172,7 @@ const LessonOverlay = () => {
             const lessonData = await response.json();
             // Update the lesson data
             lessonStartFENRef.current = lessonData.startFen
-            if(!currentFenRef.current) currentFenRef.current = lessonData.startFen
+            currentFenRef.current = lessonData.startFen
             setInfo(lessonData.info)
             setName(lessonData.name)
             setShowLPopup(false)
@@ -268,7 +270,7 @@ const LessonOverlay = () => {
     };
     
     const nextLesson = () => {
-        if (lessonNum < totalLessons - 1) {
+        if (lessonNum < completedNum) {
             setLessonNum(prevNum => prevNum + 1);
             setPreviousEndSquare(endSquare);
             getCurrentLessonsRef.current(lessonNum + 1);
@@ -289,8 +291,9 @@ const LessonOverlay = () => {
             );
             
             // Move to next lesson if available, otherwise throw an error.
-            if (lessonNum + 1 < totalLessons) {
+            if (lessonNum <= completedNum) {
                 setLessonNum(prevNum => prevNum + 1);
+                if (lessonNum === completedNum) setCompletedNum(prevNum => prevNum + 1);
                 getCurrentLessonsRef.current(lessonNum + 1);
             }
         } catch (error) {
@@ -359,7 +362,7 @@ const LessonOverlay = () => {
                     )
                 }
     
-                {lessonNum >= totalLessons - 1? (
+                {lessonNum >= completedNum? (
                     <button className="prevNextLessonButton-inactive next">
                         <p className="button-description">Next</p>
                         <NextIconInactive/>
