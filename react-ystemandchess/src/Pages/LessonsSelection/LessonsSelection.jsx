@@ -2,6 +2,7 @@ import "./LessonsStyle.css";
 import { useNavigate } from "react-router";
 import React, { useState, useEffect } from 'react';
 import { getScenarioLength, getScenario} from "../Lessons/Scenarios";
+import { unlock } from "../../../../middlewareNode/routes/lessons";
 
 
 // li onClick={() => navigate("/lessons", {state: {scenario: "Pawn", lesson: "Basic"}})}>Basic</li>
@@ -25,9 +26,10 @@ function ScenarioTemplate({ scenario, onClick }) { // You can pass down referenc
 export default function LessonSelection() {
     const [showScenarios, setShowScenarios] = useState(false);
     const [showLessons, setShowLessons] = useState(false);
-
+    const [cookies] = useCookies(['piece', 'login']);
     const [selectedScenario, setSelectedScenario] = useState(null);
     const [selectedLesson, setSelectedLesson] = useState(null);
+    const [unlockedLesson, setUnlockedLesson] = useState(0);
     
     const [scenarios, setScenarios] = useState([]);
     const [lessons, setLessons] = useState([]);
@@ -69,6 +71,29 @@ export default function LessonSelection() {
         setShowLessons(false);
         setShowScenarios(false);
         setSelectedLesson(lesson);
+    }
+
+    const handleSubmit = async () => {
+        try {
+            const response = await fetch(
+            `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${selectedScenario}`,
+            {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${cookies.login}` }
+            }
+            );
+            
+            const unlocked = await response.json();
+            setUnlockedLesson(unlocked);
+        } catch (error) {
+            console.error('Error fetching lesson number:', error);
+        }
+
+        if (unlockedLesson < getLessonNum(selectedScenario, selectedLesson) + 1) {
+            // make an error sign come up saying they havent unlocked it
+        } else {
+            return {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)+1}};
+        }
     }
 
     useEffect(() => {
@@ -120,7 +145,7 @@ export default function LessonSelection() {
             )}
 
             <button className="enterInfo" onClick={() => {
-                navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
+                navigate("/learnings", handleSubmit());
             }}>
                 Go!
             </button>
