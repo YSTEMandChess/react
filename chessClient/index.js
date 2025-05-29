@@ -587,6 +587,14 @@ function updateStatus() {
     if (currentState.in_check()) {
       status += ", " + moveColor + " is in check";
     }
+
+    if(currentState.game_over()){
+      if (currentState.in_check() && moveColor == "Black") {
+        parent.postMessage("next", "*");
+      } else {
+        parent.postMessage("restart", "*");
+      }
+    }
   }
 }
 
