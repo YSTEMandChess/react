@@ -2,9 +2,7 @@ import "./LessonsStyle.css";
 import { useNavigate } from "react-router";
 import React, { useState, useEffect } from 'react';
 import { environment } from "../../environments/environment";
-import { environment } from "../../environments/environment";
 import { getScenarioLength, getScenario} from "../Lessons/Scenarios";
-import { useCookies } from "react-cookie";
 import { useCookies } from "react-cookie";
 
 
@@ -34,9 +32,6 @@ export default function LessonSelection() {
     const [selectedScenario, setSelectedScenario] = useState(null);
     const [selectedLesson, setSelectedLesson] = useState(null);
     const [unlockedLesson, setUnlockedLesson] = useState(0);
-
-    const [errorText, setErrorText] = useState(null);
-    const [errorFound, setErrorFound] = useState(false);
 
     const [errorText, setErrorText] = useState(null);
     const [errorFound, setErrorFound] = useState(false);
@@ -84,7 +79,7 @@ export default function LessonSelection() {
     }
 
     const handleSubmit = async () => {
-        const unlocked = "";
+        let unlocked = 0;
         if (selectedLesson == null || selectedScenario == null) {
             setErrorText("Select a scenario & lesson.");
             setErrorFound(true);
@@ -110,7 +105,6 @@ export default function LessonSelection() {
             setErrorFound(true);
         } else {
             return navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)+1}});
-            return navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)+1}});
         }
     }
 
@@ -129,16 +123,6 @@ export default function LessonSelection() {
     }, [selectedScenario])      
     return(
         <div className="whole-page">
-            {errorFound && (
-                <div className="errorBackground">
-                    <div className="errorBox">
-                        <div className="errorText">{errorText}</div>
-                        <button onClick={() => {
-                            setErrorFound(false);
-                        }}>OK</button>
-                    </div>
-                </div>
-            )}
             {errorFound && (
                 <div className="errorBackground">
                     <div className="errorBox">
@@ -180,7 +164,6 @@ export default function LessonSelection() {
                 </div>
             )}
 
-            <button className="enterInfo" onClick={handleSubmit}>
             <button className="enterInfo" onClick={handleSubmit}>
                 Go!
             </button>
