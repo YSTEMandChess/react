@@ -1,8 +1,9 @@
 import "./LessonsStyle.css";
 import { useNavigate } from "react-router";
 import React, { useState, useEffect } from 'react';
+import { environment } from "../../environments/environment";
 import { getScenarioLength, getScenario} from "../Lessons/Scenarios";
-import { unlock } from "../../../../middlewareNode/routes/lessons";
+import { useCookies } from "react-cookie";
 
 
 // li onClick={() => navigate("/lessons", {state: {scenario: "Pawn", lesson: "Basic"}})}>Basic</li>
@@ -24,16 +25,19 @@ function ScenarioTemplate({ scenario, onClick }) { // You can pass down referenc
   }
 
 export default function LessonSelection() {
+    const navigate = useNavigate();
     const [showScenarios, setShowScenarios] = useState(false);
     const [showLessons, setShowLessons] = useState(false);
     const [cookies] = useCookies(['piece', 'login']);
     const [selectedScenario, setSelectedScenario] = useState(null);
     const [selectedLesson, setSelectedLesson] = useState(null);
     const [unlockedLesson, setUnlockedLesson] = useState(0);
+
+    const [errorText, setErrorText] = useState(null);
+    const [errorFound, setErrorFound] = useState(false);
     
     const [scenarios, setScenarios] = useState([]);
     const [lessons, setLessons] = useState([]);
-
     const [lessonNum, setLessonNum] = useState(null);
 
     useEffect(() => {
@@ -63,7 +67,7 @@ export default function LessonSelection() {
     const handleScenarioClick = (scenario) => {
         setShowLessons(false);
         setShowScenarios(false);
-        setSelectedLesson('');
+        setSelectedLesson(null);
         setSelectedScenario(scenario);
     }
 
@@ -74,6 +78,12 @@ export default function LessonSelection() {
     }
 
     const handleSubmit = async () => {
+        const unlocked = "";
+        if (selectedLesson == null || selectedScenario == null) {
+            setErrorText("Select a scenario & lesson.");
+            setErrorFound(true);
+            return;
+        }
         try {
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${selectedScenario}`,
@@ -83,16 +93,17 @@ export default function LessonSelection() {
             }
             );
             
-            const unlocked = await response.json();
+            unlocked = await response.json();
             setUnlockedLesson(unlocked);
         } catch (error) {
             console.error('Error fetching lesson number:', error);
         }
 
-        if (unlockedLesson < getLessonNum(selectedScenario, selectedLesson) + 1) {
-            // make an error sign come up saying they havent unlocked it
+        if (unlocked < getLessonNum(selectedScenario, selectedLesson) + 1) {
+            setErrorText("You haven't unlocked this lesson yet!");
+            setErrorFound(true);
         } else {
-            return {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)+1}};
+            return navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)+1}});
         }
     }
 
@@ -108,11 +119,19 @@ export default function LessonSelection() {
         }
     }
     setLessons(lessonTable);
-    }, [selectedScenario])
-    
-    const navigate = useNavigate();      
+    }, [selectedScenario])      
     return(
         <div className="whole-page">
+            {errorFound && (
+                <div className="errorBackground">
+                    <div className="errorBox">
+                        <div className="errorText">{errorText}</div>
+                        <button onClick={() => {
+                            setErrorFound(false);
+                        }}>OK</button>
+                    </div>
+                </div>
+            )}
             <div className="title">
                 Lesson Selection
             </div>
@@ -144,9 +163,7 @@ export default function LessonSelection() {
                 </div>
             )}
 
-            <button className="enterInfo" onClick={() => {
-                navigate("/learnings", handleSubmit());
-            }}>
+            <button className="enterInfo" onClick={handleSubmit}>
                 Go!
             </button>
         </div>
