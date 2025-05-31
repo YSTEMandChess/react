@@ -1,4 +1,3 @@
-
 let flag = false;
 let lessonFlag = false;
 let isLesson = false;
@@ -588,9 +587,11 @@ function updateStatus() {
       status += ", " + moveColor + " is in check";
     }
 
-    if(currentState.game_over()){
-      if (currentState.in_check() && moveColor == "Black") {
-        parent.postMessage("next", "*");
+    if(game.game_over()){
+      if (game.in_check() && moveColor == "Black") {
+        parent.postMessage("won:white", "*");
+      } else if (game.in_check() && moveColor == "Black") {
+        parent.postMessage("won:black", "*");
       } else {
         parent.postMessage("restart", "*");
       }
