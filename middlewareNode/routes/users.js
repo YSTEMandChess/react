@@ -60,7 +60,6 @@ router.post(
     try {
       const sha384 = crypto.createHash("sha384");
       hashedPassword = sha384.update(password).digest("hex");
-
       //Error checking to see if a user with the same username exists
       const user = await users.findOne({ username });
       if (user) {
@@ -71,6 +70,7 @@ router.post(
 
       //Set the account created date for the new user
       const currDate = new Date();
+
 
       //Switch statement for functionality depending on role
       if (role === "parent") {

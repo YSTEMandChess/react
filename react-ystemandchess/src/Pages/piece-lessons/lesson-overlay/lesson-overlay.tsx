@@ -16,59 +16,69 @@ import { useNavigate, useLocation } from 'react-router';
 const LessonOverlay = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const passedPieceName = location.state?.piece;
+    const passedLessonNumber = location.state?.lessonNum;
+    const [cookies] = useCookies(['piece', 'login']);
+
+    let isReady = false; // if chess client is ready to receive
+    let lessonStarted = false; // if lesson has started
+
+    // Information for lesson
+    const [piece, setPiece] = useState("Checkmate Pattern 1 Recognize the patterns"); // which category of lessons
     const lessonStartFENRef = useRef("");
-    const [totalLessons, setTotalLessons] = useState(0);
     let lessonEndFEN = "";
+    const [lessonNum, setLessonNum] = useState(0); // current lesson number, 0-indexed
+    const [completedNum, setCompletedNum] = useState(0); // # of lessons completed
+    const [totalLessons, setTotalLessons] = useState(0); // # of lessons in the category
     const [endSquare, setEndSquare] = useState('');
     const [previousEndSquare, setPreviousEndSquare] = useState('');
-    const [lessonNum, setLessonNum] = useState(0);
+    const turnRef = useRef("white");
+    const [name, setName] = useState(""); // name of lesson
+    const [info, setInfo] = useState(""); // description of lesson
+
+    // Information needed for move tracker
     const prevFenRef = useRef(null)
     const currentFenRef = useRef(null);
     const [moves, setMoves] = useState([])
-    const [moveIndex, setMoveIndex] = useState(1)
     const [level, setLevel] = useState(5);
+
+    // Controlling popups
     const [showVPopup, setShowVPopup] = useState(false);
     const [showXPopup, setShowXPopup] = useState(false);
     const [showLPopup, setShowLPopup] = useState(true);
-    const [cookies] = useCookies(['piece', 'login']);
-    const [name, setName] = useState("");
-    const [info, setInfo] = useState("");
-    const [piece, setPiece] = useState("Piece Checkmate 1 Basic checkmates");
+    const [showInstruction, setShowInstruction] = useState(false);
+
+    // Use Refs, so functions in event handler can access latest updated variable values
     const getLessonsCompletedRef = useRef(() => {});
     const updateCompletionRef = useRef(() => {});
     const getTotalLessonsRef = useRef(() => {});
     const getCurrentLessonsRef = useRef<(input: number) => void>(() => {});
-    let isReady = false;
-    let lessonStarted = false;
-
-    const passedPieceName = location.state?.piece;
-    const passedLessonNumber = location.state?.lessonNum;
 
     useEffect(() => {
+        // configure eventer
         const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
         const eventer = window[eventMethod];
         const messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message';
 
         const handleMessage = async (e) => {
             if (e.origin === environment.urls.chessClientURL) {
+                // if client is ready to receive
                 if (e.data === 'ReadyToRecieve') {
                     isReady = true;
                     getTotalLessonsRef.current()
                 }
+                // start lesson if not already
                 if (!lessonStarted) {
-                    if (passedLessonNumber != null && passedPieceName != null) {
-                        // Fetch the specific lesson
-                        await getCurrentLessonsRef.current(passedLessonNumber);
-                        } else {
-                        // Otherwise, fetch the default lesson
-                        await getLessonsCompletedRef.current();
-                        }
+                    getLessonsCompletedRef.current();
                     lessonStarted = true;
-                } else if (e.data === lessonEndFEN || e.data.startsWith("next")) {
-                    setShowVPopup(true);
-                } else if (e.data.startsWith("restart")){
+                } else if (e.data === lessonEndFEN ) { 
+                    setShowVPopup(true); // complete lesson
+                } else if (e.data.startsWith("won")) {
+                    if (e.data.split(":")[1] == turnRef.current) setShowVPopup(true); // checkmated, complete lesson
+                    else setShowXPopup(true) // opponent checkmated, restart
+                } else if (e.data.startsWith("restart")){ // game ended without winning
                     setShowXPopup(true)
-                }  else if (looksLikeFEN(e.data)) {
+                }  else if (looksLikeFEN(e.data)) { // client sends board fen after user makes a move
 
                     // update fens
                     prevFenRef.current = currentFenRef.current
@@ -77,18 +87,14 @@ const LessonOverlay = () => {
                     // process the move for tracking
                     processMove()
 
-                    let newLevel = level;
-                    if (newLevel <= 1) newLevel = 1;
-                    else if (newLevel >= 30) newLevel = 30;
-
                     const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
                     const chessBoard = iframe?.contentWindow;
 
-                    httpGetAsync(
-                        `${environment.urls.stockFishURL}/?level=${newLevel}&fen=${e.data}`,
+                    httpGetAsync( // get the next opponent move from stockfish
+                        `${environment.urls.stockFishURL}/?level=${level}&fen=${e.data}`,
                         (response) => {
                             const data = JSON.parse(response)
-                            const message = JSON.stringify({ boardState: data.fen, color: "white", lessonFlag: false});
+                            const message = JSON.stringify({ boardState: data.fen, color: turnRef.current, lessonFlag: false});
                             // update fens
                             prevFenRef.current = currentFenRef.current
                             currentFenRef.current = data.fen
@@ -96,7 +102,7 @@ const LessonOverlay = () => {
                             // process the move for tracking
                             processMove()
 
-                            if (isReady) {
+                            if (isReady) { // sends opponent moved board to client to update UI
                                 chessBoard.postMessage(message, environment.urls.chessClientURL);
                             }
                         }
@@ -105,36 +111,24 @@ const LessonOverlay = () => {
             }
         };
 
-        eventer(messageEvent, handleMessage, false);
+        eventer(messageEvent, handleMessage, false); // fire eventer
 
         // Check if passedLessonNumber and passedPieceName are available
         if (passedLessonNumber != null && passedPieceName != null) {
             // Fetch the specific lesson
-                setLessonNum(passedLessonNumber)
-                setPiece(passedPieceName)
-                
-            }
+            setLessonNum(passedLessonNumber)
+            setPiece(passedPieceName)
+        }
 
         return () => {
-            window.removeEventListener('message', handleMessage);
+            window.removeEventListener('message', handleMessage); // remove event listener
         };
     }, []);
 
-    function looksLikeFEN(str) {
-        return typeof str === 'string' && str.split(' ').length === 6;
-    }
-
-    function handleReset() {
-        const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
-        const chessBoard = iframe?.contentWindow;
-        const message = JSON.stringify({ boardState: lessonStartFENRef.current, color: "white", lessonFlag: false});
-        chessBoard.postMessage(message, environment.urls.chessClientURL);
-        setMoves([])
-        currentFenRef.current = lessonStartFENRef.current
-    }
-
+    // get # of completed lessons for this category
     getLessonsCompletedRef.current = async () => {
         try {
+            // update # of completed lessons
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${piece}`, 
             {
@@ -143,21 +137,26 @@ const LessonOverlay = () => {
             }
             );
             const completedCount = await response.json();
+            setCompletedNum(completedCount);
 
-            // The next lesson is the first uncompleted one (completed count + 1)
-            // But we index from 0, so just use the completedCount directly
-            setLessonNum(completedCount);
-            getCurrentLessonsRef.current(completedCount);
+            if (passedLessonNumber != null && passedPieceName != null) {
+                // if navigated from menu, with specified lesson number
+                getCurrentLessonsRef.current(passedLessonNumber);
+            } else {
+                // if directly navigated, current lesson is the next not completed lesson
+                setLessonNum(completedCount);
+                getCurrentLessonsRef.current(completedCount);
+            }
         } catch (error) {
             console.error('Error fetching completed lessons:', error);
         }
     };
 
+    // get the lesson content for a specific number
     getCurrentLessonsRef.current = async (lessonNumber) => {
-        // setPreviousEndSquare(endSquare);
         try {
-            
-            setShowLPopup(true)
+            // fetch lesson content
+            setShowLPopup(true) // loading popup to wait for response
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber + 1}`,
             {
@@ -165,66 +164,34 @@ const LessonOverlay = () => {
                 headers: { 'Authorization': `Bearer ${cookies.login}` }
             }
             );
-
             const lessonData = await response.json();
-            // Update the lesson data
+            setShowLPopup(false); // diable loading
+            setShowInstruction(true); // make sure user reads instruction first
+
+            // Update lesson data & info
             lessonStartFENRef.current = lessonData.startFen
-            if(!currentFenRef.current) currentFenRef.current = lessonData.startFen
+            currentFenRef.current = lessonData.startFen
+            turnRef.current = getTurnFromFEN(lessonData.startFen)
             setInfo(lessonData.info)
             setName(lessonData.name)
-            setShowLPopup(false)
-            // setLessonEndFEN(data.endFen); 
             
-            // Check if we've reached the end of lessons, same approach I saw earlier.
+            // Check if we've reached the end of lessons
             if (!lessonData || lessonData.lessonNum === undefined) {
                 alert('Congratulations! You have completed all lessons for this piece.');
                 return
             }
-            // setEndSquare(data.endSquare);
+            // if not, let client update board UI 
             sendLessonToChessBoard();
-            } catch (error) {
-                console.error('Error fetching lesson:', error);
+
+        } catch (error) {
+            console.error('Error fetching lesson:', error);
         }
     };
 
-    function processMove() {
-        if (prevFenRef.current) {
-            const move = getMoveFromFens(prevFenRef.current, currentFenRef.current)
-            setMoves(prev => [...prev, move])
-        }
-    }
-
-    function getMoveFromFens(prevFEN, currFEN) {
-        const chess = new Chess(prevFEN)
-        const moves = chess.moves({verbose: true})
-
-        // console.log(getPositionKey(prevFEN), getPositionKey(currFEN))
-        console.log("prevFen", getPositionKey(prevFEN))
-        console.log("currFen", getPositionKey(currFEN))
-
-        for (let i = 0; i < moves.length; i++) {
-            const possibleChess = new Chess(prevFEN)
-            possibleChess.move(moves[i])
-            
-            if (getPositionKey(possibleChess.fen()) === getPositionKey(currFEN)) {
-                // console.log("move found!")
-                return moves[i].san
-            }
-        }
-
-        // move not found
-        // console.log("move not found :(")
-        return null
-    }
-
-    function getPositionKey(fen) {
-        // only compare the first 4 parts of the FEN (board, active color, castling, en passant)
-        if(!fen) return;
-        return fen.split(" ").slice(0, 3).join(" ")
-    }
-
+    // get total # of lessons for category
     getTotalLessonsRef.current = async () => {
         try {
+            // fetch
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=${piece}`,
             {
@@ -232,62 +199,28 @@ const LessonOverlay = () => {
                 headers: { 'Authorization': `Bearer ${cookies.login}` }
             }
             );
-            
             const total = await response.json();
-            setTotalLessons(total);
+            setTotalLessons(total); // update in UI
         } catch (error) {
             console.error('Error fetching total lessons:', error);
         }
     };
 
-    const sendLessonToChessBoard = () => {
-        const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
-        const chessBoard = iframe?.contentWindow;
-        const message = JSON.stringify({
-            boardState: lessonStartFENRef.current,
-            endState: lessonEndFEN,
-            lessonFlag: true,
-            endSquare,
-            color: "white",
-            previousEndSquare,
-        });
-        chessBoard.postMessage(message, environment.urls.chessClientURL);
-    };
-
-    // Navigation functions
-    const previousLesson = () => {
-        if (lessonNum > 0) {
-            setLessonNum(prevNum => prevNum - 1);
-            setPreviousEndSquare(endSquare);
-            getCurrentLessonsRef.current(lessonNum - 1);
-            setMoves([])
-            currentFenRef.current = null;
-        }
-    };
-    
-    const nextLesson = () => {
-        if (lessonNum < totalLessons - 1) {
-            setLessonNum(prevNum => prevNum + 1);
-            setPreviousEndSquare(endSquare);
-            getCurrentLessonsRef.current(lessonNum + 1);
-            setMoves([])
-            currentFenRef.current = null;
-        }
-    };
-
-    // Update the lesson completion function
+    // Update the user's lesson progress in this category
     updateCompletionRef.current = async () => {
-        try {
-            await fetch(
-            `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=${piece}&lessonNum=${lessonNum}`,
-            {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${cookies.login}` }
-            }
-            );
-            
-            // Move to next lesson if available, otherwise throw an error.
-            if (lessonNum + 1 < totalLessons) {
+        try {      
+            if (lessonNum === completedNum) { // allow back end update only for the first unfinished lesson
+                setCompletedNum(prevNum => prevNum + 1);
+                await fetch(
+                `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=${piece}&lessonNum=${lessonNum}`,
+                {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${cookies.login}` }
+                })
+            };
+
+            if (lessonNum < totalLessons - 1) {
+                // Move to next lesson if there are any
                 setLessonNum(prevNum => prevNum + 1);
                 getCurrentLessonsRef.current(lessonNum + 1);
             }
@@ -296,6 +229,7 @@ const LessonOverlay = () => {
         }
     };
 
+    // send data to stock fish
     const httpGetAsync = (theUrl, callback) => {
         const xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
@@ -305,17 +239,138 @@ const LessonOverlay = () => {
         xmlHttp.send(null);
     };
 
-    const handleVPopup = () => {
-        setShowVPopup(false);
-        setShowLPopup(true)
-        updateCompletionRef.current();
+    // send lesson to chess client to update UI
+    const sendLessonToChessBoard = () => {
+        // get board iframe
+        const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
+        const chessBoard = iframe?.contentWindow;
+
+        // post message to client
+        const message = JSON.stringify({
+            boardState: lessonStartFENRef.current,
+            endState: lessonEndFEN,
+            lessonFlag: true,
+            endSquare,
+            color: turnRef.current,
+            previousEndSquare,
+            clearhighlight: true
+        });
+        chessBoard.postMessage(message, environment.urls.chessClientURL);
+    };
+
+    // Navigate to previous lesson
+    const previousLesson = () => {
+        if (lessonNum > 0) { // if there is a previous lesson
+            // update and fetch previous lesson
+            setLessonNum(prevNum => prevNum - 1);
+            getCurrentLessonsRef.current(lessonNum - 1);
+
+            // clear move tracker
+            setMoves([])
+            currentFenRef.current = null;
+        }
+    };
+    
+    // Navigate to next lesson
+    const nextLesson = () => {
+        if (lessonNum < completedNum && lessonNum < totalLessons - 1) { // no navigation beyond first uncompleted lesson or last lesson
+            // update and fetch next lesson
+            setLessonNum(prevNum => prevNum + 1);
+            getCurrentLessonsRef.current(lessonNum + 1);
+
+            // clear move tracker
+            setMoves([])
+            currentFenRef.current = null;
+        }
+    };
+
+    // reset board to play again
+    function handleReset() {
+        // get chessBoard iframe
+        const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
+        const chessBoard = iframe?.contentWindow;
+
+        // for client to reset board
+        const message = JSON.stringify({ boardState: lessonStartFENRef.current, color: turnRef.current, lessonFlag: false, clearhighlight: true});
+        chessBoard.postMessage(message, environment.urls.chessClientURL);
+
+        // clean move tracker
         setMoves([])
         currentFenRef.current = lessonStartFENRef.current
     }
 
+    // user agrees to complete lesson
+    const handleVPopup = () => {
+        setShowVPopup(false); // disable popup
+        setShowLPopup(true) // load next lesson
+        updateCompletionRef.current(); // update # of lessons completed
+
+        // clean move tracker
+        setMoves([])
+        currentFenRef.current = lessonStartFENRef.current
+    }
+
+    // user agrees to restart lesson after failure
     const handleXPopup = () => {
         setShowXPopup(false);
         handleReset()
+    }
+
+    // user finished instruction reading
+    const handleShowInstruction = () => {
+        setShowInstruction(false);
+    }
+
+    // checks if a client message is a fen
+    function looksLikeFEN(str) {
+        return typeof str === 'string' && str.split(' ').length === 6;
+    }
+
+    // calculate which turn is playing , black or white
+    function getTurnFromFEN(fen) {
+        if (!fen || typeof fen !== 'string') {
+            throw new Error('Invalid FEN string');
+        }
+
+        const parts = fen.split(' ');
+        const turn = parts[1];
+
+        if (turn === 'w') return 'white';
+        if (turn === 'b') return 'black';
+
+        throw new Error('Could not determine turn from FEN');
+    }
+
+    // update the moves for trackign
+    function processMove() {
+        if (prevFenRef.current) {
+            const move = getMoveFromFens(prevFenRef.current, currentFenRef.current)
+            setMoves(prev => [...prev, move])
+        }
+    }
+
+    // calculate what move is made by board fen before & after
+    function getMoveFromFens(prevFEN, currFEN) {
+        const chess = new Chess(prevFEN)
+        const moves = chess.moves({verbose: true})
+
+        for (let i = 0; i < moves.length; i++) {
+            const possibleChess = new Chess(prevFEN)
+            possibleChess.move(moves[i])
+            
+            if (getPositionKey(possibleChess.fen()) === getPositionKey(currFEN)) {
+                return moves[i].san
+            }
+        }
+
+        // move not found
+        return null
+    }
+
+    function getPositionKey(fen) {
+        // only compare the first 4 parts of the FEN (board, active color, castling, en passant)
+        if(!fen) return;
+        return fen.split(" ").slice(0, 3).join(" ")
     }
 
     return (
@@ -327,25 +382,27 @@ const LessonOverlay = () => {
                 <PlayLesson chessLessonSrc={environment.urls.chessClientURL} />
             </div>
             <div className='right-container'>
-                {/* Description part */}
+                {/* Lesson info */}
                 <div className='lesson-header'>
                 <h1 className="piece_description">{piece}</h1>
                 <button className='reset-lesson' onClick={handleReset}>
                     <RedoIcon className='reset-icon'/>
                 </button>
                 </div>
-    
                 <h1 className='subheading'>{lessonNum + 1} / {totalLessons}: {name}</h1>
                 <p className="lesson-description">{info}</p>
     
+            
+                {/* deactivate previous button, if there are no lessons before it*/}
                 <div className='prev-next-button-container'>
                 {
-                    lessonNum <= 0? (
+                    lessonNum <= 0? ( 
                     <button className="prevNextLessonButton-inactive prev">
                         <BackIconInactive/>
                         <p className="button-description">Back</p>
                     </button>
                     ) : (
+                        
                     <button className="prevNextLessonButton prev" onClick={previousLesson}>
                         <BackIcon/>
                         <p className="button-description">Back</p>
@@ -353,7 +410,8 @@ const LessonOverlay = () => {
                     )
                 }
     
-                {lessonNum >= totalLessons - 1? (
+                {/* deactivate next button, if it goes beyond first uncompleted, or beyond last available lesson */}
+                {((lessonNum >= completedNum) || (lessonNum >= totalLessons - 1))? (
                     <button className="prevNextLessonButton-inactive next">
                         <p className="button-description">Next</p>
                         <NextIconInactive/>
@@ -369,6 +427,7 @@ const LessonOverlay = () => {
                 <MoveTracker moves={moves} />
             </div>
             
+            {/* lesson completed popup */}
             {showVPopup && (
                 <div className="popup">
                 <div className="popup-content">
@@ -385,6 +444,7 @@ const LessonOverlay = () => {
                 </div>
             )}
 
+            {/* lesson not done yet popup */}
             {showXPopup && (
                 <div className="popup">
                     <div className="popup-content">
@@ -424,6 +484,7 @@ const LessonOverlay = () => {
                 </div>
                 )}
             
+            {/* loading to wait for lesson fetching */}
             {showLPopup && (
                 <div className="popup">
                     <div className="popup-content">
@@ -446,14 +507,19 @@ const LessonOverlay = () => {
                 </div>
             )}
 
+            {/* have users read instructions first */}
+            {showInstruction && (
+                <div className="popup">
+                    <div className="popup-content">
+                    <p className="popup-header">Read this instruction:</p>
+                    <p className="popup-subheading">{info}</p>
+                    <button className="popup-button" onClick={handleShowInstruction}>Finished reading!</button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
 
 export default LessonOverlay;
-
-const logTime = (label, data = '') => {
-    const timestamp = new Date().toISOString();
-    const perfTime = performance.now().toFixed(2);
-    console.log(`🕐 [${timestamp}] [${perfTime}ms] ${label}`, data);
-};

@@ -164,7 +164,9 @@ export default function LessonSelection() {
                 </div>
             )}
 
-            <button className="enterInfo" onClick={handleSubmit}>
+            <button className="enterInfo" onClick={() => {
+                navigate("/lessons", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
+            }}>
                 Go!
             </button>
         </div>
