@@ -19,7 +19,7 @@ beforeEach(() => {
             startFen: "8/8/3k4/8/8/4K3/8/Q6R w - - 0 1",
             name: "simple board name",
             info: "simple board info",
-            lessonNum: 0
+            lessonNum: 1
         }),
       });
     }
@@ -160,15 +160,16 @@ test('interact with stockfish & chessClient', async () => {
 })
 
 // test replaying after failure
-test('interact with stockfish & chessClient', async () => {
+test('failed lesson', async () => {
   render(
     <MemoryRouter>
       <LessonOverlay />
     </MemoryRouter>
   );
 
-  // chess client sends white move to front end
+  // start lesson first
   await startLesson();
+  // chess client sends restart message
   await act(async () => {
     window.dispatchEvent(
       new MessageEvent('message', {
@@ -177,9 +178,32 @@ test('interact with stockfish & chessClient', async () => {
       })
     );
   });
-  // will wait for stockfish to predict black move
 
-  // test move tracker
-  // white move
-  const step1 = screen.getByText(/Ke4/i);
+  // test failure popup
+  const failedPopup = screen.getByText(/Lesson failed/i);
+  expect(failedPopup).toBeInTheDocument();
+  const okBtn = screen.getByText(/OK/i);
+  expect(okBtn).toBeInTheDocument();
+
+  // consent to restart, check UI update
+  fireEvent.click(okBtn);
+  const updatedText = screen.getByText(/Make a move to see it here!/i);
+  expect(updatedText).toBeInTheDocument();
+})
+
+// test reset button
+test('reset lesson', async () => {
+  render(
+    <MemoryRouter>
+      <LessonOverlay />
+    </MemoryRouter>
+  );
+
+  // start lesson first
+  await startLesson();
+  
+  const resetBtn = document.getElementsByClassName("reset-lesson")[0];
+  fireEvent.click(resetBtn);
+  const updatedText = screen.getByText(/Make a move to see it here!/i);
+  expect(updatedText).toBeInTheDocument();
 })
