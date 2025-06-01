@@ -100,11 +100,11 @@ export default function LessonSelection() {
             console.error('Error fetching lesson number:', error);
         }
 
-        if (unlocked < getLessonNum(selectedScenario, selectedLesson) + 1) {
+        if (unlocked < getLessonNum(selectedScenario, selectedLesson)) {
             setErrorText("You haven't unlocked this lesson yet!");
             setErrorFound(true);
         } else {
-            return navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)+1}});
+            return navigate("/lessons", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
         }
     }
 
@@ -164,9 +164,7 @@ export default function LessonSelection() {
                 </div>
             )}
 
-            <button className="enterInfo" onClick={() => {
-                navigate("/lessons", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
-            }}>
+            <button className="enterInfo" onClick={handleSubmit}>
                 Go!
             </button>
         </div>

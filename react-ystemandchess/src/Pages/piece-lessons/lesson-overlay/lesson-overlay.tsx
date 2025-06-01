@@ -80,7 +80,7 @@ const LessonOverlay = () => {
                 } else if (e.data.startsWith("restart")){ // game ended without winning
                     setShowXPopup(true)
                 }  else if (looksLikeFEN(e.data)) { // client sends board fen after user makes a move
-
+                    console.log("receiving board state", e.data)
                     // update fens
                     prevFenRef.current = currentFenRef.current
                     currentFenRef.current = e.data
@@ -104,6 +104,7 @@ const LessonOverlay = () => {
                             processMove()
 
                             if (isReady) { // sends opponent moved board to client to update UI
+                                console.log("sending board state", data.fen)
                                 chessBoard.postMessage(message, environment.urls.chessClientURL);
                             }
                         }
@@ -171,7 +172,7 @@ const LessonOverlay = () => {
             }
             );
             const lessonData = await response.json();
-            setShowLPopup(false); // diable loading
+            setShowLPopup(false); // disable loading
             clearTimeout(timeoutId); // clear the timeout if fetch succeeded
             setShowInstruction(true); // make sure user reads instruction first
 
@@ -262,6 +263,7 @@ const LessonOverlay = () => {
             previousEndSquare,
             clearhighlight: true
         });
+        console.log("sending board state", lessonStartFENRef.current)
         chessBoard.postMessage(message, environment.urls.chessClientURL);
     };
 
