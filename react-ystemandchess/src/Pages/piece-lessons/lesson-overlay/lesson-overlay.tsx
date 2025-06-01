@@ -45,6 +45,7 @@ const LessonOverlay = () => {
     // Controlling popups
     const [showVPopup, setShowVPopup] = useState(false);
     const [showXPopup, setShowXPopup] = useState(false);
+    const [ShowError, setShowError] = useState(false);
     const [showLPopup, setShowLPopup] = useState(true);
     const [showInstruction, setShowInstruction] = useState(false);
 
@@ -149,6 +150,7 @@ const LessonOverlay = () => {
             }
         } catch (error) {
             console.error('Error fetching completed lessons:', error);
+            setShowError(true)
         }
     };
 
@@ -157,6 +159,10 @@ const LessonOverlay = () => {
         try {
             // fetch lesson content
             setShowLPopup(true) // loading popup to wait for response
+            let timeoutId = setTimeout(() => { // set time out to prevent fetching from taking too long
+                setShowError(true);
+            }, 10000);
+
             const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber + 1}`,
             {
@@ -166,6 +172,7 @@ const LessonOverlay = () => {
             );
             const lessonData = await response.json();
             setShowLPopup(false); // diable loading
+            clearTimeout(timeoutId); // clear the timeout if fetch succeeded
             setShowInstruction(true); // make sure user reads instruction first
 
             // Update lesson data & info
@@ -426,6 +433,45 @@ const LessonOverlay = () => {
                 </div>
                 <MoveTracker moves={moves} />
             </div>
+
+            {/* connection error popup */}
+            {ShowError && (
+                <div className="popup">
+                    <div className="popup-content">
+                    <div className="error-cross">
+                        <svg width="80" height="80" viewBox="0 0 120 120">
+                        <circle
+                            className="circle"
+                            cx="60"
+                            cy="60"
+                            r="54"
+                            fill="none"
+                            stroke="#f57c7c"
+                            strokeWidth="6"
+                        ></circle>
+                        <path
+                            className="cross-line1"
+                            d="M40 40 L80 80"
+                            fill="none"
+                            stroke="#f57c7c"
+                            strokeWidth="8"
+                            strokeLinecap="round"
+                        />
+                        <path
+                            className="cross-line2"
+                            d="M80 40 L40 80"
+                            fill="none"
+                            stroke="#f57c7c"
+                            strokeWidth="8"
+                            strokeLinecap="round"
+                        />
+                        </svg>
+                    </div>
+                    <p className="popup-header">Failed to load content</p>
+                    <p className="popup-subheading">Please reload page</p>
+                    </div>
+                </div>
+                )}
             
             {/* lesson completed popup */}
             {showVPopup && (
