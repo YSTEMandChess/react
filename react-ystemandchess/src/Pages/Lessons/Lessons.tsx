@@ -6,7 +6,7 @@ import { ReactComponent as BackIconInactive} from './icon_back_inactive.svg';
 import { ReactComponent as NextIcon } from './icon_next.svg';
 import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
 import { getScenario, getScenarioLength } from "./Scenarios";
-import { Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router';
 // @ts-ignore
 import PromotionPopup from "./PromotionPopup";
 
@@ -280,7 +280,7 @@ const Lessons = () => {
               <button className="lesson-button" onClick={() => navigate('/lessons-selection')}>Lessons</button>
               <button className="play-button">Play</button>
             </div>
-            <div className="chessboard_L">
+            <div data-testid="chessboard-L" className="chessboard_L">
               {createChessBoard(
                 board,
                 highlightedSquares,
