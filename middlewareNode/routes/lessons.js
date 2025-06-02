@@ -420,9 +420,9 @@ router.get(
           return res.status(404).json("Piece not found in lessonsCompleted");
         }
 
-        const updateResult = await users.updateOne( 
+        const updateResult = await guests.updateOne( 
           {
-            username,
+            ip: clientIp,
             $or: [
               { [`lessonsCompleted.${index}.lessonNumber`]: { $lt: lessonNum + 1 } },
               { [`lessonsCompleted.${index}.lessonNumber`]: { $exists: false } }

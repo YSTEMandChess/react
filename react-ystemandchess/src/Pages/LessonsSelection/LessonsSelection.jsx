@@ -95,58 +95,46 @@ export default function LessonSelection() {
     const handleSubmit = async () => {
         // Checks if both a lesson and a scenario have been selected.
         if (selectedLesson == null || selectedScenario == null) {
-            setErrorText("Select a scenario & lesson."); // Sets an error message.
-            setErrorFound(true); // Shows the error message.
-            return; // Stops the submission process.
+            setErrorText("Select a scenario & lesson.");
+            setErrorFound(true);
+            return;
         }
-        // Go to the next page!
-        return navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)+1}});
+        try {
+            const response = await fetch(
+            `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${selectedScenario}`,
+            {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${cookies.login}` }
+            }
+            );
+            
+            unlocked = await response.json();
+            setUnlockedLesson(unlocked);
+        } catch (error) {
+            console.error('Error fetching lesson number:', error);
+        }
+
+        if (unlocked < getLessonNum(selectedScenario, selectedLesson)) {
+            setErrorText("You haven't unlocked this lesson yet!");
+            setErrorFound(true);
+        } else {
+            return navigate("/lessons", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
+        }
     }
 
-    // useEffect hook to update the list of lessons when the selected scenario changes.
     useEffect(() => {
-        const lessonTable = [];
-        let unlocked = 0;
-        async function fetchData() {
-            try {
-                // Fetches the count of completed lessons for the selected scenario (piece).
-                const response = await fetch(
-                    `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${selectedScenario}`,
-                    {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${cookies.login}` }
-                    }
-                );
-        
-                unlocked = await response.json(); // Parses the JSON response to get the number of unlocked lessons.
-                setUnlockedLesson(unlocked); // Updates the unlockedLesson state.
-            } catch (error) {
-                console.error('Error fetching lesson number:', error);
-            }
-            if (unlocked === 0 || unlocked == null) {
-                for(let i =0; i < getScenarioLength(); i++) {
-                    if(getScenario(i).name === selectedScenario) {
-                        setLessons([getScenario(i).subSections[0]]);
-                        return;
-                    }
-                }
-            }
-            // Iterates through all available scenarios.
-            for(let i = 0; i < getScenarioLength(); i++) {
-                // If the current scenario matches the selected scenario.
-                if (getScenario(i).name === selectedScenario) {
-                    // Iterates through the sub-sections (lessons) of the selected scenario.
-                    for(let j =0; j < unlocked; j++) {
-                        lessonTable.push(getScenario(i).subSections[j]); // Adds each lesson to the lessonTable.
-                    }
-                    break; // Exits the loop once the selected scenario's lessons are collected.
-                }
-            }
-            setLessons(lessonTable); // Updates the lessons state with the lessons for the selected scenario.
-        }
-        fetchData();
-        }, [selectedScenario]) // This effect runs whenever selectedScenario changes.
+    const lessonTable = []
 
+    for(let i = 0; i < getScenarioLength(); i++) {
+        if (getScenario(i).name === selectedScenario) {
+            for(let j =0; j < getScenario(i).subSections.length; j++) {
+                lessonTable.push(getScenario(i).subSections[j]);
+            }
+            break;
+        }
+    }
+    setLessons(lessonTable);
+    }, [selectedScenario])      
     return(
         <div className="whole-page">
             {/* Conditional rendering of the error message popup. */}
@@ -210,7 +198,6 @@ export default function LessonSelection() {
                 </div>
             )}
 
-            {/* Button to submit the selection and navigate to the lesson. */}
             <button className="enterInfo" onClick={handleSubmit}>
                 Go!
             </button>
