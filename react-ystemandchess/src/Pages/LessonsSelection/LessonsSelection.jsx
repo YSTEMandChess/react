@@ -2,7 +2,7 @@ import "./LessonsStyle.css"; // Imports the CSS for this component.
 import { useNavigate } from "react-router"; // Hook for navigation.
 import React, { useState, useEffect } from 'react'; // Imports React hooks for state and lifecycle management.
 import { environment } from "../../environments/environment"; // Imports environment variables.
-import { getScenarioLength, getScenario} from "../Lessons/Scenarios"; // Imports functions to fetch lesson scenario data.
+import { getScenarioLength, getScenario, scenariosArray} from "../Lessons/Scenarios"; // Imports functions to fetch lesson scenario data.
 import { useCookies } from "react-cookie"; // Hook to manage cookies.
 
 
@@ -22,6 +22,7 @@ function ScenarioTemplate({ scenario, onClick }) { // You can pass down referenc
     return (
       <div className="item-template" onClick={onClick}>
         <div>{lesson.name}</div>
+        
       </div>
     );
   }
@@ -30,6 +31,7 @@ export default function LessonSelection() {
     const navigate = useNavigate(); // Initializes the navigation hook.
     const [showScenarios, setShowScenarios] = useState(false); // State to control the visibility of the scenarios list.
     const [showLessons, setShowLessons] = useState(false); // State to control the visibility of the lessons list for a selected scenario.
+
     const [cookies] = useCookies(['piece', 'login']); // Gets the 'piece' and 'login' cookies.
     const [selectedScenario, setSelectedScenario] = useState(null); // State to store the name of the selected scenario.
     const [selectedLesson, setSelectedLesson] = useState(null); // State to store the name of the selected lesson.
@@ -57,7 +59,7 @@ export default function LessonSelection() {
         console.log("!!!!!", scenario)
         console.log("!!!!!", lesson)
         // Iterates through all available scenarios.
-        for(let i = 0; i < getScenarioLength(); i++) {
+        for(let i = 5; i < getScenarioLength(); i++) {
             // If the current scenario matches the provided scenario name.
             if (getScenario(i).name === scenario) {
                 // Iterates through the sub-sections (lessons) of the found scenario.
@@ -91,56 +93,59 @@ export default function LessonSelection() {
 
     // Handles the submission (click on the "Go!" button) to navigate to the selected lesson.
     const handleSubmit = async () => {
-        let unlocked = 0;
         // Checks if both a lesson and a scenario have been selected.
         if (selectedLesson == null || selectedScenario == null) {
             setErrorText("Select a scenario & lesson."); // Sets an error message.
             setErrorFound(true); // Shows the error message.
             return; // Stops the submission process.
         }
-        try {
-            // Fetches the count of completed lessons for the selected scenario (piece).
-            const response = await fetch(
-                `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${selectedScenario}`,
-                {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${cookies.login}` }
-                }
-            );
-
-            unlocked = await response.json(); // Parses the JSON response to get the number of unlocked lessons.
-            setUnlockedLesson(unlocked); // Updates the unlockedLesson state.
-        } catch (error) {
-            console.error('Error fetching lesson number:', error);
-        }
-
-        // Checks if the selected lesson is unlocked (user has completed the preceding lessons).
-        if (unlocked < getLessonNum(selectedScenario, selectedLesson) + 1) {
-            setErrorText("You haven't unlocked this lesson yet!"); // Sets an error message.
-            setErrorFound(true); // Shows the error message.
-        } else {
-            // Navigates to the learning page with the selected piece (scenario) and lesson number.
-            return navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)+1}});
-        }
+        // Go to the next page!
+        return navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)+1}});
     }
 
     // useEffect hook to update the list of lessons when the selected scenario changes.
     useEffect(() => {
-    const lessonTable = []
-
-    // Iterates through all available scenarios.
-    for(let i = 0; i < getScenarioLength(); i++) {
-        // If the current scenario matches the selected scenario.
-        if (getScenario(i).name === selectedScenario) {
-            // Iterates through the sub-sections (lessons) of the selected scenario.
-            for(let j =0; j < getScenario(i).subSections.length; j++) {
-                lessonTable.push(getScenario(i).subSections[j]); // Adds each lesson to the lessonTable.
+        const lessonTable = [];
+        let unlocked = 0;
+        async function fetchData() {
+            try {
+                // Fetches the count of completed lessons for the selected scenario (piece).
+                const response = await fetch(
+                    `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${selectedScenario}`,
+                    {
+                        method: 'GET',
+                        headers: { 'Authorization': `Bearer ${cookies.login}` }
+                    }
+                );
+        
+                unlocked = await response.json(); // Parses the JSON response to get the number of unlocked lessons.
+                setUnlockedLesson(unlocked); // Updates the unlockedLesson state.
+            } catch (error) {
+                console.error('Error fetching lesson number:', error);
             }
-            break; // Exits the loop once the selected scenario's lessons are collected.
+            if (unlocked === 0 || unlocked == null) {
+                for(let i =0; i < getScenarioLength(); i++) {
+                    if(getScenario(i).name === selectedScenario) {
+                        setLessons([getScenario(i).subSections[0]]);
+                        return;
+                    }
+                }
+            }
+            // Iterates through all available scenarios.
+            for(let i = 0; i < getScenarioLength(); i++) {
+                // If the current scenario matches the selected scenario.
+                if (getScenario(i).name === selectedScenario) {
+                    // Iterates through the sub-sections (lessons) of the selected scenario.
+                    for(let j =0; j < unlocked; j++) {
+                        lessonTable.push(getScenario(i).subSections[j]); // Adds each lesson to the lessonTable.
+                    }
+                    break; // Exits the loop once the selected scenario's lessons are collected.
+                }
+            }
+            setLessons(lessonTable); // Updates the lessons state with the lessons for the selected scenario.
         }
-    }
-    setLessons(lessonTable); // Updates the lessons state with the lessons for the selected scenario.
-    }, [selectedScenario]) // This effect runs whenever selectedScenario changes.
+        fetchData();
+        }, [selectedScenario]) // This effect runs whenever selectedScenario changes.
 
     return(
         <div className="whole-page">
@@ -162,7 +167,12 @@ export default function LessonSelection() {
             <div className="selector scenario-selector" onClick={() => {
                 setShowScenarios(!showScenarios); // Toggles the visibility of the scenarios list.
             }}>
-                {selectedScenario || "Select a scenario."} {/* Displays the selected scenario or a default message. */}
+                <div>
+                    {selectedScenario || "Select a scenario."}
+                </div>
+                <div style={{marginRight:"1rem"}}>
+                    {showScenarios ? "▼" : "▲"}
+                </div>
             </div>
 
             {/* Conditional rendering of the scenarios list. */}
@@ -180,15 +190,23 @@ export default function LessonSelection() {
             <div className="selector lesson-selector" onClick={() => {
                 setShowLessons(!showLessons); // Toggles the visibility of the lessons list.
             }}>
-                {selectedLesson || "Select a lesson."} {/* Displays the selected lesson or a default message. */}
+                <div>
+                    {selectedLesson || "Select a lesson."}
+                </div>
+                <div style={{marginRight:"1rem"}}>
+                    {showLessons ? "▼" : "▲"}
+                </div>
             </div>
             {/* Conditional rendering of the lessons list for the selected scenario. */}
             {showLessons && (
                 <div className="container scenario-container">
-                    {/* Maps through the lessons and renders a LessonTemplate for each. */}
-                    {lessons.map((lessonItem, index) => (
-                        <LessonTemplate key={index} lesson={lessonItem} onClick={() => handleLessonClick(lessonItem.name)}/>
-                    ))}
+                    {lessons.length === 1 ? (
+                        <LessonTemplate key={0} lesson={lessons[0]} onClick={() => handleLessonClick(lessons[0].name)}/>
+                    ) : (
+                        lessons.map((lessonItem, index) => (
+                            <LessonTemplate key={index} lesson={lessonItem} onClick={() => handleLessonClick(lessonItem.name)}/>
+                        ))
+                    )}
                 </div>
             )}
 
