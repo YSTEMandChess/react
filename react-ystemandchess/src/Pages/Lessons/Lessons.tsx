@@ -13,7 +13,11 @@ import PromotionPopup from "./PromotionPopup";
 
 type Board = (string | null)[][];
 
-const Lessons = () => {
+type LessonsProps = {
+  testOverrides?: any;
+};
+
+const Lessons = ({ testOverrides }: LessonsProps) => {
   const navigate = useNavigate();
   const [board, setBoard] = useState(getScenario(0).subSections[0].board); // Initialize the board with chess pieces
   const [highlightedSquares, setHighlightedSquares] = useState([]);
@@ -77,6 +81,13 @@ const Lessons = () => {
     setBoard(JSON.parse(JSON.stringify(section.board)))
     setHighlightedSquares([]);
   };
+
+  useEffect(() => {
+  if (testOverrides?.highlightedSquares) {
+    setHighlightedSquares(testOverrides.highlightedSquares);
+  }
+}, [testOverrides]);
+
 
   useEffect(() => {
     const initializeLesson = async () => { // Make async to use await (if needed later)
@@ -217,7 +228,9 @@ const Lessons = () => {
 
   // Handle drop on a square
   const handleDrop = (key: any) => {
+    console.log("handleDrop called with key:", key);
     if (highlightedSquares.includes(key)) {
+      console.log("Square is highlighted, proceeding with drop");
       
       const [startRow, startCol] = draggingPiece !== null ? draggingPiece.position.split('-').map(Number) : [0,0] ;
       const [endRow, endCol] = key.split('-').map(Number);
@@ -231,12 +244,13 @@ const Lessons = () => {
       const updatedBoard: any = [...board];
       updatedBoard[endRow][endCol] = draggingPiece ? draggingPiece.piece: ""; // Move piece to new square
       updatedBoard[startRow][startCol] = null;            // Clear old square
-
+      
       // Check if the moved piece is a pawn reaching the promotion rank
       if ((draggingPiece.piece === 'wP' && endRow === 0) || (draggingPiece.piece === 'bP' && endRow === 7)) {
         setPromotionPosition(key); // Set the position for promotion
         setIsPromoting(true); // Set promoting state to true  
       } else {
+        console.log("Updating board state without promotion");
         setBoard(updatedBoard); // Update board state
       }
     }
@@ -265,6 +279,7 @@ const Lessons = () => {
   // Reset moved pieces to their original positions to restart the training
   const resetBoard = () => {
     if (lesson) {
+      console.log("Resetting board to original lesson state");
       setLessonEnded(false) // start lesson if not
       setBoard(JSON.parse(JSON.stringify(lesson.board)))
     }
@@ -300,14 +315,14 @@ const Lessons = () => {
         <div className='right-container'>
           {/* Description part */}
           <div className='lesson-header'>
-            <h1 className="piece_description">{scenario.name}</h1>
-            <button className='reset-lesson' onClick={resetBoard}>
+            <h1 data-testid="piece_description" className="piece_description">{scenario.name}</h1>
+            <button data-testid="reset-lesson" className='reset-lesson' onClick={resetBoard}>
               <RedoIcon className='reset-icon'/>
             </button>
           </div>
 
-          <h1 className='subheading'>{lesson.name}</h1>
-          <p className="lesson-description">{lesson.info}</p>
+          <h1 data-testid="subheading" className='subheading'>{lesson.name}</h1>
+          <p data-testid="lesson-description" className="lesson-description">{lesson.info}</p>
 
           <div className='prev-next-button-container'>
             {
@@ -325,12 +340,12 @@ const Lessons = () => {
             }
 
             {rightEnded? (
-                <button className="prevNextLessonButton-inactive next">
+                <button data-testid="prevNextLessonButton" className="prevNextLessonButton-inactive next">
                   <p className="button-description">Next</p>
                   <NextIconInactive/>
                 </button>
               ) : (
-                <button className="prevNextLessonButton next" onClick={() => setupScenario(1)}>
+                <button data-testid="prevNextLessonButton" className="prevNextLessonButton next" onClick={() => setupScenario(1)}>
                   <p className="button-description">Next</p>
                   <NextIcon/>
                 </button>
@@ -345,6 +360,7 @@ const Lessons = () => {
           {scenario.subSections?.map((section, index) => (
             <button 
               key={index}
+              data-testid="lesson-buttons"
               className={section.name == lesson.name ? "lesson-buttons active" : "lesson-buttons"}  
               onClick={() => setupLesson(section)}
             >
@@ -407,6 +423,7 @@ export function createChessBoard(
         <div
           key={key}
           className="square_L"
+          data-testid={`square-${key}`}
           style={{
             backgroundColor: squareColor,
             filter: highlightedSquares.includes(key) ? 'brightness(80%)' : 'brightness(100%)',
@@ -435,6 +452,7 @@ export function createChessBoard(
             <img
               src={pieceImage}
               alt={piece}
+              data-testid={`piece-${piece}`}
               className="piece-image"
               draggable // Allow dragging
               onDragStart={(e) => handleDragStart(e, piece, key)} // Dragging starts
