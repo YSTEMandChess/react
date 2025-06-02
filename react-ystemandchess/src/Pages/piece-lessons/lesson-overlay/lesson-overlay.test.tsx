@@ -9,11 +9,11 @@ beforeEach(() => {
   global.fetch = jest.fn((url) => {
     if (url.includes('getCompletedLessonCount')) {
       return Promise.resolve({
-        json: () => Promise.resolve(0),
+        json: () => Promise.resolve(1),
       });
     }
 
-    if (url.includes('getLesson')) {
+    if (url.includes('getLesson') && url.includes('lessonNum=1')) {
       return Promise.resolve({
         json: () => Promise.resolve({ 
             startFen: "8/8/3k4/8/8/4K3/8/Q6R w - - 0 1",
@@ -24,9 +24,31 @@ beforeEach(() => {
       });
     }
 
+    if (url.includes('getLesson') && url.includes('lessonNum=2')) {
+      return Promise.resolve({
+        json: () => Promise.resolve({ 
+            startFen: "8/8/3k4/8/8/4K3/8/Q6R w - - 0 1",
+            name: "simple 2 board name",
+            info: "simple 2 board info",
+            lessonNum: 2
+        }),
+      });
+    }
+
+    if (url.includes('getLesson') && url.includes('lessonNum=3')) {
+      return Promise.resolve({
+        json: () => Promise.resolve({ 
+            startFen: "8/8/3k4/8/8/4K3/8/Q6R w - - 0 1",
+            name: "simple 3 board name",
+            info: "simple 3 board info",
+            lessonNum: 3
+        }),
+      });
+    }
+
     if (url.includes('getTotalPieceLesson')) {
       return Promise.resolve({
-        json: () => Promise.resolve(1),
+        json: () => Promise.resolve(3),
       });
     }
 
@@ -119,9 +141,9 @@ test('triggers ReadyToRecieve message and fetches lessons', async () => {
   });
 
   // test whether component is re-rendered upon ReadyToReceive
-  const lessonName = screen.getByText(/simple board name/i);
+  const lessonName = screen.getByText(/simple 2 board name/i);
   expect(lessonName).toBeInTheDocument();
-  const lessonInfo = screen.getByText(/simple board name/i);
+  const lessonInfo = screen.getByText(/simple 2 board name/i);
   expect(lessonInfo).toBeInTheDocument();
 
   // test existence of description button & click
@@ -191,6 +213,63 @@ test('failed lesson', async () => {
   expect(updatedText).toBeInTheDocument();
 })
 
+// test lesson completion
+test('completed lesson', async () => {
+  render(
+    <MemoryRouter>
+      <LessonOverlay />
+    </MemoryRouter>
+  );
+
+  // start lesson first
+  await startLesson();
+  // chess client sends successful message
+  await act(async () => {
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        origin: environment.urls.chessClientURL,
+        data: "won:white",
+      })
+    );
+  });
+
+  // test completed popup
+  const completePopup = screen.getByText(/Lesson completed/i);
+  expect(completePopup).toBeInTheDocument();
+  const okBtn = screen.getByText(/OK/i);
+  expect(okBtn).toBeInTheDocument();
+
+  // consent to complete lesson, check UI update
+  await act(async () => { 
+    fireEvent.click(okBtn);
+  })
+  // read instruction
+  const readBtn = screen.getByText("Finished reading!")
+  expect(readBtn).toBeInTheDocument();
+  fireEvent.click(readBtn)
+  // check new lessonNum
+  const lessonNum3 = screen.getByText("simple 3 board info");
+  expect(lessonNum3).toBeInTheDocument();
+
+  // finish lesson 3, the last lesson
+  await act(async () => {
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        origin: environment.urls.chessClientURL,
+        data: "won:white",
+      })
+    );
+  });
+  // confirm completion
+  const completePopupAgain = screen.getByText(/Lesson completed/i);
+  expect(completePopupAgain).toBeInTheDocument();
+  const okBtnAgain = screen.getByText(/OK/i);
+  expect(okBtnAgain).toBeInTheDocument();
+  // will still be the last lesson, since no more lessons left
+  const lessonNum3Again = screen.getByText("simple 3 board info");
+  expect(lessonNum3Again).toBeInTheDocument();
+})
+
 // test reset button
 test('reset lesson', async () => {
   render(
@@ -202,8 +281,62 @@ test('reset lesson', async () => {
   // start lesson first
   await startLesson();
   
+  // reset lesson
   const resetBtn = document.getElementsByClassName("reset-lesson")[0];
   fireEvent.click(resetBtn);
+  // check if UI is updated
   const updatedText = screen.getByText(/Make a move to see it here!/i);
   expect(updatedText).toBeInTheDocument();
+})
+
+// test lesson navigation
+test('next & previous lesson', async () => {
+  render(
+    <MemoryRouter>
+      <LessonOverlay />
+    </MemoryRouter>
+  );
+
+  // start lesson first
+  await startLesson();
+  // check current lesson number
+  const lessonNum2 = screen.getByText("simple 2 board info")
+  expect(lessonNum2).toBeInTheDocument();
+
+  // go back one lesson
+  const backBtn = screen.getByText(/Back/i).closest('button');
+  expect(backBtn).toBeInTheDocument();
+  await act(async () => {
+      fireEvent.click(backBtn);
+  });
+  // read description
+  const readBtn = screen.getByText("Finished reading!")
+  expect(readBtn).toBeInTheDocument();
+  fireEvent.click(readBtn)
+  // check previous lesson number
+  const lessonNum1 = screen.getByText("simple board info")
+  expect(lessonNum1).toBeInTheDocument();
+
+  // go to next lesson (initial lesson)
+  const nextBtn = screen.getByText(/Next/i).closest('button');
+  expect(nextBtn).toBeInTheDocument();
+  await act(async () => {
+      fireEvent.click(nextBtn);
+  });
+  // read description
+  const readBtnAgain = screen.getByText("Finished reading!")
+  fireEvent.click(readBtnAgain)
+  // check lesson number to be the same as initial
+  const lessonNum2again = screen.getByText("simple 2 board info");
+  expect(lessonNum2again).toBeInTheDocument();
+
+  // try to go to next lesson
+  const nextBtnAgain = screen.getByText(/Next/i).closest('button');
+  expect(nextBtnAgain).toBeInTheDocument();
+  await act(async () => {
+      fireEvent.click(nextBtnAgain);
+  });
+  // will stay in current lesson, since lesson 3 not activated 
+  const lessonNum2still = screen.getByText("simple 2 board info");
+  expect(lessonNum2still).toBeInTheDocument();
 })
