@@ -100,7 +100,7 @@ export default function LessonSelection() {
             return; // Stops the submission process.
         }
         // Go to the next page!
-        return navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)+1}});
+        return navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
     }
 
     // useEffect hook to update the list of lessons when the selected scenario changes.
