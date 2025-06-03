@@ -93,6 +93,7 @@ export default function LessonSelection() {
 
     // Handles the submission (click on the "Go!" button) to navigate to the selected lesson.
     const handleSubmit = async () => {
+        let unlocked = 0;
         // Checks if both a lesson and a scenario have been selected.
         if (selectedLesson == null || selectedScenario == null) {
             setErrorText("Select a scenario & lesson.");
