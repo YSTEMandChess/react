@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import './Login.scss';
 import { useState } from 'react';
 import { environment } from '../../environments/environment';
@@ -76,11 +76,12 @@ const Login = () => {
         setCookie('login', JSON.parse(response).token, { expires });
 
         let payload = JSON.parse(atob(response.split('.')[1]));
-        console.log(payload, true);
+        console.log(payload)
 
         switch (payload['role']) {
           case 'student':
             window.location.pathname = '/student-profile';
+            console.log(payload['role'])
             break;
           case 'parent':
             window.location.pathname = '/parent';
@@ -140,12 +141,12 @@ const Login = () => {
       </form>
 
       <div className='additional-options'>
-        <Link to='/signup' className='option'>
+        <a href='/signup' className='option'>
           Create a new account
-        </Link>
-        <Link to='/reset-password' className='option'>
+        </a>
+        <a href='/reset-password' className='option'>
           Forgot password?
-        </Link>
+        </a>
       </div>
     </>
   );

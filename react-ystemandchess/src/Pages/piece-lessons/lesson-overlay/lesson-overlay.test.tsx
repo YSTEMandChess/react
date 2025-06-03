@@ -76,7 +76,7 @@ beforeEach(() => {
     onreadystatechange: null as (() => void) | null,
   };
 
-  // When send is called, trigger onreadystatechange after a tick
+  // When send is called, trigger onreadystatechange
   mockXHR.send.mockImplementation(() => {
     if (mockXHR.onreadystatechange) mockXHR.onreadystatechange();
   });
