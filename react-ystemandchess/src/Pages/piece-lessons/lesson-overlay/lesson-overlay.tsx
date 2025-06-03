@@ -112,7 +112,6 @@ const LessonOverlay = () => {
             // Fetch the specific lesson
                 setLessonNum(passedLessonNumber)
                 setPiece(passedPieceName)
-                
             }
 
         return () => {
