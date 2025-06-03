@@ -124,6 +124,7 @@ const LessonOverlay = () => {
             // Fetch the specific lesson
             setLessonNum(passedLessonNumber)
             setPiece(passedPieceName)
+            getCurrentLessonsRef.current(passedLessonNumber);
         }
 
         return () => {
