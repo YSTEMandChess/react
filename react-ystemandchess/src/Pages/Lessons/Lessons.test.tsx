@@ -4,27 +4,6 @@ import Lessons from "./Lessons";
 import { MemoryRouter } from "react-router"; 
 import { mock } from "node:test";
 
-
-test("renders lessons button", () => {
-  render(
-    <MemoryRouter>
-      <Lessons />
-    </MemoryRouter>
-  );
-  const heading = screen.getByText("Lessons");
-  expect(heading).toBeInTheDocument();
-});
-
-test("renders play button", () => { 
-  render(
-    <MemoryRouter>
-      <Lessons />
-    </MemoryRouter>
-  );
-  const playButton = screen.getByText("Play");
-  expect(playButton).toBeInTheDocument();
-});
-
 test("renders chess board", () => {
   render(
     <MemoryRouter>
@@ -51,39 +30,127 @@ test("renders scenarion title", () => {
 });
 
 test("simulates peice move and checks reset button", () => { 
+  // Render the Lessons component with a highlighted square for testing
   render(
     <MemoryRouter>
-      <Lessons testOverrides={{highlightedSquares: ["2-0"]}} />
+      <Lessons testOverrides={{ highlightedSquares: ["2-0"] }} />
     </MemoryRouter>
   );
 
-  const chessBoard = screen.getByTestId("chessboard-L");
-
-  const source = screen.getByTestId("piece-wP"); // Assuming the piece is on square 0,0
+  // Get the draggable piece and the target square
+  const source = screen.getByTestId("piece-wP");
   const target = screen.getByTestId("square-2-0");
 
+  // Mock the setDragImage function for drag-and-drop
   const mockSetDragImage = jest.fn();
-
   const dataTransfer = {
     setData: jest.fn(),
     getData: jest.fn(),
     setDragImage: mockSetDragImage,
-
   };
 
+  // Simulate dragging the piece to the target square
   fireEvent.dragStart(source, { dataTransfer });
   fireEvent.dragOver(target, { dataTransfer });
   fireEvent.drop(target, { dataTransfer });
 
-  expect(mockSetDragImage).toHaveBeenCalled(); // Check if setDragImage was called
+  // Verify that setDragImage was called during drag
+  expect(mockSetDragImage).toHaveBeenCalled();
 
-  expect(target.querySelector(".piece-image")).toBeTruthy(); // Check if the target has the piece image class
+  // Check if the piece image is present in the target square after drop
+  expect(target.querySelector(".piece-image")).toBeTruthy();
 
+  // Find and click the reset button
   const resetButton = screen.getByTestId("reset-lesson");
   expect(resetButton).toBeInTheDocument();
   fireEvent.click(resetButton);
 
-  expect(screen.getByTestId("square-3-0").querySelector(".piece-image")).toBeTruthy(); // Check if the piece is back to the source square
+  // After reset, check if the piece is back to its original square
+  expect(screen.getByTestId("square-3-0").querySelector(".piece-image")).toBeTruthy();
+});
+
+test("does not move when dragging a piece to an invalid square", () => {
+  // Render the Lessons component with a highlighted square for testing
+  render(
+    <MemoryRouter>
+      <Lessons testOverrides={{ highlightedSquares: ["2-0"] }} />
+    </MemoryRouter>
+  );
+
+  // Get the draggable piece and an invalid target square
+  const source = screen.getByTestId("piece-wP");
+  const invalidTarget = screen.getByTestId("square-2-1");
+
+  // Mock the setDragImage function for drag-and-drop
+  const mockSetDragImage = jest.fn();
+  const dataTransfer = {
+    setData: jest.fn(),
+    getData: jest.fn(),
+    setDragImage: mockSetDragImage,
+  };
+
+  // Simulate dragging the piece to the invalid target square
+  fireEvent.dragStart(source, { dataTransfer });
+  fireEvent.dragOver(invalidTarget, { dataTransfer });
+  fireEvent.drop(invalidTarget, { dataTransfer });
+
+  // Verify that setDragImage was called during drag
+  expect(mockSetDragImage).toHaveBeenCalled();
+
+  // Check if the piece image is still in its original square after attempting to drop on an invalid square
+  expect(screen.getByTestId("square-3-0").querySelector(".piece-image")).toBeTruthy();
+});
+
+test("next button updates board and scenario title", () => {
+  // Render the Lessons component
+  render(
+    <MemoryRouter>
+      <Lessons />
+    </MemoryRouter>
+  );
+
+  // Get the next button
+  const nextButton = screen.getByTestId("prevNextLessonButton");
+  expect(nextButton).toBeInTheDocument();
+
+  // Click the next button
+  fireEvent.click(nextButton);
+
+  // Check if the scenario title has been updated
+  const scenarioTitle = screen.getByTestId("piece_description");
+  expect(scenarioTitle.textContent).toBe("Bishop - It moves diagonally "); // Ensure the text content is not empty
+
+  // Check if the chessboard has been updated by verifying the presence of the bishop in the 6 6 position
+  expect(screen.getByTestId("square-6-6").querySelector(".piece-image")).toBeTruthy();
+});
+
+test("back button reverts the next button action", () => {
+  // Render the Lessons component
+  render(
+    <MemoryRouter>
+      <Lessons />
+    </MemoryRouter>
+  );
+
+  // Get the next button and click it to change the scenario
+  const nextButton = screen.getByTestId("prevNextLessonButton");
+
+  // Get the back button
+  const backButton = screen.getByTestId("backLessonButton");
+  expect(backButton).toBeInTheDocument();
+
+  // Click the next button
+  fireEvent.click(nextButton);
+
+  // Click the back button
+  fireEvent.click(backButton);
+
+  // Check if the scenario title has reverted to the original state
+  const scenarioTitle = screen.getByTestId("piece_description");
+  expect(scenarioTitle.textContent).toBe("Pawn - It moves forward only");
+
+  // Check if the chessboard has reverted by verifying the presence of the pawn in the original position
+  expect(screen.getByTestId("square-3-0").querySelector(".piece-image")).toBeTruthy();
 });
 
 

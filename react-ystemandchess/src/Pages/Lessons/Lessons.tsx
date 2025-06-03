@@ -285,6 +285,9 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
     }
   }
 
+  // Determine the classname for the back button based on whether there are previous lessons
+  const backButtonClassname = rightEnded ? "prevNextLessonButton-inactive prev" : "prevNextLessonButton prev";
+
   return (
     <div className="lessons-page">
       <div className='left-right-container'>
@@ -325,32 +328,25 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
           <p data-testid="lesson-description" className="lesson-description">{lesson.info}</p>
 
           <div className='prev-next-button-container'>
-            {
-              leftEnded? (
-                <button className="prevNextLessonButton-inactive prev">
-                  <BackIconInactive/>
-                  <p className="button-description">Back</p>
-                </button>
-              ) : (
-                <button className="prevNextLessonButton prev" onClick={() => setupScenario(-1)}>
-                  <BackIcon/>
-                  <p className="button-description">Back</p>
-                </button>
-              )
-            }
+            {/* Back button */}
+            <button 
+            data-testid="backLessonButton" 
+            className={leftEnded ? "prevNextLessonButton-inactive prev" : "prevNextLessonButton prev"} 
+            onClick={leftEnded ? undefined : () => setupScenario(-1)}
+            >
+              { leftEnded ? <BackIconInactive/> : <BackIcon/> }
+              <p className="button-description">Back</p>
+            </button>
 
-            {rightEnded? (
-                <button data-testid="prevNextLessonButton" className="prevNextLessonButton-inactive next">
-                  <p className="button-description">Next</p>
-                  <NextIconInactive/>
-                </button>
-              ) : (
-                <button data-testid="prevNextLessonButton" className="prevNextLessonButton next" onClick={() => setupScenario(1)}>
-                  <p className="button-description">Next</p>
-                  <NextIcon/>
-                </button>
-              )
-            }
+            <button 
+            data-testid="prevNextLessonButton" 
+            className={rightEnded ? "prevNextLessonButton-inactive next" : "prevNextLessonButton next"} 
+            onClick={rightEnded ? undefined : () => setupScenario(1)}
+            >
+              { rightEnded ? <NextIconInactive/> : <NextIcon/> }
+              <p className="button-description">Next</p>
+            </button>
+
           </div>
         </div>
 
