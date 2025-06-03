@@ -70,7 +70,13 @@ const LessonOverlay = () => {
                 }
                 // start lesson if not already
                 if (!lessonStarted) {
-                    getLessonsCompletedRef.current();
+                    if (passedLessonNumber != null && passedPieceName != null) {
+                        // Fetch the specific lesson
+                        await getCurrentLessonsRef.current(passedLessonNumber);
+                        } else {
+                        // Otherwise, fetch the default lesson
+                        await getLessonsCompletedRef.current();
+                        }
                     lessonStarted = true;
                 } else if (e.data === lessonEndFEN ) { 
                     setShowVPopup(true); // complete lesson
