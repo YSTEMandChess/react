@@ -25,6 +25,7 @@ const Login = () => {
     if (password.length < 8) {
       setPasswordFlag(false);
     } else {
+      console.log('verifying pw')
       setPasswordFlag(true);
     }
   };
@@ -39,15 +40,28 @@ const Login = () => {
 
   const submitLogin = (e: any) => {
     e.preventDefault();
-    errorMessages();
+    // errorMessages();
+    if (password.length < 8 || username.length <= 2) {
+      setLoginError('Invalid username or password');
+      return;
+    } else {
+      setLoginError('');
+    }
 
     let url = `${environment.urls.middlewareURL}/auth/login?username=${username}&password=${password}`;
 
-    const httpGetAsync = (theUrl: string, callback: any) => {
+    const httpGetAsync = (theUrl: string, callback: any, onError: any) => {
       let xmlHttp = new XMLHttpRequest();
       xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState === 4 && xmlHttp.status === 200)
-          callback(xmlHttp.responseText);
+        if (xmlHttp.readyState === 4) {
+          if (xmlHttp.status >= 200 && xmlHttp.status < 300) {
+            callback(xmlHttp.responseText);
+          } else {
+            if (onError) {
+              onError();
+            }
+          }
+        }
       };
       xmlHttp.open('POST', theUrl, true);
       xmlHttp.send(null);
@@ -81,6 +95,8 @@ const Login = () => {
             window.location.pathname = '';
         }
       }
+    }, () => {
+      setLoginError('The username or password is incorrect.');
     });
   };
 
@@ -99,7 +115,7 @@ const Login = () => {
             value={username}
             onChange={(e) => {
               setUsername(e.target.value);
-              usernameVerification();
+              //usernameVerification();
             }}
             required
           />
@@ -113,7 +129,7 @@ const Login = () => {
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
-              passwordVerification();
+              //passwordVerification();
             }}
             required
           />

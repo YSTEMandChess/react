@@ -100,7 +100,7 @@ export default function LessonSelection() {
             return; // Stops the submission process.
         }
         // Go to the next page!
-        return navigate("/learnings", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
+        return navigate("/lessons", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
     }
 
     // useEffect hook to update the list of lessons when the selected scenario changes.
@@ -136,7 +136,7 @@ export default function LessonSelection() {
                 // If the current scenario matches the selected scenario.
                 if (getScenario(i).name === selectedScenario) {
                     // Iterates through the sub-sections (lessons) of the selected scenario.
-                    for(let j =0; j < unlocked; j++) {
+                    for(let j = 0; j <= unlocked && j < getScenario(i).subSections.length; j++) {
                         lessonTable.push(getScenario(i).subSections[j]); // Adds each lesson to the lessonTable.
                     }
                     break; // Exits the loop once the selected scenario's lessons are collected.
