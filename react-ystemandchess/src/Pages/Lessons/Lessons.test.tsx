@@ -164,8 +164,8 @@ test("renders and reacts to lesson button clicks", () => {
   // Get the lesson buttons
   const lessonButtons = screen.getAllByTestId("lesson-button");
   expect(lessonButtons.length).toBeGreaterThan(0); // Ensure there are lesson buttons
-
-  // Click the second lesson button
+  
+  // Iterate through each lesson button and simulate a click
   for (const lessonButton of lessonButtons) {
     expect(lessonButton).toBeInTheDocument();
     fireEvent.click(lessonButton);

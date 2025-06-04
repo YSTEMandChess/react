@@ -160,11 +160,11 @@ export default function LessonSelection() {
                     </div>
                 </div>
             )}
-            <div className="title">
+            <div data-testid="title" className="title">
                 Lesson Selection
             </div>
             {/* Dropdown-like selector for choosing a scenario. */}
-            <div className="selector scenario-selector" onClick={() => {
+            <div data-testid="scenario-selector" className="selector scenario-selector" onClick={() => {
                 setShowScenarios(!showScenarios); // Toggles the visibility of the scenarios list.
             }}>
                 <div>
@@ -187,7 +187,7 @@ export default function LessonSelection() {
             )}
 
             {/* Dropdown-like selector for choosing a lesson within the selected scenario. */}
-            <div className="selector lesson-selector" onClick={() => {
+            <div data-testid="lesson-selector" className="selector lesson-selector" onClick={() => {
                 setShowLessons(!showLessons); // Toggles the visibility of the lessons list.
             }}>
                 <div>
@@ -211,7 +211,7 @@ export default function LessonSelection() {
             )}
 
             {/* Button to submit the selection and navigate to the lesson. */}
-            <button className="enterInfo" onClick={handleSubmit}>
+            <button data-testid="enterInfo" className="enterInfo" onClick={handleSubmit}>
                 Go!
             </button>
         </div>
