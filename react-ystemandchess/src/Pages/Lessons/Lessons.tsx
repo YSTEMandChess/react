@@ -356,7 +356,7 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
           {scenario.subSections?.map((section, index) => (
             <button 
               key={index}
-              data-testid="lesson-buttons"
+              data-testid="lesson-button"
               className={section.name == lesson.name ? "lesson-buttons active" : "lesson-buttons"}  
               onClick={() => setupLesson(section)}
             >
