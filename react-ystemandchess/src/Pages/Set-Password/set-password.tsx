@@ -97,6 +97,7 @@ const SetPassword = () => {
             New Password
           </label>
           <input
+            data-testid="password"
             id='password'
             type='password'
             value={password}
@@ -116,6 +117,7 @@ const SetPassword = () => {
             Confirm Password
           </label>
           <input
+            data-testid="confirmPassword"
             id='confirmPassword'
             type='password'
             value={confirmPassword}
@@ -127,6 +129,7 @@ const SetPassword = () => {
         </div>
 
         <button
+          data-testid="setBtn"
           type='submit'
           disabled={isLoading}
           className={`w-full bg-blue-500 text-white p-2 rounded ${
