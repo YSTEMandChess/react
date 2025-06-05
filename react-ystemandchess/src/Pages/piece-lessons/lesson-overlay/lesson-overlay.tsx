@@ -347,15 +347,20 @@ const LessonOverlay = () => {
         throw new Error('Could not determine turn from FEN');
     }
 
-    // update the moves for trackign
+    // update the moves for tracking
     function processMove() {
+        // if previous fen is not set (ie the first move has not been made), do nothing
         if (prevFenRef.current) {
             const move = getMoveFromFens(prevFenRef.current, currentFenRef.current)
-            setMoves(prev => [...prev, move])
+            // if the move is not null, update the moves (the move will be null only when the computer makes no move ie checkmate or statemate)
+            if (move) {
+                setMoves(prev => [...prev, move]) // update moves
+            }
+            
         }
     }
 
-    // calculate what move is made by board fen before & after
+    // Calculate what move is made by board fen before & after the move
     function getMoveFromFens(prevFEN, currFEN) {
         const chess = new Chess(prevFEN)
         const moves = chess.moves({verbose: true})

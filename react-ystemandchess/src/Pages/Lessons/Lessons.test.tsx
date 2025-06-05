@@ -153,4 +153,27 @@ test("back button reverts the next button action", () => {
   expect(screen.getByTestId("square-3-0").querySelector(".piece-image")).toBeTruthy();
 });
 
+test("renders and reacts to lesson button clicks", () => {
+  // Render the Lessons component
+  render(
+    <MemoryRouter>
+      <Lessons />
+    </MemoryRouter>
+  );
+
+  // Get the lesson buttons
+  const lessonButtons = screen.getAllByTestId("lesson-button");
+  expect(lessonButtons.length).toBeGreaterThan(0); // Ensure there are lesson buttons
+  
+  // Iterate through each lesson button and simulate a click
+  for (const lessonButton of lessonButtons) {
+    expect(lessonButton).toBeInTheDocument();
+    fireEvent.click(lessonButton);
+
+    // Check if the scenario title has been updated
+    const scenarioTitle = screen.getByTestId("subheading");
+    expect(scenarioTitle.textContent).toBe(lessonButton.textContent); // Ensure the text content matches the button text
+  }
+});
+
 
