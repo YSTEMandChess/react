@@ -17,6 +17,18 @@ async function getDb() {
   return cachedClient.db("ystem"); // returned cached client
 }
 
+router.get(
+  "/check",
+  async(req, res) => {
+    const db = await getDb();
+    const users = db.collection("users");
+    const userDoc = await users.findOne(
+          { username: "xiyuez" }
+        );
+    res.json(userDoc)
+  }
+)
+
 // Get the number of lessons completed for a chess piece for a specific user
 // example: `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=pawn`
 router.get(

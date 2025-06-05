@@ -1,8 +1,9 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import React,{act} from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ResetPassword from './reset-password';  // Assuming ResetPassword is a React component
 import { MemoryRouter } from 'react-router';
 
+// correctly renders component
 test('renders reset password component', () => {
   render(
     <MemoryRouter>
@@ -17,6 +18,98 @@ test('renders reset password component', () => {
   }
 });
 
+// failed verfication
+test('failed verification', async () => {
+  render(
+    <MemoryRouter>
+      <ResetPassword />
+    </MemoryRouter>
+    );
+
+  // mock failed fetching
+  global.fetch = jest.fn((url) => {
+    return Promise.resolve({
+      ok: false,
+      json: () => Promise.resolve({ message: 'Error requesting password reset' }), // failure message
+    })
+  }) as jest.Mock
+
+  // input username & email
+  const usernameInput = screen.getByPlaceholderText('UserName');
+  const emailInput = screen.getByPlaceholderText('Email');
+  fireEvent.blur(usernameInput, { target: { value: 'validusername' } });
+  fireEvent.blur(emailInput, { target: { value: 'validemail@example.com' } });
+
+  // submit credentials
+  const button = screen.getByTestId('reset-submit');
+  await act(async () => {
+    fireEvent.click(button);
+  })
+
+  // check that error text is displayed
+  const errorText = screen.getByText('Error requesting password reset');
+  expect(errorText).toBeInTheDocument();
+});
+
+// mock network error
+test('network error', async () => {
+  render(
+    <MemoryRouter>
+      <ResetPassword />
+    </MemoryRouter>
+    );
+
+  // mock failed fetching
+  global.fetch = jest.fn((url) => {
+    return Promise.reject(new Error('Network error'))
+  }) as jest.Mock
+
+  // input username & email
+  const usernameInput = screen.getByPlaceholderText('UserName');
+  const emailInput = screen.getByPlaceholderText('Email');
+  fireEvent.blur(usernameInput, { target: { value: 'validusername' } });
+  fireEvent.blur(emailInput, { target: { value: 'validemail@example.com' } });
+
+  // submit credentials
+  const button = screen.getByTestId('reset-submit');
+  await act(async () => {
+    fireEvent.click(button);
+  })
+
+  // check that error text is displayed
+  const errorText = screen.getByText('Error connecting to server. Please try again.');
+  expect(errorText).toBeInTheDocument();
+});
+
+// successful verfication
+test('successful verification', async () => {
+  render(
+    <MemoryRouter>
+      <ResetPassword />
+    </MemoryRouter>
+    );
+
+  // mock successful fetching
+  global.fetch = jest.fn((url) => {
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ token: 'test-token' }), // a fake token
+    })
+  }) as jest.Mock
+
+  // input username & email
+  const usernameInput = screen.getByPlaceholderText('UserName');
+  const emailInput = screen.getByPlaceholderText('Email');
+  fireEvent.blur(usernameInput, { target: { value: 'validusername' } });
+  fireEvent.blur(emailInput, { target: { value: 'validemail@example.com' } });
+
+  // submit credentials
+  const button = screen.getByTestId('reset-submit');
+  await act(async () => {
+    fireEvent.click(button);
+  })
+});
+
 // test('shows error message on invalid username', () => {
 //   render(
 //     <MemoryRouter>
@@ -24,7 +117,7 @@ test('renders reset password component', () => {
 //     </MemoryRouter>
 //     );
 //   const usernameInput = screen.getByPlaceholderText('UserName');
-//   fireEvent.blur(usernameInput, { target: { value: 'ab' } });
+//   fireEvent.blur(usernameInput, { target: { value: ' 2a' } });
 //   const errorMessage = screen.getByText('Invalid username');
 //   expect(errorMessage).toBeInTheDocument();
 // });
@@ -39,18 +132,4 @@ test('renders reset password component', () => {
 //   fireEvent.blur(emailInput, { target: { value: 'invalidemail' } });
 //   const errorMessage = screen.getByText('Invalid Email');
 //   expect(errorMessage).toBeInTheDocument();
-// });
-
-// test('verifies user input', () => {
-//   render(
-//     <MemoryRouter>
-//       <ResetPassword />
-//     </MemoryRouter>
-//     );
-//   const usernameInput = screen.getByPlaceholderText('UserName');
-//   const emailInput = screen.getByPlaceholderText('Email');
-//   fireEvent.blur(usernameInput, { target: { value: 'validusername' } });
-//   fireEvent.blur(emailInput, { target: { value: 'validemail@example.com' } });
-//   const button = screen.getByText('Enter');
-//   fireEvent.click(button);
 // });
