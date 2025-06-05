@@ -360,7 +360,7 @@ const LessonOverlay = () => {
         }
     }
 
-    // calculate what move is made by board fen before & after
+    // Calculate what move is made by board fen before & after the move
     function getMoveFromFens(prevFEN, currFEN) {
         const chess = new Chess(prevFEN)
         const moves = chess.moves({verbose: true})
