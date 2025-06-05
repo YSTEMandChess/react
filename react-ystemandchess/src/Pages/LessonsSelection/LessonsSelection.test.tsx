@@ -24,3 +24,5 @@ test("renders lesson selection page", () => {
   const goButton = screen.getByTestId("enterInfo");
   expect(goButton).toBeInTheDocument();
 });
+
+// MAYBE: Add more tests to check if later lessons are blocked if you haven't completed the previous ones
