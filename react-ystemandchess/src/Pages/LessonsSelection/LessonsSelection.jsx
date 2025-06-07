@@ -1,115 +1,114 @@
-import "./LessonsStyle.css"; // Imports the CSS for this component.
-import { useNavigate } from "react-router"; // Hook for navigation.
-import React, { useState, useEffect } from 'react'; // Imports React hooks for state and lifecycle management.
-import { environment } from "../../environments/environment"; // Imports environment variables.
-import { getScenarioLength, getScenario, scenariosArray} from "../Lessons/Scenarios"; // Imports functions to fetch lesson scenario data.
-import { useCookies } from "react-cookie"; // Hook to manage cookies.
-
-
-// li onClick={() => navigate("/lessons", {state: {scenario: "Pawn", lesson: "Basic"}})}>Basic</li>
+import "./LessonsStyle.css";
+import { useNavigate } from "react-router";
+import React, { useState, useEffect, useCallback } from 'react';
+import { environment } from "../../environments/environment";
+import { getScenarioLength, getScenario } from "../Lessons/Scenarios"; // Assuming scenariosArray is implicitly used by these functions or can be imported.
+import { useCookies } from "react-cookie";
 
 // Component to display a single scenario item.
-function ScenarioTemplate({ scenario, onClick }) { // You can pass down references, like onClick!
+const ScenarioTemplate = React.memo(function ScenarioTemplate({ scenario, onClick }) {
     return (
-      <div className="item-template" onClick={onClick}>
-        <div>{scenario.name}</div>
-      </div>
+        <div className="item-template" onClick={onClick}>
+            <div>{scenario.name}</div>
+        </div>
     );
-  }
+});
 
-  // Component to display a single lesson item within a scenario.
-  function LessonTemplate({ lesson, onClick }) {
+// Component to display a single lesson item within a scenario.
+const LessonTemplate = React.memo(function LessonTemplate({ lesson, onClick }) {
     return (
-      <div className="item-template" onClick={onClick}>
-        <div>{lesson.name}</div>
-        
-      </div>
+        <div className="item-template" onClick={onClick}>
+            <div>{lesson.name}</div>
+        </div>
     );
-  }
+});
+
+// When passing down props (e.g. lessontemplate & scenariotemplate) you can sometimes use memo & useCallback.
 
 export default function LessonSelection() {
-    const navigate = useNavigate(); // Initializes the navigation hook.
-    const [showScenarios, setShowScenarios] = useState(false); // State to control the visibility of the scenarios list.
-    const [showLessons, setShowLessons] = useState(false); // State to control the visibility of the lessons list for a selected scenario.
+    const navigate = useNavigate();
+    const [showScenarios, setShowScenarios] = useState(false);
+    const [showLessons, setShowLessons] = useState(false);
 
-    const [cookies] = useCookies(['piece', 'login']); // Gets the 'piece' and 'login' cookies.
-    const [selectedScenario, setSelectedScenario] = useState(null); // State to store the name of the selected scenario.
-    const [selectedLesson, setSelectedLesson] = useState(null); // State to store the name of the selected lesson.
-    const [unlockedLesson, setUnlockedLesson] = useState(0); // State to store the number of lessons unlocked for the selected scenario.
+    const [cookies] = useCookies(['piece', 'login']);
+    const [selectedScenario, setSelectedScenario] = useState(null);
+    const [selectedLesson, setSelectedLesson] = useState(null);
+    const [isLessonsLoading, setLoadingLessons] = useState(false);
+    const [unlockedLessonCount, setUnlockedLessonCount] = useState(0); // Renamed for clarity
 
-    const [errorText, setErrorText] = useState(null); // State to hold the text of any error message.
-    const [errorFound, setErrorFound] = useState(false); // State to track if an error has occurred and should be displayed.
+    const [error, setError] = useState(null); // Combine error states
 
-    const [scenarios, setScenarios] = useState([]); // State to store the list of available scenarios.
-    const [lessons, setLessons] = useState([]); // State to store the list of lessons for the selected scenario.
-    const [lessonNum, setLessonNum] = useState(null); // State to potentially store the lesson number (currently not directly used in rendering).
+    const [scenarios, setScenarios] = useState([]);
+    const [lessons, setLessons] = useState([]);
 
-    // useEffect hook to fetch the list of scenarios when the component mounts.
+    // Effect to fetch the list of scenarios when the component mounts.
     useEffect(() => {
         const scenarioList = [];
-        // Iterates through the available scenarios and adds them to the list.
+        // Assuming getScenarioLength and getScenario are efficient.
         for (let i = 6; i < getScenarioLength(); i++) {
             scenarioList.push(getScenario(i));
         }
-        setScenarios(scenarioList); // Updates the scenarios state with the fetched list.
-    }, []); // Empty dependency array means this effect runs only once after the initial render.
+        setScenarios(scenarioList);
+    }, []);
 
     // Function to determine the numerical index of a given lesson within a scenario.
-    const getLessonNum = (scenario, lesson) => {
-        console.log("!!!!!", scenario)
-        console.log("!!!!!", lesson)
-        // Iterates through all available scenarios.
-        for(let i = 5; i < getScenarioLength(); i++) {
-            // If the current scenario matches the provided scenario name.
-            if (getScenario(i).name === scenario) {
-                // Iterates through the sub-sections (lessons) of the found scenario.
-                for(let j =0; j < getScenario(i).subSections.length; j++) {
-                    // If the current lesson matches the provided lesson name.
-                    if (getScenario(i).subSections[j].name === lesson) {
-                        return j; // Returns the index (lesson number).
+    const getLessonIndex = useCallback((scenarioName, lessonName) => {
+        for (let i = 0; i < getScenarioLength(); i++) {
+            const scenario = getScenario(i);
+            if (scenario.name === scenarioName) {
+                for (let j = 0; j < scenario.subSections.length; j++) {
+                    if (scenario.subSections[j].name === lessonName) {
+                        return j;
                     }
                 }
-                break; // Exits the outer loop once the scenario is found.
             }
         }
-        return -1; // Returns -1 if the lesson is not found in the scenario.
-    }
+        return -1;
+    }, []);
 
     // Handles the click event on a scenario item.
-    const handleScenarioClick = (scenario) => {
-        setShowLessons(false); // Hides the lessons list.
-        setShowScenarios(false); // Hides the scenarios list.
-        setSelectedLesson(null); // Clears any previously selected lesson.
-        setSelectedLesson(null); // Redundant line, likely a mistake.
-        setSelectedScenario(scenario); // Sets the selected scenario.
-    }
+    const handleScenarioClick = useCallback((scenarioName) => {
+        setShowLessons(false);
+        setShowScenarios(false);
+        setSelectedLesson(null); // Clear selected lesson when scenario changes
+        setSelectedScenario(scenarioName);
+        setLoadingLessons(true);
+    }, []);
 
     // Handles the click event on a lesson item.
-    const handleLessonClick = (lesson) => {
-        setShowLessons(false); // Hides the lessons list.
-        setShowScenarios(false); // Hides the scenarios list.
-        setSelectedLesson(lesson); // Sets the selected lesson.
-    }
+    const handleLessonClick = useCallback((lessonName) => {
+        setShowLessons(false);
+        setShowScenarios(false);
+        setSelectedLesson(lessonName);
+    }, []);
 
     // Handles the submission (click on the "Go!" button) to navigate to the selected lesson.
     const handleSubmit = async () => {
-        // Checks if both a lesson and a scenario have been selected.
-        if (selectedLesson == null || selectedScenario == null) {
-            setErrorText("Select a scenario & lesson."); // Sets an error message.
-            setErrorFound(true); // Shows the error message.
-            return; // Stops the submission process.
+        if (!selectedLesson || !selectedScenario) {
+            setError("Select a scenario & lesson.");
+            return;
         }
-        // Go to the next page!
-        return navigate("/lessons", {state: {piece: selectedScenario, lessonNum: getLessonNum(selectedScenario, selectedLesson)}});
-    }
 
-    // useEffect hook to update the list of lessons when the selected scenario changes.
+        const lessonNum = getLessonIndex(selectedScenario, selectedLesson);
+        if (lessonNum === -1) {
+            setError("Could not find the selected lesson's index.");
+            return;
+        }
+
+        navigate("/learnings", { state: { piece: selectedScenario, lessonNum } });
+    };
+
+    // Effect hook to update the list of lessons when the selected scenario or login cookie changes.
     useEffect(() => {
-        const lessonTable = [];
-        let unlocked = 0;
-        async function fetchData() {
+        async function fetchLessonsForScenario() {
+            if (!selectedScenario) {
+                setLessons([]);
+                setLoadingLessons(false);
+                return;
+            }
+
+            let unlocked = 0;
             try {
-                // Fetches the count of completed lessons for the selected scenario (piece).
                 const response = await fetch(
                     `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${selectedScenario}`,
                     {
@@ -117,60 +116,61 @@ export default function LessonSelection() {
                         headers: { 'Authorization': `Bearer ${cookies.login}` }
                     }
                 );
-        
-                unlocked = await response.json(); // Parses the JSON response to get the number of unlocked lessons.
-                setUnlockedLesson(unlocked); // Updates the unlockedLesson state.
-            } catch (error) {
-                console.error('Error fetching lesson number:', error);
-            }
-            if (unlocked === 0 || unlocked == null) {
-                for(let i =0; i < getScenarioLength(); i++) {
-                    if(getScenario(i).name === selectedScenario) {
-                        setLessons([getScenario(i).subSections[0]]);
-                        return;
-                    }
-                }
-            }
-            // Iterates through all available scenarios.
-            for(let i = 0; i < getScenarioLength(); i++) {
-                // If the current scenario matches the selected scenario.
-                if (getScenario(i).name === selectedScenario) {
-                    // Iterates through the sub-sections (lessons) of the selected scenario.
-                    for(let j = 0; j <= unlocked && j < getScenario(i).subSections.length; j++) {
-                        lessonTable.push(getScenario(i).subSections[j]); // Adds each lesson to the lessonTable.
-                    }
-                    break; // Exits the loop once the selected scenario's lessons are collected.
-                }
-            }
-            setLessons(lessonTable); // Updates the lessons state with the lessons for the selected scenario.
-        }
-        fetchData();
-        }, [selectedScenario]) // This effect runs whenever selectedScenario changes.
 
-    return(
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                unlocked = await response.json();
+                setUnlockedLessonCount(unlocked);
+            } catch (error) {
+                console.error('Error fetching unlocked lesson count:', error);
+                // Optionally set an error state here if needed for display
+                unlocked = 0; // Default to 0 unlocked lessons on error
+            }
+
+            const currentScenario = scenarios.find(s => s.name === selectedScenario);
+            if (currentScenario) {
+                const availableLessons = [];
+                // If no lessons are unlocked, or an error occurred, only show the first lesson.
+                if (unlocked === 0 || unlocked == null) {
+                    availableLessons.push(currentScenario.subSections[0]);
+                } else {
+                    // Otherwise, show all unlocked lessons.
+                    for (let j = 0; j < unlocked; j++) {
+                        if (currentScenario.subSections[j]) { // Ensure the lesson exists
+                            availableLessons.push(currentScenario.subSections[j]);
+                        }
+                    }
+                }
+                setLessons(availableLessons);
+            } else {
+                setLessons([]); // Clear lessons if scenario is not found
+            }
+            setLoadingLessons(false);
+        }
+        fetchLessonsForScenario();
+    }, [selectedScenario, cookies.login]); 
+
+    return (
         <div className="whole-page">
             {/* Conditional rendering of the error message popup. */}
-            {errorFound && (
+            {error && (
                 <div className="errorBackground">
                     <div className="errorBox">
-                        <div className="errorText">{errorText}</div>
-                        <button onClick={() => {
-                            setErrorFound(false); // Hides the error message when the "OK" button is clicked.
-                        }}>OK</button>
+                        <div className="errorText">{error}</div>
+                        <button onClick={() => setError(null)}>OK</button>
                     </div>
                 </div>
             )}
-            <div data-testid="title" className="title">
+            <div className="title">
                 Lesson Selection
             </div>
             {/* Dropdown-like selector for choosing a scenario. */}
-            <div data-testid="scenario-selector" className="selector scenario-selector" onClick={() => {
-                setShowScenarios(!showScenarios); // Toggles the visibility of the scenarios list.
-            }}>
+            <div className="selector scenario-selector" onClick={() => setShowScenarios(!showScenarios)}>
                 <div>
                     {selectedScenario || "Select a scenario."}
                 </div>
-                <div style={{marginRight:"1rem"}}>
+                <div style={{ marginRight: "1rem" }}>
                     {showScenarios ? "▼" : "▲"}
                 </div>
             </div>
@@ -178,40 +178,44 @@ export default function LessonSelection() {
             {/* Conditional rendering of the scenarios list. */}
             {showScenarios && (
                 <div className="container scenario-container">
-                    {/* Maps through the scenarios and renders a ScenarioTemplate for each. */}
-                    {scenarios.map((scenarioItem, index) => (
-                        <ScenarioTemplate key={index} scenario={scenarioItem} onClick={() => handleScenarioClick(scenarioItem.name)}/>
-                        // Use onClick = {() => function} if argument is needed, otherwise onClick = {function}.
+                    {scenarios.map((scenarioItem) => (
+                        <ScenarioTemplate
+                            key={scenarioItem.name} // Use a stable unique key like scenario name
+                            scenario={scenarioItem}
+                            onClick={() => handleScenarioClick(scenarioItem.name)}
+                        />
                     ))}
                 </div>
             )}
 
             {/* Dropdown-like selector for choosing a lesson within the selected scenario. */}
-            <div data-testid="lesson-selector" className="selector lesson-selector" onClick={() => {
-                setShowLessons(!showLessons); // Toggles the visibility of the lessons list.
-            }}>
+            <div className="selector lesson-selector" onClick={() => setShowLessons(!showLessons)}>
                 <div>
                     {selectedLesson || "Select a lesson."}
                 </div>
-                <div style={{marginRight:"1rem"}}>
+                <div style={{ marginRight: "1rem" }}>
                     {showLessons ? "▼" : "▲"}
                 </div>
             </div>
             {/* Conditional rendering of the lessons list for the selected scenario. */}
             {showLessons && (
                 <div className="container scenario-container">
-                    {lessons.length === 1 ? (
-                        <LessonTemplate key={0} lesson={lessons[0]} onClick={() => handleLessonClick(lessons[0].name)}/>
-                    ) : (
-                        lessons.map((lessonItem, index) => (
-                            <LessonTemplate key={index} lesson={lessonItem} onClick={() => handleLessonClick(lessonItem.name)}/>
+                    {!isLessonsLoading ? (
+                        lessons.map((lessonItem) => (
+                            <LessonTemplate
+                                key={lessonItem.name} // Use a stable unique key like lesson name
+                                lesson={lessonItem}
+                                onClick={() => handleLessonClick(lessonItem.name)}
+                            />
                         ))
+                    ) : (
+                        <div className="item-template">Loading...</div>
                     )}
                 </div>
             )}
 
             {/* Button to submit the selection and navigate to the lesson. */}
-            <button data-testid="enterInfo" className="enterInfo" onClick={handleSubmit}>
+            <button className="enterInfo" onClick={handleSubmit}>
                 Go!
             </button>
         </div>
