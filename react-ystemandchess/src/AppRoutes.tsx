@@ -19,7 +19,7 @@ import StudentInventory from './Pages/Student-Inventory/StudentInventory';
 import ResetPassword from './Pages/Reset-Password/reset-password';
 import SetPassword from './Pages/Set-Password/set-password';
 import Student from './Pages/Student/Student';
-import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
+import MentorProfile from './Pages/Mentor-Profile/MentorProfileRefactor';
 import UserProfile from './Pages/Student-Profile/UserProfile';
 import AboutUs from './Pages/About-Us/AboutUs/AboutUs';
 import LessonSelection from "./Pages/LessonsSelection/LessonsSelection"
