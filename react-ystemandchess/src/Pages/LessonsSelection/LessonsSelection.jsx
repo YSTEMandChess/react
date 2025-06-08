@@ -23,6 +23,8 @@ const LessonTemplate = React.memo(function LessonTemplate({ lesson, onClick }) {
     );
 });
 
+// When passing down props (e.g. lessontemplate & scenariotemplate) you can sometimes use memo & useCallback.
+
 export default function LessonSelection() {
     const navigate = useNavigate();
     const [showScenarios, setShowScenarios] = useState(false);
@@ -31,6 +33,7 @@ export default function LessonSelection() {
     const [cookies] = useCookies(['piece', 'login']);
     const [selectedScenario, setSelectedScenario] = useState(null);
     const [selectedLesson, setSelectedLesson] = useState(null);
+    const [isLessonsLoading, setLoadingLessons] = useState(false);
     const [unlockedLessonCount, setUnlockedLessonCount] = useState(0); // Renamed for clarity
 
     const [error, setError] = useState(null); // Combine error states
@@ -69,6 +72,7 @@ export default function LessonSelection() {
         setShowScenarios(false);
         setSelectedLesson(null); // Clear selected lesson when scenario changes
         setSelectedScenario(scenarioName);
+        setLoadingLessons(true);
     }, []);
 
     // Handles the click event on a lesson item.
@@ -99,6 +103,7 @@ export default function LessonSelection() {
         async function fetchLessonsForScenario() {
             if (!selectedScenario) {
                 setLessons([]);
+                setLoadingLessons(false);
                 return;
             }
 
@@ -141,9 +146,10 @@ export default function LessonSelection() {
             } else {
                 setLessons([]); // Clear lessons if scenario is not found
             }
+            setLoadingLessons(false);
         }
         fetchLessonsForScenario();
-    }, [selectedScenario, cookies.login, scenarios]); // Added 'scenarios' as a dependency
+    }, [selectedScenario, cookies.login]); 
 
     return (
         <div className="whole-page">
@@ -194,7 +200,7 @@ export default function LessonSelection() {
             {/* Conditional rendering of the lessons list for the selected scenario. */}
             {showLessons && (
                 <div className="container scenario-container">
-                    {lessons.length > 0 ? (
+                    {!isLessonsLoading ? (
                         lessons.map((lessonItem) => (
                             <LessonTemplate
                                 key={lessonItem.name} // Use a stable unique key like lesson name
@@ -203,7 +209,7 @@ export default function LessonSelection() {
                             />
                         ))
                     ) : (
-                        <div className="item-template">No lessons available for this scenario.</div>
+                        <div className="item-template">Loading...</div>
                     )}
                 </div>
             )}
