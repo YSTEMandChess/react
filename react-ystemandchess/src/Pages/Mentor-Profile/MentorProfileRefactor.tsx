@@ -1,6 +1,7 @@
 // React imports 
 import React, { useState, useEffect } from 'react';
 import { useCookies } from 'react-cookie';
+import ProfileHeader from './ProfileHeader';
 
 // Styles
 import './MentorProfileRefactor.css'; // Import the CSS file for styles
@@ -14,7 +15,6 @@ import { SetPermissionLevel } from '../../globals'; // Adjust the path as necess
 import type { IconType } from 'react-icons'; // Import type for icons
 import { FaUserCircle} from "react-icons/fa";
 const UserIcon = FaUserCircle as IconType; // Assign the icon to a variable
-console.log('UserIcon:', UserIcon); // Log the icon to ensure it's imported correctly
 // import userImg from '../../assets/images/mentor-profile/user.PNG'; // This image no longer exists
 
 type PdfItem = {
@@ -97,24 +97,12 @@ export default function MentorProfileRefactor() {
 
     return (
         <>
-            <div className="mentor-profile">
-            <div className="mentor-profile-header">
-                {profilePicture ? (
-                <img
-                    src={profilePicture}
-                    alt="Profile"
-                    className="mentor-profile-picture" // When a profile picture updoad is supported, it can be styled with this class
-                />
-                ) : (
-                <>
-                    {// @ts-ignore
-                    // If someone can figure out how to make this work without the ts-ignore, please do so
-                    <UserIcon className="mentor-placeholder-icon" /> }
-                </>
-                )}
-                <h2 className="greeting">Hello, {firstName} {lastName}!</h2>
-            </div>
-            </div>
+            <ProfileHeader
+                firstName={firstName}  
+                lastName={lastName}
+                profilePicture={profilePicture}
+            />
+            
         </>
     )
 }
