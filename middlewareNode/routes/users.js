@@ -10,6 +10,15 @@ const {
 const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
 
+// get db client
+async function getDb() {
+  if (!cachedClient) { // if not cached, connect
+    cachedClient = new MongoClient(config.get("mongoURI"));
+    await cachedClient.connect();
+  }
+  return cachedClient.db("ystem"); // returned cached client
+}
+
 // @route   GET /user/children
 // @desc    GET the parent user's children username and their timePlayed fields
 // @access  Public with jwt Authentication
@@ -238,5 +247,17 @@ const updatePassword = async (body) => {
   );
   return result;
 };
+
+router.get("/getStudent", async (req, res) => {
+  const { keyword } = req?.query;
+  const db = await getDb();
+  if (data) {
+    const passwordChange = await ChangePasswordTemplateForUser(username, email);
+    await sendMail(passwordChange);
+    res.status(200).send("Mail Sent Successfully");
+  } else {
+    res.status(400).send("Invalid request payload");
+  }
+});
 
 module.exports = router;

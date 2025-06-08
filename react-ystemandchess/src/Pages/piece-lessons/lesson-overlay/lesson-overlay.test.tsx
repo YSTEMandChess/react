@@ -340,3 +340,8 @@ test('next & previous lesson', async () => {
   const lessonNum2still = screen.getByText("simple 2 board info");
   expect(lessonNum2still).toBeInTheDocument();
 })
+
+
+test("just testing", () => {
+  console.log('LessonOverlay is:', LessonOverlay);
+})
