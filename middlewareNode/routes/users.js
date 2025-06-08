@@ -9,6 +9,10 @@ const {
 } = require("../template/changePasswordTemplate");
 const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
+const { MongoClient } = require('mongodb');
+const config = require("config");
+
+let cachedClient = null; // cache db client to prevent repeated connections
 
 // get db client
 async function getDb() {
@@ -248,15 +252,21 @@ const updatePassword = async (body) => {
   return result;
 };
 
+// @route GET /user/getStudent/:keyword
+// @desc for getting the student whose username matches keyword.
 router.get("/getStudent", async (req, res) => {
-  const { keyword } = req?.query;
-  const db = await getDb();
-  if (data) {
-    const passwordChange = await ChangePasswordTemplateForUser(username, email);
-    await sendMail(passwordChange);
-    res.status(200).send("Mail Sent Successfully");
-  } else {
-    res.status(400).send("Invalid request payload");
+  const keyword = req.query.keyword || '';
+  try {
+    const db = await getDb();
+    const users = db.collection("users");
+
+    const userList = await users.find({
+      role: 'student',// get student
+      username: { $regex: keyword, $options: 'i' } // case-insensitive match for username
+    }).toArray();;
+    res.json(userList.map(user => user.username)); // return a list of the usernames
+  } catch (err) {
+    res.status(500).json({ error: err.message }); // error
   }
 });
 
