@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCookies } from 'react-cookie';
 import ProfileHeader from './ProfileHeader';
+import StudentInfo from './StudentInfo';
 
 // Styles
 import './MentorProfileRefactor.css'; // Import the CSS file for styles
@@ -102,7 +103,11 @@ export default function MentorProfileRefactor() {
                 lastName={lastName}
                 profilePicture={profilePicture}
             />
-            
+            <StudentInfo 
+                firstName="Sample"
+                lastName="Student"
+            />
+            {/* Continue this refactor by adding data fetching and rendering for student data */}
         </>
     )
 }
