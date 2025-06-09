@@ -20,7 +20,8 @@ import ResetPassword from './Pages/Reset-Password/reset-password';
 import SetPassword from './Pages/Set-Password/set-password';
 import Student from './Pages/Student/Student';
 import MentorProfile from './Pages/Mentor-Profile/MentorProfileRefactor';
-import UserProfile from './Pages/Student-Profile/UserProfile';
+// import UserProfile from './Pages/Student-Profile/UserProfile';
+import UserProfile from './Pages/StudentProfileRefactor/StudentProfileRefactor';
 import AboutUs from './Pages/About-Us/AboutUs/AboutUs';
 import LessonSelection from "./Pages/LessonsSelection/LessonsSelection"
 import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
