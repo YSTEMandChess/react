@@ -196,6 +196,7 @@ $inventory-tab-active: linear-gradient(
   }
 
   .inventory-content-headingbar {
+    min-width: 35rem;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;

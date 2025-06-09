@@ -5,18 +5,58 @@ import { SetPermissionLevel } from '../../globals';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 
+const UsageHistory = (events) => {
+    {events.map((event, index) => {
+    const dateObj = new Date(event.startTime);
+    const dateStr = dateObj.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+    const timeStr = dateObj.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+
+    return (
+      <article key={index} className="inventory-content-timecard">
+        <div className="inventory-content-col1"></div>
+        <div className="inventory-content-col2">
+          <p>{dateStr}</p>
+          <p>{timeStr}</p>
+        </div>
+        <div className="inventory-content-col3">
+          <p>{event.eventName}</p>
+        </div>
+      </article>
+    );
+  })}
+}
+
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   const [activeTab, setActiveTab] = useState("activity");
-  const [cookies] = useCookies(['login']); // get login info from cookie
+  const [cookies] = useCookies(['login']);
+
+  // user info
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState(" ");
   const [lastName, setLastName] = useState(" ");
+
+  // user usage in different modules
   const [webTime, setWebTime] = useState(0);
   const [playTime, setPlayTime] = useState(0);
   const [lessonTime, setLessonTime] = useState(0);
   const [puzzleTime, setPuzzleTime] = useState(0);
   const [mentorTime, setMentorTime] = useState(0);
+  const [events, setEvents] = useState(null);
+
+  // current date for display
+  const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+  })
+);
 
   useEffect(()=>{
     try {
@@ -37,26 +77,65 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         setLastName(uInfo.lastName)
       }
 
-      // fetch usage data
-      const response = await fetch(
+      // fetch usage time stats
+      const responseStats = await fetch(
         `${environment.urls.middlewareURL}/timeTracking/statistics?username=${uInfo.username}`, 
         {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${cookies.login}` }
         }
       );
-      const data = await response.json();
-      // update usage for different events
-      setWebTime(data.website);
-      setLessonTime(data.lesson);
-      setPlayTime(data.play);
-      setMentorTime(data.mentor);
-      setPuzzleTime(data.puzzle);
+      const dataStats = await responseStats.json();
+      // update time usage for different events
+      setWebTime(dataStats.website);
+      setLessonTime(dataStats.lesson);
+      setPlayTime(dataStats.play);
+      setMentorTime(dataStats.mentor);
+      setPuzzleTime(dataStats.puzzle);
+
+      // fetch latest usage history
+      const responseLatest = await fetch(
+        `${environment.urls.middlewareURL}/timeTracking/latest?username=${uInfo.username}`, 
+        {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${cookies.login}` }
+        }
+      );
+      const dataLatest = await responseLatest.json();
+      setEvents(dataLatest); // update events
   }
 
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);
   };
+
+  const renderUsageHistory = () => {
+    {events && events.map((event, index) => {
+      const dateObj = new Date(event.startTime);
+      const dateStr = dateObj.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+      const timeStr = dateObj.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+
+      return (
+        <article key={index} className="inventory-content-timecard">
+          <div className="inventory-content-col1"></div>
+          <div className="inventory-content-col2">
+            <p>{dateStr}</p>
+            <p>{timeStr}</p>
+          </div>
+          <div className="inventory-content-col3">
+            <p>{event.eventName}</p>
+          </div>
+        </article>
+      );
+    })}
+  }
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -68,40 +147,34 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
           >
             <div className="inventory-content-headingbar">
               <h2>Activity</h2>
-              <h4>May 2024</h4>
+              <h4>{date}</h4>
             </div>
             <div className="inventory-content-body">
               <div className="inventory-content-line"></div>
-              <article className="inventory-content-timecard">
-                <div className="inventory-content-col1"></div>
-                <div className="inventory-content-col2">
-                  <p>May 24 2024</p>
-                  <p>7:00 PM</p>
-                </div>
-                <div className="inventory-content-col3">
-                  <p>Solved 2 tactical puzzles.</p>
-                </div>
-              </article>
-              <article className="inventory-content-timecard">
-                <div className="inventory-content-col1"></div>
-                <div className="inventory-content-col2">
-                  <p>May 19 2024</p>
-                  <p>3:00 PM</p>
-                </div>
-                <div className="inventory-content-col3">
-                  <p>Practiced 7 positions on Piece Checkmates I.</p>
-                </div>
-              </article>
-              <article className="inventory-content-timecard">
-                <div className="inventory-content-col1"></div>
-                <div className="inventory-content-col2">
-                  <p>May 16 2024</p>
-                  <p>4:00 PM</p>
-                </div>
-                <div className="inventory-content-col3">
-                  <p>Completed 100 games of chess.</p>
-                </div>
-              </article>
+              {events && events.map((event, index) => { // render list of usage history
+                const dateObj = new Date(event.startTime);
+                const dateStr = dateObj.toLocaleDateString('en-US', { // date of each history
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+                });
+                const timeStr = dateObj.toLocaleTimeString('en-US', { // time of each history
+                  hour: 'numeric',
+                  minute: '2-digit'
+                });
+
+                return (
+                  <article key={index} className="inventory-content-timecard">
+                    <div className="inventory-content-col1"></div>
+                    <div className="inventory-content-col2">
+                      <p>{dateStr} {timeStr}</p>
+                    </div>
+                    <div className="inventory-content-col3">
+                      <p>Working on {event.eventName}</p>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
         );

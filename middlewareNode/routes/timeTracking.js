@@ -10,17 +10,29 @@ const { v4: uuidv4 } = require("uuid");
 // @access  Public with jwt Authentication
 router.post("/start", passport.authenticate("jwt"), async (req, res) => {
   try {
-    const { username, eventType } = req.query;
+    const { username, eventType, eventName } = req.query;
     const eventId = uuidv4(); //Generate a random meetingId
 
     // Creating an event with requirewd fields
-    const newEvent = await timeTracking.create({
-      username: username,
-      eventType: eventType,
-      eventId: eventId,
-      startTime: new Date(),
-      totalTime: 0,
-    });
+    let newEvent = null;
+    if(eventName) {
+      newEvent = await timeTracking.create({
+        username: username,
+        eventType: eventType,
+        eventName: eventName,
+        eventId: eventId,
+        startTime: new Date(),
+        totalTime: 0,
+      });
+    } else {
+      newEvent = await timeTracking.create({
+        username: username,
+        eventType: eventType,
+        eventId: eventId,
+        startTime: new Date(),
+        totalTime: 0,
+      });      
+    }
 
     return res.status(200).json(newEvent);
   } catch (error) {
@@ -34,7 +46,7 @@ router.post("/start", passport.authenticate("jwt"), async (req, res) => {
 // @access  Public with jwt Authentication
 router.put("/update", passport.authenticate("jwt"), async (req, res) => {
   try {
-    const { username, eventType, eventId, totalTime } = req.query;
+    const { username, eventType, eventId, totalTime, eventName } = req.query;
     let filters = {
       username: username,
       eventId: eventId,
@@ -46,11 +58,12 @@ router.put("/update", passport.authenticate("jwt"), async (req, res) => {
     if (!currEvent) {
       return res.status(400).json("This event does not exist!");
     }
+    
     // Saving to DB
-
     currEvent.endTime = new Date();
     let time = currEvent.totalTime + parseInt(totalTime);
     currEvent.totalTime = time;
+    if(eventName) currEvent.eventName = eventName; // update the evenName if it is changed
     await currEvent.save();
 
     return res.status(200).json("Timetracking for event updated");
@@ -113,6 +126,28 @@ router.get("/statistics", passport.authenticate("jwt"), async (req, res) => {
   }
 });
 
+// @route   GET /timeTracking/latest
+// @desc    GET the user's latest events
+// @access  Public with jwt Authentication
+router.get("/latest", async (req, res) => {
+  try {
+    const { username } = req.query;
+
+    const latestEvents = await timeTracking
+      .find(
+        {username: username, eventType: { $ne: "website" }}, // find events that exclude "website"
+        { startTime: 1, eventName: 1, _id: 0 }
+      )
+      .sort({ startTime: -1 }) // sort latest first
+      .limit(5);
+
+    return res.status(200).json(latestEvents);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json("Server error");
+  }
+});
+
 // helper function, will be deleted
 router.get("/view", async (req, res) => {
   try {
@@ -133,7 +168,7 @@ router.get("/view", async (req, res) => {
 // helper function, will be deleted
 router.get("/delete", async (req, res) => {
   try {
-    await timeTracking.deleteMany({ username: "xiyuez" });
+    await timeTracking.deleteMany({ username: "charlottez" });
 
     return res.status(200).json("yes");
   } catch (error) {
