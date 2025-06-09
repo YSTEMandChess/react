@@ -20,7 +20,7 @@ import ResetPassword from './Pages/Reset-Password/reset-password';
 import SetPassword from './Pages/Set-Password/set-password';
 import Student from './Pages/Student/Student';
 import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
-import UserProfile from './Pages/Student-Profile/UserProfile';
+import NewStudentProfile from './Pages/NewStudentProfile/NewStudentProfile';
 import AboutUs from './Pages/About-Us/AboutUs/AboutUs';
 import LessonSelection from "./Pages/LessonsSelection/LessonsSelection"
 import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
@@ -65,7 +65,7 @@ const AppRoutes = () => {
 
       <Route path='/student' element={<Student />} />
       <Route path='/mentor-profile' element={<MentorProfile />} />
-      <Route path='/student-profile' element={<UserProfile />} />
+      <Route path='/student-profile' element={<NewStudentProfile userPortraitSrc={userPortraitImg}/>} />
       <Route path='/about-us' element={<AboutUs />} />
 
       <Route path="/learnings" element={<Lessons />} />

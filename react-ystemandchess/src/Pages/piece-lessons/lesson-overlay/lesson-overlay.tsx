@@ -63,7 +63,6 @@ const LessonOverlay = () => {
 
     useEffect(() => {
         startRecording(); // start recording
-        window.addEventListener('beforeunload', handleUnload); // end recording when unloading
 
         // configure eventer
         const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
@@ -131,7 +130,7 @@ const LessonOverlay = () => {
 
         return () => {
             window.removeEventListener('message', handleMessage); // remove event listener
-            window.removeEventListener('beforeunload', handleUnload);
+            handleUnload(); // stop recording time spent
         };
     }, []);
 

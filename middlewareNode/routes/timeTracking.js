@@ -66,15 +66,23 @@ router.put("/update", passport.authenticate("jwt"), async (req, res) => {
 router.get("/statistics", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { username, startDate, endDate } = req.query;
-    // startDate: ISODate('2023-03-01T00:00:00.000Z')
-    // endDate: ISODate('2023-04-01T00:00:00.000Z')
-    let filters = {
-      username: username,
-      startTime: {
-        $gte: new Date(startDate),
-        $lt: new Date(endDate),
-      },
-    };
+
+    let filters = {}
+    if(startDate && endDate) {
+      // if there is start & end date, filter it
+      filters = {
+        username: username,
+        startTime: {
+          $gte: new Date(startDate),
+          $lt: new Date(endDate),
+        },
+      };
+    } else {
+      // if not specified, get across all history events
+      filters = {
+        username: username
+      };
+    }
 
     const eventArray = await timeTracking.find(filters);
     const eventTimes = {
@@ -99,6 +107,35 @@ router.get("/statistics", passport.authenticate("jwt"), async (req, res) => {
     eventTimes.website = Math.round(eventTimes.website / 60);
 
     return res.status(200).json(eventTimes);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json("Server error");
+  }
+});
+
+// helper function, will be deleted
+router.get("/view", async (req, res) => {
+  try {
+    const { username } = req.query;
+    let filters = {
+      username: username
+    };
+
+    const eventArray = await timeTracking.find(filters);
+
+    return res.status(200).json(eventArray);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json("Server error");
+  }
+});
+
+// helper function, will be deleted
+router.get("/delete", async (req, res) => {
+  try {
+    await timeTracking.deleteMany({ username: "xiyuez" });
+
+    return res.status(200).json("yes");
   } catch (error) {
     console.error(error.message);
     res.status(500).json("Server error");
