@@ -127,19 +127,21 @@ router.get("/statistics", passport.authenticate("jwt"), async (req, res) => {
 });
 
 // @route   GET /timeTracking/latest
-// @desc    GET the user's latest events
+// @desc    GET the user's latest events with pagination
 // @access  Public with jwt Authentication
 router.get("/latest", async (req, res) => {
   try {
-    const { username } = req.query;
+    // default: not skip any events, limit to 5 events per time
+    const { username, skip=0, limit=5 } = req.query;
 
     const latestEvents = await timeTracking
       .find(
         {username: username, eventType: { $ne: "website" }}, // find events that exclude "website"
-        { startTime: 1, eventName: 1, _id: 0 }
+        { startTime: 1, eventName: 1, eventType:1, _id: 0 }
       )
       .sort({ startTime: -1 }) // sort latest first
-      .limit(5);
+      .skip(Number(skip)) // skip the first few events
+      .limit(Number(limit)); // limit each fetch by number of events
 
     return res.status(200).json(latestEvents);
   } catch (error) {

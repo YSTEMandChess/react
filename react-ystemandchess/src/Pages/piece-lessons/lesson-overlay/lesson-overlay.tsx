@@ -123,12 +123,10 @@ const LessonOverlay = () => {
 
         eventer(messageEvent, handleMessage, false); // fire eventer
 
-        // Check if passedLessonNumber and passedPieceName are available
-        if (passedLessonNumber != null && passedPieceName != null) {
-            // Fetch the specific lesson
-            setLessonNum(passedLessonNumber)
-            setPiece(passedPieceName)
-        }
+        // Check if passedPieceName is available
+        if (passedPieceName != null) setPiece(passedPieceName);
+        // Check if passedLessonNumber is available
+        if (passedLessonNumber != null) setLessonNum(passedLessonNumber);
 
         return () => {
             window.removeEventListener('message', handleMessage); // remove event listener
@@ -151,7 +149,7 @@ const LessonOverlay = () => {
             const completedCount = await response.json();
             setCompletedNum(completedCount);
 
-            if (passedLessonNumber != null && passedPieceName != null) {
+            if (passedLessonNumber != null) {
                 // if navigated from menu, with specified lesson number
                 getCurrentLessonsRef.current(passedLessonNumber);
             } else {

@@ -1,42 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./NewStudentProfile.scss";
 import Images from "../../images/imageImporter";
 import { SetPermissionLevel } from '../../globals'; 
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
-
-const UsageHistory = (events) => {
-    {events.map((event, index) => {
-    const dateObj = new Date(event.startTime);
-    const dateStr = dateObj.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-    const timeStr = dateObj.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit'
-    });
-
-    return (
-      <article key={index} className="inventory-content-timecard">
-        <div className="inventory-content-col1"></div>
-        <div className="inventory-content-col2">
-          <p>{dateStr}</p>
-          <p>{timeStr}</p>
-        </div>
-        <div className="inventory-content-col3">
-          <p>{event.eventName}</p>
-        </div>
-      </article>
-    );
-  })}
-}
+import { useNavigate } from "react-router";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   const [activeTab, setActiveTab] = useState("activity");
   const [cookies] = useCookies(['login']);
+  const navigate = useNavigate();
 
   // user info
   const [username, setUsername] = useState("");
@@ -49,7 +23,13 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [lessonTime, setLessonTime] = useState(0);
   const [puzzleTime, setPuzzleTime] = useState(0);
   const [mentorTime, setMentorTime] = useState(0);
-  const [events, setEvents] = useState(null);
+
+  // event tracking for pagination
+  const [events, setEvents] = useState([]);
+  const [page, setPage] = useState(0); // page number
+  const [loading, setLoading] = useState(false); // if loading for more events
+  const [hasMore, setHasMore] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // current date for display
   const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', {
@@ -65,6 +45,21 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       console.log(err)
     }
   }, [])
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) {
+        fetchEvents(username);
+      }
+    };
+
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [events, loading]);
+
 
   const fetchUserData = async () => {
       const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
@@ -94,47 +89,46 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       setPuzzleTime(dataStats.puzzle);
 
       // fetch latest usage history
+      fetchEvents(uInfo.username)
+  }
+
+  // fetch latest usage history
+  const fetchEvents = async (username) => {
+    if (loading || !hasMore) return; // return if already fetching
+
+    // start fetching
+    setLoading(true);
+    const limit = 6;
+    const skip = page * limit;
+
+    try {
+      // fetch latest usage history
       const responseLatest = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/latest?username=${uInfo.username}`, 
+        `${environment.urls.middlewareURL}/timeTracking/latest?username=${username}&limit=${limit}&skip=${skip}`, 
         {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${cookies.login}` }
         }
       );
       const dataLatest = await responseLatest.json();
-      setEvents(dataLatest); // update events
+      setEvents(prev => [...prev, ...dataLatest]); // append more events to old list
+      setPage(prev => prev + 1); // update pagination number
+      setHasMore(dataLatest.length === limit && dataLatest.length > 0);
+    } catch (err) {
+      console.error("Failed to fetch events", err);
+    } finally {
+      setLoading(false); // stop fetching
+    }
   }
 
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);
   };
 
-  const renderUsageHistory = () => {
-    {events && events.map((event, index) => {
-      const dateObj = new Date(event.startTime);
-      const dateStr = dateObj.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-      const timeStr = dateObj.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit'
-      });
-
-      return (
-        <article key={index} className="inventory-content-timecard">
-          <div className="inventory-content-col1"></div>
-          <div className="inventory-content-col2">
-            <p>{dateStr}</p>
-            <p>{timeStr}</p>
-          </div>
-          <div className="inventory-content-col3">
-            <p>{event.eventName}</p>
-          </div>
-        </article>
-      );
-    })}
+  const handleNavigateEvent = (type: string, name: string) => {
+    if(type == "lesson") {
+      navigate("/lessons", { state: { piece: name } });
+    }
   }
 
   const renderTabContent = () => {
@@ -149,8 +143,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
               <h2>Activity</h2>
               <h4>{date}</h4>
             </div>
-            <div className="inventory-content-body">
-              <div className="inventory-content-line"></div>
+            <div className="inventory-content-line"></div>
+            <div className="inventory-content-body" ref={containerRef}>
               {events && events.map((event, index) => { // render list of usage history
                 const dateObj = new Date(event.startTime);
                 const dateStr = dateObj.toLocaleDateString('en-US', { // date of each history
@@ -170,11 +164,16 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                       <p>{dateStr} {timeStr}</p>
                     </div>
                     <div className="inventory-content-col3">
-                      <p>Working on {event.eventName}</p>
+                      <p>
+                        Working on {event.eventType}:{' '}
+                        <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventName}</strong>
+                      </p>
                     </div>
                   </article>
                 );
               })}
+              {loading && <p>Loading more...</p>}
+              {!hasMore && <p>No more activity left!</p>}
             </div>
           </div>
         );
@@ -272,11 +271,11 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
           <div className="inv-inventory-analytics-metrics">
             <h3>Time Spent:</h3>
             <ul>
-              <li>Website: {webTime} minutes</li>
-              <li>Playing: {playTime} minutes</li>
-              <li>Lessons: {lessonTime} minutes</li>
-              <li>Puzzle: {puzzleTime} minutes</li>
-              <li>Mentoring: {mentorTime} minutes</li>
+              <li>Website: <strong>{webTime} minutes</strong></li>
+              <li>Playing: <strong>{playTime} minutes</strong></li>
+              <li>Lessons: <strong>{lessonTime} minutes</strong></li>
+              <li>Puzzle: <strong>{puzzleTime} minutes</strong></li>
+              <li>Mentoring: <strong>{mentorTime} minutes</strong></li>
             </ul>
           </div>
         </div>
@@ -298,8 +297,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                       className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
                       onClick={() => handleTabClick(tab)}
                     >
-                <img src={Images[`${tab}Icon` as keyof typeof Images]} alt={`${tab} icon`} />
-                <li>{displayName}</li>
+                      <img src={Images[`${tab}Icon` as keyof typeof Images]} alt={`${tab} icon`} />
+                      <li>{displayName}</li>
                     </div>
                   );
                 })}
