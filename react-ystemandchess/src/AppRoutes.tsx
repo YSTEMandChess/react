@@ -70,7 +70,7 @@ const AppRoutes = () => {
         student={{username: 'joeyman43', 
                   firstName: 'Joey',
                   lastName: 'Diaz', 
-        }} // sample username, can be replaced with dynamic data
+        }} // mock student, can be replaced with dynamic data
         />} 
       />
       <Route path='/student-profile' element={<NewStudentProfile userPortraitSrc={userPortraitImg}/>} />
