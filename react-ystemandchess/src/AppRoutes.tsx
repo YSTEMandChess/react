@@ -19,7 +19,8 @@ import StudentInventory from './Pages/Student-Inventory/StudentInventory';
 import ResetPassword from './Pages/Reset-Password/reset-password';
 import SetPassword from './Pages/Set-Password/set-password';
 import Student from './Pages/Student/Student';
-import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
+// import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
+import NewMentorProfile from './Pages/NewMentorProfile/NewMentorProfile';
 import NewStudentProfile from './Pages/NewStudentProfile/NewStudentProfile';
 import AboutUs from './Pages/About-Us/AboutUs/AboutUs';
 import LessonSelection from "./Pages/LessonsSelection/LessonsSelection"
@@ -64,7 +65,14 @@ const AppRoutes = () => {
       />
 
       <Route path='/student' element={<Student />} />
-      <Route path='/mentor-profile' element={<MentorProfile />} />
+      <Route path='/mentor-profile' element={<NewMentorProfile 
+        userPortraitSrc={userPortraitImg} 
+        student={{username: 'joeyman43', 
+                  firstName: 'Joey',
+                  lastName: 'Diaz', 
+        }} // sample username, can be replaced with dynamic data
+        />} 
+      />
       <Route path='/student-profile' element={<NewStudentProfile userPortraitSrc={userPortraitImg}/>} />
       <Route path='/about-us' element={<AboutUs />} />
 

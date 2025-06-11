@@ -65,6 +65,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
       if (uInfo.error) {
         console.log("Error: user not logged in.") // error if the user is not logged in
+        navigate("/login"); // redirect to login page
       } else {
         // record user info
         setUsername(uInfo.username);
