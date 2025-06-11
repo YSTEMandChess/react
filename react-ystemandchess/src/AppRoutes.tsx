@@ -19,9 +19,9 @@ import StudentInventory from './Pages/Student-Inventory/StudentInventory';
 import ResetPassword from './Pages/Reset-Password/reset-password';
 import SetPassword from './Pages/Set-Password/set-password';
 import Student from './Pages/Student/Student';
-import MentorProfile from './Pages/Mentor-Profile/MentorProfileRefactor';
-// import UserProfile from './Pages/Student-Profile/UserProfile';
-import UserProfile from './Pages/StudentProfileRefactor/StudentProfileRefactor';
+// import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
+import NewMentorProfile from './Pages/NewMentorProfile/NewMentorProfile';
+import NewStudentProfile from './Pages/NewStudentProfile/NewStudentProfile';
 import AboutUs from './Pages/About-Us/AboutUs/AboutUs';
 import LessonSelection from "./Pages/LessonsSelection/LessonsSelection"
 import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
@@ -65,8 +65,15 @@ const AppRoutes = () => {
       />
 
       <Route path='/student' element={<Student />} />
-      <Route path='/mentor-profile' element={<MentorProfile />} />
-      <Route path='/student-profile' element={<UserProfile />} />
+      <Route path='/mentor-profile' element={<NewMentorProfile 
+        userPortraitSrc={userPortraitImg} 
+        student={{username: 'joeyman43', 
+                  firstName: 'Joey',
+                  lastName: 'Diaz', 
+        }} // mock student, can be replaced with dynamic data
+        />} 
+      />
+      <Route path='/student-profile' element={<NewStudentProfile userPortraitSrc={userPortraitImg}/>} />
       <Route path='/about-us' element={<AboutUs />} />
 
       <Route path="/learnings" element={<Lessons />} />

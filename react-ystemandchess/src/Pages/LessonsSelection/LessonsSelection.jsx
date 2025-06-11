@@ -95,7 +95,7 @@ export default function LessonSelection() {
             return;
         }
 
-        navigate("/learnings", { state: { piece: selectedScenario, lessonNum } });
+        navigate("/lessons", { state: { piece: selectedScenario, lessonNum } });
     };
 
     // Effect hook to update the list of lessons when the selected scenario or login cookie changes.
@@ -136,7 +136,7 @@ export default function LessonSelection() {
                     availableLessons.push(currentScenario.subSections[0]);
                 } else {
                     // Otherwise, show all unlocked lessons.
-                    for (let j = 0; j < unlocked; j++) {
+                    for(let j = 0; j <= unlocked && j < currentScenario.subSections.length; j++) {
                         if (currentScenario.subSections[j]) { // Ensure the lesson exists
                             availableLessons.push(currentScenario.subSections[j]);
                         }

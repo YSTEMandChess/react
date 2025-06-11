@@ -31,7 +31,7 @@ export const SetPermissionLevel: SetPermissionLevelType<any> = async (cookies: a
       return information;
     }
   } else {
-    console.log("errrrrrrrrrrr");
     return { error: "User is not logged in" };
   }
 };
+

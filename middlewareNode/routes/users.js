@@ -9,6 +9,19 @@ const {
 } = require("../template/changePasswordTemplate");
 const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
+const { MongoClient } = require('mongodb');
+const config = require("config");
+
+let cachedClient = null; // cache db client to prevent repeated connections
+
+// get db client
+async function getDb() {
+  if (!cachedClient) { // if not cached, connect
+    cachedClient = new MongoClient(config.get("mongoURI"));
+    await cachedClient.connect();
+  }
+  return cachedClient.db("ystem"); // returned cached client
+}
 
 // @route   GET /user/children
 // @desc    GET the parent user's children username and their timePlayed fields
@@ -238,5 +251,23 @@ const updatePassword = async (body) => {
   );
   return result;
 };
+
+// @route GET /user/getStudent/:keyword
+// @desc for getting the student whose username matches keyword.
+router.get("/getStudent", async (req, res) => {
+  const keyword = req.query.keyword || '';
+  try {
+    const db = await getDb();
+    const users = db.collection("users");
+
+    const userList = await users.find({
+      role: 'student',// get student
+      username: { $regex: keyword, $options: 'i' } // case-insensitive match for username
+    }).toArray();;
+    res.json(userList.map(user => user.username)); // return a list of the usernames
+  } catch (err) {
+    res.status(500).json({ error: err.message }); // error
+  }
+});
 
 module.exports = router;

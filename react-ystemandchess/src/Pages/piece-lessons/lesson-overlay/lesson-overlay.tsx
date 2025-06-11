@@ -3,6 +3,7 @@ import { useCookies } from 'react-cookie';
 import { environment } from '../../../environments/environment';
 import PlayLesson from '../play-lesson/PlayLesson';
 import './lesson-overlay.scss';
+import { SetPermissionLevel } from "../../../globals"; 
 // @ts-ignore
 import MoveTracker from '../move-tracker/MoveTracker';
 import { Chess } from 'chess.js';
@@ -18,7 +19,12 @@ const LessonOverlay = () => {
     const location = useLocation();
     const passedPieceName = location.state?.piece;
     const passedLessonNumber = location.state?.lessonNum;
-    const [cookies] = useCookies(['piece', 'login']);
+    const [cookies] = useCookies(['login']);
+    const [username, setUsername] = useState(null);
+
+    // info needed for time tracking
+    const [eventID, setEventID] = useState(null);
+    const [startTime, setStartTime] = useState(null);
 
     let isReady = false; // if chess client is ready to receive
     let lessonStarted = false; // if lesson has started
@@ -54,8 +60,12 @@ const LessonOverlay = () => {
     const updateCompletionRef = useRef(() => {});
     const getTotalLessonsRef = useRef(() => {});
     const getCurrentLessonsRef = useRef<(input: number) => void>(() => {});
+    const handleUnloadRef = useRef(() => {});
 
     useEffect(() => {
+        startRecording(); // start recording
+        window.addEventListener('beforeunload', handleUnloadRef.current); // when unloaded, end recording
+
         // configure eventer
         const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
         const eventer = window[eventMethod];
@@ -113,15 +123,15 @@ const LessonOverlay = () => {
 
         eventer(messageEvent, handleMessage, false); // fire eventer
 
-        // Check if passedLessonNumber and passedPieceName are available
-        if (passedLessonNumber != null && passedPieceName != null) {
-            // Fetch the specific lesson
-            setLessonNum(passedLessonNumber)
-            setPiece(passedPieceName)
-        }
+        // Check if passedPieceName is available
+        if (passedPieceName != null) setPiece(passedPieceName);
+        // Check if passedLessonNumber is available
+        if (passedLessonNumber != null) setLessonNum(passedLessonNumber);
 
         return () => {
             window.removeEventListener('message', handleMessage); // remove event listener
+            window.removeEventListener('beforeunload', handleUnloadRef.current); // remove listener when unloading
+            handleUnloadRef.current(); // when navigating away, stop recording time spent
         };
     }, []);
 
@@ -139,7 +149,7 @@ const LessonOverlay = () => {
             const completedCount = await response.json();
             setCompletedNum(completedCount);
 
-            if (passedLessonNumber != null && passedPieceName != null) {
+            if (passedLessonNumber != null) {
                 // if navigated from menu, with specified lesson number
                 getCurrentLessonsRef.current(passedLessonNumber);
             } else {
@@ -383,6 +393,53 @@ const LessonOverlay = () => {
         if(!fen) return;
         return fen.split(" ").slice(0, 3).join(" ")
     }
+
+    // start recording when users started browsing website
+    async function startRecording() {
+        const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
+
+        // do nothing if the user is not logged in
+        if(uInfo.error) return;
+        setUsername(uInfo.username); // else record username
+
+        // start recording user's time spent browsing the website
+        const response = await fetch(
+        `${environment.urls.middlewareURL}/timeTracking/start?username=${uInfo.username}&eventType=lesson&eventName=${piece}`, 
+        {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${cookies.login}` }
+        }
+        );
+        if(response.status != 200) console.log(response) // error handling
+
+        // if data is fetched, record for later updates
+        const data = await response.json();
+        setEventID(data.eventId);
+        setStartTime(data.startTime);
+    }
+
+    // handler called when user exist the website, complete recording time
+    handleUnloadRef.current = async () => {
+        try {
+            const startDate = new Date(startTime)
+            const endDate = new Date();
+            const diffInMs = endDate.getTime() - startDate.getTime(); // time elapsed in milliseconds
+            const diffInSeconds = Math.floor(diffInMs / 1000); // time elapsed in seconds
+
+            // update the time users spent browsing website
+            const response = await fetch(
+                `${environment.urls.middlewareURL}/timeTracking/update?username=${username}&eventType=lesson&eventId=${eventID}&totalTime=${diffInSeconds}&eventName=${piece}`, 
+                {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${cookies.login}` }
+                }
+            );
+            console.log("i put in eventname", piece)
+            if(response.status != 200) console.log(response) // error handling
+        } catch (err) {
+            console.log(err)
+        }
+    };
 
     return (
         <div id="lesson-container">
