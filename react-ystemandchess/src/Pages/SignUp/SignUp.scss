@@ -58,6 +58,19 @@ div.student-form input{
   }
 }
 
+input[name="setMentee"] {
+    width: 25vw;
+    height: 8vh;
+    border-radius: 1rem;
+    border: 0.1rem solid black;
+}
+
+input[name="setMentee"]::placeholder {
+  opacity: 0.5;
+  font-size: 1.5rem;
+
+}
+
 .student-section {
   display: flex;
   align-items: center;

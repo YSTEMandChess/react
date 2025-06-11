@@ -5,6 +5,16 @@ import { environment } from '../../environments/environment'; // Imports environ
 
 console.log('Environment URL:', environment.urls.middlewareURL); // Logs the middleware URL from the environment.
 
+/*
+const studentTemplate = React.memo(function StudentTemplate({student, onClick}) {
+    return (
+        <div className="item-template" onClick={onClick}>
+            <div>{student.name}</div>
+        </div>
+    );
+});
+*/
+
 const Signup = () => {
   // State to manage the form data for the user.
   const [formData, setFormData] = useState({
@@ -24,6 +34,7 @@ const Signup = () => {
   const [userNameFlag, setUserNameFlag] = useState(false);
   const [passwordFlag, setPasswordFlag] = useState(false);
   const [retypeFlag, setRetypeFlag] = useState(false);
+  const [matchingStudents, setMatchingStudents] = useState([]);
 
   // State to store any validation errors for the form fields.
   const [errors, setErrors] = useState({
@@ -187,6 +198,10 @@ const Signup = () => {
     }
   };
 
+  const handleMenteeChange = (currentText) => {
+    
+  }
+
   // Handles the submission of the signup form.
   const handleSubmit = async () => {
     console.log('Submit clicked', formData);
@@ -345,6 +360,10 @@ const Signup = () => {
           <option value='parent'>Parent</option>
         </select>
       </div>
+
+      {!parentAccountFlag && (
+        <input type="text" name="setMentee" placeholder="Find a student" onChange={handleMenteeChange}/>
+      )}
 
       {/* Conditional rendering of the student section for parent accounts. */}
       {parentAccountFlag && (
