@@ -5,6 +5,7 @@ import { SetPermissionLevel } from '../../globals';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
+import { StatsChart } from "./StatsChart";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
@@ -23,6 +24,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [lessonTime, setLessonTime] = useState(0);
   const [puzzleTime, setPuzzleTime] = useState(0);
   const [mentorTime, setMentorTime] = useState(0);
+
+  const [displayMonths, setDisplayMonths] = useState(6);
+  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
+  const [dataAxis, setDataAxis] = useState([0, 0, 0, 0, 0, 0]);
 
   // event tracking for pagination
   const [events, setEvents] = useState([]);
@@ -81,18 +86,20 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         }
       );
       const dataStats = await responseStats.json();
-      // update time usage for different events
+      // update time usage for different events in header display
       setWebTime(dataStats.website);
       setLessonTime(dataStats.lesson);
       setPlayTime(dataStats.play);
       setMentorTime(dataStats.mentor);
       setPuzzleTime(dataStats.puzzle);
 
-      // fetch latest usage history
+      // fetch latest usage history to show in Activity tab
       fetchEvents(uInfo.username)
+      // fetch data for graph plotting
+      fetchGraphData(uInfo.username)
   }
 
-  // fetch latest usage history
+  // fetch latest usage history (Activity Tab)
   const fetchEvents = async (username) => {
     if (loading || !hasMore) return; // return if already fetching
 
@@ -118,6 +125,30 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       console.error("Failed to fetch events", err);
     } finally {
       setLoading(false); // stop fetching
+    }
+  }
+
+  // fetch data needed for updating graph plot
+  const fetchGraphData = async (username) => {
+    try {
+      // fetch the time spent on the website in the past few months
+      const response = await fetch(
+        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&eventType=website&months=${displayMonths}`, 
+        {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${cookies.login}` }
+        }
+      );
+      const data = await response.json(); 
+      const months = data.map(item => item.monthText); // month list for ploting
+      const times = data.map(item => item.timeSpent); // timeSpent for plotting
+
+      setMonthAxis(months);
+      setDataAxis(times); 
+      console.log(months);
+      console.log(times);
+    } catch (err) {
+      console.error("Failed to fetch events", err);
     }
   }
 
@@ -266,7 +297,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         <div className="inv-inventory-topbar"></div>
         <div className="inv-inventory-analytics">
           <div className="inv-inventory-analytics-graph">
-            <img src="/placeholder_chart.png"/>
+            <StatsChart key={dataAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
           </div>
           <div className="inv-inventory-analytics-metrics">
             <h3>Time Spent:</h3>

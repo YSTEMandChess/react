@@ -129,7 +129,7 @@ router.get("/statistics", passport.authenticate("jwt"), async (req, res) => {
 // @route   GET /timeTracking/latest
 // @desc    GET the user's latest events with pagination
 // @access  Public with jwt Authentication
-router.get("/latest", async (req, res) => {
+router.get("/latest",passport.authenticate("jwt"),  async (req, res) => {
   try {
     // default: not skip any events, limit to 5 events per time
     const { username, skip=0, limit=5 } = req.query;
@@ -144,6 +144,61 @@ router.get("/latest", async (req, res) => {
       .limit(Number(limit)); // limit each fetch by number of events
 
     return res.status(200).json(latestEvents);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json("Server error");
+  }
+});
+
+// @route   GET /timeTracking/graph-data
+// @desc    GET the user's events from the last few months to plot graph
+// @access  Public with jwt Authentication
+router.get("/graph-data",passport.authenticate("jwt"),  async (req, res) => {
+  try {
+    const { username, months, eventType } = req.query;
+
+    const now = new Date(); // get current date
+    const then = new Date(now.getFullYear(), now.getMonth() - months, 1); // get the date from a few months back
+
+    let filters = {
+      username: username,
+      eventType: eventType, // filter also by type of event
+      startTime: {
+        $gte: then,
+        $lte: now, 
+      },
+    };
+    // get the events dating from a few months back
+    const eventArray = await timeTracking.find(filters);
+
+    // calculate time spent on event in each month
+    const monthlyTimeMap = {};
+    for (let i = 0; i < eventArray.length; i++) {
+      const event = eventArray[i];
+      const date = new Date(event.startTime);
+      // get the year-month of the event, e.g., "2025-01"
+      // to prevent duplicate month across different years
+      const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      // if this month is not recorded
+      if (!monthlyTimeMap[yearMonth]) monthlyTimeMap[yearMonth] = 0;
+      // accumulate total time spent
+      monthlyTimeMap[yearMonth] += event.totalTime;
+    }
+
+    // generate full sorted month result
+    const fullResult = [];
+    for (let i = months - 1; i >= 0; i--) {
+      // generate data for each past month
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yearMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      fullResult.push({
+        monthText: d.toLocaleString('en-US', { month: 'short' }), // short text form of month: Jan, Feb, etc.
+        timeSpent: Math.round((monthlyTimeMap[yearMonth] || 0) / 60) // convert to minutes
+      });
+    }
+
+    return res.status(200).json(fullResult);
   } catch (error) {
     console.error(error.message);
     res.status(500).json("Server error");

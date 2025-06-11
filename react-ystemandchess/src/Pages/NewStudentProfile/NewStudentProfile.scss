@@ -86,8 +86,11 @@ $inventory-tab-active: linear-gradient(
     padding-bottom: 0%;
   }
 
-  .inv-inventory-analytics-graph > img {
-    width: 70%;
+  .inv-inventory-analytics-graph {
+    height: 18rem;
+    width: 27rem;
+    padding: 0.8rem;
+    margin-right: 3rem;
   }
 
   .inv-inventory-analytics-metrics {
