@@ -49,7 +49,7 @@ const AppRoutes = () => {
       <Route path='/mentor' element={<Mentor />} />
       <Route path='/financial' element={<Financial />} />
       <Route path='/lessons-selection' element={<LessonSelection />} />
-      <Route path='/lessons' element={<Lessons />} />
+      <Route path='/lessons' element={<LessonOverlay />} />
       <Route path='/sponsors&partners' element={<SponsorsPartners />} />
       <Route path='/board' element={<Board />} />
       <Route path='/reset-password' element={<ResetPassword />} />
@@ -69,7 +69,7 @@ const AppRoutes = () => {
       <Route path='/student-profile' element={<UserProfile />} />
       <Route path='/about-us' element={<AboutUs />} />
 
-      <Route path="/learnings" element={<LessonOverlay />} />
+      <Route path="/learnings" element={<Lessons />} />
     </Routes>
   );
 };

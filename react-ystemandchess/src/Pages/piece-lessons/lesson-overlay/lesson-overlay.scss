@@ -26,18 +26,24 @@
       justify-content: center;
       align-items: center;
       margin-bottom: -1rem;
+
       .switchLesson {
-        color: green;
         font-size: 2rem;
         font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         font-weight: bold;
         border-radius: 0.5rem;
-        padding: 0.5rem;
-        border: 0.1rem solid green;
+        padding: 0.5rem 1rem;
+        color: var(--green-color);
+        margin-top: 1rem;
+        border: 0.1rem solid var(--green-color);
+        background-color: rgba(240, 248, 230, 0.5);
       }
 
       .switchLesson:hover {
         cursor: pointer;
+        color: var(--dark-green-color);
+        background-color: rgba(127,204,38,0.18);
+        box-shadow: 0 2px 8px rgba(127,204,38,0.12);
       }
     }
 }
@@ -186,6 +192,16 @@
   text-align: center;
 }
 
+.popup-button {
+  background-color: var(--green-color);
+  color: black;
+  font-weight: bold;
+}
+
+.popup-button:hover {
+  background-color: var(--dark-green-color);
+}
+
 .success-checkmark {
   display: flex;
   justify-content: center;
@@ -231,6 +247,8 @@
 .popup-subheading {
   color: rgb(108, 107, 107);
   font-size: 20px;
+  max-height: 300px;
+  overflow: scroll;
 }
 
 .loading-spinner {
