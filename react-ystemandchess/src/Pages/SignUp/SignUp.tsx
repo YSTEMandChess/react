@@ -35,6 +35,7 @@ const Signup = () => {
   const [passwordFlag, setPasswordFlag] = useState(false);
   const [retypeFlag, setRetypeFlag] = useState(false);
   const [matchingStudents, setMatchingStudents] = useState([]);
+  const [usernameToSearch, setUserToSearch] = useState('');
 
   // State to store any validation errors for the form fields.
   const [errors, setErrors] = useState({
@@ -362,7 +363,8 @@ const Signup = () => {
       </div>
 
       {!parentAccountFlag && (
-        <input type="text" name="setMentee" placeholder="Find a student" onChange={handleMenteeChange}/>
+        <input type="text" name="setMentee" placeholder="Find a student" value={usernameToSearch} onChange={handleMenteeChange}/>
+        
       )}
 
       {/* Conditional rendering of the student section for parent accounts. */}

@@ -11,6 +11,7 @@ h2 {
   justify-content: center;
   min-height: 100vh; /* Centers form vertically */
   width: 100%;
+  row-gap: 1rem;
 
   .sign-up-title {
     font-size: 3rem;
@@ -35,6 +36,7 @@ div.student-form input{
   width: 20rem;
   border: 2px solid black;
   border-radius: 1rem;
+  row-gap: 1rem;
 }
 
 .student-form {
