@@ -252,22 +252,124 @@ const updatePassword = async (body) => {
   return result;
 };
 
-// @route GET /user/getStudent/:keyword
-// @desc for getting the student whose username matches keyword.
-router.get("/getStudent", async (req, res) => {
-  const keyword = req.query.keyword || '';
+// @route GET /user/mentorless/:keyword
+// @desc for getting the mentorless students whose username matches keyword.
+router.get("/mentorless", async (req, res) => {
+  const keyword = req.query.keyword || ''; // get the keyword
   try {
     const db = await getDb();
     const users = db.collection("users");
 
     const userList = await users.find({
       role: 'student',// get student
-      username: { $regex: keyword, $options: 'i' } // case-insensitive match for username
+      username: { $regex: keyword, $options: 'i' }, // case-insensitive match for username
+      mentorshipUsername: { $ne: "" }
     }).toArray();;
     res.json(userList.map(user => user.username)); // return a list of the usernames
   } catch (err) {
     res.status(500).json({ error: err.message }); // error
   }
 });
+
+// @route PUT /user/getMentorship/:mentorship
+// @desc if user is student, update its mentor username 
+// @desc if user is mentor, update its student username 
+router.put(
+  "/updateMentorship", 
+  async (req, res, next) => {
+    passport.authenticate("jwt", { session: false }, async (err, user, info) => {
+      if (!user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      req.user = user;
+      next();
+    })(req, res, next) // authenticate jwt
+  }, 
+  async (req, res) => {
+    // get the student/mentor username
+    const mentorship = req.query.mentorship;
+    if (!mentorship) { // mentorship query is required
+      return res.status(400).json({ message: "Missing mentorship username in query" });
+    }
+
+    try {
+      // get db & collection
+      const db = await getDb();
+      const users = db.collection("users");
+      // update user's mentor relationship
+      const result = await users.updateOne(
+        { username: req.user.username },
+        { $set: { mentorshipUsername: mentorship } }
+      );
+
+      // if mentorship field is not modified
+      if (result.modifiedCount === 0) {
+        return res.status(404).json({ message: "User not found or already has that mentorshipUsername" });
+      }
+
+      res.json({ message: "Mentorship updated successfully" });
+    } catch (err) {
+      res.status(500).json({ error: err.message }); // error
+    }
+    }
+);
+
+router.get("/getMentorship",
+  async (req, res, next) => {
+    passport.authenticate("jwt", { session: false }, async (err, user, info) => {
+      if (!user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      req.user = user;
+      next();
+    })(req, res, next) // authenticate jwt
+  }, 
+  async (req, res) => {
+    try {
+      const db = await getDb();
+      const users = db.collection("users");
+      const mentorshipUsername = req.user.mentorshipUsername;
+      // error if it does not have mentorship established
+      if (!mentorshipUsername) {
+        return res.status(404).json({ message: "Mentorship not set" });
+      }
+
+      // now find the mentor/student by that username
+      const mentorUser = await users.findOne(
+        { username: mentorshipUsername },
+        { projection: { _id: 0, username: 1, firstName: 1, lastName: 1 } }
+      );
+      if (!mentorUser) {
+        return res.status(404).json({ message: "Mentorship user not found" });
+      }
+
+      res.json(mentorUser); // { username, firstName, lastName }
+    } catch (error) {
+      console.error("Error in getMentorship:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+router.get("/viewStudent", async (req, res) => {
+  const targetUsername = "charlottez"; // fixed username you want to view
+
+  try {
+    const db = await getDb();
+    const users = db.collection("users");
+
+    const student = await users.findOne({ username: targetUsername });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.status(200).json(student);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 module.exports = router;

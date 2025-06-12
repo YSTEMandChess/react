@@ -14,7 +14,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const navigate = useNavigate();
 
   // user info
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(" ");
   const [firstName, setFirstName] = useState(" ");
   const [lastName, setLastName] = useState(" ");
 
@@ -25,9 +25,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [puzzleTime, setPuzzleTime] = useState(0);
   const [mentorTime, setMentorTime] = useState(0);
 
-  const [displayMonths, setDisplayMonths] = useState(6);
+  // data for chart plotting
+  const [displayMonths, setDisplayMonths] = useState(6); // display data from 6 many months back 
   const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
-  const [dataAxis, setDataAxis] = useState([0, 0, 0, 0, 0, 0]);
+  const [dataAxis, setDataAxis] = useState([0, 0, 0, 0, 0, 0]); // time spent on events each month
 
   // event tracking for pagination
   const [events, setEvents] = useState([]);
@@ -40,31 +41,31 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
-  })
-);
+  }));
 
   useEffect(()=>{
     try {
-      fetchUserData(); // asynchronously fetch user data
+      fetchUserData(); // asynchronously fetch user data upon mounting
     } catch (err) {
       console.log(err)
     }
   }, [])
 
+  // when events are updated, add new listener 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    const el = containerRef.current; // get the updated activity element 
+    if (!el) return; // if element not mounted yet
 
     const handleScroll = () => {
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) {
-        fetchEvents(username);
+      // if scrolling within 50px of displayed height
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) { 
+        fetchActivity(username); // fetch new acitivty
       }
     };
+    el.addEventListener("scroll", handleScroll); // add listener to the updated activity element
 
-    el.addEventListener("scroll", handleScroll);
-    return () => el.removeEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll); // unmount listener when dependencies are updated
   }, [events, loading]);
-
 
   const fetchUserData = async () => {
       const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
@@ -77,7 +78,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         setLastName(uInfo.lastName)
       }
 
-      // fetch usage time stats
+      // fetch usage time stats to display on header
       const responseStats = await fetch(
         `${environment.urls.middlewareURL}/timeTracking/statistics?username=${uInfo.username}`, 
         {
@@ -94,13 +95,13 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       setPuzzleTime(dataStats.puzzle);
 
       // fetch latest usage history to show in Activity tab
-      fetchEvents(uInfo.username)
+      fetchActivity(uInfo.username)
       // fetch data for graph plotting
       fetchGraphData(uInfo.username)
   }
 
   // fetch latest usage history (Activity Tab)
-  const fetchEvents = async (username) => {
+  const fetchActivity = async (username) => {
     if (loading || !hasMore) return; // return if already fetching
 
     // start fetching
@@ -143,10 +144,9 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       const months = data.map(item => item.monthText); // month list for ploting
       const times = data.map(item => item.timeSpent); // timeSpent for plotting
 
+      // update for graph plotting
       setMonthAxis(months);
       setDataAxis(times); 
-      console.log(months);
-      console.log(times);
     } catch (err) {
       console.error("Failed to fetch events", err);
     }
@@ -156,8 +156,9 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     setActiveTab(tab);
   };
 
+  // navigate to previous activities
   const handleNavigateEvent = (type: string, name: string) => {
-    if(type == "lesson") {
+    if(type == "lesson") { // if event is a lesson
       navigate("/lessons", { state: { piece: name } });
     }
   }
