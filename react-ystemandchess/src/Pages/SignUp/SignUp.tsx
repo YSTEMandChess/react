@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Cookie } from 'react-router';
 import './SignUp.scss'; // Imports the stylesheet for this component.
 import { environment } from '../../environments/environment'; // Imports environment variables, likely containing API URLs.
 // Test comment - This is a manual test comment.
@@ -199,9 +200,28 @@ const Signup = () => {
     }
   };
 
-  const handleMenteeChange = (currentText) => {
-    
+  const handleMenteeChange = async (currentText) => {
+    if (currentText === "") {
+      return;
+    }
+    try {
+      const response = await fetch(
+          `${environment.urls.middlewareURL}/user/getStudent/:${currentText}`,
+          {
+              method: 'GET',
+          }
+      );
+
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const usernames = await response.json();
+      setMatchingStudents(usernames);
+  } catch (error) {
+      console.error('Error fetching unlocked lesson count:', error);
+      // Optionally set an error state here if needed for display
   }
+}
 
   // Handles the submission of the signup form.
   const handleSubmit = async () => {
@@ -364,8 +384,9 @@ const Signup = () => {
 
       {!parentAccountFlag && (
         <input type="text" name="setMentee" placeholder="Find a student" value={usernameToSearch} onChange={handleMenteeChange}/>
-        
       )}
+
+      {/* Add dropdown above (only when a name is entered (should disappear when blank)), fill dropdown with names, make it disappear when clicked off (optional)*/}
 
       {/* Conditional rendering of the student section for parent accounts. */}
       {parentAccountFlag && (
