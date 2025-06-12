@@ -271,9 +271,10 @@ router.get("/mentorless", async (req, res) => {
   }
 });
 
-// @route PUT /user/getMentorship/:mentorship
-// @desc if user is student, update its mentor username 
-// @desc if user is mentor, update its student username 
+// @route PUT /user/updateMentorship/:mentorship
+// @desc if user is student, update its mentor username to the mentorship= query
+// @desc if user is mentor, update its student username to the mentorship= query
+// @access  Public with jwt Authentication
 router.put(
   "/updateMentorship", 
   async (req, res, next) => {
@@ -314,6 +315,10 @@ router.put(
     }
 );
 
+// @route GET /user/getMentorship
+// @desc if user is a student, responds with its mentor's object {username, firstName, lastName}
+// @desc if user is a mentor, responds with its student's object {username, firstName, lastName}
+// @access  Public with jwt Authentication
 router.get("/getMentorship",
   async (req, res, next) => {
     passport.authenticate("jwt", { session: false }, async (err, user, info) => {
@@ -350,26 +355,5 @@ router.get("/getMentorship",
     }
   }
 );
-
-router.get("/viewStudent", async (req, res) => {
-  const targetUsername = "charlottez"; // fixed username you want to view
-
-  try {
-    const db = await getDb();
-    const users = db.collection("users");
-
-    const student = await users.findOne({ username: targetUsername });
-
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    res.status(200).json(student);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
 
 module.exports = router;
