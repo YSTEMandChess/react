@@ -27,6 +27,12 @@ const usersSchema = new mongoose.Schema(
     parentUsername: {
       type: String,
     },
+    // if user is a mentor/student, this stores username for their student/mentor
+    mentorshipUsername: {
+      type: String,
+      required: false,
+      default: "",
+    },
     role: {
       type: String,
       required: true,
