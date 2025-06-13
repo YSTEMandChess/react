@@ -524,16 +524,18 @@ const Signup = () => {
             </div>
 
             {!parentAccountFlag && (
-                <div className="mentee-search-container">
+                <> {/* Using a React Fragment to wrap without an extra div */}
                     <input
                         type="text"
                         name="setMentee"
+                        id="mentee-search-input" // Keep ID for click outside handler
                         placeholder="Find a student"
                         value={usernameToSearch} // Controlled component
                         onChange={(e) => handleMenteeSearchChange(e.target.value)}
+                        autoComplete="off" // Prevent browser's default autocomplete
                     />
                     {activeDropdown && (
-                        <div className="dropdown-users">
+                        <div className="dropdown-users" id="mentee-dropdown-container"> {/* Keep ID for click outside handler */}
                             {dropdownLoading ? (
                                 <div className="item-template">Loading...</div>
                             ) : (
@@ -551,7 +553,7 @@ const Signup = () => {
                             )}
                         </div>
                     )}
-                </div>
+                </>
             )}
 
             {/* Conditional rendering of the student section for parent accounts. */}
