@@ -4,10 +4,14 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
+const morgan = require("morgan");
 const registerSocketHandlers = require("./managers/EventHandlers");
 
 const app = express();
 const server = http.createServer(app);
+
+// Add logging functionaility to the server
+app.use(morgan("dev")) // dev -> preset format
 
 // Apply CORS middleware to handle cross-origin requests
 app.use(cors({
@@ -31,6 +35,7 @@ io.on("connection", (socket) => {
 });
 
 // Start the server and listen on the defined port
-server.listen(process.env.PORT, () => {
-  console.log(`Server listening on port ${process.env.PORT}`);
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
