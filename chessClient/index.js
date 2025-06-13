@@ -197,7 +197,7 @@ socket.on('boardstate', (msg) => {
     if (parsedMsg.color)
     { 
       // setting player color for turn keeping 
-      playerColor = parsedMsg.color[0];
+      playerColor = parsedMsg.color;
       console.log(playerColor);
 
       // setting chess board orientation
@@ -306,8 +306,6 @@ eventer(
     console.log("client event: ", e); // uncomment for debugging
     let data = JSON.parse(e.data);
 
-
-    
     // get command from parent and send to server
     var command = data.command;
     if (command == "newgame") { sendNewGame(); }
@@ -328,6 +326,26 @@ eventer(
     lessonFlag = data.lessonFlag;
     if (lessonFlag == true) {
       isLesson = true;
+    }
+
+    // move a piece if it's a move message
+    if ("from" in data && "to" in data) {
+      game.move({ from: data.from, to: data.to });
+
+      // move highlight
+      highlightMove(data.from, data.to);
+
+      updateStatus();
+      sendToParent(game.fen());
+    }
+
+    // highlight message
+    if ("highlightFrom" in data && "highlightTo" in data) {
+      highlightMove(data.highlightFrom, data.highlightTo);
+    }
+
+    if ("clearhighlight" in data) {
+      $board.find("." + squareClass).removeClass("lastmove");;
     }
 
     // if this is a lesson, setup lesson
@@ -377,7 +395,7 @@ eventer(
     } else if (data.boardState == defaultFEN) {
       currentState = new Chess();
     }
-    /*
+    
     if (isLesson == false) {
       playerColor = data.color;
       board.orientation(playerColor);
@@ -385,29 +403,7 @@ eventer(
       board.position(data.boardState);
       updateStatus();
     }
-      */
-
-    /*
-    // console.log("client evenet: ", e); // uncomment for debugging
-    
-
-    // move a piece if it's a move message
-    if ("from" in data && "to" in data) {
-      currentState.move({ from: data.from, to: data.to });
-
-      // move highlight
-      highlightMove(data.from, data.to);
-
-      updateStatus();
-      sendToParent(currentState.fen());
-    }
-
-    // highlight message
-    if ("highlightFrom" in data && "highlightTo" in data) {
-      highlightMove(data.highlightFrom, data.highlightTo);
-    }
-
-      */
+      
   },
   false,
 );
@@ -439,7 +435,7 @@ function onDragStart(source, piece, position, orientation) {
   {
       
     // if it's your turn
-    if (playerColor == currentState.turn())
+    if (playerColor[0] == currentState.turn())
       {
         
         
@@ -521,7 +517,7 @@ function onDrop(source, target, draggedPieceSource) {
 }
 // To add possible move suggestion on chessboard
 function onMouseoverSquare(square, piece) {
-  if (playerColor == currentState.turn())
+  if (playerColor[0] == currentState.turn())
   {
     // get list of possible moves for this square
     var moves = currentState.moves({
@@ -587,10 +583,10 @@ function updateStatus() {
       status += ", " + moveColor + " is in check";
     }
 
-    if(game.game_over()){
-      if (game.in_check() && moveColor == "Black") {
+    if(currentState.game_over()){
+      if (currentState.in_check() && moveColor == "Black") {
         parent.postMessage("won:white", "*");
-      } else if (game.in_check() && moveColor == "Black") {
+      } else if (currentState.in_check() && moveColor == "Black") {
         parent.postMessage("won:black", "*");
       } else {
         parent.postMessage("restart", "*");
