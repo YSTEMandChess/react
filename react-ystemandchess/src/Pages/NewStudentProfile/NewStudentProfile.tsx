@@ -18,7 +18,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [firstName, setFirstName] = useState(" ");
   const [lastName, setLastName] = useState(" ");
 
-  // user usage in different modules
+  // time usage for different events, displayed on header
   const [webTime, setWebTime] = useState(0);
   const [playTime, setPlayTime] = useState(0);
   const [lessonTime, setLessonTime] = useState(0);
@@ -34,7 +34,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [events, setEvents] = useState([]);
   const [page, setPage] = useState(0); // page number
   const [loading, setLoading] = useState(false); // if loading for more events
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(true); // if there are more events
   const containerRef = useRef<HTMLDivElement>(null);
 
   // current date for display
@@ -51,10 +51,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     }
   }, [])
 
-  // when events are updated, add new listener 
+  // loading changes, update listener to update handler closures
   useEffect(() => {
-    const el = containerRef.current; // get the updated activity element 
-    if (!el) return; // if element not mounted yet
+    const el = containerRef.current; // get the activity element 
+    if (!el) return;
 
     const handleScroll = () => {
       // if scrolling within 50px of displayed height
@@ -64,8 +64,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     };
     el.addEventListener("scroll", handleScroll); // add listener to the updated activity element
 
-    return () => el.removeEventListener("scroll", handleScroll); // unmount listener when dependencies are updated
-  }, [events, loading]);
+    return () => el.removeEventListener("scroll", handleScroll); // remove listener when dependencies are updated
+  }, [loading]);
 
   const fetchUserData = async () => {
       const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
@@ -78,9 +78,19 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         setLastName(uInfo.lastName)
       }
 
-      // fetch usage time stats to display on header
+      // fetch usage time stats to disaply in header
+      fetchUsageTime(uInfo.username)
+      // fetch data for graph plotting
+      fetchGraphData(uInfo.username)
+      // fetch latest usage history to show in Activity tab
+      fetchActivity(uInfo.username)
+  }
+
+  // fetch usage time stats to display in header
+  const fetchUsageTime = async (username) => {
+      // fetch from back end
       const responseStats = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/statistics?username=${uInfo.username}`, 
+        `${environment.urls.middlewareURL}/timeTracking/statistics?username=${username}`, 
         {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${cookies.login}` }
@@ -93,24 +103,18 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       setPlayTime(dataStats.play);
       setMentorTime(dataStats.mentor);
       setPuzzleTime(dataStats.puzzle);
-
-      // fetch latest usage history to show in Activity tab
-      fetchActivity(uInfo.username)
-      // fetch data for graph plotting
-      fetchGraphData(uInfo.username)
   }
 
   // fetch latest usage history (Activity Tab)
   const fetchActivity = async (username) => {
-    if (loading || !hasMore) return; // return if already fetching
+    if (loading || !hasMore) return; // return if already fetching or no more activity left
 
-    // start fetching
     setLoading(true);
-    const limit = 6;
-    const skip = page * limit;
+    const limit = 6; // fetch at most 6 activities at a time
+    const skip = page * limit; // skip over previously fetched data
 
     try {
-      // fetch latest usage history
+      // fetch another batch of usage history
       const responseLatest = await fetch(
         `${environment.urls.middlewareURL}/timeTracking/latest?username=${username}&limit=${limit}&skip=${skip}`, 
         {
@@ -119,13 +123,13 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         }
       );
       const dataLatest = await responseLatest.json();
+
       setEvents(prev => [...prev, ...dataLatest]); // append more events to old list
       setPage(prev => prev + 1); // update pagination number
-      setHasMore(dataLatest.length === limit && dataLatest.length > 0);
+      setHasMore(dataLatest.length === limit && dataLatest.length > 0); // if there are more activities
+      setLoading(false);
     } catch (err) {
       console.error("Failed to fetch events", err);
-    } finally {
-      setLoading(false); // stop fetching
     }
   }
 

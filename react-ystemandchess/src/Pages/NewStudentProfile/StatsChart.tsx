@@ -12,9 +12,10 @@ import {
 import { useState } from 'react';
 import { Line } from 'react-chartjs-2';
 
+// X, Y axes for the plot
 type StatsChartProps = {
-  monthAxis: string[];
-  dataAxis: number[];
+  monthAxis: string[]; // X-axis, months, e.g. "Jan", "Feb"...
+  dataAxis: number[]; // Y-axis, time spent in minutes
 };
 
 ChartJS.register(
@@ -28,12 +29,12 @@ ChartJS.register(
 );
 
 export const StatsChart: React.FC<StatsChartProps> = ({ monthAxis, dataAxis }) => {
-  const labels = monthAxis;
+  const labels = monthAxis; // X-axis
   const [data, setData] = useState({
     labels: labels,
     datasets: [{
-      label: 'Website',
-      data: dataAxis,
+      label: 'Website', // shows time spent on website
+      data: dataAxis, // Y-axis
       fill: false,
       borderColor: 'rgb(0, 0, 0)',
       borderWidth: 2,

@@ -143,7 +143,7 @@ router.get("/latest",passport.authenticate("jwt"),  async (req, res) => {
       .skip(Number(skip)) // skip the first few events
       .limit(Number(limit)); // limit each fetch by number of events
 
-    return res.status(200).json(latestEvents);
+    return res.status(200).json(latestEvents); // {eventName: "Piece Checkmate", eventType: "website", startTime:...}
   } catch (error) {
     console.error(error.message);
     res.status(500).json("Server error");
@@ -151,7 +151,7 @@ router.get("/latest",passport.authenticate("jwt"),  async (req, res) => {
 });
 
 // @route   GET /timeTracking/graph-data
-// @desc    GET the user's events from the last few months to plot graph
+// @desc    GET the user's time spent in the last few months to plot graph
 // @access  Public with jwt Authentication
 router.get("/graph-data",passport.authenticate("jwt"),  async (req, res) => {
   try {
@@ -172,7 +172,7 @@ router.get("/graph-data",passport.authenticate("jwt"),  async (req, res) => {
     const eventArray = await timeTracking.find(filters);
 
     // calculate time spent on event in each month
-    const monthlyTimeMap = {};
+    const monthlyTimeMap = {}; // e.g., {"2025-01" : 20, "2025-02" : 30...} in seconds
     for (let i = 0; i < eventArray.length; i++) {
       const event = eventArray[i];
       const date = new Date(event.startTime);
@@ -187,7 +187,7 @@ router.get("/graph-data",passport.authenticate("jwt"),  async (req, res) => {
     }
 
     // generate full sorted month result
-    const fullResult = [];
+    const fullResult = []; 
     for (let i = months - 1; i >= 0; i--) {
       // generate data for each past month
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -198,36 +198,7 @@ router.get("/graph-data",passport.authenticate("jwt"),  async (req, res) => {
       });
     }
 
-    return res.status(200).json(fullResult);
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json("Server error");
-  }
-});
-
-// helper function, will be deleted
-router.get("/view", async (req, res) => {
-  try {
-    const { username } = req.query;
-    let filters = {
-      username: username
-    };
-
-    const eventArray = await timeTracking.find(filters);
-
-    return res.status(200).json(eventArray);
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json("Server error");
-  }
-});
-
-// helper function, will be deleted
-router.get("/delete", async (req, res) => {
-  try {
-    await timeTracking.deleteMany({ username: "charlottez" });
-
-    return res.status(200).json("yes");
+    return res.status(200).json(fullResult); // {{monthText: "Jan", timeSpent: 20 (minutes)}}
   } catch (error) {
     console.error(error.message);
     res.status(500).json("Server error");
