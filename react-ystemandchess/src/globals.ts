@@ -3,7 +3,10 @@ let information;
 
 type SetPermissionLevelType<T> = (a: any, b?: any) => Promise<T>;
 
-export const SetPermissionLevel: SetPermissionLevelType<any> = async (cookies: any, removeCookie: Function): Promise<any> => {
+export const SetPermissionLevel: SetPermissionLevelType<any> = async (
+  cookies: any,
+  removeCookie: Function
+): Promise<any> => {
   let cookieName = "login";
   if (Object.keys(cookies).includes(cookieName)) {
     let rawData: any;
@@ -34,4 +37,3 @@ export const SetPermissionLevel: SetPermissionLevelType<any> = async (cookies: a
     return { error: "User is not logged in" };
   }
 };
-

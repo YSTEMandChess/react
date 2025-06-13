@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import './SignUp.scss'; // Imports the stylesheet for this component.
-import { environment } from '../../environments/environment'; // Imports environment variables, likely containing API URLs.
+import React, { useState } from "react";
+import "./SignUp.scss"; // Imports the stylesheet for this component.
+import { environment } from "../../environments/environment"; // Imports environment variables, likely containing API URLs.
 // Test comment - This is a manual test comment.
 
-console.log('Environment URL:', environment.urls.middlewareURL); // Logs the middleware URL from the environment.
+console.log("Environment URL:", environment.urls.middlewareURL); // Logs the middleware URL from the environment.
 
 const Signup = () => {
   // State to manage the form data for the user.
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    username: '',
-    password: '',
-    retypedPassword: '',
-    accountType: 'mentor', // Default account type is set to 'mentor'.
+    firstName: "",
+    lastName: "",
+    email: "",
+    username: "",
+    password: "",
+    retypedPassword: "",
+    accountType: "mentor", // Default account type is set to 'mentor'.
   });
 
   // State flags to track the validity of individual input fields.
@@ -27,12 +27,12 @@ const Signup = () => {
 
   // State to store any validation errors for the form fields.
   const [errors, setErrors] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    username: '',
-    password: '',
-    retypePassword: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    username: "",
+    password: "",
+    retypePassword: "",
   });
 
   // State to manage the parent account specific UI and data.
@@ -51,22 +51,22 @@ const Signup = () => {
 
     // Performs specific validation based on the input field that changed.
     switch (name) {
-      case 'firstName':
+      case "firstName":
         firstNameVerification(value);
         break;
-      case 'lastName':
+      case "lastName":
         lastNameVerification(value);
         break;
-      case 'email':
+      case "email":
         emailVerification(value);
         break;
-      case 'username':
+      case "username":
         usernameVerification(value);
         break;
-      case 'password':
+      case "password":
         passwordVerification(value);
         break;
-      case 'retypedPassword':
+      case "retypedPassword":
         retypePasswordVerification(value, formData.password);
         break;
       default:
@@ -80,7 +80,7 @@ const Signup = () => {
     setFirstNameFlag(isValid);
     setErrors((prev) => ({
       ...prev,
-      firstName: isValid ? '' : 'Invalid First Name',
+      firstName: isValid ? "" : "Invalid First Name",
     }));
     return isValid;
   };
@@ -91,7 +91,7 @@ const Signup = () => {
     setLastNameFlag(isValid);
     setErrors((prev) => ({
       ...prev,
-      lastName: isValid ? '' : 'Invalid Last Name',
+      lastName: isValid ? "" : "Invalid Last Name",
     }));
     return isValid;
   };
@@ -102,7 +102,7 @@ const Signup = () => {
     setEmailFlag(isValid);
     setErrors((prev) => ({
       ...prev,
-      email: isValid ? '' : 'Invalid Email',
+      email: isValid ? "" : "Invalid Email",
     }));
     return isValid;
   };
@@ -113,7 +113,7 @@ const Signup = () => {
     setUserNameFlag(isValid);
     setErrors((prev) => ({
       ...prev,
-      username: isValid ? '' : 'Invalid Username',
+      username: isValid ? "" : "Invalid Username",
     }));
     return isValid;
   };
@@ -124,25 +124,28 @@ const Signup = () => {
     setPasswordFlag(isValid);
     setErrors((prev) => ({
       ...prev,
-      password: isValid ? '' : 'Password must be at least 8 characters',
+      password: isValid ? "" : "Password must be at least 8 characters",
     }));
     return isValid;
   };
 
   // Verifies if the retyped password matches the original password.
-  const retypePasswordVerification = (retypedPassword: string, password: string) => {
+  const retypePasswordVerification = (
+    retypedPassword: string,
+    password: string
+  ) => {
     const isValid = retypedPassword === password;
     setRetypeFlag(isValid);
     setErrors((prev) => ({
       ...prev,
-      retypePassword: isValid ? '' : 'Passwords do not match',
+      retypePassword: isValid ? "" : "Passwords do not match",
     }));
     return isValid;
   };
 
   // Handles changes to the account type dropdown.
   const handleAccountTypeChange = (e: any) => {
-    const isParent = e.target.value === 'parent';
+    const isParent = e.target.value === "parent";
     setParentAccountFlag(isParent);
     // Updates the accountType in the form data.
     setFormData((prev) => ({
@@ -155,12 +158,12 @@ const Signup = () => {
   const handleAddStudent = () => {
     const newStudent = {
       id: Date.now(),
-      firstName: '',
-      lastName: '',
-      username: '',
-      email: '',
-      password: '',
-      retypedPassword: '',
+      firstName: "",
+      lastName: "",
+      username: "",
+      email: "",
+      password: "",
+      retypedPassword: "",
       errors: {},
     };
     setStudents((prev: any) => [...prev, newStudent]);
@@ -168,7 +171,11 @@ const Signup = () => {
   };
 
   // Handles changes to input fields within a student's form.
-  const handleStudentInputChange = (studentId: any, field: string, value: string) => {
+  const handleStudentInputChange = (
+    studentId: any,
+    field: string,
+    value: string
+  ) => {
     // Updates the specific student's data in the students array.
     setStudents((prev: any) =>
       prev.map((student: any) =>
@@ -180,7 +187,9 @@ const Signup = () => {
   // Removes a student form from the UI.
   const handleRemoveStudent = (studentId: any) => {
     // Filters out the student with the given ID.
-    setStudents((prev: any) => prev.filter((student: any) => student.id !== studentId));
+    setStudents((prev: any) =>
+      prev.filter((student: any) => student.id !== studentId)
+    );
     // Hides the student form if no students are present.
     if (students.length === 1) {
       setShowStudentForm(false);
@@ -189,7 +198,7 @@ const Signup = () => {
 
   // Handles the submission of the signup form.
   const handleSubmit = async () => {
-    console.log('Submit clicked', formData);
+    console.log("Submit clicked", formData);
 
     // Checks if all main form fields are valid based on their flags.
     const isValid =
@@ -200,7 +209,7 @@ const Signup = () => {
       passwordFlag &&
       retypeFlag;
 
-    console.log('Validation status:', {
+    console.log("Validation status:", {
       firstNameFlag,
       lastNameFlag,
       emailFlag,
@@ -211,11 +220,11 @@ const Signup = () => {
 
     // If the main form is not valid, prevents submission.
     if (!isValid) {
-      console.log('Form validation failed');
+      console.log("Form validation failed");
       return;
     }
 
-    let url = '';
+    let url = "";
     // Constructs the API URL based on whether it's a parent account with students.
     if (parentAccountFlag && students.length > 0) {
       // Maps student data into the required format for the API.
@@ -240,18 +249,18 @@ const Signup = () => {
       url = `${environment.urls.middlewareURL}/user/?first=${formData.firstName}&last=${formData.lastName}&email=${formData.email}&password=${formData.password}&username=${formData.username}&role=${formData.accountType}`;
     }
 
-    console.log('Request URL:', url);
+    console.log("Request URL:", url);
 
     try {
       // Sends a POST request to the signup API.
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
-      console.log('Response status:', response.status);
+      console.log("Response status:", response.status);
 
       // Throws an error if the response status indicates failure.
       if (!response.ok) {
@@ -260,100 +269,100 @@ const Signup = () => {
 
       // Parses the JSON response.
       const data = await response.json();
-      console.log('Response data:', data);
+      console.log("Response data:", data);
 
       // Handles the case where the chosen username is already taken.
-      if (data === 'This username has been taken. Please choose another.') {
+      if (data === "This username has been taken. Please choose another.") {
         setErrors((prev) => ({
           ...prev,
-          username: 'Username already taken',
+          username: "Username already taken",
         }));
       } else {
         // Redirects to the homepage upon successful signup.
-        window.location.href = '/';
+        window.location.href = "/";
       }
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error("Signup error:", error);
       // Sets a general error message for signup failure.
       setErrors((prev) => ({
         ...prev,
-        general: 'Signup failed. Please try again.',
+        general: "Signup failed. Please try again.",
       }));
     }
   };
 
   return (
-    <form className='signupForm' onSubmit={(e) => e.preventDefault()}>
+    <form className="signupForm" onSubmit={(e) => e.preventDefault()}>
       <h2 className="sign-up-title">Sign up</h2>
 
-      <div className='errorMessages'>
+      <div className="errorMessages">
         {/* Maps through the errors object and displays any error messages. */}
         {Object.values(errors).map((error, index) =>
           error ? <h3 key={index}>{error}</h3> : null
         )}
       </div>
 
-      <div className='form-fields'>
+      <div className="form-fields">
         <input
-          type='text'
-          name='firstName'
-          placeholder='First name'
+          type="text"
+          name="firstName"
+          placeholder="First name"
           value={formData.firstName}
           onChange={handleInputChange}
         />
         <input
-          type='text'
-          name='lastName'
-          placeholder='Last name'
+          type="text"
+          name="lastName"
+          placeholder="Last name"
           value={formData.lastName}
           onChange={handleInputChange}
         />
         <input
-          type='text'
-          name='email'
-          placeholder='Email'
+          type="text"
+          name="email"
+          placeholder="Email"
           value={formData.email}
           onChange={handleInputChange}
         />
         <input
-          type='text'
-          name='username'
-          placeholder='Username'
+          type="text"
+          name="username"
+          placeholder="Username"
           value={formData.username}
           onChange={handleInputChange}
         />
         <input
-          type='password'
-          name='password'
-          placeholder='Password'
+          type="password"
+          name="password"
+          placeholder="Password"
           value={formData.password}
           onChange={handleInputChange}
         />
         <input
-          type='password'
-          name='retypedPassword'
-          placeholder='Re-type password'
+          type="password"
+          name="retypedPassword"
+          placeholder="Re-type password"
           value={formData.retypedPassword}
           onChange={handleInputChange}
         />
       </div>
 
-      <div className='account-type'>
+      <div className="account-type">
         <p>Select Account Type</p>
         <select value={formData.accountType} onChange={handleAccountTypeChange}>
-          <option value='mentor'>Mentor</option>
-          <option value='parent'>Parent</option>
+          <option value="mentor">Mentor</option>
+          <option value="parent">Parent</option>
         </select>
       </div>
 
       {/* Conditional rendering of the student section for parent accounts. */}
       {parentAccountFlag && (
-        <div className='student-section'>
+        <div className="student-section">
           {/* Button to add a new student form if the student form is not currently shown. */}
           {!showStudentForm && (
             <button
-              type='button'
-              className='add-student-btn'
+              type="button"
+              className="add-student-btn"
               onClick={handleAddStudent}
             >
               Create Student
@@ -362,80 +371,80 @@ const Signup = () => {
 
           {/* Maps through the students array and renders a form for each student. */}
           {students.map((student: any) => (
-            <div key={student.id} className='student-form'>
+            <div key={student.id} className="student-form">
               {/* Button to remove a student form. */}
               <button
-                type='button'
-                className='remove-student'
+                type="button"
+                className="remove-student"
                 onClick={() => handleRemoveStudent(student.id)}
               >
                 Delete student
               </button>
 
               <input
-                type='text'
+                type="text"
                 placeholder="Student's first name"
                 value={student.firstName}
                 onChange={(e) =>
                   handleStudentInputChange(
                     student.id,
-                    'firstName',
+                    "firstName",
                     e.target.value
                   )
                 }
               />
               <input
-                type='text'
+                type="text"
                 placeholder="Student's last name"
                 value={student.lastName}
                 onChange={(e) =>
                   handleStudentInputChange(
                     student.id,
-                    'lastName',
+                    "lastName",
                     e.target.value
                   )
                 }
               />
               <input
-                type='text'
-                placeholder='Student username'
+                type="text"
+                placeholder="Student username"
                 value={student.username}
                 onChange={(e) =>
                   handleStudentInputChange(
                     student.id,
-                    'username',
+                    "username",
                     e.target.value
                   )
                 }
               />
               <input
-                type='text'
+                type="text"
                 placeholder="Student's email"
                 value={student.email}
                 onChange={(e) =>
-                  handleStudentInputChange(student.id, 'email', e.target.value)
+                  handleStudentInputChange(student.id, "email", e.target.value)
                 }
               />
               <input
-                type='password'
+                type="password"
                 placeholder="Student's password"
                 value={student.password}
                 onChange={(e) =>
                   handleStudentInputChange(
                     student.id,
-                    'password',
+                    "password",
                     e.target.value
                   )
                 }
               />
               <input
-                type='password'
+                type="password"
                 placeholder="Re-type student's password"
                 value={student.retypedPassword}
                 onChange={(e) =>
                   handleStudentInputChange(
                     student.id,
-                    'retypedPassword',
+                    "retypedPassword",
                     e.target.value
                   )
                 }
@@ -445,13 +454,13 @@ const Signup = () => {
         </div>
       )}
 
-      <div className='terms'>
-        <input type='checkbox' id='termsCheckbox' required />
-        <label htmlFor='termsCheckbox'>I accept the terms and conditions</label>
+      <div className="terms">
+        <input type="checkbox" id="termsCheckbox" required />
+        <label htmlFor="termsCheckbox">I accept the terms and conditions</label>
       </div>
 
       {/* Submit button for the signup form. */}
-      <button type='button' className='submit-btn' onClick={handleSubmit}>
+      <button type="button" className="submit-btn" onClick={handleSubmit}>
         Sign up
       </button>
     </form>

@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./NewStudentProfile.scss";
 import Images from "../../images/imageImporter";
-import { SetPermissionLevel } from '../../globals'; 
-import { useCookies } from 'react-cookie';
-import { environment } from '../../environments/environment';
+import { SetPermissionLevel } from "../../globals";
+import { useCookies } from "react-cookie";
+import { environment } from "../../environments/environment";
 import { useNavigate } from "react-router";
 import { StatsChart } from "./StatsChart";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
-
   const [activeTab, setActiveTab] = useState("activity");
-  const [cookies] = useCookies(['login']);
+  const [cookies] = useCookies(["login"]);
   const navigate = useNavigate();
 
   // user info
@@ -26,8 +25,15 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [mentorTime, setMentorTime] = useState(0);
 
   // data for chart plotting
-  const [displayMonths, setDisplayMonths] = useState(6); // display data from 6 many months back 
-  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
+  const [displayMonths, setDisplayMonths] = useState(6); // display data from 6 many months back
+  const [monthAxis, setMonthAxis] = useState([
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+  ]);
   const [dataAxis, setDataAxis] = useState([0, 0, 0, 0, 0, 0]); // time spent on events each month
 
   // event tracking for pagination
@@ -38,27 +44,29 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // current date for display
-  const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-  }));
+  const [date, setDate] = useState(() =>
+    new Date().toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+    })
+  );
 
-  useEffect(()=>{
+  useEffect(() => {
     try {
       fetchUserData(); // asynchronously fetch user data upon mounting
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }, [])
+  }, []);
 
   // loading changes, update listener to update handler closures
   useEffect(() => {
-    const el = containerRef.current; // get the activity element 
+    const el = containerRef.current; // get the activity element
     if (!el) return;
 
     const handleScroll = () => {
       // if scrolling within 50px of displayed height
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) { 
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) {
         fetchActivity(username); // fetch new acitivty
       }
     };
@@ -68,42 +76,42 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   }, [loading]);
 
   const fetchUserData = async () => {
-      const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
-      if (uInfo.error) {
-        navigate("/login") // if user is not logged in, go to login page
-      } else {
-        // record user info
-        setUsername(uInfo.username);
-        setFirstName(uInfo.firstName);
-        setLastName(uInfo.lastName)
-      }
+    const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
+    if (uInfo.error) {
+      navigate("/login"); // if user is not logged in, go to login page
+    } else {
+      // record user info
+      setUsername(uInfo.username);
+      setFirstName(uInfo.firstName);
+      setLastName(uInfo.lastName);
+    }
 
-      // fetch usage time stats to disaply in header
-      fetchUsageTime(uInfo.username)
-      // fetch data for graph plotting
-      fetchGraphData(uInfo.username)
-      // fetch latest usage history to show in Activity tab
-      fetchActivity(uInfo.username)
-  }
+    // fetch usage time stats to disaply in header
+    fetchUsageTime(uInfo.username);
+    // fetch data for graph plotting
+    fetchGraphData(uInfo.username);
+    // fetch latest usage history to show in Activity tab
+    fetchActivity(uInfo.username);
+  };
 
   // fetch usage time stats to display in header
   const fetchUsageTime = async (username) => {
-      // fetch from back end
-      const responseStats = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/statistics?username=${username}`, 
-        {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${cookies.login}` }
-        }
-      );
-      const dataStats = await responseStats.json();
-      // update time usage for different events in header display
-      setWebTime(dataStats.website);
-      setLessonTime(dataStats.lesson);
-      setPlayTime(dataStats.play);
-      setMentorTime(dataStats.mentor);
-      setPuzzleTime(dataStats.puzzle);
-  }
+    // fetch from back end
+    const responseStats = await fetch(
+      `${environment.urls.middlewareURL}/timeTracking/statistics?username=${username}`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${cookies.login}` },
+      }
+    );
+    const dataStats = await responseStats.json();
+    // update time usage for different events in header display
+    setWebTime(dataStats.website);
+    setLessonTime(dataStats.lesson);
+    setPlayTime(dataStats.play);
+    setMentorTime(dataStats.mentor);
+    setPuzzleTime(dataStats.puzzle);
+  };
 
   // fetch latest usage history (Activity Tab)
   const fetchActivity = async (username) => {
@@ -116,45 +124,45 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     try {
       // fetch another batch of usage history
       const responseLatest = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/latest?username=${username}&limit=${limit}&skip=${skip}`, 
+        `${environment.urls.middlewareURL}/timeTracking/latest?username=${username}&limit=${limit}&skip=${skip}`,
         {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${cookies.login}` }
+          method: "GET",
+          headers: { Authorization: `Bearer ${cookies.login}` },
         }
       );
       const dataLatest = await responseLatest.json();
 
-      setEvents(prev => [...prev, ...dataLatest]); // append more events to old list
-      setPage(prev => prev + 1); // update pagination number
+      setEvents((prev) => [...prev, ...dataLatest]); // append more events to old list
+      setPage((prev) => prev + 1); // update pagination number
       setHasMore(dataLatest.length === limit && dataLatest.length > 0); // if there are more activities
       setLoading(false);
     } catch (err) {
       console.error("Failed to fetch events", err);
     }
-  }
+  };
 
   // fetch data needed for updating graph plot
   const fetchGraphData = async (username) => {
     try {
       // fetch the time spent on the website in the past few months
       const response = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&eventType=website&months=${displayMonths}`, 
+        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&eventType=website&months=${displayMonths}`,
         {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${cookies.login}` }
+          method: "GET",
+          headers: { Authorization: `Bearer ${cookies.login}` },
         }
       );
-      const data = await response.json(); 
-      const months = data.map(item => item.monthText); // month list for ploting
-      const times = data.map(item => item.timeSpent); // timeSpent for plotting
+      const data = await response.json();
+      const months = data.map((item) => item.monthText); // month list for ploting
+      const times = data.map((item) => item.timeSpent); // timeSpent for plotting
 
       // update for graph plotting
       setMonthAxis(months);
-      setDataAxis(times); 
+      setDataAxis(times);
     } catch (err) {
       console.error("Failed to fetch events", err);
     }
-  }
+  };
 
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);
@@ -162,10 +170,11 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   // navigate to previous activities
   const handleNavigateEvent = (type: string, name: string) => {
-    if(type == "lesson") { // if event is a lesson
+    if (type == "lesson") {
+      // if event is a lesson
       navigate("/lessons", { state: { piece: name } });
     }
-  }
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -181,33 +190,48 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             </div>
             <div className="inventory-content-line"></div>
             <div className="inventory-content-body" ref={containerRef}>
-              {events && events.map((event, index) => { // render list of usage history
-                const dateObj = new Date(event.startTime);
-                const dateStr = dateObj.toLocaleDateString('en-US', { // date of each history
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric'
-                });
-                const timeStr = dateObj.toLocaleTimeString('en-US', { // time of each history
-                  hour: 'numeric',
-                  minute: '2-digit'
-                });
+              {events &&
+                events.map((event, index) => {
+                  // render list of usage history
+                  const dateObj = new Date(event.startTime);
+                  const dateStr = dateObj.toLocaleDateString("en-US", {
+                    // date of each history
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  });
+                  const timeStr = dateObj.toLocaleTimeString("en-US", {
+                    // time of each history
+                    hour: "numeric",
+                    minute: "2-digit",
+                  });
 
-                return (
-                  <article key={index} className="inventory-content-timecard">
-                    <div className="inventory-content-col1"></div>
-                    <div className="inventory-content-col2">
-                      <p>{dateStr} {timeStr}</p>
-                    </div>
-                    <div className="inventory-content-col3">
-                      <p>
-                        Working on {event.eventType}:{' '}
-                        <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventName}</strong>
-                      </p>
-                    </div>
-                  </article>
-                );
-              })}
+                  return (
+                    <article key={index} className="inventory-content-timecard">
+                      <div className="inventory-content-col1"></div>
+                      <div className="inventory-content-col2">
+                        <p>
+                          {dateStr} {timeStr}
+                        </p>
+                      </div>
+                      <div className="inventory-content-col3">
+                        <p>
+                          Working on {event.eventType}:{" "}
+                          <strong
+                            onClick={() =>
+                              handleNavigateEvent(
+                                event.eventType,
+                                event.eventName
+                              )
+                            }
+                          >
+                            {event.eventName}
+                          </strong>
+                        </p>
+                      </div>
+                    </article>
+                  );
+                })}
               {loading && <p>Loading more...</p>}
               {!hasMore && <p>No more activity left!</p>}
             </div>
@@ -215,56 +239,80 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         );
       case "mentor":
         return (
-          <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
+          <div
+            id="inventory-content-mentor"
+            className="inventoinventory-content active-contentry-content"
+          >
             <h2>Mentor</h2>
             <p>This is the content for the Mentor tab.</p>
           </div>
         );
       case "learning":
         return (
-          <div id="inventory-content-learning" className="inventory-content active-content">
+          <div
+            id="inventory-content-learning"
+            className="inventory-content active-content"
+          >
             <h2>Learning</h2>
             <p>This is the content for the Learning tab.</p>
           </div>
         );
       case "chessLessons":
         return (
-          <div id="inventory-content-lessons" className="inventory-content active-content">
+          <div
+            id="inventory-content-lessons"
+            className="inventory-content active-content"
+          >
             <h2>Chess Lessons</h2>
             <p>This is the content for the Chess Lessons tab.</p>
           </div>
         );
       case "games":
         return (
-          <div id="inventory-content-games" className="inventory-content active-content">
+          <div
+            id="inventory-content-games"
+            className="inventory-content active-content"
+          >
             <h2>Games</h2>
             <p>This is the content for the Games tab.</p>
           </div>
         );
       case "puzzles":
         return (
-          <div id="inventory-content-puzzles" className="inventory-content active-content">
+          <div
+            id="inventory-content-puzzles"
+            className="inventory-content active-content"
+          >
             <h2>Puzzles</h2>
             <p>This is the content for the Puzzles tab.</p>
           </div>
         );
       case "playComputer":
         return (
-          <div id="inventory-content-computer" className="inventory-content active-content">
+          <div
+            id="inventory-content-computer"
+            className="inventory-content active-content"
+          >
             <h2>Play with Computer</h2>
             <p>This is the content for the Play with Computer tab.</p>
           </div>
         );
       case "recordings":
         return (
-          <div id="inventory-content-recordings" className="inventory-content active-content">
+          <div
+            id="inventory-content-recordings"
+            className="inventory-content active-content"
+          >
             <h2>Recordings</h2>
             <p>This is the content for the Recordings tab.</p>
           </div>
         );
       case "backpack":
         return (
-          <div id="inventory-content-backpack" className="inventory-content active-content">
+          <div
+            id="inventory-content-backpack"
+            className="inventory-content active-content"
+          >
             <h2>Backpack</h2>
             <p>This is the content for the Backpack tab.</p>
           </div>
@@ -294,7 +342,9 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
           ></img>
         </div>
         <div className="inv-intro-welcome">
-          <h1>Hello, {firstName} {lastName}!</h1>
+          <h1>
+            Hello, {firstName} {lastName}!
+          </h1>
         </div>
       </section>
 
@@ -302,46 +352,76 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         <div className="inv-inventory-topbar"></div>
         <div className="inv-inventory-analytics">
           <div className="inv-inventory-analytics-graph">
-            <StatsChart key={dataAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
+            <StatsChart
+              key={dataAxis.join(",")}
+              monthAxis={monthAxis}
+              dataAxis={dataAxis}
+            />
           </div>
           <div className="inv-inventory-analytics-metrics">
             <h3>Time Spent:</h3>
             <ul>
-              <li>Website: <strong>{webTime} minutes</strong></li>
-              <li>Playing: <strong>{playTime} minutes</strong></li>
-              <li>Lessons: <strong>{lessonTime} minutes</strong></li>
-              <li>Puzzle: <strong>{puzzleTime} minutes</strong></li>
-              <li>Mentoring: <strong>{mentorTime} minutes</strong></li>
+              <li>
+                Website: <strong>{webTime} minutes</strong>
+              </li>
+              <li>
+                Playing: <strong>{playTime} minutes</strong>
+              </li>
+              <li>
+                Lessons: <strong>{lessonTime} minutes</strong>
+              </li>
+              <li>
+                Puzzle: <strong>{puzzleTime} minutes</strong>
+              </li>
+              <li>
+                Mentoring: <strong>{mentorTime} minutes</strong>
+              </li>
             </ul>
           </div>
         </div>
         <div className="inv-inventory-content-section">
           <nav className="inv-inventory-content-tabs">
             <ul>
-              {["activity", "mentor", "learning",
-                "chessLessons", "games", "puzzles",
-                "playComputer", "recordings", "backpack"].map((tab) => { const displayName =
-                    tab === "chessLessons"
-                      ? "Chess Lessons"
-                      : tab === "playComputer"
-                        ? "Play with Computer"
-                        : tab.charAt(0).toUpperCase() + tab.slice(1);
+              {[
+                "activity",
+                "mentor",
+                "learning",
+                "chessLessons",
+                "games",
+                "puzzles",
+                "playComputer",
+                "recordings",
+                "backpack",
+              ].map((tab) => {
+                const displayName =
+                  tab === "chessLessons"
+                    ? "Chess Lessons"
+                    : tab === "playComputer"
+                    ? "Play with Computer"
+                    : tab.charAt(0).toUpperCase() + tab.slice(1);
 
-                  return (
-                    <div
-                      key={tab}
-                      className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
-                      onClick={() => handleTabClick(tab)}
-                    >
-                      <img src={Images[`${tab}Icon` as keyof typeof Images]} alt={`${tab} icon`} />
-                      <li>{displayName}</li>
-                    </div>
-                  );
-                })}
+                return (
+                  <div
+                    key={tab}
+                    className={`inventory-tab ${
+                      activeTab === tab ? "active-tab" : ""
+                    }`}
+                    onClick={() => handleTabClick(tab)}
+                  >
+                    <img
+                      src={Images[`${tab}Icon` as keyof typeof Images]}
+                      alt={`${tab} icon`}
+                    />
+                    <li>{displayName}</li>
+                  </div>
+                );
+              })}
             </ul>
           </nav>
 
-          <div className="inv-inventory-content-content">{renderTabContent()}</div>
+          <div className="inv-inventory-content-content">
+            {renderTabContent()}
+          </div>
         </div>
       </section>
     </main>
