@@ -13,6 +13,11 @@ import { useCookies } from "react-cookie";
 import { SetPermissionLevel } from "./globals";
 import NavBar from "./components/navbar/NavBar";
 import Footer from "./components/footer/Footer";
+import { environment } from "./environments/environment";
+import { useCookies } from "react-cookie";
+import { SetPermissionLevel } from "./globals";
+import NavBar from "./NavBar/NavBar";
+import Footer from "./Footer/Footer";
 import AppRoutes from "./AppRoutes";
 import "./App.css";
 
@@ -28,47 +33,33 @@ import "./App.css";
  * @returns JSX element representing the entire application
  */
 function App() {
-  // Hook to manage browser cookies, specifically the login token
-  const [cookies] = useCookies(["login"]);
-  
-  // Variables to track user session and time spent on website
-  // These are used for analytics and user engagement tracking
-  let username = null;     // Stores the authenticated username
-  let eventID = null;      // Unique identifier for this browsing session
-  let startTime = null;    // Timestamp when user started browsing
+  const [cookies] = useCookies(["login"]); // get login info from cookie
+  let username = null;
+  let eventID = null;
+  let startTime = null;
 
-  /**
-   * Initiates time tracking for authenticated users
-   * 
-   * This function checks if a user is logged in and starts recording
-   * their browsing session for analytics purposes. It creates a new
-   * time tracking event in the backend and stores the session details.
-   * 
-   * @returns Promise<void> - Resolves when recording setup is complete
-   */
+  // start recording when users started browsing website
   async function startRecording() {
-    // Validate user authentication and get user information
-    const uInfo = await SetPermissionLevel(cookies);
+    const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
 
-    // Exit early if user is not authenticated - no tracking for anonymous users
+    // do nothing if the user is not logged in
     if (uInfo.error) return;
-    
-    // Store the authenticated username for tracking purposes
-    username = uInfo.username;
+    username = uInfo.username; // else record username
 
     // Make API call to start time tracking session
     const response = await fetch(
       `${environment.urls.middlewareURL}/timeTracking/start?username=${username}&eventType=website`,
+      `${environment.urls.middlewareURL}/timeTracking/start?username=${username}&eventType=website`,
       {
+        method: "POST",
+        headers: { Authorization: `Bearer ${cookies.login}` },
         method: "POST",
         headers: { Authorization: `Bearer ${cookies.login}` },
       }
     );
-    
-    // Log any HTTP errors for debugging purposes
-    if (response.status !== 200) console.log(response);
+    if (response.status != 200) console.log(response); // error handling
 
-    // Extract session data from successful response
+    // if data is fetched, record for later updates
     const data = await response.json();
     eventID = data.eventId;      // Store event ID for later updates
     startTime = data.startTime;  // Store start time for duration calculation
@@ -85,7 +76,6 @@ function App() {
    */
   const handleUnload = async () => {
     try {
-      // Calculate the total time spent on the website
       const startDate = new Date(startTime);
       const endDate = new Date();
       
@@ -98,16 +88,16 @@ function App() {
       // Send the final time tracking update to the backend
       const response = await fetch(
         `${environment.urls.middlewareURL}/timeTracking/update?username=${username}&eventType=website&eventId=${eventID}&totalTime=${diffInSeconds}`,
+        `${environment.urls.middlewareURL}/timeTracking/update?username=${username}&eventType=website&eventId=${eventID}&totalTime=${diffInSeconds}`,
         {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${cookies.login}` },
           method: "PUT",
           headers: { Authorization: `Bearer ${cookies.login}` },
         }
       );
-      
-      // Log any errors that occur during the update
-      if (response.status !== 200) console.log(response);
+      if (response.status != 200) console.log(response); // error handling
     } catch (err) {
-      // Log any unexpected errors during cleanup
       console.log(err);
     }
   };
@@ -125,15 +115,12 @@ function App() {
       // Initialize time tracking when component mounts
       startRecording();
     } catch (err) {
-      // Log any errors during initialization
       console.log(err);
     }
 
-    // Add event listener to handle user leaving the website
-    window.addEventListener("beforeunload", handleUnload);
-    
-    // Cleanup function to remove event listeners when component unmounts
+    window.addEventListener("beforeunload", handleUnload); // end recording when unloading
     return () => {
+      window.removeEventListener("beforeunload", handleUnload);
       window.removeEventListener("beforeunload", handleUnload);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps

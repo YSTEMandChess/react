@@ -44,10 +44,11 @@ interface Student {
   lastName: string;
 }
 
-const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) => {
-
+const NewMentorProfile: React.FC<NewMentorProfileProps> = ({
+  userPortraitSrc,
+}) => {
   const [activeTab, setActiveTab] = useState("activity");
-  const [cookies] = useCookies(['login']);
+  const [cookies] = useCookies(["login"]);
   const navigate = useNavigate();
 
   // mentor info
@@ -171,16 +172,22 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
           setHasStudent(true);
         }
       });
-  }
+  };
 
   const setStubStudent = async (stubStudentUsername) => {
     console.log("Setting stub student:", stubStudentUsername);
-    fetch(`${environment.urls.middlewareURL}/user/updateMentorship?mentorship=${stubStudentUsername}`, {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${cookies.login}`,
-                'Content-Type': 'application/json'}
-    }).then(data => data.json())
-      .then(data => {
+    fetch(
+      `${environment.urls.middlewareURL}/user/updateMentorship?mentorship=${stubStudentUsername}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${cookies.login}`,
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((data) => data.json())
+      .then((data) => {
         console.log("Set student response:", data);
       });
   }
@@ -196,10 +203,10 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     try {
       // fetch another batch of usage history
       const responseLatest = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/latest?username=${username}&limit=${limit}&skip=${skip}`, 
+        `${environment.urls.middlewareURL}/timeTracking/latest?username=${username}&limit=${limit}&skip=${skip}`,
         {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${cookies.login}` }
+          method: "GET",
+          headers: { Authorization: `Bearer ${cookies.login}` },
         }
       );
       const dataLatest = await responseLatest.json();
@@ -244,17 +251,17 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     } catch (err) {
       console.error("Failed to fetch events", err);
     }
-  }
+  };
 
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);
   };
 
   const handleNavigateEvent = (type: string, name: string) => {
-    if(type == "lesson") {
+    if (type == "lesson") {
       navigate("/lessons", { state: { piece: name } });
     }
-  }
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -270,33 +277,48 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
             </div>
             <div className="inventory-content-line"></div>
             <div className="inventory-content-body" ref={containerRef}>
-              {events && events.map((event, index) => { // render list of usage history
-                const dateObj = new Date(event.startTime);
-                const dateStr = dateObj.toLocaleDateString('en-US', { // date of each history
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric'
-                });
-                const timeStr = dateObj.toLocaleTimeString('en-US', { // time of each history
-                  hour: 'numeric',
-                  minute: '2-digit'
-                });
+              {events &&
+                events.map((event, index) => {
+                  // render list of usage history
+                  const dateObj = new Date(event.startTime);
+                  const dateStr = dateObj.toLocaleDateString("en-US", {
+                    // date of each history
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  });
+                  const timeStr = dateObj.toLocaleTimeString("en-US", {
+                    // time of each history
+                    hour: "numeric",
+                    minute: "2-digit",
+                  });
 
-                return (
-                  <article key={index} className="inventory-content-timecard">
-                    <div className="inventory-content-col1"></div>
-                    <div className="inventory-content-col2">
-                      <p>{dateStr} {timeStr}</p>
-                    </div>
-                    <div className="inventory-content-col3">
-                      <p>
-                        Working on {event.eventType}:{' '}
-                        <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventName}</strong>
-                      </p>
-                    </div>
-                  </article>
-                );
-              })}
+                  return (
+                    <article key={index} className="inventory-content-timecard">
+                      <div className="inventory-content-col1"></div>
+                      <div className="inventory-content-col2">
+                        <p>
+                          {dateStr} {timeStr}
+                        </p>
+                      </div>
+                      <div className="inventory-content-col3">
+                        <p>
+                          Working on {event.eventType}:{" "}
+                          <strong
+                            onClick={() =>
+                              handleNavigateEvent(
+                                event.eventType,
+                                event.eventName
+                              )
+                            }
+                          >
+                            {event.eventName}
+                          </strong>
+                        </p>
+                      </div>
+                    </article>
+                  );
+                })}
               {loading && <p>Loading more...</p>}
               {!hasMore && <p>No more activity left!</p>}
             </div>
@@ -304,7 +326,10 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         );
       case "mentor":
         return (
-          <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
+          <div
+            id="inventory-content-mentor"
+            className="inventoinventory-content active-contentry-content"
+          >
             <h2>Mentor</h2>
             <p>This is the content for the Mentor tab.</p>
           </div>
@@ -333,7 +358,10 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         );
       case "games":
         return (
-          <div id="inventory-content-games" className="inventory-content active-content">
+          <div
+            id="inventory-content-games"
+            className="inventory-content active-content"
+          >
             <h2>Games</h2>
             <p>This is the content for the Games tab.</p>
           </div>
@@ -346,21 +374,30 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         );
       case "playComputer":
         return (
-          <div id="inventory-content-computer" className="inventory-content active-content">
+          <div
+            id="inventory-content-computer"
+            className="inventory-content active-content"
+          >
             <h2>Play with Computer</h2>
             <p>This is the content for the Play with Computer tab.</p>
           </div>
         );
       case "recordings":
         return (
-          <div id="inventory-content-recordings" className="inventory-content active-content">
+          <div
+            id="inventory-content-recordings"
+            className="inventory-content active-content"
+          >
             <h2>Recordings</h2>
             <p>This is the content for the Recordings tab.</p>
           </div>
         );
       case "backpack":
         return (
-          <div id="inventory-content-backpack" className="inventory-content active-content">
+          <div
+            id="inventory-content-backpack"
+            className="inventory-content active-content"
+          >
             <h2>Backpack</h2>
             <p>This is the content for the Backpack tab.</p>
           </div>
@@ -392,7 +429,9 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
           ></img>
         </div>
         <div className="inv-intro-welcome">
-          <h1>Hello, {firstName} {lastName}!</h1>
+          <h1>
+            Hello, {firstName} {lastName}!
+          </h1>
         </div>
       </section>
 
@@ -426,13 +465,15 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
                     tab === "chessLessons"
                       ? "Chess Lessons"
                       : tab === "playComputer"
-                        ? "Play with Computer"
-                        : tab.charAt(0).toUpperCase() + tab.slice(1);
+                      ? "Play with Computer"
+                      : tab.charAt(0).toUpperCase() + tab.slice(1);
 
                   return (
                     <div
                       key={tab}
-                      className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
+                      className={`inventory-tab ${
+                        activeTab === tab ? "active-tab" : ""
+                      }`}
                       onClick={() => handleTabClick(tab)}
                     >
                       <img src={TAB_ICONS[tab]} alt={`${tab} icon`} />
@@ -440,8 +481,8 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
                     </div>
                   );
                 })}
-            </ul>
-          </nav>
+              </ul>
+            </nav>
 
           <div className="inv-inventory-content-content">{tabContent}</div>
         </div>
