@@ -2,6 +2,15 @@ h2 {
   margin-top: 5rem;
 }
 
+.dropdown-users {
+  height: 40vh;
+  width: 37vw;
+  background-color: white;
+  overflow-y: auto;
+  border: 0.1rem solid black;
+  margin-top: -1rem;
+}
+
 
 
 .signupForm {
@@ -15,6 +24,7 @@ h2 {
 
   .sign-up-title {
     font-size: 3rem;
+    font-weight: bold;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
@@ -61,8 +71,8 @@ div.student-form input{
 }
 
 input[name="setMentee"] {
-    width: 25vw;
-    height: 8vh;
+    width: 41vw;
+    height: 7vh;
     border-radius: 1rem;
     border: 0.1rem solid black;
 }
@@ -98,8 +108,10 @@ input[name="setMentee"]::placeholder {
 div.form-fields input {
   display: flex;
   width: 20rem;
+  height: 3rem;
   border: 2px solid black;
   border-radius: 1rem;
+  margin-top: 1rem;
 }
 
 .termsCheckbox {
