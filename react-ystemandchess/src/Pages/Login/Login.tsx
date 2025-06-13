@@ -1,15 +1,15 @@
-import React from 'react';
+import React from "react";
 // import { Link } from 'react-router-dom';
-import './Login.scss';
-import { useState } from 'react';
-import { environment } from '../../environments/environment';
-import { useCookies } from 'react-cookie';
+import "./Login.scss";
+import { useState } from "react";
+import { environment } from "../../environments/environment";
+import { useCookies } from "react-cookie";
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [cookies, setCookie] = useCookies(['login']);
-  const [loginError, setLoginError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [cookies, setCookie] = useCookies(["login"]);
+  const [loginError, setLoginError] = useState("");
   const [usernameFlag, setUsernameFlag] = useState(false);
   const [passwordFlag, setPasswordFlag] = useState(false);
 
@@ -25,16 +25,16 @@ const Login = () => {
     if (password.length < 8) {
       setPasswordFlag(false);
     } else {
-      console.log('verifying pw')
+      console.log("verifying pw");
       setPasswordFlag(true);
     }
   };
 
   const errorMessages = () => {
     if (passwordFlag === false || usernameFlag === false) {
-      setLoginError('Invalid username or password');
+      setLoginError("Invalid username or password");
     } else {
-      setLoginError('');
+      setLoginError("");
     }
   };
 
@@ -42,10 +42,10 @@ const Login = () => {
     e.preventDefault();
     // errorMessages();
     if (password.length < 8 || username.length <= 2) {
-      setLoginError('Invalid username or password');
+      setLoginError("Invalid username or password");
       return;
     } else {
-      setLoginError('');
+      setLoginError("");
     }
 
     let url = `${environment.urls.middlewareURL}/auth/login?username=${username}&password=${password}`;
@@ -63,56 +63,60 @@ const Login = () => {
           }
         }
       };
-      xmlHttp.open('POST', theUrl, true);
+      xmlHttp.open("POST", theUrl, true);
       xmlHttp.send(null);
     };
 
-    httpGetAsync(url, (response: any) => {
-      if (response === 'The username or password is incorrect.') {
-        setLoginError('The username or password is incorrect.');
-      } else {
-        const expires = new Date();
-        expires.setDate(expires.getDate() + 1);
-        setCookie('login', JSON.parse(response).token, { expires });
+    httpGetAsync(
+      url,
+      (response: any) => {
+        if (response === "The username or password is incorrect.") {
+          setLoginError("The username or password is incorrect.");
+        } else {
+          const expires = new Date();
+          expires.setDate(expires.getDate() + 1);
+          setCookie("login", JSON.parse(response).token, { expires });
 
-        let payload = JSON.parse(atob(response.split('.')[1]));
-        console.log(payload)
+          let payload = JSON.parse(atob(response.split(".")[1]));
+          console.log(payload);
 
-        switch (payload['role']) {
-          case 'student':
-            window.location.pathname = '/student-profile';
-            console.log(payload['role'])
-            break;
-          case 'parent':
-            window.location.pathname = '/parent';
-            break;
-          case 'mentor':
-            window.location.pathname = '/mentor-profile';
-            break;
-          case 'admin':
-            window.location.pathname = '/admin';
-            break;
-          default:
-            window.location.pathname = '';
+          switch (payload["role"]) {
+            case "student":
+              window.location.pathname = "/student-profile";
+              console.log(payload["role"]);
+              break;
+            case "parent":
+              window.location.pathname = "/parent";
+              break;
+            case "mentor":
+              window.location.pathname = "/mentor-profile";
+              break;
+            case "admin":
+              window.location.pathname = "/admin";
+              break;
+            default:
+              window.location.pathname = "";
+          }
         }
+      },
+      () => {
+        setLoginError("The username or password is incorrect.");
       }
-    }, () => {
-      setLoginError('The username or password is incorrect.');
-    });
+    );
   };
 
   return (
     <>
-      <h1 id='login-h1'>Login</h1>
-      {loginError && <h3 id='loginError-h3'>{loginError}</h3>}
+      <h1 id="login-h1">Login</h1>
+      {loginError && <h3 id="loginError-h3">{loginError}</h3>}
 
-      <form className='login-input-container' onSubmit={submitLogin}>
-        <div className='login-input-field'>
+      <form className="login-input-container" onSubmit={submitLogin}>
+        <div className="login-input-field">
           <input
-            type='text'
-            name='username'
-            id='username'
-            placeholder='Username'
+            type="text"
+            name="username"
+            id="username"
+            placeholder="Username"
             value={username}
             onChange={(e) => {
               setUsername(e.target.value);
@@ -121,12 +125,12 @@ const Login = () => {
             required
           />
         </div>
-        <div className='login-input-field'>
+        <div className="login-input-field">
           <input
-            type='password'
-            name='password'
-            placeholder='Password'
-            id='password'
+            type="password"
+            name="password"
+            placeholder="Password"
+            id="password"
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
@@ -135,16 +139,16 @@ const Login = () => {
             required
           />
         </div>
-        <button id='button-login' type='submit'>
+        <button id="button-login" type="submit">
           Enter
         </button>
       </form>
 
-      <div className='additional-options'>
-        <a href='/signup' className='option'>
+      <div className="additional-options">
+        <a href="/signup" className="option">
           Create a new account
         </a>
-        <a href='/reset-password' className='option'>
+        <a href="/reset-password" className="option">
           Forgot password?
         </a>
       </div>
