@@ -295,13 +295,12 @@ const Signup = () => {
         // If the main form is not valid, prevents submission.
         if (!isValid) {
             console.log('Form validation failed');
-            // Clear any general error message if it's no longer relevant
             setErrors((prev) => ({ ...prev, general: 'Please correct the form errors.' }));
             return;
         }
 
         let signupUrl = `${environment.urls.middlewareURL}/user/`;
-        let signupRequestBody: any = {};
+        let signupParams: URLSearchParams;
 
         if (parentAccountFlag) {
             // Maps student data into the required format for the API.
@@ -313,100 +312,92 @@ const Signup = () => {
                 password: student.password,
             }));
 
-            signupRequestBody = {
+            // Prepare params for parent signup, stringifying the students array
+            signupParams = new URLSearchParams({
                 first: formData.firstName,
                 last: formData.lastName,
                 email: formData.email,
                 password: formData.password,
                 username: formData.username,
                 role: formData.accountType,
-                students: studentsData, // Send as JSON array in body
-            };
+                students: JSON.stringify(studentsData), // Students array sent as a stringified JSON in query
+            });
         } else {
-            // Constructs the URL for non-parent accounts.
-            signupRequestBody = {
+            // Prepare params for non-parent accounts.
+            signupParams = new URLSearchParams({
                 first: formData.firstName,
                 last: formData.lastName,
                 email: formData.email,
                 password: formData.password,
                 username: formData.username,
                 role: formData.accountType,
-            };
+            });
         }
 
-        console.log('Signup Request URL:', signupUrl);
-        console.log('Signup Request Body:', signupRequestBody);
+        // Append query parameters to the URL for the signup request
+        signupUrl = `${signupUrl}?${signupParams.toString()}`;
+
+        console.log('Signup Request URL:', signupUrl); // Log the full URL for debugging
 
         try {
-            // --- STEP 1: Perform User Signup (POST request) ---
+            // --- STEP 1: Perform User Signup (POST request with ALL data in query params) ---
             const signupResponse = await fetch(signupUrl, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(signupRequestBody),
-          });
+                method: 'POST',
+                // IMPORTANT: Removed headers and body here, as data is now in query params.
+                // This prevents sending an empty body with 'Content-Type: application/json' header.
+            });
 
-          console.log('Signup Response status:', signupResponse.status);
+            console.log('Signup Response status:', signupResponse.status);
 
-          if (!signupResponse.ok) {
-              // Try parsing as JSON first, fallback to text if not valid JSON
-              let errorContent: any;
-              try {
-                  errorContent = await signupResponse.json();
-              } catch (jsonError) {
-                  errorContent = await signupResponse.text();
-              }
-              
-              // Handle specific username taken error
-              // Ensure errorContent is not null/undefined and then check its value/properties
-              if (typeof errorContent === 'string' && errorContent === 'This username has been taken. Please choose another.') {
-                  setErrors((prev) => ({
-                      ...prev,
-                      username: 'Username already taken',
-                      general: '',
-                  }));
-              } else {
-                  // General signup error
-                  // Safely extract message or use the raw content
-                  const errorMessage = (typeof errorContent === 'object' && errorContent !== null && 'message' in errorContent && typeof errorContent.message === 'string')
-                      ? errorContent.message
-                      : (typeof errorContent === 'string' && errorContent.length > 0)
-                          ? errorContent
-                          : 'Unknown error during signup';
-                  throw new Error(`HTTP error! status: ${signupResponse.status}, message: ${errorMessage}`);
-              }
-              return; // Stop execution if signup failed
-          }
+            if (!signupResponse.ok) {
+                let errorContent: any;
+                try {
+                    errorContent = await signupResponse.json();
+                } catch (jsonError) {
+                    errorContent = await signupResponse.text();
+                }
 
-            // No need to parse signupData if we just need to proceed to login
+                if (typeof errorContent === 'string' && errorContent === 'This username has been taken. Please choose another.') {
+                    setErrors((prev) => ({
+                        ...prev,
+                        username: 'Username already taken',
+                        general: '',
+                    }));
+                } else {
+                    const errorMessage = (typeof errorContent === 'object' && errorContent !== null && 'message' in errorContent && typeof errorContent.message === 'string')
+                        ? errorContent.message
+                        : (typeof errorContent === 'string' && errorContent.length > 0)
+                            ? errorContent
+                            : 'Unknown error during signup';
+                    throw new Error(`HTTP error! status: ${signupResponse.status}, message: ${errorMessage}`);
+                }
+                return;
+            }
+
             console.log('Signup successful, proceeding to login to get token...');
 
             let jwtToken: string | null = null;
 
-            // --- STEP 2: Perform Login to get JWT Token (POST request) ---
+            // --- STEP 2: Perform Login to get JWT Token (POST request with query params) ---
             try {
-                // FIX: Corrected login URL to match the actual backend login endpoint
+                // Construct Login URL with username and password as query parameters
                 const loginUrl = `${environment.urls.middlewareURL}/auth/login?username=${encodeURIComponent(formData.username)}&password=${encodeURIComponent(formData.password)}`;
-                console.log('Login URL for token acquisition (corrected):', loginUrl); // Log the full URL for debugging
+                console.log('Login URL for token acquisition:', loginUrl); // Log the full URL for debugging
 
                 const loginResponse = await fetch(loginUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json', // Keep Content-Type for consistency
-                    },
-                    // No body needed when sending credentials in query parameters
+                    // No 'Content-Type' header or body needed as per backend expecting query params
                 });
 
                 console.log('Login Response status:', loginResponse.status);
 
                 if (!loginResponse.ok) {
-                    const loginErrorData = await loginResponse.json(); // Assuming JSON error response for non-2xx codes
+                    const loginErrorData = await loginResponse.json();
                     throw new Error(`Login failed after signup: ${loginErrorData.message || 'Unknown login error'}`);
                 }
 
                 const loginData = await loginResponse.json();
-                jwtToken = loginData.token; // Assuming the token is in loginData.token
+                jwtToken = loginData.token;
                 console.log('Login successful, JWT token obtained.');
 
             } catch (loginError: any) {
@@ -415,15 +406,13 @@ const Signup = () => {
                     ...prev,
                     general: `Signup successful, but failed to log in to assign mentee: ${loginError.message || 'Login network error'}`,
                 }));
-                // Even if login fails, the user is created. We might still redirect or show a specific message.
-                window.location.href = '/'; // Redirect even if token acquisition fails
-                return; // Stop execution here
+                window.location.href = '/';
+                return;
             }
 
-
-            // --- STEP 3: Conditionally Perform Mentee Assignment (PUT request for mentors) ---
+            // --- STEP 3: Conditionally Perform Mentee Assignment (PUT request for mentors with query params) ---
             if (formData.accountType === 'mentor' && assignedMenteeUsername && jwtToken) {
-                // FIX: Corrected URL to use query parameter 'mentorship' and removed double slash
+                // Construct URL with 'mentorship' query parameter
                 const updateMentorshipUrl = `${environment.urls.middlewareURL}/user/updateMentorship?mentorship=${encodeURIComponent(assignedMenteeUsername)}`;
                 console.log('Update Mentorship URL:', updateMentorshipUrl);
 
@@ -431,10 +420,9 @@ const Signup = () => {
                     const updateMentorshipResponse = await fetch(updateMentorshipUrl, {
                         method: 'PUT',
                         headers: {
-                            'Content-Type': 'application/json', // Keep Content-Type for consistency
-                            'Authorization': `Bearer ${jwtToken}`, // AUTHENTICATE with the token
+                            'Authorization': `Bearer ${jwtToken}`, // Bearer token is still in headers
                         },
-                        // No body needed as per your backend's current PUT route definition
+                        // No body needed as per your backend's current PUT route definition expecting query param
                     });
 
                     console.log('Update Mentorship Response status:', updateMentorshipResponse.status);
@@ -442,13 +430,10 @@ const Signup = () => {
                     if (!updateMentorshipResponse.ok) {
                         const updateErrorData = await updateMentorshipResponse.json();
                         console.error('Mentorship update failed:', updateErrorData);
-                        // Decide how to handle this error. User is signed up, but assignment failed.
                         setErrors((prev) => ({
                             ...prev,
                             general: `Signup successful, but mentee assignment failed: ${updateErrorData.message || 'Unknown error'}`,
                         }));
-                        // You might still proceed to redirect even if this fails,
-                        // as the main user account was created.
                     } else {
                         const updateSuccessData = await updateMentorshipResponse.json();
                         console.log('Mentorship update successful:', updateSuccessData);
@@ -467,7 +452,6 @@ const Signup = () => {
 
         } catch (error: any) {
             console.error('Signup error:', error);
-            // Catch errors from the initial POST request or unexpected issues
             setErrors((prev) => ({
                 ...prev,
                 general: error.message || 'Signup failed. Please try again.',
