@@ -106,7 +106,7 @@ class GameManager {
         const game = this.getGameBySocketId(socketId);
 
         if (!game) {
-            throw new Error("Game not found for this socket!");
+            throw new Error("Cannot undo: no active game found for this socket.");
         }
 
         const board = game.boardState;
@@ -191,7 +191,7 @@ class GameManager {
      * @param {*} toMove 
      * @param {*} io 
      */
-    broadcaseLastMove(socketId, fromMove, toMove, io) {
+    broadcastLastMove(socketId, fromMove, toMove, io) {
         const game = this.getGameBySocketId(socketId);
 
         if (!game) {
@@ -231,7 +231,7 @@ class GameManager {
      */
     getGameBySocketId(socketId) {
         return this.ongoingGames.find(
-            (game) => game.student.id === socketId || game.mentor.id === mentorId
+            (game) => game.student.id === socketId || game.mentor.id === socketId
         );
     }
 }
