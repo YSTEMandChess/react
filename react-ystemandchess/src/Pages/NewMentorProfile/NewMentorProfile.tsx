@@ -17,7 +17,7 @@ interface Student {
   lastName: string;
 }
 
-const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc, student }) => {
+const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) => {
 
   const [activeTab, setActiveTab] = useState("activity");
   const [cookies] = useCookies(['login']);
@@ -27,6 +27,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc, st
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState(" ");
   const [lastName, setLastName] = useState(" ");
+  const [hasStudent, setHasStudent] = useState(false); // if the mentor has a student
 
   // student usage stats in different modules
   const [webTime, setWebTime] = useState(0);
@@ -38,6 +39,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc, st
   // student info
   const [studentFirstName, setStudentFirstName] = useState("");
   const [studentLastName, setStudentLastName] = useState("");
+  const [studentUsername, setStudentUsername] = useState("");
 
   // event tracking for pagination
   const [events, setEvents] = useState([]);
@@ -55,6 +57,8 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc, st
 
   useEffect(()=>{
     fetchUserData().catch(err => console.log(err)); // fetch user data when the component mounts
+    setStubStudent("joeyman43"); // set a stub student for testing purposes, setting students should happen outside of this component
+    fetchStudentData().catch(err => console.log(err)); // fetch student data when the component mounts
   }, [])
 
   useEffect(() => {
@@ -87,7 +91,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc, st
       // fetch usage time stats
       const responseStats = await fetch(
         // fetches student's stats if studentUsername is provided, otherwise fetches mentor's stats
-        `${environment.urls.middlewareURL}/timeTracking/statistics?username=${student.username ? student.username : uInfo.username}`, 
+        `${environment.urls.middlewareURL}/timeTracking/statistics?username=${studentUsername ? studentUsername : uInfo.username}`, 
         {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${cookies.login}` }
@@ -102,7 +106,33 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc, st
       setPuzzleTime(dataStats.puzzle);
 
       // fetch latest usage history
-      fetchEvents(student.username ? student.username : uInfo.username)
+      fetchEvents(studentUsername ? studentUsername : uInfo.username)
+  }
+
+  const fetchStudentData = async () => {
+    console.log("Fetching student data...");
+    fetch(`${environment.urls.middlewareURL}/user/getMentorship`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${cookies.login}` }
+    }).then(data => data.json())
+      .then(data => {
+        setStudentFirstName(data.firstName);
+        setStudentLastName(data.lastName);
+        setStudentUsername(data.username);
+        setHasStudent(true)
+      });
+  }
+
+  const setStubStudent = async (stubStudentUsername) => {
+    console.log("Setting stub student:", stubStudentUsername);
+    fetch(`${environment.urls.middlewareURL}/user/updateMentorship?mentorship=${stubStudentUsername}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${cookies.login}`,
+                'Content-Type': 'application/json'}
+    }).then(data => data.json())
+      .then(data => {
+        console.log("Set student response:", data);
+      });
   }
 
   // fetch latest usage history
@@ -275,9 +305,10 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc, st
         </div>
       </section>
 
+      { hasStudent ? (
       <section className="inv-inventory">
         <div className="inv-inventory-topbar">
-            <h1 className="topbar-greeting">Check in on <strong>{student.firstName} {student.lastName}'s</strong> progress! </h1>
+            <h1 className="topbar-greeting">Check in on <strong>{studentFirstName} {studentLastName}'s</strong> progress! </h1>
         </div>
         <div className="inv-inventory-analytics">
           <div className="inv-inventory-analytics-graph">
@@ -323,7 +354,12 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc, st
 
           <div className="inv-inventory-content-content">{renderTabContent()}</div>
         </div>
+      </section>) : (
+      <section className="no-student-message">
+        <h1>No Student Selected</h1>
+        <p>Please select a student to view their progress.</p>
       </section>
+      )}
     </main>
   );
 };
