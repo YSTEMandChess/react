@@ -305,7 +305,7 @@ router.put(
 
       // if mentorship field is not modified
       if (result.modifiedCount === 0) {
-        return res.status(404).json({ message: "User not found or already has that mentorshipUsername" });
+        return res.status(404).json({ message: "User not found or already has that mentorshipUsername, username: " + req.user.username });
       }
 
       res.json({ message: "Mentorship updated successfully" });
@@ -347,7 +347,6 @@ router.get("/getMentorship",
       if (!mentorUser) {
         return res.status(404).json({ message: "Mentorship user not found" });
       }
-
       res.json(mentorUser); // { username, firstName, lastName }
     } catch (error) {
       console.error("Error in getMentorship:", error);
