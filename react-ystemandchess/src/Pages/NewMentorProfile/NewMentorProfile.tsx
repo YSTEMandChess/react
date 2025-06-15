@@ -5,6 +5,7 @@ import { SetPermissionLevel } from '../../globals';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
+import { StatsChart } from "../NewStudentProfile/StatsChart";
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
@@ -36,6 +37,11 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
   const [puzzleTime, setPuzzleTime] = useState(0);
   const [mentorTime, setMentorTime] = useState(0);
 
+  // data for chart plotting
+  const [displayMonths, setDisplayMonths] = useState(6); // display data from 6 many months back 
+  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
+  const [dataAxis, setDataAxis] = useState([0, 0, 0, 0, 0, 0]); // time spent on events each month
+
   // student info
   const [studentFirstName, setStudentFirstName] = useState("");
   const [studentLastName, setStudentLastName] = useState("");
@@ -56,9 +62,9 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
 );
 
   useEffect(()=>{
-    fetchUserData().catch(err => console.log(err)); // fetch user data when the component mounts
     setStubStudent("joeyman43"); // set a stub student for testing purposes, setting students should happen outside of this component
     fetchStudentData().catch(err => console.log(err)); // fetch student data when the component mounts
+    fetchUserData().catch(err => console.log(err)); // fetch user data when the component mounts
   }, [])
 
   useEffect(() => {
@@ -67,13 +73,13 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
 
     const handleScroll = () => {
       if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) {
-        fetchEvents(username);
+        fetchActivity(studentUsername);
       }
     };
 
     el.addEventListener("scroll", handleScroll);
     return () => el.removeEventListener("scroll", handleScroll);
-  }, [events, loading]);
+  }, [loading]);
 
 
   const fetchUserData = async () => {
@@ -87,27 +93,28 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         setFirstName(uInfo.firstName);
         setLastName(uInfo.lastName)
       }
-
-      // fetch usage time stats
-      const responseStats = await fetch(
-        // fetches student's stats if studentUsername is provided, otherwise fetches mentor's stats
-        `${environment.urls.middlewareURL}/timeTracking/statistics?username=${studentUsername ? studentUsername : uInfo.username}`, 
-        {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${cookies.login}` }
-        }
-      );
-      const dataStats = await responseStats.json();
-      // update time usage for different events
-      setWebTime(dataStats.website);
-      setLessonTime(dataStats.lesson);
-      setPlayTime(dataStats.play);
-      setMentorTime(dataStats.mentor);
-      setPuzzleTime(dataStats.puzzle);
-
-      // fetch latest usage history
-      fetchEvents(studentUsername ? studentUsername : uInfo.username)
   }
+
+  // fetch usage time stats to display in header
+  const fetchUsageTime = async (username) => {
+    // fetch from back end
+    const responseStats = await fetch(
+      `${environment.urls.middlewareURL}/timeTracking/statistics?username=${username}`,
+      {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${cookies.login}` }
+      }
+    );
+    const dataStats = await responseStats.json();
+    // update time usage for different events in header display
+    setWebTime(dataStats.website);
+    setLessonTime(dataStats.lesson);
+    setPlayTime(dataStats.play);
+    setMentorTime(dataStats.mentor);
+    setPuzzleTime(dataStats.puzzle);
+  }
+
+
 
   const fetchStudentData = async () => {
     console.log("Fetching student data...");
@@ -116,11 +123,22 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
       headers: { 'Authorization': `Bearer ${cookies.login}` }
     }).then(data => data.json())
       .then(data => {
-        setStudentFirstName(data.firstName);
-        setStudentLastName(data.lastName);
-        setStudentUsername(data.username);
-        setHasStudent(true)
+        if (data) {
+          setStudentFirstName(data.firstName);
+          setStudentLastName(data.lastName);
+          setStudentUsername(data.username);
+          setHasStudent(true)
+        }
       });
+
+      if (hasStudent) {
+        // fetch student usage time stats to disaply in header
+        fetchUsageTime(studentUsername)
+        // fetch student data for graph plotting
+        fetchGraphData(studentUsername)
+        // fetch latest usage history to show in Activity tab
+        fetchActivity(studentUsername)
+      }
   }
 
   const setStubStudent = async (stubStudentUsername) => {
@@ -135,17 +153,16 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
       });
   }
 
-  // fetch latest usage history
-  const fetchEvents = async (username) => {
-    if (loading || !hasMore) return; // return if already fetching
+// fetch latest usage history (Activity Tab)
+  const fetchActivity = async (username) => {
+    if (loading || !hasMore) return; // return if already fetching or no more activity left
 
-    // start fetching
     setLoading(true);
-    const limit = 6;
-    const skip = page * limit;
+    const limit = 6; // fetch at most 6 activities at a time
+    const skip = page * limit; // skip over previously fetched data
 
     try {
-      // fetch latest usage history
+      // fetch another batch of usage history
       const responseLatest = await fetch(
         `${environment.urls.middlewareURL}/timeTracking/latest?username=${username}&limit=${limit}&skip=${skip}`, 
         {
@@ -154,13 +171,36 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         }
       );
       const dataLatest = await responseLatest.json();
+
       setEvents(prev => [...prev, ...dataLatest]); // append more events to old list
       setPage(prev => prev + 1); // update pagination number
-      setHasMore(dataLatest.length === limit && dataLatest.length > 0);
+      setHasMore(dataLatest.length === limit && dataLatest.length > 0); // if there are more activities
+      setLoading(false);
     } catch (err) {
       console.error("Failed to fetch events", err);
-    } finally {
-      setLoading(false); // stop fetching
+    }
+  }
+
+  // fetch data needed for updating graph plot
+  const fetchGraphData = async (username) => {
+    try {
+      // fetch the time spent on the website in the past few months
+      const response = await fetch(
+        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&eventType=website&months=${displayMonths}`,
+        {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${cookies.login}` }
+        }
+      );
+      const data = await response.json();
+      const months = data.map(item => item.monthText); // month list for plotting
+      const times = data.map(item => item.timeSpent); // timeSpent for plotting
+
+      // update for graph plotting
+      setMonthAxis(months);
+      setDataAxis(times);
+    } catch (err) {
+      console.error("Failed to fetch events", err);
     }
   }
 
@@ -312,7 +352,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         </div>
         <div className="inv-inventory-analytics">
           <div className="inv-inventory-analytics-graph">
-            <img src="/placeholder_chart.png"/>
+            <StatsChart key={dataAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
           </div>
           <div className="inv-inventory-analytics-metrics">
             <h3>Time Spent:</h3>
