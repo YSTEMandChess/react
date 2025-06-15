@@ -84,9 +84,19 @@ body {
   }
   
   .userProfileDiv {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     background-color: #e5f3d2;
     text-align: left;
     padding: 40px 40px 112px 40px;
+  }
+
+  .head-user-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   
   .memberInfo {
@@ -139,6 +149,8 @@ body {
   .user-img {
     height: 100px;
     width: 100px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
   }
   
   .tablinks1 {

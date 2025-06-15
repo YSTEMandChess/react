@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "jsx": "react", // JSX support for React
+    "jsx": "react-jsx", // JSX support for React
     "target": "es5", // Target ECMAScript 5 for compatibility
     "lib": ["dom", "es2015"], // Include DOM and ES2015 libraries
     "esModuleInterop": true, // Enable ECMAScript module interoperability

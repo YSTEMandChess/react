@@ -1,0 +1,41 @@
+body {
+    margin: 0;
+    background-image: url("..\\Lessons\\chess_background.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.mentor-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin: 1px;
+}
+
+.mentor-profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid var(--green-color);
+    border-radius: 6px;
+    padding: 20px;
+    background: rgba(201, 244, 201, 0.7);
+    width: 80%;
+}
+
+.mentor-placeholder-icon {
+    width: 100px;
+    height: 100px;
+    color: var(--dark-green-color);
+    border-radius: 50%;
+    margin-bottom: 20px;
+}
+
+.greeting {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    margin-top: 0px;
+    color: var(--dark-green-color)
+}
