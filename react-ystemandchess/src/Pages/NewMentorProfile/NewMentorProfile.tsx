@@ -61,11 +61,24 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
   })
 );
 
+  // Runs once upon first render
   useEffect(()=>{
     setStubStudent("joeyman43"); // set a stub student for testing purposes, setting students should happen outside of this component
     fetchStudentData().catch(err => console.log(err)); // fetch student data when the component mounts
     fetchUserData().catch(err => console.log(err)); // fetch user data when the component mounts
   }, [])
+
+  // Loads student data only after hasStudent has been updated
+  useEffect(() => {
+    if (hasStudent && studentUsername) {
+        // fetch student usage time stats to disaply in header
+        fetchUsageTime(studentUsername)
+        // fetch student data for graph plotting
+        fetchGraphData(studentUsername)
+        // fetch latest usage history to show in Activity tab
+        fetchActivity(studentUsername)
+      }
+  }, [hasStudent, studentUsername])
 
   useEffect(() => {
     const el = containerRef.current;
@@ -117,7 +130,6 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
 
 
   const fetchStudentData = async () => {
-    console.log("Fetching student data...");
     fetch(`${environment.urls.middlewareURL}/user/getMentorship`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${cookies.login}` }
@@ -128,17 +140,9 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
           setStudentLastName(data.lastName);
           setStudentUsername(data.username);
           setHasStudent(true)
+          console.log(data)
         }
       });
-
-      if (hasStudent) {
-        // fetch student usage time stats to disaply in header
-        fetchUsageTime(studentUsername)
-        // fetch student data for graph plotting
-        fetchGraphData(studentUsername)
-        // fetch latest usage history to show in Activity tab
-        fetchActivity(studentUsername)
-      }
   }
 
   const setStubStudent = async (stubStudentUsername) => {
