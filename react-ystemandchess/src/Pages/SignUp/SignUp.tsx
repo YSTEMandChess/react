@@ -204,6 +204,32 @@ const Signup = () => {
 
     // Handles changes to input fields within a student's form.
     const handleStudentInputChange = (studentId: any, field: string, value: string) => {
+        // Performs specific validation based on the input field that changed.
+        switch (field) {
+            case 'firstName':
+                firstNameVerification(value);
+                break;
+            case 'lastName':
+                lastNameVerification(value);
+                break;
+            case 'email':
+                emailVerification(value);
+                break;
+            case 'username':
+                usernameVerification(value);
+                break;
+            case 'password':
+                passwordVerification(value);
+                break;
+            case 'retypedPassword':
+                const student = students.find((s) => s.id === studentId); // ge the student from id
+                const password = student?.password; // get its password
+                retypePasswordVerification(value, password); // verify if the retype is the same
+                break;
+            default:
+                break;
+        }
+
         // Updates the specific student's data in the students array.
         setStudents((prev: any) =>
             prev.map((student: any) =>
@@ -524,9 +550,9 @@ const Signup = () => {
 
             <div className='account-type' data-testid='account-type'>
                 <p>Select Account Type</p>
-                <select value={formData.accountType} onChange={handleAccountTypeChange}> {/* Corrected to handleAccountTypeChange */}
-                    <option value='mentor'>Mentor</option>
-                    <option value='parent'>Parent</option>
+                <select value={formData.accountType} data-testid='account-selector' onChange={handleAccountTypeChange}> {/* Corrected to handleAccountTypeChange */}
+                    <option value='mentor' data-testid="account-mentor">Mentor</option>
+                    <option value='parent' data-testid="account-parent">Parent</option>
                 </select>
             </div>
 

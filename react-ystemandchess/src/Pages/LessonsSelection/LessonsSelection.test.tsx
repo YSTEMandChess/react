@@ -10,10 +10,10 @@ jest.mock('react-router', () => ({
   useNavigate: jest.fn(),
 }));
 
-// mock usage fetching from database
+// mock fetching from database
 beforeEach(() => {
   global.fetch = jest.fn((url) => {
-    // mock stats fetching, or time usage for different events
+    // fetching number of lessons completed for each scenario
     if (url.includes('Piece Checkmate 1 Basic checkmates')) {
       return Promise.resolve({
         ok: true,
