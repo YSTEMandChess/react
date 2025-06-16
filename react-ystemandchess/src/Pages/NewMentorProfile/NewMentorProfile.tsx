@@ -63,7 +63,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
 
   // Runs once upon first render
   useEffect(()=>{
-    setStubStudent("joeyman43"); // set a stub student for testing purposes, setting students should happen outside of this component
+    // setStubStudent("joeyman43"); // set a stub student for testing purposes, setting students should happen outside of this component
     fetchStudentData().catch(err => console.log(err)); // fetch student data when the component mounts
     fetchUserData().catch(err => console.log(err)); // fetch user data when the component mounts
   }, [])

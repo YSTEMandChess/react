@@ -12,12 +12,6 @@ import { environment } from '../../environments/environment';
 import ViewSDKClient from '../../services/view-sdk.service'; // Adjust the path as necessary
 import { SetPermissionLevel } from '../../globals'; // Adjust the path as necessary
 
-//React icon imports
-import type { IconType } from 'react-icons'; // Import type for icons
-import { FaUserCircle} from "react-icons/fa";
-const UserIcon = FaUserCircle as IconType; // Assign the icon to a variable
-// import userImg from '../../assets/images/mentor-profile/user.PNG'; // This image no longer exists
-
 type PdfItem = {
   id: string;
   FileName: string;

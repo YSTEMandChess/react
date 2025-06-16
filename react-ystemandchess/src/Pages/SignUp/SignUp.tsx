@@ -4,8 +4,6 @@ import './SignUp.scss'; // Imports the stylesheet for this component.
 import { environment } from '../../environments/environment'; // Imports environment variables, likely containing API URLs.
 // import StudentProfile from '../StudentProfile/Student-Profile'; // Only import if actively used in this component
 
-console.log('Environment URL:', environment.urls.middlewareURL); // Logs the middleware URL from the environment.
-
 // Define the interface for the props of the StudentTemplate component
 interface StudentTemplateProps {
     studentUsername: string; // The student prop is a string (username)
@@ -40,6 +38,7 @@ const Signup = () => {
     const [userNameFlag, setUserNameFlag] = useState(false);
     const [passwordFlag, setPasswordFlag] = useState(false);
     const [retypeFlag, setRetypeFlag] = useState(false);
+    const [termsFlag, setTermsFlag] = useState(false);
 
     // States for the student search dropdown
     const [matchingStudents, setMatchingStudents] = useState<string[]>([]); // Array of strings (usernames)
@@ -55,6 +54,7 @@ const Signup = () => {
         username: '',
         password: '',
         retypePassword: '',
+        terms: '',
         general: '', // Added for general signup errors
     });
 
@@ -162,6 +162,11 @@ const Signup = () => {
             retypePassword: isValid ? '' : 'Passwords do not match',
         }));
         return isValid;
+    };
+
+    // Verifies if the retyped password matches the original password.
+    const termsCheckChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setTermsFlag(e.target.checked)
     };
 
     // Handles changes to the account type dropdown.
@@ -274,6 +279,12 @@ const Signup = () => {
     const handleSubmit = async () => {
         console.log('Submit clicked', formData);
 
+        // check if the terms and conditions are checked 
+        if (!termsFlag) {
+            setErrors((prev) => ({ ...prev, general: 'Please accept the terms and conditions.' }));
+            return;
+        }
+
         // Checks if all main form fields are valid based on their flags.
         const isValid =
             firstNameFlag &&
@@ -283,19 +294,16 @@ const Signup = () => {
             passwordFlag &&
             retypeFlag;
 
-        console.log('Validation status:', {
-            firstNameFlag,
-            lastNameFlag,
-            emailFlag,
-            userNameFlag,
-            passwordFlag,
-            retypeFlag,
-        });
-
         // If the main form is not valid, prevents submission.
         if (!isValid) {
             console.log('Form validation failed');
             setErrors((prev) => ({ ...prev, general: 'Please correct the form errors.' }));
+            return;
+        }
+
+        // if user is a mentor but has not selected mentee
+        if (formData.accountType === 'mentor' && !assignedMenteeUsername) {
+            setErrors((prev) => ({ ...prev, general: 'Please select your mentee' }));
             return;
         }
 
@@ -414,7 +422,6 @@ const Signup = () => {
             if (formData.accountType === 'mentor' && assignedMenteeUsername && jwtToken) {
                 // Construct URL with 'mentorship' query parameter
                 const updateMentorshipUrl = `${environment.urls.middlewareURL}/user/updateMentorship?mentorship=${encodeURIComponent(assignedMenteeUsername)}`;
-                console.log('Update Mentorship URL:', updateMentorshipUrl);
 
                 try {
                     const updateMentorshipResponse = await fetch(updateMentorshipUrl, {
@@ -461,7 +468,7 @@ const Signup = () => {
 
     return (
         <form className='signupForm' onSubmit={(e) => e.preventDefault()}>
-            <h2 className="sign-up-title">Sign up</h2>
+            <h2 className="sign-up-title"  data-testid="title">Sign up</h2>
 
             <div className={`errorMessages ${Object.values(errors).some(Boolean) ? 'visible' : ''}`}>
                 {/* Maps through the errors object and displays any error messages. */}
@@ -470,7 +477,7 @@ const Signup = () => {
                 )}
             </div>
 
-            <div className='form-fields'>
+            <div className='form-fields' data-testid="form-fields">
                 <input
                     type='text'
                     name='firstName'
@@ -515,7 +522,7 @@ const Signup = () => {
                 />
             </div>
 
-            <div className='account-type'>
+            <div className='account-type' data-testid='account-type'>
                 <p>Select Account Type</p>
                 <select value={formData.accountType} onChange={handleAccountTypeChange}> {/* Corrected to handleAccountTypeChange */}
                     <option value='mentor'>Mentor</option>
@@ -655,13 +662,13 @@ const Signup = () => {
                 </div>
             )}
 
-            <div className='terms'>
-                <input type='checkbox' id='termsCheckbox' required />
+            <div className='terms' data-testid='terms'>
+                <input type='checkbox' id='termsCheckbox' onChange={termsCheckChange} required />
                 <label htmlFor='termsCheckbox'>I accept the terms and conditions</label>
             </div>
 
             {/* Submit button for the signup form. */}
-            <button type='submit' className='submit-btn' onClick={handleSubmit}>
+            <button type='submit' className='submit-btn' data-testid='submit-btn' onClick={handleSubmit}>
                 Sign up
             </button>
         </form>

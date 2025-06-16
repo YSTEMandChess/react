@@ -1,7 +1,7 @@
 import React from 'react';
-import { FaUserCircle} from "react-icons/fa";
-import type { IconType } from 'react-icons'; // Import type for icons
-const UserIcon = FaUserCircle as IconType;
+// import { FaUserCircle} from "react-icons/fa";
+// import type { IconType } from 'react-icons'; // Import type for icons
+// const UserIcon = FaUserCircle as IconType;
 
 export default function ProfileHeader({
   firstName,
@@ -22,7 +22,8 @@ export default function ProfileHeader({
                 <>
                     {// @ts-ignore
                     // If someone can figure out how to make this work without the ts-ignore, please do so
-                    <UserIcon className="mentor-placeholder-icon" /> }
+                    // <UserIcon className="mentor-placeholder-icon" /> 
+                    }
                 </>
                 )}
                 <h2 className="greeting">Hello, {firstName} {lastName}!</h2>
