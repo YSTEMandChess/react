@@ -185,7 +185,6 @@ function sendPieceDrop()
 // Handle boardstate message from the client
 socket.on('boardstate', (msg) => {
     parsedMsg = JSON.parse(msg);
-    console.log(parsedMsg);
 
     // update state of chess board
     console.log(currentState);
@@ -433,6 +432,10 @@ function onDragStart(source, piece, position, orientation) {
   // if freeplay mode is off
   if (!freemoveFlag)
   {
+
+    if(!playerColor) {
+      console.log("Player color not set");
+    }
       
     // if it's your turn
     if (playerColor[0] == currentState.turn())

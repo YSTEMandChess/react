@@ -6,6 +6,7 @@ import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
 import { StatsChart } from "../NewStudentProfile/StatsChart";
+import VideoCall from "../../components/VideoCall";
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
@@ -269,6 +270,16 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
           <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
             <h2>Mentor</h2>
             <p>This is the content for the Mentor tab.</p>
+                              <iframe
+                    src="http://127.0.0.1:5500/chessClient/parent.html" // URL of chess parent container
+                    title="My Iframe"
+                    width="600"
+                    height="400"
+                    frameBorder="0"
+                    allowFullScreen
+                  ></iframe>
+
+            <VideoCall />
           </div>
         );
       case "learning":

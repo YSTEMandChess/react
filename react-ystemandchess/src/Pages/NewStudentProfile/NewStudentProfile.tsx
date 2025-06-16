@@ -6,6 +6,7 @@ import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
 import { StatsChart } from "./StatsChart";
+import VideoCall from "../../components/VideoCall";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
@@ -218,6 +219,18 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
           <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
             <h2>Mentor</h2>
             <p>This is the content for the Mentor tab.</p>
+
+            <iframe
+                      src="http://localhost:5500/chessClient/"
+                      title="Chess Game"
+                      style={{
+                        width: '600px',
+                        height: '600px',
+                        border: 'none'
+                      }}
+                    />
+
+            <VideoCall />
           </div>
         );
       case "learning":

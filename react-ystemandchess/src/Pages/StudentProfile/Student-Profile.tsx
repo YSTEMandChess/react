@@ -17,6 +17,7 @@ import streakButton from "../../images/student/streak_button.svg";
 import activitiesButton from "../../images/student/activities_button.svg";
 import badgesButton from "../../images/student/badges_button.svg";
 import leaderboardButton from "../../images/student/leaderboard_button.svg";
+import { environment } from "../../environments/environment";
 
 type Record  = {
   sid: string;
@@ -95,6 +96,14 @@ const StudentProfile = ({
                 </div>
 
                 <div className="logged-times">
+                    <iframe
+                      src={environment.urls.chessClientURL} // URL of chess parent container
+                      title="My Iframe"
+                      width="600"
+                      height="400"
+                      frameBorder="0"
+                      allowFullScreen
+                    ></iframe>
                   <h3>Time Spent:</h3>
                   <ul className="time-spent">
                     <li>Website: 45 minutes</li>
@@ -258,6 +267,7 @@ const StudentProfile = ({
                   </div>
                   <div id="Mentor_Session" className="tabcontent">
                     <h3>Mentor Sessions</h3>
+
                     <p>Details about mentor sessions will go here.</p>
                   </div>
                   <div id="Professional_Development" className="tabcontent">
