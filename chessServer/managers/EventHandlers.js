@@ -34,7 +34,7 @@ const registerSocketHandlers = (socket, io) => {
             );
         }
         catch (err) {
-            socket.emit("error", err.message);
+            socket.emit("gameerror", err.message);
         }
     });
 

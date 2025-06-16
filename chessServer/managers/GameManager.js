@@ -18,6 +18,10 @@ class GameManager {
             (g) => g.student.username === student || g.mentor.username === mentor
         );
 
+        if (role != "student" && role != "mentor") {
+            throw new Error("Invalid role!");
+        }
+
         // Player already in a game
         if (game) {
             if (role == "student") {
@@ -155,11 +159,18 @@ class GameManager {
      * @param {*} game 
      * @param {*} io 
      */
-    broadcastBoardState(game, io) {
-        const fen = game.boardState.fen();
+    broadcastBoardState(gameInfo, io) {
+        const fen = gameInfo.boardState;
 
-        io.to(game.student.id).emit("boardstate", JSON.stringify({ boardState: fen }));
-        io.to(game.mentor.id).emit("boardstate", JSON.stringify({ boardState: fen }));
+        const studentSocket = io.sockets.sockets.get(gameInfo.studentId);
+        const mentorSocket = io.sockets.sockets.get(gameInfo.mentorId);
+
+        if (studentSocket) {
+        studentSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
+        }
+        if (mentorSocket) {
+        mentorSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
+        }
     }
 
     /**
