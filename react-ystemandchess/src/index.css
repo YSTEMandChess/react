@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-html{
+html {
   scroll-behavior: smooth;
   /* overflow-x: hidden;
   overflow-y: hidden; */
@@ -20,4 +20,21 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+:root {
+  --color-bg-main: #dff2c8;
+  --color-bg-accent: #bfd99e;
+  --color-bg-lightbox: #e8f0d9;
+
+  --color-deep-green: #2f4f2f;
+  --color-green: #556b2f;
+  --color-green-hover: #6b8e23;
+
+  --color-black-solid: #101010;
+  --color-black-hover: #1e1e1e;
+  --color-dark-text: #3a3a3a;
+
+  --color-glow-purple-1: #e2cbff;
+  --color-glow-purple-2: #393bb2;
 }

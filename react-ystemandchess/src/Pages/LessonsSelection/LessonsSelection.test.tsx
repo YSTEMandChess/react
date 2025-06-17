@@ -9,7 +9,7 @@ test("renders lesson selection page", () => {
       <LessonSelection />
     </MemoryRouter>
   );
-  
+
   // Check if the lesson selection title is present
   const lessonTitle = screen.getByTestId("title");
   expect(lessonTitle).toBeInTheDocument();

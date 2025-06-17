@@ -17,20 +17,23 @@
   display: flex;
   gap: 2rem;
   margin-bottom: 50px;
+  background-color: blue;
 }
 
 .info {
-  width: 50%;
-  height: 100%;
+  width: 10%;
+  height: 460px;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  /* flex: 1; */
+  /* justify-content: center; */
+  /* align-items: center; */
   flex-direction: column;
+  background-color: red;
 }
 
 .donateButton {
   margin-top: 2rem;
-  background-color: #1A1A1A;
+  background-color: #1a1a1a;
   border: solid 0.1rem white;
   color: white;
   border-radius: 1rem;
@@ -240,7 +243,7 @@
   padding-top: 50px;
 }
 
-.home-content4-box button{
+.home-content4-box button {
   margin-top: 0.6rem;
 }
 

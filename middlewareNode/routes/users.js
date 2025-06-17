@@ -398,7 +398,7 @@ router.get("/getStudent", async (req, res) => {
 router.post("/verifyRole", async (req, res) => {
   const { token } = req.body;
 
-  if (!token) {
+  if (!token.login) {
     return res.status(400).json({ error: "Missing token" });
   }
 
