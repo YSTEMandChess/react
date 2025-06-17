@@ -3,9 +3,9 @@ import kidsCoding from "../../images/kidsCoding.png";
 import "./Programs.scss";
 const Programs = () => {
   return (
-    <>
-      <div className="hero-section">
-        <img src={kidsCoding} alt="kids coding" />
+    <main role="main">
+      <section className="hero-section" role="region">
+        <img src={kidsCoding} alt="kids coding" role="presentaion"/>
         <div className="programs-text">
           <h2 data-testid="programs-title">Our Programs</h2>
           <h4>
@@ -40,11 +40,11 @@ const Programs = () => {
             target="_blank"
             rel="noreferrer"
           >
-            <button data-testid="register-btn">Register Now</button>
+            <button data-testid="register-btn" aria-label="Register for Y STEM and Chess">Register Now</button>
           </a>
         </div>
-      </div>
-      <div className="sub-terms">
+      </section>
+      <section className="sub-terms" role="region">
         <div data-testid="sub-terms-left" className="sub-terms-left">
           <h3>
             First Month is Free <br />
@@ -80,8 +80,8 @@ const Programs = () => {
             lunch.
           </p>
         </div>
-      </div>
-    </>
+      </section>
+    </main>
   );
 };
 
