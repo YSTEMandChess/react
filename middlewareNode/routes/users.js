@@ -263,7 +263,7 @@ router.get("/mentorless", async (req, res) => {
     const userList = await users.find({
       role: 'student',// get student
       username: { $regex: keyword, $options: 'i' }, // case-insensitive match for username
-      mentorshipUsername: { $ne: "" }
+      mentorshipUsername: "" // students who don't have mentors
     }).toArray();;
     res.json(userList.map(user => user.username)); // return a list of the usernames
   } catch (err) {
@@ -301,6 +301,11 @@ router.put(
       const result = await users.updateOne(
         { username: req.user.username },
         { $set: { mentorshipUsername: mentorship } }
+      );
+      // update mentor relationshp both ways
+      const result2 = await users.updateOne(
+        { username: mentorship },
+        { $set: { mentorshipUsername: req.user.username } }
       );
 
       // if mentorship field is not modified

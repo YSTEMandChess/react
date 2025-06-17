@@ -19,7 +19,10 @@ type Record  = {
 }
 
 
-const MentorProfile = () => {
+export default function MentorProfile() {
+    //temporary switch for the pdf loader
+    const [showPdf, setShowPdf] = useState(false);
+
     const [username, setUsername] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -42,6 +45,7 @@ const MentorProfile = () => {
     const [showPdfListView, setShowPdfListView] = useState(false);
     const [cookies] = useCookies(['login']);
   
+    // Loads a pdf file using Adobe View SDK to the #pdf-div element 
     useEffect(() => {
       ViewSDKClient.ready().then(() => {
         ViewSDKClient.previewFile(
@@ -192,7 +196,7 @@ const MentorProfile = () => {
             <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" />
             <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" rel="stylesheet" />
           </header>
-          <div className="container">
+          <div className="head-user-container">
             <div className="myDiv text-center mb-4">
               <img className="user-img" src="../../../assets/images/mentor-profile/user.PNG" alt="User" />
               <h2>Hello, {firstName} {lastName}!</h2>
@@ -206,7 +210,7 @@ const MentorProfile = () => {
                 <button className="tablinks tablinks2" onClick={(e) => openTab(e, 'Studentname2', 'mainTabcontent')}>Student Name 2</button>
                 <button className="tablinks tablinks3" onClick={(e) => openTab(e, 'Studentname3', 'mainTabcontent')}>Student Name 3</button>
               </div>
-      
+
               <div id="Studentname1" className="mainTabcontent">
                 <div className="row mb-3">
                   <div className="col-7">
@@ -539,7 +543,10 @@ const MentorProfile = () => {
                     </div>
 
                     <div className="row" style={{ height: '500px' }}>
-                        <div id="pdf-div" className="pdf-view"></div>
+                      {showPdf ? 
+                        <div id="pdf-div" className="pdf-view">
+
+                        </div> : null}
                     </div>
                     </div>
 
@@ -548,4 +555,3 @@ const MentorProfile = () => {
                     </footer>
         </div>
 )};
-export default MentorProfile;
