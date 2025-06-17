@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
 import { StatsChart } from "./StatsChart";
 import VideoCall from "../../components/VideoCall";
+import PlayMentor from "./PlayMentor";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
@@ -220,16 +221,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             <h2>Mentor</h2>
             <p>This is the content for the Mentor tab.</p>
 
-            <iframe
-                      src="http://localhost:5500/chessClient/"
-                      title="Chess Game"
-                      style={{
-                        width: '600px',
-                        height: '600px',
-                        border: 'none'
-                      }}
-                    />
-
+            <PlayMentor chessLessonSrc={environment.urls.chessClientURL} />
             <VideoCall />
           </div>
         );
