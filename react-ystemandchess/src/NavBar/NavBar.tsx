@@ -114,7 +114,7 @@ const NavBar = () => {
   };
 
   return (
-    <header role="navigation" aria-label="Main" className="nav-bar">
+    <header role="navigation" aria-label="Main navbar" className="nav-bar">
       <Link to="/">
         <img src={FullLogo} alt="YSTEM Logo" />
       </Link>
