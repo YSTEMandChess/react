@@ -17,6 +17,7 @@
   display: flex;
   gap: 2em;
   margin-bottom: 50px;
+  background-color: blue;
 }
 
 .info {

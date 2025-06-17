@@ -39,31 +39,29 @@ const Home = () => {
             Helping your child develop <br />
             critical thinking skills!
           </h1>
-
-          <p>
-            We are a nonprofit organization empowering <br></br>children to find
-            their own success in STEM through <br></br>Chess, Math and Computer
-            Science.
+          <p className="text-base md:text-lg text-[var(--color-dark-text)] mb-6">
+            We are a nonprofit organization empowering <br />
+            children to find their own success in STEM through <br />
+            Chess, Math and Computer Science.
           </p>
 
           <button className="donate-button" onClick={handleDonateButton}>
             <strong>Donate</strong>
           </button>
         </div>
-        <div className="pic">
+
+        {/* Right Side */}
+        <div className="md:w-1/2 relative flex justify-center">
+          <div className="w-[200px] h-[200px] bg-[var(--color-bg-accent)] border-4 border-[var(--color-deep-green)] rotate-45 absolute top-2 right-[50%] z-0"></div>
           <img
             src={Images.TreesGroup}
-            id="tree-group-img"
             alt="ystemandchess mascot"
-          ></img>
+            className="relative z-10 w-[340px] h-auto object-contain"
+          />
         </div>
       </div>
 
-      <img
-        src={Images.LogoLineBr}
-        className="logo-break"
-        alt="line break"
-      ></img>
+      <img src={Images.LogoLineBr} className="logo-break" alt="line break" />
 
       <h1 id="floating-h1">Everyone is included.</h1>
       <h1 id="floating-h1">Everyone is welcomed.</h1>
