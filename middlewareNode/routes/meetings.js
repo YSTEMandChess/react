@@ -14,6 +14,10 @@ const meetings = require("../models/meetings");
 const movesList = require("../models/moves");
 const undoPermission = require("../models/undoPermission");
 const { startRecording, stopRecording } = require("../utils/recordings");
+const AgoraAccessToken = require("agora-access-token");
+const { env } = require("process");
+
+const AGORA_APP_ID = process.env.AGORA_APP_ID;
 
 var isBusy = false; //State variable to see if a query is already running.
 
@@ -273,6 +277,10 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
       waitingQueue.username,
     );
 
+    let meetingId;
+
+    console.log(response);
+
     if (
       response === "There are no current meetings with this user." &&
       secondResponse === "There are no current meetings with this user." &&
@@ -296,7 +304,7 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
         studentInfo.firstName = waitingQueue.firstName;
         studentInfo.lastName = waitingQueue.lastName;
       }
-      const meetingId = uuidv4(); //Generate a random meetingId
+      meetingId = uuidv4(); //Generate a random meetingId
 
       const recordingInfo = await startRecording(meetingId); //Create and start the recording for the mentor and student
 
@@ -328,7 +336,9 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
       await deleteUser("mentor", mentorInfo.username); //Remove user from the waitingMentors collection
       isBusy = false; //Set state to not busy
     }
-    return res.status(200).json("Ok");
+    return res.status(200).json({
+      meetingId: meetingId
+    });
   } catch (error) {
     console.error(error.message);
     res.status(500).json("Server error");

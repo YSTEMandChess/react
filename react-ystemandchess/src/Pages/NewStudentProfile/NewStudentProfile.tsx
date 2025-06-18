@@ -45,6 +45,9 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     day: 'numeric',
   }));
 
+  // Meeting status
+  const [meetingStarted, setMeetingStarted] = useState(false);
+
   useEffect(()=>{
     try {
       fetchUserData(); // asynchronously fetch user data upon mounting
@@ -221,10 +224,16 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             <h2>Mentor</h2>
             <p>This is the content for the Mentor tab.</p>
 
-            <PlayMentor chessLessonSrc={environment.urls.chessClientURL} />
-            <VideoCall />
+            <button onClick={() => setMeetingStarted(true)}>Start Meeting</button>
+
+            {meetingStarted && (
+              <>
+                <PlayMentor chessLessonSrc={environment.urls.chessClientURL} />
+                <VideoCall />
+              </>
+            )}
           </div>
-        );
+        );  
       case "learning":
         return (
           <div id="inventory-content-learning" className="inventory-content active-content">
