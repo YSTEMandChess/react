@@ -1,9 +1,6 @@
-import { TextEncoder, TextDecoder } from "util";
-Object.assign(global, { TextEncoder, TextDecoder });
-
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { CookiesProvider } from "react-cookie";
 import Admin from "./Admin";
 

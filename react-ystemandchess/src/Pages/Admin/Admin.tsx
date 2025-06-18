@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useCookies } from "react-cookie";
 import { environment } from "../../environments/environment";
 const Admin = () => {
