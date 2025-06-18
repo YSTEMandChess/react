@@ -22,8 +22,24 @@ http.createServer((req, res) => {
   let level = parseInt(params.level);
   if (isNaN(level) || level > maxLevel) level = maxLevel;
 
+  let enginePath;
+
+  switch (process.platform) {
+    case 'win32':
+      enginePath = "./bin/stockfish.exe";
+      break;
+    case 'darwin':
+      enginePath = "./bin/stockfish-macos";
+      break;
+    case 'linux':
+      enginePath = "./bin/stockfish-ubuntu";
+      break;
+    default:
+      throw new Error(`Unsupported platform: ${process.platform}`);
+}
+
   // Spawn the stockfish engine process
-  const engine = spawn("./bin/stockfish.exe");
+  const engine = spawn(enginePath);
 
   engine.stdout.on("data", (data) => {
     const line = data.toString().trim();
