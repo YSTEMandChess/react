@@ -37,7 +37,11 @@ const navbarVariants = {
 };
 
 const NavBar = () => {
-  const [cookies, setCookie, removeCookie] = useCookies(["login", "eventId", "timerStatus"]);
+  const [cookies, setCookie, removeCookie] = useCookies([
+    "login",
+    "eventId",
+    "timerStatus",
+  ]);
   const [dropdown, setDropdown] = useState(false);
   const dropdownRef = useRef<any>(null);
   const [link, setLink] = useState("");
@@ -58,13 +62,13 @@ const NavBar = () => {
 
   // close dropdown menu when user clicks outside of dropdown
   useEffect(() => {
-    const closeDropdown = (event: { target: any; }) => {
+    const closeDropdown = (event: { target: any }) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdown(false);
       }
     };
 
-    const closeProfileDropdown = (event: { target: any; }) => {
+    const closeProfileDropdown = (event: { target: any }) => {
       if (
         profileDropdownRef.current &&
         !profileDropdownRef.current.contains(event.target)
@@ -123,7 +127,7 @@ const NavBar = () => {
         <Link to="/programs" className="links">
           Programs
         </Link>
-        <div className="dropdown" ref={dropdownRef}>
+        <div className="dropdown z-20" ref={dropdownRef}>
           <p onClick={toggleDropdown} className="links">
             About Us
             {dropdown ? (

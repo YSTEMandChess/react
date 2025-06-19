@@ -4,6 +4,7 @@
   "description": "API for Y STEM And Chess Inc",
   "main": "server.js",
   "dependencies": {
+    "@google/genai": "^1.5.1",
     "aws-sdk": "^2.889.0",
     "axios": "^0.21.1",
     "config": "^3.3.12",

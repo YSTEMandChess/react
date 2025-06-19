@@ -19,9 +19,9 @@ app.use(express.json({ extended: false }));
 // Configure express-session
 app.use(
   session({
-    secret: 'your_secret_key_here', // Use a long and random string for better security
+    secret: "your_secret_key_here", // Use a long and random string for better security
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
   })
 );
 
@@ -38,6 +38,7 @@ app.use("/auth", require("./routes/auth"));
 app.use("/timeTracking", require("./routes/timeTracking"));
 app.use("/puzzles", require("./routes/puzzles"));
 app.use("/lessons", require("./routes/lessons"));
+app.use("/geminiApi", require("./routes/geminiAPI.js"));
 
 const PORT = process.env.PORT || 8000;
 
