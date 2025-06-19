@@ -54,7 +54,7 @@ const ChessBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container rectdiv2Chess" role="region">
+      <section className="container rectdiv2Chess" role="region" aria-label="Quote section">
         <div className="rectdiv2-wrapper">
           <p className="recttextchess">
             "Playing chess encourages students to put their best effort into
@@ -62,7 +62,7 @@ const ChessBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container-chess" role="region">
+      <section className="container-chess" role="region" aria-label="Chess benefit details section">
         <div className="text-normal-chess txt-p">
           <p>
             Chess gives students skills they can use anywhere in life, like
