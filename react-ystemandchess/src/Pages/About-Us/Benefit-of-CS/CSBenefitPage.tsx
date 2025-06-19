@@ -5,8 +5,8 @@ import ImageTwo from "../../../images/mathArticle/Junechamp 2.png";
 
 const CSBenefitPage = () => {
   return (
-    <main id="main-contentCS">
-      <section className="containerCSBenifit">
+    <main id="main-contentCS" role="main">
+      <section className="containerCSBenifit" role="region" aria-label="Main CS benefit section">
         <div className="text-title-md-cs txt-p">
           <h1 style={{ fontWeight: "bold" }}>
             The Benefits of Computer Science Tutoring
@@ -17,7 +17,7 @@ const CSBenefitPage = () => {
           <img
             className="picture-cs"
             src={ImageOne}
-            alt="students practicing chess on computers"
+            alt="Students practicing chess on computers"
           />
           <figcaption className="text-caption-cs txt-p">
             Students practicing their chess skills in the classroom
@@ -49,7 +49,7 @@ const CSBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container rectdiv2CS">
+      <section className="container rectdiv2CS" role="region" aria-label="Quote section">
         <div className="rectdiv2-wrapper">
           <p className="recttextCS">
             "Women earn only eighteen percent of computer science degrees and
@@ -58,7 +58,7 @@ const CSBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="containerCSBenifit">
+      <section className="containerCSBenifit" role="region" aria-label="CS benefit details section">
         <div className="text-normal-cs txt-p">
           <p>
             From an economic perspective, computer science is worthwhile and
