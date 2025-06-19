@@ -5,7 +5,7 @@ import Images from "../../../images/imageImporter";
 const ChessBenefitPage = () => {
   return (
     <main id="main-content-chess" role="main">
-      <section className="container-chess" role="region">
+      <section className="container-chess" role="region" aria-label="Main chess benefit section" tabIndex={0}>
         <div className="text-title-md-chess txt-p">
           <h1 style={{ fontWeight: "bold" }}>The Benefits of Chess</h1>
         </div>
@@ -54,7 +54,7 @@ const ChessBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container rectdiv2Chess" role="region" aria-label="Quote section">
+      <section className="container rectdiv2Chess" role="region" aria-label="Quote section" tabIndex={0}>
         <div className="rectdiv2-wrapper">
           <p className="recttextchess">
             "Playing chess encourages students to put their best effort into
@@ -62,7 +62,7 @@ const ChessBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container-chess" role="region" aria-label="Chess benefit details section">
+      <section className="container-chess" role="region" aria-label="Chess benefit details section" tabIndex={0}>
         <div className="text-normal-chess txt-p">
           <p>
             Chess gives students skills they can use anywhere in life, like
