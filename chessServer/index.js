@@ -342,18 +342,22 @@ io.on("connection", (socket) => {
   });
 
   socket.on("lastmove", (msg) => {
-
     let currentGame;
     var clientSocket = socket.id;
 
     // checking student/mentor is in an ongoing game
     for (let game of ongoingGames) {
-      
       if (game.student.id == clientSocket || game.mentor.id == clientSocket) {
         newGame = false;
         currentGame = game;
-        break;  // breaks early, since we no longer need to go through this loop
+        break;
       }
+    }
+
+    // Add this check to prevent the error
+    if (!currentGame) {
+      console.log(`No ongoing game found for socket ${clientSocket}`);
+      return; // Exit early if no game is found
     }
 
     // getting message variables
@@ -373,7 +377,6 @@ io.on("connection", (socket) => {
     io.to(currentGame.mentor.id).emit(
       "lastmove",
       JSON.stringify({ from, to})
-
     );
 
     io.to(currentGame.student.id).emit(
