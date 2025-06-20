@@ -1,10 +1,27 @@
 import React, { useState, FormEvent } from "react";
 import { environment } from "../../../environments/environment";
+
+interface ChatMessage {
+  role: string;
+  parts: { text: string }[];
+}
 export default function GeminiChat() {
   const [prompt, setPrompt] = useState<string>("");
   const [response, setResponse] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>(() => {
+    try {
+      const data = localStorage.getItem("geminiChatHistory");
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const saveChatHistory = (history: ChatMessage[]) => {
+    localStorage.setItem("geminiChatHistory", JSON.stringify(history));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -21,24 +38,43 @@ export default function GeminiChat() {
     }
 
     try {
-      let url = `${
-        environment.urls.middlewareURL
-      }/geminiApi?prompt=${prompt.toString()}`;
+      const userMessage: ChatMessage = {
+        role: "user",
+        parts: [{ text: prompt }],
+      };
+
+      const currHistory = [...chatHistory, userMessage];
+      setChatHistory(currHistory);
+      saveChatHistory(currHistory);
+
+      let url = `${environment.urls.middlewareURL}/geminiApi`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          prompt,
+          chatHistory: currHistory,
+        }),
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = (await response.json()) as {
-        response?: string;
-        error?: string;
+      const data = await response.json();
+
+      const modelResponse: ChatMessage = {
+        role: "model",
+        parts: [{ text: data.response }],
       };
+
+      setChatHistory((prev) => {
+        const newHistory = [...prev, modelResponse];
+        saveChatHistory(newHistory);
+        return newHistory;
+      });
 
       if (data.error) {
         setError(data.error);
