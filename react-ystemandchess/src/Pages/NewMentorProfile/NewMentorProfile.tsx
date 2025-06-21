@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
 import { StatsChart } from "../NewStudentProfile/StatsChart";
 import VideoCall from "../../components/VideoCall";
+import PlayStudent from "./PlayStudent";
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
@@ -94,6 +95,12 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     el.addEventListener("scroll", handleScroll);
     return () => el.removeEventListener("scroll", handleScroll);
   }, [loading]);
+
+  useEffect(() => {
+    if(activeTab == "mentor") {
+      fetchMeetingData();
+    }
+  }, [activeTab]);
 
 
   const fetchUserData = async () => {
@@ -208,6 +215,27 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
       console.error("Failed to fetch events", err);
     }
   }
+  
+  const [meetingId, setMeetingId] = useState("");
+  const [meetingToken, setMeetingToken] = useState("");
+
+  const fetchMeetingData = async () => {
+    try {
+      fetch (`${environment.urls.middlewareURL}/meetings/pairUp`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${cookies.login}` },
+      }).then(data => data.json())
+      .then(data => {
+        setMeetingId(data.meetingId);
+        setMeetingToken(data.token);
+        console.log("Meeting data:", data);
+        console.log("Token from mentor profile: " + data.token);
+      })
+    } catch (err) {
+      console.error("Failed to fetch events", err);
+    }
+  };
+  
 
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);
@@ -269,17 +297,9 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         return (
           <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
             <h2>Mentor</h2>
-            <p>This is the content for the Mentor tab.</p>
-                              <iframe
-                    src="http://127.0.0.1:5500/chessClient/parent.html" // URL of chess parent container
-                    title="My Iframe"
-                    width="600"
-                    height="400"
-                    frameBorder="0"
-                    allowFullScreen
-                  ></iframe>
-
-            <VideoCall />
+            
+            <PlayStudent chessLessonSrc={environment.urls.chessClientURL} meetingId={meetingId} />
+            <VideoCall meetingId={meetingId} meetingToken={meetingToken} />
           </div>
         );
       case "learning":

@@ -13,9 +13,9 @@ class GameManager {
      * @param {Object} param0 - Contains student, mentor, role, socketId
      * @returns {Object} Game object, assigned color, and new game status
      */
-    createOrJoinGame({ student, mentor, role, socketId }) {
+    createOrJoinGame({ meetingId, student, mentor, role, socketId }) {
         let game = this.ongoingGames.find(
-            (g) => g.student.username === student || g.mentor.username === mentor
+            (g) => g.meetingId == meetingId
         );
 
         if (role != "student" && role != "mentor") {

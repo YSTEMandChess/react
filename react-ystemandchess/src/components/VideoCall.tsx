@@ -1,22 +1,33 @@
 import React, { useEffect, useRef, useState } from "react";
 import AgoraRTC from "agora-rtc-sdk-ng";
 
-const appId = "f2d75e6a8a804eac88bf09f9ac2c1aa5";  // You need to get this from your Agora dashboard
-const token = "007eJxTYDin8aOCT5P9H2vwe23p8K9Pv0y6HLlD7IL/8cXRWxXscmwUGNKMUsxNU80SLRItDExSE5MtLJLSDCzTLBOTjZINExNNixcHZDQEMjL4vRRjZWSAQBBfhSHZ3MQ0ydLYUtfIMCVJ18TY0kTXMjnFSDfZJNE4Lc0sMTXJIIWBAQDc9ygF";    // You’ll get or generate this from backend
-const channel = "c745b939-21db-4394-9cd2-c4a3ff6aeb0d";       // The meeting ID or unique room name
+const appId = "f2d75e6a8a804eac88bf09f9ac2c1aa5";  // You need to get this from your Agora dashboarde
 
-const VideoCall = () => {
+const VideoCall = ({meetingId, meetingToken}) => {
   const client = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const [joined, setJoined] = useState(false);
 
+  const [token, setToken] = useState("");
+  const [channel, setChannel] = useState(""); // The meeting ID or unique room nam
+
+  console.log("Meeting ID: " + meetingId + ", Meeting Token: " + meetingToken);
+
+
+
   useEffect(() => {
+    if(!meetingId || !meetingToken) return;
+
+    console.log("Meeting ID: " + meetingId + ", Meeting Token: " + meetingToken);
+
     client.current = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
     const startCall = async () => {
       // Join the channel
-      await client.current.join(appId, channel, token, null);
+      console.log("Joining channel");
+      console.log("Meeting ID: " + meetingId + ", Meeting Token: " + meetingToken);
+      await client.current.join(appId, meetingId, meetingToken, null);
 
       // Create local audio and video tracks
       const localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
@@ -54,7 +65,7 @@ const VideoCall = () => {
     return () => {
       client.current.leave();
     };
-  }, []);
+  }, [meetingId, meetingToken]);
 
   return (
     <div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { environment } from '../../environments/environment';
 
-const PlayMentor = ({ chessLessonSrc }) => {
+const PlayStudent = ({ chessLessonSrc, meetingId }) => {
         const [isReady, setIsReady] = useState(false);
 
         useEffect(() => {
@@ -15,19 +15,18 @@ const PlayMentor = ({ chessLessonSrc }) => {
             const chessBoard = iframe?.contentWindow;
     
             const handleMessage = async (e) => {
+                console.log("PlayStudent handle message");
                 if (e.origin === environment.urls.chessClientURL) {
                     // if chess client is ready to receive
                     if (e.data === 'ReadyToRecieve') {
                         setIsReady(true);
                         if(chessBoard) {
                             // sending student info
-                            let message = JSON.stringify({ command: "userinfo", student: "alice", mentor: "bob", role: "student" })
+                            let message = JSON.stringify({ command: "userinfo", student: "alice", mentor: "bob", role: "mentor", meetingId: meetingId })
                             chessBoard.postMessage(message, environment.urls.chessClientURL);
                             // tell chess client to start a new game
                             message = JSON.stringify({ command: "newgame" })
                             chessBoard.postMessage(message, environment.urls.chessClientURL);
-
-                            console.log("Message sent to chess client");
                         }
                     }
                 }
@@ -54,4 +53,4 @@ const PlayMentor = ({ chessLessonSrc }) => {
     );
 }
 
-export default PlayMentor;
+export default PlayStudent;
