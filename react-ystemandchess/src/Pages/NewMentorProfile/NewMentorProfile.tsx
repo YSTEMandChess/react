@@ -423,6 +423,8 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({
                       ? "Chess Lessons"
                       : tab === "playComputer"
                       ? "Play with Computer"
+                      : tab === "professionalDevelopment"
+                      ? "Professional Development"
                       : tab.charAt(0).toUpperCase() + tab.slice(1);
 
                   return (
