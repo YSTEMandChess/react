@@ -13,4 +13,16 @@ router.get("/list", async (req, res) => {
   }
 });
 
+// Get N random puzzles
+router.get("/random", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+    const puzzlesArray = await puzzles.aggregate([{ $sample: { size: limit } }]);
+    res.status(200).json(puzzlesArray);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json("Server error");
+  }
+});
+
 module.exports = router;

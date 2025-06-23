@@ -9,6 +9,8 @@ const registerSocketHandlers = require("./managers/EventHandlers");
 
 const app = express();
 const server = http.createServer(app);
+const { Chess } = require("chess.js"); // Needed for board state logic
+const ongoingGames = [];
 
 // Add logging functionaility to the server
 app.use(morgan("dev")) // dev -> preset format

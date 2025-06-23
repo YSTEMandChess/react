@@ -215,19 +215,10 @@ const NavBar = () => {
               </motion.div>
             </motion.div>
           )}
-        </div>
-        <Link to="/mentor" className="links">
-          Mentor
-        </Link>
-        <Link to="/lessons" className="links">
-          Lessons/Play
-        </Link>
-        <Link to="/puzzles" className="links">
-          Puzzles
-        </Link>
-        {!username && (
-          <Link to="/login" className="links">
-            Login
+        </li>
+        <li>
+          <Link to="/mentor" className="links">
+            Mentor
           </Link>
         </li>
         <li>
@@ -240,6 +231,9 @@ const NavBar = () => {
             Lessons
           </Link>
         </li>
+        <Link to="/Puzzles" className="links">
+            Puzzles
+          </Link>
         {!username && (
           <li>
             <Link to="/login" className="links">
