@@ -4,10 +4,10 @@ import LogoLineBr from "../../../images/LogoLineBreak.png";
 
 const Board = () => {
   return (
-    <div className="board-container">
+    <main role="main" className="board-container">
       <h1>Board</h1>
       <div className="line-break">
-        <img src={LogoLineBr} alt="Line Break" />
+        <img src={LogoLineBr} alt="" role="presentation" />
       </div>
       <div className="board-content">
         <div className="board-section">
@@ -56,7 +56,7 @@ const Board = () => {
           </ul>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
