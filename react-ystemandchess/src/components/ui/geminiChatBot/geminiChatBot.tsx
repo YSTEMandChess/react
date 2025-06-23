@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useRef, useEffect } from "react";
 import { environment } from "../../../environments/environment";
 
 interface ChatMessage {
@@ -18,13 +18,20 @@ export default function GeminiChat() {
       return [];
     }
   });
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [chatHistory]);
 
   const saveChatHistory = (history: ChatMessage[]) => {
     localStorage.setItem("geminiChatHistory", JSON.stringify(history));
   };
 
   //max context: 6 message pairs (12 messages total)
-  const MAX_HISTORY_LENGTH = 12; 
+  const MAX_HISTORY_LENGTH = 12;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -98,11 +105,9 @@ export default function GeminiChat() {
 
   return (
     <div
-      className="text-[var(--color-deep-green)] min-h-screen flex flex-col items-center justify-center p-6 font-['Sora']"
+      className="text-[var(--color-deep-green)] flex flex-col items-center justify-center p-6 font-['Sora']"
       style={{ backgroundColor: "var(--color-bg-main)" }}
     >
-      <h1 className="text-4xl font-bold mb-8">Gemini Chat</h1>
-
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-lg flex flex-col gap-4"
@@ -130,8 +135,19 @@ export default function GeminiChat() {
         )}
       </form>
 
-      <div className="bg-[var(--color-bg-accent)] text-[var(--color-black-solid)] min-h-[150px] w-full max-w-lg mt-8 p-6 rounded-md shadow-md whitespace-pre-wrap">
-        {response || "Your response will appear here..."}
+      <div
+        className="w-full max-w-lg mt-8 space-y-4 overflow-auto h-[400px]"
+        ref={chatContainerRef}
+      >
+        {chatHistory.map((msg, idx) => (
+          <div
+            key={idx}
+            className="bg-[var(--color-bg-accent)] text-[var(--color-black-solid)] p-4 rounded-md shadow-md whitespace-pre-wrap"
+          >
+            <strong>{msg.role === "user" ? "You" : "Gemini"}:</strong>{" "}
+            {msg.parts[0].text}
+          </div>
+        ))}
       </div>
     </div>
   );
