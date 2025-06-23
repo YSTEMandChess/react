@@ -80,7 +80,7 @@ const Home = () => {
       <img
         src={Images.LogoLineBr}
         className="logo-break"
-        alt="Y STEM styled line break"
+        alt=""
         role="presentation"
       ></img>
 
