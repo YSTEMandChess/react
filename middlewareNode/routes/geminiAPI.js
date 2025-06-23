@@ -12,6 +12,13 @@ router.post("/", async (req, res) => {
   try {
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
+    const MAX_HISTORY_LENGTH = 12;
+    if (Array.isArray(chatHistory) && chatHistory.length > MAX_HISTORY_LENGTH) {
+      chatHistory = chatHistory.slice(-MAX_HISTORY_LENGTH);
+    }
+    else if (!Array.isArray(chatHistory)) {
+      chatHistory = [];
+    }
     const systemInstruction = {
       role: "user",
       parts: [

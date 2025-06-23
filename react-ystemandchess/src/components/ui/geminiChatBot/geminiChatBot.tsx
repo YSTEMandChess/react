@@ -23,6 +23,9 @@ export default function GeminiChat() {
     localStorage.setItem("geminiChatHistory", JSON.stringify(history));
   };
 
+  //max context: 6 message pairs (12 messages total)
+  const MAX_HISTORY_LENGTH = 12; 
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
@@ -47,6 +50,11 @@ export default function GeminiChat() {
       setChatHistory(currHistory);
       saveChatHistory(currHistory);
 
+      // Trim history to the last MAX_HISTORY_LENGTH messages
+      const trimmedHistory = currHistory.slice(
+        Math.max(currHistory.length - MAX_HISTORY_LENGTH, 0)
+      );
+
       let url = `${environment.urls.middlewareURL}/geminiApi`;
       const response = await fetch(url, {
         method: "POST",
@@ -55,7 +63,7 @@ export default function GeminiChat() {
         },
         body: JSON.stringify({
           prompt,
-          chatHistory: currHistory,
+          chatHistory: trimmedHistory,
         }),
       });
 
