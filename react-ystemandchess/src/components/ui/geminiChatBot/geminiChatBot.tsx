@@ -31,7 +31,7 @@ export default function GeminiChat() {
   };
 
   //max context: 6 message pairs (12 messages total)
-  const MAX_HISTORY_LENGTH = 12; 
+  const MAX_HISTORY_LENGTH = 12;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

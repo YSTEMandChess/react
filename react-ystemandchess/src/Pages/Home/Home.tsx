@@ -3,6 +3,7 @@ import "./Home.css";
 import Images from "../../images/imageImporter";
 import { ButtonsCard } from "../../components/ui/tailwindcss-buttons";
 import { useNavigate } from "react-router";
+import GeminiChat from "../../components/ui/geminiChatBot/geminiChatBot";
 
 const books = [
   {
@@ -217,7 +218,6 @@ const Home = () => {
         className="logo-break"
         alt="line break"
       ></img>
-
       <div className="home-content5">
         <h1 id="h1-home">Books by Devin Nakano</h1>
         {books.map((book, index) => (
