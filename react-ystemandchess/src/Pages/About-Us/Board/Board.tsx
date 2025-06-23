@@ -10,7 +10,7 @@ const Board = () => {
         <img src={LogoLineBr} alt="" role="presentation" />
       </div>
       <div className="board-content">
-        <div className="board-section">
+        <section className="board-section" role="region" aria-label="Board Officers" tabIndex={0}>
           <h2>Officers</h2>
           <ul>
             <li>
@@ -34,8 +34,8 @@ const Board = () => {
               Treasurer
             </li>
           </ul>
-        </div>
-        <div className="board-section">
+        </section>
+        <section className="board-section" role="region" aria-label="Board Members" tabIndex={0}>
           <h2>Board Members</h2>
           <ul>
             <li>
@@ -54,7 +54,7 @@ const Board = () => {
               Retired Public School teacher
             </li>
           </ul>
-        </div>
+        </section>
       </div>
     </main>
   );
