@@ -1,38 +1,35 @@
-require("dotenv").config();
+require('dotenv').config();
+
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
-const { Chess } = require("chess.js");
+const morgan = require("morgan");
+const registerSocketHandlers = require("./managers/EventHandlers");
 
 const app = express();
 const server = http.createServer(app);
 
+// Add logging functionaility to the server
+app.use(morgan("dev")) // dev -> preset format
 
-// Use CORS middleware to allow all origins
+// Apply CORS middleware to handle cross-origin requests
 app.use(cors({
-  origin: "*", // Allow all origins
-  methods: ["GET", "POST"], // Allowed methods
-  credentials: true // Allow credentials (if needed)
+  origin: "*",
+  methods: ["GET", "POST"],
+  credentials: true
 }));
 
+// Initialize Socket.IO with CORS configuration
 const io = socketIo(server, {
   cors: {
-    origin: "*", // Allow all origins
-    methods: ["GET", "POST"], // Allowed methods
-    credentials: true // Allow credentials if needed
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
-const ongoingGames = [];
-
-server.listen(process.env.PORT, () => {
-  console.log(`listening on ${process.env.PORT}`);
-});
-
-/// Purpose: Triggered when a client connects to the socket.
-/// Input: N/A (Automatically triggered by the connection)
-/// Output: Logs "a user connected to socket" in the server console.
+// Register socket event handlers upon client connection
 io.on("connection", (socket) => {
   console.log("a user connected to socket");
   
@@ -673,4 +670,13 @@ io.on("connection", (socket) => {
    
 
   }); 
+  registerSocketHandlers(socket, io);
 });
+
+// Start the server and listen on the defined port
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
+
+module.exports = { server, io };

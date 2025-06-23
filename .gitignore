@@ -59,3 +59,5 @@ testem.log
 .DS_Store
 Thumbs.db
 
+middlewareNode/package-lock.json
+middlewareNode/package.json

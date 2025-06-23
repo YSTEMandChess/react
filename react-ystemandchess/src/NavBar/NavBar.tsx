@@ -114,30 +114,38 @@ const NavBar = () => {
   };
 
   return (
-    <header className="nav-bar">
+    <header role="navigation" aria-label="Main navbar" className="nav-bar">
       <Link to="/">
-        <img src={FullLogo} alt="Logo" />
+        <img src={FullLogo} alt="YSTEM Logo" />
       </Link>
-
-      <div className="nav-links">
-        <Link to="/programs" className="links">
-          Programs
-        </Link>
-        <div className="dropdown" ref={dropdownRef}>
-          <p onClick={toggleDropdown} className="links">
+      <nav>
+      <ul className="nav-links">
+        <li>
+          <Link to="/programs" className="links">Programs</Link>
+        </li>
+        <li className="dropdown" ref={dropdownRef}>
+          <button 
+            onClick={toggleDropdown} 
+            className="links"
+            aria-haspopup="true"
+            aria-expanded={dropdown}
+            aria-controls="aboutus-menu"
+          >
             About Us
             {dropdown ? (
               <FontAwesomeIcon icon={faCaretUp} className="dropdown-icon" />
             ) : (
               <FontAwesomeIcon icon={faCaretDown} className="dropdown-icon" />
             )}
-          </p>
+          </button>
           {dropdown && (
             <motion.div
+              id="aboutus-menu"
               className="dropdown-menu"
               initial="parentInitial"
               animate="parentAnimate"
               variants={navbarVariants}
+              role="menu"
             >
               <motion.div
                 className="education"
@@ -145,23 +153,23 @@ const NavBar = () => {
                 animate="childAnimate"
                 variants={navbarVariants}
               >
-                <h3>Education</h3>
-                <Link to="/benefit-of-computer-science">
+                <h3><strong>Education</strong></h3>
+                <Link to="/benefit-of-computer-science" role="menuitem">
                   <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Benefit of Computer Science
                   </motion.h4>
                 </Link>
-                <Link to="/benefit-of-chess">
+                <Link to="/benefit-of-chess" role="menuitem">
                   <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Benefit of Chess
                   </motion.h4>
                 </Link>
-                <Link to="/benefit-of-math-tutoring">
+                <Link to="/benefit-of-math-tutoring" role="menuitem">
                   <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Benefit of Math Tutoring
                   </motion.h4>
                 </Link>
-                <Link to="/benefit-of-mentoring">
+                <Link to="/benefit-of-mentoring" role="menuitem">
                   <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Benefit of Mentoring
                   </motion.h4>
@@ -173,33 +181,33 @@ const NavBar = () => {
                 animate="childAnimate"
                 variants={navbarVariants}
               >
-                <h3>What We Do</h3>
-                <Link to="/online-expansion">
+                <h3><strong>What We Do</strong></h3>
+                <Link to="/online-expansion" role="menuitem">
                   <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Online Expansion
                   </motion.h4>
                 </Link>
-                <Link to="about-us">
+                <Link to="about-us" role="menuitem">
                   <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     About Us
                   </motion.h4>
                 </Link>
-                <Link to="/mission">
+                <Link to="/mission" role="menuitem">
                   <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Mission
                   </motion.h4>
                 </Link>
-                <Link to="/financial">
+                <Link to="/financial" role="menuitem">
                   <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Financial
                   </motion.h4>
                 </Link>
-                <Link to="/board">
+                <Link to="/board" role="menuitem">
                   <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Board
                   </motion.h4>
                 </Link>
-                <Link to="/sponsors&partners">
+                <Link to="/sponsors&partners" role="menuitem">
                   <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
                     Sponsors & Partners
                   </motion.h4>
@@ -221,20 +229,45 @@ const NavBar = () => {
           <Link to="/login" className="links">
             Login
           </Link>
+        </li>
+        <li>
+          <Link to="/learnings" className="links">
+            Learn
+          </Link>
+        </li>
+        <li>
+          <Link to="/lessons-selection" className="links">
+            Lessons
+          </Link>
+        </li>
+        {!username && (
+          <li>
+            <Link to="/login" className="links">
+              Login
+            </Link>
+          </li>
         )}
         {username && (
-          <div className="dropdown" ref={profileDropdownRef}>
-            <p onClick={profileToggleDropdown} className="links">
+          <li className="dropdown" ref={profileDropdownRef}>
+            <button 
+              onClick={profileToggleDropdown} 
+              className="links"
+              aria-haspopup="true"
+              aria-expanded={username ? "true" : "false"}
+              aria-controls="login-menu"
+            >
               {username}
               {profileDropdown ? (
                 <FontAwesomeIcon icon={faCaretUp} className="dropdown-icon" />
               ) : (
                 <FontAwesomeIcon icon={faCaretDown} className="dropdown-icon" />
               )}
-            </p>
+            </button>
             {profileDropdown && (
               <motion.div
-                className="dropdown-menu"
+                id="login-menu"
+                role="menu"
+                className="profile-dropdown-menu"
                 initial="parentInitial"
                 animate="parentAnimate"
                 variants={navbarVariants}
@@ -245,7 +278,7 @@ const NavBar = () => {
                   animate="childAnimate"
                   variants={navbarVariants}
                 >
-                  <Link to={"/" + role + "-profile"}>
+                  <Link to={"/" + role + "-profile"} role="menuitem">
                     <motion.h4
                       variants={navbarVariants}
                       onClick={profileToggleDropdown}
@@ -254,7 +287,7 @@ const NavBar = () => {
                     </motion.h4>
                   </Link>
                   {role === "parent" && (
-                    <Link to="/parent-add-student">
+                    <Link to="/parent-add-student"role="menuitem">
                       <motion.h4
                         variants={navbarVariants}
                         onClick={profileToggleDropdown}
@@ -264,7 +297,7 @@ const NavBar = () => {
                     </Link>
                   )}
 
-                  <Link to="/">
+                  <Link to="/" role="menuitem">
                     <motion.h4 variants={navbarVariants} onClick={logout}>
                       Log Out
                     </motion.h4>
@@ -272,9 +305,10 @@ const NavBar = () => {
                 </motion.div>
               </motion.div>
             )}
-          </div>
+          </li>
         )}
-      </div>
+      </ul>
+      </nav>
     </header>
   );
 };
