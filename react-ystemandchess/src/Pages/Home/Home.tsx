@@ -3,7 +3,6 @@ import "./Home.css";
 import Images from "../../images/imageImporter";
 import { ButtonsCard } from "../../components/ui/tailwindcss-buttons";
 import { useNavigate } from "react-router";
-import GeminiChat from "../../components/ui/geminiChatBot/geminiChatBot";
 
 const books = [
   {
@@ -212,7 +211,7 @@ const Home = () => {
           </div>
         </div>
       </div>
-      <GeminiChat />
+
       <img
         src={Images.LogoLineBr}
         className="logo-break"

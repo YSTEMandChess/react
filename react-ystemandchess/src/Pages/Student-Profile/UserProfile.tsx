@@ -3,6 +3,7 @@ import { SetPermissionLevel } from "../../globals";
 import { useCookies } from "react-cookie";
 import { environment } from "../../environments/environment";
 import "./UserProfile.scss";
+import GeminiChat from "../../components/ui/geminiChatBot/geminiChatBot";
 
 type PdfItem = {
   id: string;
@@ -524,6 +525,7 @@ const UserProfile = () => {
 
         <div id="Professional_Development" className="tabcontent">
           <h3>Professional Development</h3>
+          <GeminiChat />
         </div>
 
         <div id="Chess_Lession" className="tabcontent">

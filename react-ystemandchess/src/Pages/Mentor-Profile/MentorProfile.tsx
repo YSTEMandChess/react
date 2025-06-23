@@ -4,6 +4,7 @@ import "./MentorProfile.scss"; // Import the SCSS file for styles
 import { environment } from "../../environments/environment";
 import ViewSDKClient from "../../services/view-sdk.service"; // Adjust the path as necessary
 import { SetPermissionLevel } from "../../globals"; // Adjust the path as necessary
+import GeminiChat from "../../components/ui/geminiChatBot/geminiChatBot";
 
 type PdfItem = {
   id: string;
@@ -465,6 +466,7 @@ const MentorProfile = () => {
 
             <div id="Professional_Development" className="tabcontent">
               <h3>Professional Development</h3>
+              <GeminiChat />
             </div>
 
             <div id="Chess_Lession" className="tabcontent">
