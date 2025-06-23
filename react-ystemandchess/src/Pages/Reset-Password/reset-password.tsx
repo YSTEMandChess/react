@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 const ResetPassword = () => {
   const [username, setUsername] = useState('');
@@ -35,7 +35,6 @@ const ResetPassword = () => {
         setError(data.message || 'Error requesting password reset');
       }
     } catch (error) {
-      console.error('Reset request error:', error);
       setError('Error connecting to server. Please try again.');
     } finally {
       setIsLoading(false);
@@ -46,7 +45,7 @@ const ResetPassword = () => {
     <div className='max-w-md mx-auto p-6'>
       <h2 className='text-2xl font-bold mb-6'>Reset Password</h2>
 
-      {error && (
+      {error != '' && (
         <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
           {error}
         </div>
@@ -61,6 +60,7 @@ const ResetPassword = () => {
             id='username'
             type='text'
             value={username}
+            placeholder='UserName'
             onChange={(e) => setUsername(e.target.value)}
             className='w-full p-2 border rounded'
             required
@@ -75,6 +75,7 @@ const ResetPassword = () => {
           <input
             id='email'
             type='email'
+            placeholder='Email'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className='w-full p-2 border rounded'
@@ -86,6 +87,7 @@ const ResetPassword = () => {
         <button
           type='submit'
           disabled={isLoading}
+          data-testid="reset-submit"
           className={`w-full bg-blue-500 text-white p-2 rounded ${
             isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
           }`}

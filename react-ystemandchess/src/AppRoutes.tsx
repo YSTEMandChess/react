@@ -20,9 +20,12 @@ import StudentInventory from './Pages/Student-Inventory/StudentInventory';
 import ResetPassword from './Pages/Reset-Password/reset-password';
 import SetPassword from './Pages/Set-Password/set-password';
 import Student from './Pages/Student/Student';
-import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
-import UserProfile from './Pages/Student-Profile/UserProfile';
+// import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
+import NewMentorProfile from './Pages/NewMentorProfile/NewMentorProfile';
+import NewStudentProfile from './Pages/NewStudentProfile/NewStudentProfile';
 import AboutUs from './Pages/About-Us/AboutUs/AboutUs';
+import LessonSelection from "./Pages/LessonsSelection/LessonsSelection"
+import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
 
 // Variables and Mutable Data
 import userPortraitImg from './images/user-portrait-placeholder.svg';
@@ -47,7 +50,8 @@ const AppRoutes = () => {
       <Route path='/mission' element={<Mission />} />
       <Route path='/mentor' element={<Mentor />} />
       <Route path='/financial' element={<Financial />} />
-      <Route path='/lessons' element={<Lessons />} />
+      <Route path='/lessons-selection' element={<LessonSelection />} />
+      <Route path='/lessons' element={<LessonOverlay />} />
       <Route path='/sponsors&partners' element={<SponsorsPartners />} />
       <Route path='/board' element={<Board />} />
       <Route path='/reset-password' element={<ResetPassword />} />
@@ -63,11 +67,14 @@ const AppRoutes = () => {
       />
 
       <Route path='/student' element={<Student />} />
-      <Route path='/mentor-profile' element={<MentorProfile />} />
-      <Route path='/student-profile' element={<UserProfile />} />
+      <Route path='/mentor-profile' element={<NewMentorProfile 
+        userPortraitSrc={userPortraitImg} 
+        />} 
+      />
+      <Route path='/student-profile' element={<NewStudentProfile userPortraitSrc={userPortraitImg}/>} />
       <Route path='/about-us' element={<AboutUs />} />
-      
-      {/* <Route path="/learnings" element={<LessonOverlay />} /> */}
+
+      <Route path="/learnings" element={<Lessons />} />
     </Routes>
   );
 };

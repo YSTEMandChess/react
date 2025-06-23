@@ -3,11 +3,11 @@ import kidsCoding from "../../images/kidsCoding.png";
 import "./Programs.scss";
 const Programs = () => {
   return (
-    <>
-      <div className="hero-section">
-        <img src={kidsCoding} alt="kids coding" />
+    <main role="main">
+      <section className="hero-section" role="region">
+        <img src={kidsCoding} alt="kids coding" role="presentaion"/>
         <div className="programs-text">
-          <h2>Our Programs</h2>
+          <h2 data-testid="programs-title">Our Programs</h2>
           <h4>
             Become a member today to benefit your child and all other children
             participating in our program!
@@ -35,16 +35,17 @@ const Programs = () => {
             <li>Preparation for Advanced Learning and Career Paths</li>
           </ul>
           <a
+            data-testid="register-btn-link"
             href="https://forms.gle/cvdJxrSRCg1kpWXP8"
             target="_blank"
             rel="noreferrer"
           >
-            <button>Register Now</button>
+            <button data-testid="register-btn" aria-label="Register for Y STEM and Chess">Register Now</button>
           </a>
         </div>
-      </div>
-      <div className="sub-terms">
-        <div className="sub-terms-left">
+      </section>
+      <section className="sub-terms" role="region">
+        <div data-testid="sub-terms-left" className="sub-terms-left">
           <h3>
             First Month is Free <br />
             Cancel anytime
@@ -58,7 +59,7 @@ const Programs = () => {
             just want to help our mission out, donate through our Cause link.
           </p>
         </div>
-        <div className="sub-terms-right">
+        <div data-testid="sub-terms-right" className="sub-terms-right">
           <h3>
             Can't afford to pay monthly? We'd still love to have your student
             join!
@@ -79,8 +80,8 @@ const Programs = () => {
             lunch.
           </p>
         </div>
-      </div>
-    </>
+      </section>
+    </main>
   );
 };
 

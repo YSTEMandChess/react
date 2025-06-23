@@ -76,8 +76,12 @@ function Puzzles() {
           // Do NOT include boardState in this message
           const chessBoard = chessboard.current;
           if (chessBoard && chessBoard.contentWindow) {
-              const expectedMove = moveList[0]; // What player is supposed to play next
-              if (!expectedMove) return;
+              const expectedMove = moveList[0];
+            if (!expectedMove || expectedMove.length < 4) {
+                console.warn("Expected move missing or invalid:", expectedMove);
+                return;
+            }
+
 
               chessBoard.contentWindow.postMessage(
                   JSON.stringify({
@@ -95,9 +99,18 @@ function Puzzles() {
   };
 
     const setStateAsActive = (state: any) => {
+        if (!state?.FEN || !state?.Moves || !state?.Themes) {
+            console.warn("Puzzle is missing required fields:", state);
+            return;
+        }
         console.log("click state---->", state);
-        const newPlayerColor = state.FEN.split(" ")[1];
+        // Determine which side is to move in the FEN
+        const sideToMove = state.FEN.split(" ")[1];
+        // Player is the opposite color
+        const newPlayerColor = sideToMove === 'w' ? 'b' : 'w';
+        console.log("DEBUG", newPlayerColor);
         setPlayerColor(newPlayerColor);
+        
 
         const firstObj = {
             'theme': state.Themes,
@@ -109,68 +122,56 @@ function Puzzles() {
         setTimeout(() => {
             currentPuzzle = state;
             startLesson(firstObj);
-        }, 500);
+        }, 200);
     };
 
     const startLesson = ({ theme, fen, event }: { theme: string, fen: string, event: string }) => {
-      console.log("start lesson call---->", theme, "FEN:", fen, "Moves:", currentPuzzle.Moves);
-
+        if (!fen || fen.split("/").length !== 8) {
+            console.warn("Invalid or missing FEN:", fen);
+            return;
+        }
       setCurrentFen(fen);
       prevFEN = fen;
-      moveList = [...currentPuzzle.Moves.split(" ")];
-      console.log("DEBUG — full moveList at lesson start:", moveList);
+      
+      moveList = currentPuzzle?.Moves?.split(" ") || [];
+      if (moveList.length === 0) {
+        console.warn("Empty or invalid moveList:", currentPuzzle);
+        return;
+      }
 
+      isPuzzleEnd = false;
+      setPrevMove(["", ""]);
+
+      // 1. Reset the iframe board
       postToBoard({ command: "reset" });
 
+      // 2. Wait for reset, then send puzzle setup
       setTimeout(() => {
+        if (!fen || fen.split(" ").length < 2 || fen.split("/").length !== 8) {
+            console.warn("Invalid FEN detected before sending to iframe:", fen);
+            return;
+        }
+
         postToBoard({
-          PuzzleId: currentPuzzle.PuzzleId,
-          FEN: fen,
-          Moves: currentPuzzle.Moves,
-          Rating: currentPuzzle.Rating,
-          Themes: currentPuzzle.Themes
+        PuzzleId: currentPuzzle?.PuzzleId,
+        FEN: fen,
+        Moves: currentPuzzle?.Moves,
+        Rating: currentPuzzle?.Rating,
+        Themes: currentPuzzle?.Themes
         });
 
+
+        // 3. Wait for setup, then send the first computer move if needed
         setTimeout(() => {
-          postToBoard({ boardState: fen });
-
+          // If the puzzle starts with a computer move, play it
           const tempChess = new Chess(fen);
-          const firstMove = moveList[0];
-          const moveFrom = firstMove.substring(0, 2);
-          const moveTo = firstMove.substring(2, 4);
 
-          computerColor = tempChess.turn();
-          const playerColorValue = computerColor === 'w' ? 'b' : 'w';
-          setPlayerColor(playerColorValue);
+        // First move is always by computer
+        playComputerMove();
 
-          try {
-            tempChess.move({ from: moveFrom, to: moveTo, promotion: 'q' });
-            setCurrentFen(tempChess.fen());
-            prevFEN = tempChess.fen();
-
-            const removed = moveList.shift(); 
-            console.log("DEBUG — removed computer move:", removed, "→ updated moveList:", moveList);
-
-            const expected = moveList[0];
-            console.log("✅ Sending next expected player move:", expected);
-
-            postToBoard({
-              from: moveFrom,
-              to: moveTo,
-              nextMove: [
-                expected?.substring(0, 2) || "a1",
-                expected?.substring(2, 4) || "a1"
-              ]
-            });
-
-            setPrevMove([moveFrom, moveTo]);
-          } catch (error) {
-            console.warn("Invalid computer move at puzzle start:", moveFrom, moveTo, error);
-          }
-
-          const displayPlayerColor = playerColorValue === 'w' ? 'white' : 'black';
-        }, 500);
-      }, 500);
+          // Otherwise, wait for player move
+        }, 200);
+      }, 200);
     };
 
     const getNextPuzzle = () => {
@@ -195,6 +196,10 @@ function Puzzles() {
     
         setThemeList(nextPuzzle.Themes.split(" "));
         console.log("Loading puzzle:", nextPuzzle.PuzzleId, "with FEN:", nextPuzzle.FEN);
+        if (!nextPuzzle?.FEN || nextPuzzle.FEN.split("/").length !== 8) {
+            console.warn("Skipping puzzle with invalid FEN:", nextPuzzle);
+            return;
+        }
         setStateAsActive(nextPuzzle); // This will call startLesson
         updateInfoBox(nextPuzzle.Themes.split(" "));
     };
@@ -212,13 +217,9 @@ function Puzzles() {
 
     const initPuzzleArray = async () => {
         try {
-            // Fetch puzzles from backend database 
-            console.log('Fetching puzzles from:', `${environment.urls.middlewareURL}/puzzles/list`);
-            const response = await fetch(`${environment.urls.middlewareURL}/puzzles/list`);
+            const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
             if (response.ok) {
                 const jsonData = await response.json();
-                console.log('Puzzles loaded:', jsonData.length);
-                shuffleArray(jsonData);
                 setPuzzleArray(jsonData);
                 return jsonData;
             } else {
@@ -231,6 +232,18 @@ function Puzzles() {
         }
     };
 
+    const prefetchPuzzles = async () => {
+        try {
+            const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
+            if (response.ok) {
+                const jsonData = await response.json();
+                setPuzzleArray(prev => [...prev, ...jsonData]);
+            }
+        } catch (error) {
+            console.error('Error prefetching puzzles:', error);
+        }
+    };
+
     const updateInfoBox = (themes?: string[]) => {
       const currentThemes = themes || themeList;
       if (!currentThemes || currentThemes.length === 0) return;
@@ -239,7 +252,6 @@ function Puzzles() {
       const rating = currentPuzzle?.Rating || 'N/A';
 
       let hints = `<div style="margin-bottom: 14px;"><b>Puzzle Rating:</b> ${rating}</div>`;
-      hints += `<div style="margin-bottom: 14px;"><b>Playing as:</b> ${colorDisplay}</div>`;
 
       for (let i = 0; i < currentThemes.length; i++) {
         const key = currentThemes[i];
@@ -273,10 +285,15 @@ function Puzzles() {
                 // Initialize first puzzle
                 const firstPuzzle = puzzles[0];
                 currentPuzzle = firstPuzzle;
-                moveList = firstPuzzle.Moves.split(" ");
+                moveList = firstPuzzle?.Moves?.split(" ") || [];
+                if (moveList.length === 0) {
+                    console.warn("No valid moves in initial puzzle:", firstPuzzle);
+                    return;
+                }
+
                 setThemeList(firstPuzzle.Themes.split(" "));
-                updateInfoBox(firstPuzzle.Themes.split(" "));
                 setStateAsActive(firstPuzzle);
+                updateInfoBox(firstPuzzle.Themes.split(" "));
             }
         };
         
@@ -290,23 +307,28 @@ function Puzzles() {
     
         const messageHandler = (e: MessageEvent) => {
             let info = e.data;
-    
+
             if (typeof info === 'string' && info[0] === "{") {
                 try {
                     let jsonInfo = JSON.parse(info);
-                    if ("from" in jsonInfo && "to" in jsonInfo) {
-                        const playerAttemptedMove = `${jsonInfo.from}${jsonInfo.to}`;
+                    if (
+                        "from" in jsonInfo && "to" in jsonInfo &&
+                        typeof jsonInfo.from === 'string' && typeof jsonInfo.to === 'string' &&
+                        jsonInfo.from.length === 2 && jsonInfo.to.length === 2
+                    ) {
+                        const playerAttemptedMove = `${jsonInfo.from}${jsonInfo.to}`
                         // Only allow if it's the player's turn and moveList[0] is the expected move
                         if (isPuzzleEnd || !moveList || moveList.length === 0) return;
-    
-                        const expectedPlayerMove = moveList[0]; // Now, moveList[0] is always the player's move
-    
+
+                        const expectedPlayerMove = moveList[0]; 
+                        // Now, moveList[0] is always the player's move
+
                         if (playerAttemptedMove === expectedPlayerMove) {
                             // Correct move
                             moveList.shift(); // Remove player's move
-    
+
                             setPrevFen(currentFen);
-    
+
                             if (moveList.length === 0) {
                                 isPuzzleEnd = true;
                                 setTimeout(() => {
@@ -317,34 +339,20 @@ function Puzzles() {
                                 playComputerMove();
                             }
                         } else {
-                            // Incorrect move, revert
-                            const chessBoard = chessboard.current;
-                            if (chessBoard && chessBoard.contentWindow) {
-                                chessBoard.contentWindow.postMessage(
-                                    JSON.stringify({ boardState: prevFEN }),
-                                    chessClientURL
-                                );
-                            }
-                            const hintElement = document.getElementById("hint-text");
-                            if (hintElement) {
-                                hintElement.innerHTML = "Incorrect move. Try again!";
-                                hintElement.style.display = "block";
-                            }
+                            // Incorrect move, reload the puzzle
+                            Swal.fire('Incorrect move', 'Try again!', 'error').then(() => {
+                                startLesson({
+                                    theme: currentPuzzle.Themes,
+                                    fen: currentPuzzle.FEN,
+                                    event: ''
+                                });
+                            });
                         }
                     }
                 } catch (error) {
-                  console.log("Error parsing JSON from iframe:", error);
+                    console.log("Error parsing JSON from iframe:", error);
                 }
             } else if (info && typeof info === 'string' && isFEN(info)) {
-                console.log("TEST — iframe reported new FEN:", info);
-
-                if (info !== currentFen) {
-                  console.log("TEST PASS — FEN changed:", info);
-                  setCurrentFen(info);
-              } else {
-                  console.log("NOTE — FEN received matches currentFen. Likely no new move, which is okay.");
-              }
-
                 // FEN update from iframe (after a move)
                 setCurrentFen(info); // Update current FEN based on board's state
                 // Highlighting logic for computer's response (if prevMove is set)
@@ -358,7 +366,6 @@ function Puzzles() {
                             }),
                             chessClientURL
                         );
-                        console.log("Highlighted computer's move:", prevMove[0], prevMove[1]);
                         setPrevMove(["", ""]); // Reset after highlighting
                     }
                 }

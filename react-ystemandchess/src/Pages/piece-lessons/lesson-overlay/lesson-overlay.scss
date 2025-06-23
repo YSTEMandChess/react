@@ -1,14 +1,10 @@
 #lesson-container {
+    background-image: url("../../../images/chess_background.png");
+    background-repeat: no-repeat;
+    background-size: cover;
     display: grid;
     grid-template-columns: 2fr 1fr;
     grid-template-rows: auto 1fr auto;
-    gap: 10px;
-    margin-top: 2%;
-    //make a left margin negative
-    margin-left: -3%;
-    width: 90%;
-    border-radius: 10px;
-    padding: 20px;
     align-content: center;
 
     #chess-board {
@@ -18,145 +14,37 @@
         justify-content: center;
         align-items: center;
         border-radius: 10px;
-        padding: 10px;
+        padding: 8px;
         //make all content smaller
         width: 50%;
         //make all content centered
         margin: 0 auto;
-
-
-        #chess-board-top {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-bottom: 10px;
-
-            .play-button {
-                font-family: 'Lato', sans-serif;
-                font-weight: 900;
-                font-size: 18px;
-                padding: 10px;
-                color: #FFF;
-                background-color: #7fcc26;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                transition: background-color 0.3s, color 0.3s;
-            }
-
-            .lesson-button{
-                font-family: 'Lato', sans-serif;
-                font-weight: 900;
-                font-size: 18px;
-                padding: 10px;
-                color: #000000;
-                background-color: #e2cc44;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                transition: background-color 0.3s, color 0.3s;
-            }
-
-            .play-button:hover {
-                color: #7fcc26;
-                background-color: #fff;
-                border: 1px solid #7fcc26;
-            }
-
-            .lesson-button:hover {
-                color: #e2cc44;
-                background-color: #000000;
-                border: 1px solid #e2cc44;
-            }
-        }
     }
 
-    #lesson-content {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 10px;
-        border-radius: 10px;
-        text-align: left;
-        //move content to the left
-        margin-left: 0;
+    .left-right-container {
+      padding-top: 0.3rem;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: -1rem;
 
-        h2 {
-            font-family: 'Roboto', sans-serif;
-            color: #4A4A4A;
-        }
+      .switchLesson {
+        font-size: 2rem;
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: bold;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        color: var(--green-color);
+        margin-top: 1rem;
+        border: 0.1rem solid var(--green-color);
+        background-color: rgba(240, 248, 230, 0.5);
+      }
 
-        #try-this {
-            background-color: #bfd99e;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            margin-left: 30px;
-            margin-right: 30px;
-
-            p {
-                margin: 0;
-                font-family: 'Roboto', sans-serif;
-                color: #4A4A4A;
-            }
-        }
-
-        #bottom {
-            display: flex;
-            justify-content: space-between;
-            padding-top: 20px;
-
-            button {
-                flex: 1;
-                margin: 0 5px;
-                font-family: 'Lato', sans-serif;
-                font-weight: 900;
-                font-size: 18px;
-                padding: 10px;
-                color: #FFF;
-                background-color: #7fcc26;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                transition: background-color 0.3s, color 0.3s;
-            }
-
-            button:hover {
-                color: #7fcc26;
-                background-color: #fff;
-                border: 1px solid #7fcc26;
-            }
-        }
-    }
-
-    #lesson-selector {
-        grid-column: 1 / -1;
-        display: flex;
-        justify-content: space-between;
-        margin-top: 20px;
-        margin-left: 20%;
-        margin-right: 4%;
-
-        .lesson-tab {
-            flex: 1;
-            margin: 0 5px;
-            font-family: 'Lato', sans-serif;
-            font-weight: 900;
-            font-size: 18px;
-            padding: 10px;
-            color: #FFF;
-            background-color: #7fcc26;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .lesson-tab:hover {
-            color: #7fcc26;
-            background-color: #fff;
-            border: 1px solid #7fcc26;
-        }
+      .switchLesson:hover {
+        cursor: pointer;
+        color: var(--dark-green-color);
+        background-color: rgba(127,204,38,0.18);
+        box-shadow: 0 2px 8px rgba(127,204,38,0.12);
+      }
     }
 }
 
@@ -172,3 +60,274 @@
     color: #4A4A4A;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+.right-container {
+  margin-top: 30px;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  text-align: left;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.lesson-header {
+  display: flex;
+  justify-content: space-between;
+  align-items:first baseline;
+}
+
+.description {
+  margin: 1rem;
+}
+
+.subheading {
+  font-size: 24px;
+  margin: 3px 0;
+  text-align: left;
+  font-weight: bold;
+}
+
+.reset-lesson {
+  background-color: var(--green-color);
+  width: 60px;
+  height: 60px;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  font-size: 50px;
+  padding: 5px;
+}
+
+.reset-lesson:hover {
+  background-color: var(--dark-green-color);
+}
+
+.piece_description {
+  text-align: left;
+  font-size: 30px;
+}
+
+.lesson-description {
+  font-size: 19px;
+  color: var(--gray-color);
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.prev-next-button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.prevNextLessonButton {
+  width: 160px;
+  height: 60px;
+  border-radius: 5px;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prevNextLessonButton-inactive {
+  width: 160px;
+  height: 60px;
+  border-radius: 5px;
+  color: rgb(173, 169, 169);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.button-description {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.next {
+  background-color: var(--green-color);
+}
+
+.next:hover {
+  background-color: var(--dark-green-color);
+  transition: background-color 100ms linear;
+}
+
+.prev {
+  background-color: var(--light-gray-color);
+}
+
+.prev:hover {
+  background-color: var(--gray-color);
+  transition: background-color 100ms linear;
+}
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-content {
+  width: 450px;
+  height: fit-content;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.popup-button {
+  background-color: var(--green-color);
+  color: black;
+  font-weight: bold;
+}
+
+.popup-button:hover {
+  background-color: var(--dark-green-color);
+}
+
+.success-checkmark {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.circle {
+  stroke-dasharray: 410;
+  stroke-dashoffset: 410;
+  animation: drawCircle 0.8s ease-in-out forwards;
+}
+
+.checkmark {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: drawCheck 0.6s ease-in-out 0.8s forwards;
+}
+
+@keyframes drawCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drawCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.error-cross {
+  display: flex;
+  justify-content: center;
+}
+
+.popup-header {
+  color: rgb(108, 107, 107);
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+.popup-subheading {
+  color: rgb(108, 107, 107);
+  font-size: 20px;
+  max-height: 300px;
+  overflow: scroll;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  svg {
+    animation: rotate 2s linear infinite;
+  }
+
+  .spinner {
+    stroke-dasharray: 339.292; // approx. circumference of r=54
+    stroke-dashoffset: 0;
+    transform-origin: 60px 60px;
+    animation: dash 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 339.292;
+  }
+  50% {
+    stroke-dashoffset: 84.823;
+    transform: rotate(45deg);
+  }
+  100% {
+    stroke-dashoffset: 339.292;
+    transform: rotate(360deg);
+  }
+}
+
+
+// BEGIN MOVE TRACK STYLES
+
+.move-list {
+  border: 2px solid var(--dark-green-color);
+  width: min-content;
+  min-width: 300px;
+  max-height: 130px;
+  overflow: scroll;
+  border-radius: 4px;
+  background-color: white;
+  padding: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+}
+
+.move-title {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--dark-green-color);
+  margin-bottom: 10px;
+}
+
+.move-item {     
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;           
+  align-items: center; 
+  margin-bottom: 0.5rem; 
+}
+
+.move {
+  background-color: #f0f0f0;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-family: sans-serif;
+}
+
+// END MOVE TRACK STYLES

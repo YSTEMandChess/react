@@ -13,6 +13,7 @@ node_modules
 #environment
 react-ystemandchess/environment.prod.ts
 react-ystemandchess/environment.ts
+react-ystemandchess/environments
 environment.php
 .env
 environment.*
@@ -59,3 +60,6 @@ testem.log
 .DS_Store
 Thumbs.db
 
+middlewareNode/package-lock.json
+middlewareNode/package.json
+middlewareNode/config/default.json

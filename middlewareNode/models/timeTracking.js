@@ -12,6 +12,11 @@ const timeTrackingSchema = new Schema(
       enum: ["mentor", "lesson", "play", "puzzle", "website"],
       required: true,
     },
+    eventName: {
+      type: String,
+      default: "Untitled event",
+      required: false,
+    },
     eventId: {
       type: String,
       required: true,

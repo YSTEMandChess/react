@@ -178,6 +178,8 @@ $inventory-tab-active: linear-gradient(
 
   .inv-inventory-content-content {
     padding: 1rem 4rem;
+    display: flex;
+    align-items: center;
   }
 
   .inventory-content {

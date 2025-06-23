@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./StudentInventory.scss";
 import Images from "../../images/imageImporter";
 import { createChessBoard, isInBounds, getPawnMoves, getRookMoves, getKnightMoves, getBishopMoves, getKingMoves, getQueenMoves } from '../Lessons/Lessons'
-
+import LessonSelection from "../LessonsSelection/LessonsSelection";
+import Lessons from '../Lessons/Lessons';
 
 type Board = (string | null)[][];
 type Piece = {

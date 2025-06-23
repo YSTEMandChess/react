@@ -5,8 +5,8 @@ import ImageTwo from "../../../images/mathArticle/Junechamp 2.png";
 
 const MathTutBenefitPage = () => {
   return (
-    <main id="main-content-mentor">
-      <section className="container-mentor">
+    <main id="main-content-mentor" role="main">
+      <section className="container-mentor" role="region" aria-label="Main mentoring benefit section" tabIndex={0}>
         <div className="text-title-md-mentor txt-p">
           <h1 style={{ fontWeight: "bold" }}>The Benefits of Mentoring</h1>
         </div>
@@ -15,7 +15,7 @@ const MathTutBenefitPage = () => {
           <img
             className="picture-mentor"
             src={ImageOne}
-            alt="students practicing chess on computers"
+            alt="Students practicing chess on computers"
           />
           <figcaption className="text-caption-mentor txt-p">
             Students practicing their chess skills in the classroom
@@ -53,7 +53,7 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container rectdiv2-mentor">
+      <section className="container rectdiv2-mentor" role="region" aria-label="Quote section" tabIndex={0}>
         <div className="rectdiv2-wrapper-mentor">
           <p className="recttext-mentor">
             "Mentors give students the chance to explore what they can do and
@@ -62,7 +62,7 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container">
+      <section className="container" role="region" aria-label="Mentoring benefit details section" tabIndex={0}>
         <div className="text-normal-mentor txt-p">
           <p>
             STEM can seem like a challenging field to go into for minority

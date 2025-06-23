@@ -1,9 +1,11 @@
 
 
-declare module "*.svg" {
-    const content: string;
-    export default content;
-  }
+declare module '*.svg' {
+  import * as React from 'react';
+  const content: string;
+  export default content;
+  export const ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>;
+}
   
   declare module "*.png" {
     const content: string;

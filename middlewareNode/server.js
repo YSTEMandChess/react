@@ -37,6 +37,7 @@ app.use("/meetings", require("./routes/meetings"));
 app.use("/auth", require("./routes/auth"));
 app.use("/timeTracking", require("./routes/timeTracking"));
 app.use("/puzzles", require("./routes/puzzles"));
+app.use("/lessons", require("./routes/lessons"));
 
 const PORT = process.env.PORT || 8000;
 
