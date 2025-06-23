@@ -5,6 +5,7 @@ import { SetPermissionLevel } from "../../globals";
 import { useCookies } from "react-cookie";
 import { environment } from "../../environments/environment";
 import { useNavigate } from "react-router";
+import GeminiChat from "../../components/ui/geminiChatBot/geminiChatBot";
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
@@ -295,6 +296,16 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({
             <p>This is the content for the Puzzles tab.</p>
           </div>
         );
+      case "professionalDevelopment":
+              return (
+                <div
+                  id="inventory-content-professional-development"
+                  className="inventory-content active-content"
+                >
+                  <h2>Professional Development</h2>
+                  <GeminiChat />
+                </div>
+        );
       case "playComputer":
         return (
           <div
@@ -402,6 +413,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({
                   "chessLessons",
                   "games",
                   "puzzles",
+                  "professionalDevelopment",
                   "playComputer",
                   "recordings",
                   "backpack",

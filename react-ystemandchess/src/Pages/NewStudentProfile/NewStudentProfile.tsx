@@ -6,6 +6,7 @@ import { useCookies } from "react-cookie";
 import { environment } from "../../environments/environment";
 import { useNavigate } from "react-router";
 import { StatsChart } from "./StatsChart";
+import GeminiChat from "../../components/ui/geminiChatBot/geminiChatBot";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [activeTab, setActiveTab] = useState("activity");
@@ -287,6 +288,16 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             <p>This is the content for the Puzzles tab.</p>
           </div>
         );
+      case "professionalDevelopment":
+        return (
+          <div
+            id="inventory-content-professional-development"
+            className="inventory-content active-content"
+          >
+            <h2>Professional Development</h2>
+            <GeminiChat />
+          </div>
+        );
       case "playComputer":
         return (
           <div
@@ -389,6 +400,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                 "chessLessons",
                 "games",
                 "puzzles",
+                "professionalDevelopment",
                 "playComputer",
                 "recordings",
                 "backpack",
