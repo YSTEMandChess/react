@@ -14,12 +14,11 @@
   ],
   "dependencies": {
     "chess960.js": "^0.2.0",
-    "dotenv": "^8.6.0",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jquery": ">=3.4.1",
     "nodejs": "0.0.0",
-    "nodemon": "^2.0.13",
-    "socket.io": "^4.2.0",
+    "nodemon": "^2.0.4",
     "uniq": "^1.0.1"
   },
   "devDependencies": {
@@ -34,8 +33,5 @@
     "build": "standard lib/chessboard.js && node scripts/build.js",
     "standard": "standard --fix lib/*.js website/js/*.js",
     "website": "node scripts/website.js"
-  },
-  "volta": {
-    "node": "14.21.3"
   }
 }

@@ -2,4 +2,4 @@ FROM nginx
 
 COPY ./ /usr/share/nginx/html
 
-EXPOSE 4200
+EXPOSE 80
