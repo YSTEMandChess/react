@@ -414,7 +414,6 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                     ? "Professional Development"
                     : tab.charAt(0).toUpperCase() + tab.slice(1);
 
-
                 return (
                   <div
                     key={tab}

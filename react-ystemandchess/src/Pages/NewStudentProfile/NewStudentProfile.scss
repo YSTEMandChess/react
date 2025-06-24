@@ -169,14 +169,13 @@ $inventory-tab-active: linear-gradient(
       filter: grayscale(1);
       transition: filter 0.3s, transform 0.3s;
     }
-  
+
     &.active-tab {
       img {
         filter: none;
         transform: scale(1.1);
       }
     }
-
   }
 
   .inv-inventory-content-content {
@@ -274,4 +273,3 @@ $inventory-tab-active: linear-gradient(
     cursor: pointer;
   }
 }
-

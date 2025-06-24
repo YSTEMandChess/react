@@ -104,16 +104,11 @@ export default function GeminiChat() {
   };
 
   return (
-    <div
-      className="text-[var(--color-deep-green)] flex flex-col items-center justify-center p-6 font-['Sora']"
-      style={{ backgroundColor: "var(--color-bg-main)" }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-lg flex flex-col gap-4"
-      >
+    // var(--color-bg-main)
+    <div className="text-[var(--color-deep-green)] flex flex-col w- bg-[]  font-['Sora']">
+      <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 ">
         <textarea
-          className="bg-[var(--color-bg-lightbox)] text-[var(--color-black-solid)] resize-none p-4 rounded-md border border-gray-300 focus:outline-none focus:ring-2"
+          className="bg-[var(--color-bg-lightbox)] w-full text-[var(--color-black-solid)] resize-none p-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2"
           rows={4}
           placeholder="Enter your prompt here..."
           value={prompt}
@@ -123,7 +118,7 @@ export default function GeminiChat() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-[var(--color-green)] text-white px-6 py-3 cursor-pointer transition-all duration-300 ease-in-out hover:bg-[var(--color-green-hover)] m-0 hover:shadow-[4px_4px_0px_var(--color-deep-green)]"
+          className="bg-[var(--color-green)] text-white px-6 py-3 cursor-pointer transition-all rounded-xl duration-300 ease-in-out hover:bg-[var(--color-green-hover)] m-0 hover:shadow-[4px_4px_0px_var(--color-deep-green)]"
         >
           {loading ? "Generating..." : "Generate Response"}
         </button>
@@ -136,18 +131,30 @@ export default function GeminiChat() {
       </form>
 
       <div
-        className="w-full max-w-lg mt-8 space-y-4 overflow-auto h-[400px]"
+        className="w-full mt-8  space-y-0 overflow-auto h-[400px] min-h-[400px]"
         ref={chatContainerRef}
       >
-        {chatHistory.map((msg, idx) => (
-          <div
-            key={idx}
-            className="bg-[var(--color-bg-accent)] text-[var(--color-black-solid)] p-4 rounded-md shadow-md whitespace-pre-wrap"
-          >
-            <strong>{msg.role === "user" ? "You" : "Gemini"}:</strong>{" "}
-            {msg.parts[0].text}
-          </div>
-        ))}
+        <div className="pointer-events-none h-0 text-[transparent] whitespace-pre-wrap">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Porro,
+          temporibus. Facere esse inventore illo fuga, exercitationem voluptatem
+          ea illum corrupti. Corrupti inventore fuga beatae omnis veritatis
+          atque adipisci numquam aspernatur.
+        </div>
+        {chatHistory.length === 0 ? (
+          <p className="text-[var(--color-green)] italic p-4">
+            No messages yet. Start the conversation above!
+          </p>
+        ) : (
+          chatHistory.map((msg, idx) => (
+            <div
+              key={idx}
+              className="border-b border-[var(--color-green)] text-[var(--color-black-solid)] p-4 whitespace-pre-wrap"
+            >
+              <strong>{msg.role === "user" ? "You" : "Gemini"}:</strong>{" "}
+              {msg.parts[0].text}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
