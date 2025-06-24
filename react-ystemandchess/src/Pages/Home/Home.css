@@ -1,5 +1,5 @@
 * {
-  font-family: sans-serif;
+  font-family: 'Baloo 2' sans-serif;
 }
 
 .home-container {
@@ -45,6 +45,7 @@
 .info p {
   font-size: 25px;
   padding-top: 40px;
+  padding-bottom: 1.5rem;
   text-align: left;
 }
 
@@ -90,30 +91,56 @@
 /* SECTOR 2 -- Cards for subscription plans */
 .home-content2 {
   width: 85%;
-  height: 700px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 20px;
+  margin: 40px auto;
   display: flex;
-  align-items: center;
-  gap: 10em;
+  flex-wrap: wrap;
+  gap: 4rem;
   justify-content: center;
+  align-items: stretch;
+}
+.card1,
+.card2 {
+  width: 100%;
+  max-width: 450px;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card1 .card-content,
+.card2 .card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  text-align: center;
 }
 
 .card1 {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 35%;
-  height: 43.75rem;
   background-color: rgb(115, 179, 19);
-  border-radius: 1.25rem;
-  box-shadow: 1.25rem 1.25rem 0.063rem rgb(209, 230, 28);
+  box-shadow: 10px 10px 0px rgb(209, 230, 28);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+   min-height: 500px;
+}
+
+.card1 h1 {
+ font-family: 'Baloo 2', cursive;
+  font-size: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .card1 img {
-  width: 25%;
+   display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  width: 60px;
 }
 
 #h1-home {
@@ -123,9 +150,11 @@
 }
 
 .card1 p {
-  font-size: 180%;
-  margin-top: 5%;
+  margin-top: 1rem;
   margin-bottom: 2rem;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: #111;
 }
 
 /* .card1 button {
@@ -146,29 +175,53 @@
 } */
 
 .card2 {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 35%;
-  height: 43.75rem;
-  background-color: rgb(255, 255, 255);
-  border-radius: 1.25rem;
-  box-shadow: 1.25rem 1.25rem 0.063rem rgb(115, 179, 19);
+  background-color: white;
+  box-shadow: 10px 10px 0px rgb(115, 179, 19);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+   min-height: 500px;
 }
 
+
 .card2 img {
-  width: 25%;
+   display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  width: 60px;
 }
 
 .card2 h1 {
-  margin-bottom: -7%;
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.card1 h1::after,
+.card2 h1::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -0.5rem;
+  transform: translateX(-50%);
+  width: 50%;
+  height: 4px;
+  border-radius: 4px;
+  background-color: transparent; 
+  transition: all 0.3s ease;
+}
+
+.card2 h1::after {
+  border-color: rgb(115, 179, 19); 
 }
 
 .card2 p {
-  font-size: 180%;
-  margin-top: 5%;
+  margin-top: 1rem;
   margin-bottom: 2rem;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: #111;
 }
 
 /* .card2 button {
@@ -356,4 +409,30 @@ footer {
 
 .buy-now:hover img {
   filter: brightness(0.9);
+}
+
+@keyframes wiggle {
+  0% { transform: rotate(-1deg); }
+  25% { transform: rotate(2deg); }
+  50% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+
+.card1:hover,
+.card2:hover {
+  animation: wiggle 0.5s ease-in-out;
+  box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.2);
+}
+.custom-headline {
+  font-family: 'Baloo 2', sans-serif; 
+  font-size: 2.1rem;              
+  font-weight: 800;               
+  text-align: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+  color: #222; 
+  text-transform: uppercase;
+  letter-spacing :  1px;                 
 }

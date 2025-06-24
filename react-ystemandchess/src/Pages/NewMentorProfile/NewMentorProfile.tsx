@@ -95,16 +95,20 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
 
 
   const fetchUserData = async () => {
-      const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
-      if (uInfo.error) {
-        console.log("Error: user not logged in.") // error if the user is not logged in
-        navigate("/login"); // redirect to login page
-      } else {
-        // record user info
-        setUsername(uInfo.username);
-        setFirstName(uInfo.firstName);
-        setLastName(uInfo.lastName)
-      }
+      setUsername("devUser");
+      setFirstName("Dev");
+      setLastName("User");
+
+      // const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
+      // if (uInfo.error) {
+      //   console.log("Error: user not logged in.") // error if the user is not logged in
+      //   navigate("/login"); // redirect to login page
+      // } else {
+      //   // record user info
+      //   setUsername(uInfo.username);
+      //   setFirstName(uInfo.firstName);
+      //   setLastName(uInfo.lastName)
+      // }
   }
 
   // fetch usage time stats to display in header
@@ -331,7 +335,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
   return (
     <main id="main-inventory-content">
       <section className="inv-intro">
-        <div className="inv-intro-portrait">
+        {/* <div className="inv-intro-portrait">
           <img
             className="inv-intro-portrait-face"
             src={userPortraitSrc}
@@ -342,10 +346,22 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
             src={Images.userPortraitCamera}
             alt="user portrait camera icon"
           ></img>
-        </div>
-        <div className="inv-intro-welcome">
-          <h1>Hello, {firstName} {lastName}!</h1>
-        </div>
+        </div> */}
+        {/* <div className="clean-avatar-wrapper">
+        <img
+        className="clean-avatar"
+        src={userPortraitSrc}
+        alt="user avatar"
+          />
+        </div> */}
+
+       <div className="profile-header">
+       <div className="clean-avatar-wrapper">
+       <img className="clean-avatar" src={userPortraitSrc} alt="User avatar" />
+       </div>
+       <h1 className="typewriter-text">Hello, {firstName} {lastName}!</h1>
+       </div>
+
       </section>
 
       { hasStudent ? (

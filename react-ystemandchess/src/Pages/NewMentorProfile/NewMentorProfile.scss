@@ -1,22 +1,125 @@
+/* === Header Greeting Typewriter === */
 .topbar-greeting {
-    color: black;
-    font-size: 20px;
+  color: white;
+  font-size: 24px;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typingFade 2s steps(20, end);
 }
 
+@keyframes typingFade {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* === Profile Container === */
+.profile-header {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.clean-avatar-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* === Shared Avatar Styles === */
+.clean-avatar,
+.profile-icon {
+  width: 140px;
+  height: 140px;
+  border: 1px solid #d6eadd; 
+  border-radius: 50%;
+  background-color: #eaf4ec;
+  padding: 10px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
+}
+
+.clean-avatar:hover,
+.profile-icon:hover {
+  transform: scale(1.08);
+}
+
+/* === Additional Profile Icon Specifics === */
+.profile-icon {
+  filter: brightness(0) invert(1);
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* === Fancy Fade-in for Name === */
+.hello-text span {
+  opacity: 0;
+  display: inline-block;
+  animation: fadeInLetter 0.5s forwards;
+}
+
+@keyframes fadeInLetter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === Optional Full Typewriter Line === */
+.typewriter-text {
+  font-size: 32px;
+  font-weight: 600;
+  color: #2d4030;
+  white-space: nowrap;
+  overflow: hidden;
+  width: fit-content;
+  margin: 0 auto;
+  animation: typing 2.2s steps(30, end);
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+
+
+/* === No Student Message Section === */
 .no-student-message {
-    color: black;
-    font-size: 20px;
-    margin-top: 20px;
-    border: 1px solid rgb(209, 86, 86);
-    width: 60%;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: rgba(248, 46, 46, 0.2);
-    border-radius: 20px;
+ background: linear-gradient(135deg, #e6f7f2, #f0faf8);
+  border: 1px solid #b3d9c7;
+  padding: 32px;
+  border-radius: 20px;
+  width: 75%;
+  margin: 30px auto;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  animation: bounceIn 0.8s ease-out;
+}
+.no-student-message p{
+    font-size: 16px;
+    color: #556b61;
+    margin: 0;
+}
+
+.no-student-message:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 .no-student-message h1 {
-    font-size: 24px;
-    margin-bottom: 10px;
+   font-size: 22px;
+    color: #4c6656;
     font-weight: bold;
+    margin-bottom: 12px;
+}
+@keyframes bounceIn {
+  0%   { transform: scale(0.9); opacity: 0.3; }
+  60%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); }
 }

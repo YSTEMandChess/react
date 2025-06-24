@@ -49,7 +49,7 @@ const Home = () => {
     <div role="main" className="home-container">
       <div className="home-content1" role="region">
         <div className="info">
-          <h1 id="h1-home">
+          <h1 className="scetion-heading">
             Helping your child develop <br />
             critical thinking skills!
           </h1>
@@ -64,9 +64,12 @@ const Home = () => {
           {/* <strong>Donate</strong> */}
           {/* </button> */}
 
-          <button className="donateButton" aria-label="Donate to Y STEM and Chess">
-              Donate
+          <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50" aria-label="Donate to Y STEM and Chess">
+           <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
+             Donate
+           </span>
           </button>
+
         </div>
         <div className="pic">
           <img
@@ -88,23 +91,27 @@ const Home = () => {
 
       <div className="home-content2" role="region">
         <div className="card1">
+          <div className="card-content">
           <img src={Images.Heart} alt="Heart icon"></img>
-          <h1 id="h1-home">Free</h1>
+          <h1>Free</h1>
           <p>
             For students who qualify for <br></br> free and reduced lunch.
             <br></br>
             Our lessons are free.
           </p>
+        
           <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50" aria-label="Join now for free button">
             {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" /> */}
             <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
               Join Now !
             </span>
           </button>
+          </div>
         </div>
         <div className="card2">
+            <div className="card-content">
           <img src={Images.Gem} alt="Gem icon"></img>
-          <h1 id="h1-home">Premium</h1>
+          <h1>Premium</h1>
           <p>
             For students who don't qualify <br></br> for free and reduced lunch.{" "}
             <br></br>
@@ -116,6 +123,7 @@ const Home = () => {
               Join Now !
             </span>
           </button>
+          </div>
         </div>
       </div>
 
@@ -160,7 +168,7 @@ const Home = () => {
       ></img>
 
       <div className="home-content5" role="region">
-        <h1 id="h1-home">Books by Devin Nakano</h1>
+        <h1 className="custom-headline">Books by Devin Nakano</h1>
         {books.map((book, index) => (
           <div key={index} className="book">
             <div className="book-left">

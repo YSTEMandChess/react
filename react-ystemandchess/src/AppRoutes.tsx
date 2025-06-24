@@ -1,6 +1,8 @@
 // Imports for React Components/Pages
 import React from 'react';
-import { Route, Router, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
+
 import Home from './Pages/Home/Home';
 import Programs from './Pages/Programs/Programs';
 import CSBenefitPage from './Pages/About-Us/Benefit-of-CS/CSBenefitPage';
@@ -19,29 +21,25 @@ import StudentInventory from './Pages/Student-Inventory/StudentInventory';
 import ResetPassword from './Pages/Reset-Password/reset-password';
 import SetPassword from './Pages/Set-Password/set-password';
 import Student from './Pages/Student/Student';
-// import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
 import NewMentorProfile from './Pages/NewMentorProfile/NewMentorProfile';
 import NewStudentProfile from './Pages/NewStudentProfile/NewStudentProfile';
 import AboutUs from './Pages/About-Us/AboutUs/AboutUs';
-import LessonSelection from "./Pages/LessonsSelection/LessonsSelection"
+import LessonSelection from "./Pages/LessonsSelection/LessonsSelection";
 import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
 
-// Variables and Mutable Data
 import userPortraitImg from './images/user-portrait-placeholder.svg';
 const userName = 'Nimesh Patel';
 
 const AppRoutes = () => {
-  // All components must be wrapped with the '<Route>' tag
+  const [cookies] = useCookies(['login']);
+
   return (
     <Routes>
-      <Route path='/' element={<Home />} />
+      <Route path='/' element={<NewStudentProfile userPortraitSrc={userPortraitImg} />} />
       <Route path='/programs' element={<Programs />} />
       <Route path='/benefit-of-computer-science' element={<CSBenefitPage />} />
       <Route path='/benefit-of-chess' element={<ChessBenefitPage />} />
-      <Route
-        path='/benefit-of-math-tutoring'
-        element={<MathTutBenefitPage />}
-      />
+      <Route path='/benefit-of-math-tutoring' element={<MathTutBenefitPage />} />
       <Route path='/benefit-of-mentoring' element={<MentoringBenefitPage />} />
       <Route path='/login' element={<Login />} />
       <Route path='/signup' element={<SignUp />} />
@@ -54,25 +52,39 @@ const AppRoutes = () => {
       <Route path='/board' element={<Board />} />
       <Route path='/reset-password' element={<ResetPassword />} />
       <Route path='/set-password' element={<SetPassword />} />
+      <Route path='/about-us' element={<AboutUs />} />
+      <Route path='/learnings' element={<Lessons />} />
+      <Route path='/student' element={<Student />} />
+      <Route
+        path='/student-profile'
+        element={
+          cookies.login ? (
+            <NewStudentProfile userPortraitSrc={userPortraitImg} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path='/mentor-profile'
+        element={
+          cookies.login ? (
+            <NewMentorProfile userPortraitSrc={userPortraitImg} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
       <Route
         path='/student-inventory'
         element={
-          <StudentInventory
-            userName={userName}
-            userPortraitSrc={userPortraitImg}
-          />
+          cookies.login ? (
+            <StudentInventory userName={userName} userPortraitSrc={userPortraitImg} />
+          ) : (
+            <Navigate to="/login" />
+          )
         }
       />
-
-      <Route path='/student' element={<Student />} />
-      <Route path='/mentor-profile' element={<NewMentorProfile 
-        userPortraitSrc={userPortraitImg} 
-        />} 
-      />
-      <Route path='/student-profile' element={<NewStudentProfile userPortraitSrc={userPortraitImg}/>} />
-      <Route path='/about-us' element={<AboutUs />} />
-
-      <Route path="/learnings" element={<Lessons />} />
     </Routes>
   );
 };
