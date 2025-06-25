@@ -5,6 +5,7 @@ const socketIo = require('socket.io');
 const { Chess } = require('chess.js');
 const cors = require('cors');
 const http = require('http');
+const initializeSocket = require('./socket');
 
 const app = express();
 const server = http.createServer();
@@ -24,7 +25,8 @@ app.get("/health", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-    // Call a helper function
+    console.log(`New client (${socket.id}) connected!`);
+    initializeSocket(io, socket);
 });
 
 const PORT = process.env.PORT || 5001;

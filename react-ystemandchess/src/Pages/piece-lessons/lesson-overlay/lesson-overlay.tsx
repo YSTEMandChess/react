@@ -13,6 +13,7 @@ import { ReactComponent as BackIconInactive} from '../../../images/icons/icon_ba
 import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg';
 import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
 import { useNavigate, useLocation } from 'react-router';
+import io from 'socket.io-client';
 
 const LessonOverlay = () => {
     const navigate = useNavigate();
@@ -62,9 +63,43 @@ const LessonOverlay = () => {
     const getCurrentLessonsRef = useRef<(input: number) => void>(() => {});
     const handleUnloadRef = useRef(() => {});
 
+    const socketRef = useRef(null);
+
     useEffect(() => {
         startRecording(); // start recording
         window.addEventListener('beforeunload', handleUnloadRef.current); // when unloaded, end recording
+
+        // Set up socket connection
+        socketRef.current = io(environment.urls.stockFishURL, {
+            transports: ["websocket"],
+        });
+
+        socketRef.current.on("connect", () => {
+            socketRef.current.emit("start-session", {
+                sessionType: "lesson",
+                fen: "",
+                infoMode: false
+            })
+        });
+
+        socketRef.current.on("evaluation-complete", (data) => {
+            const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
+            const chessBoard = iframe?.contentWindow;
+
+            const message = JSON.stringify({
+                boardState: data.newFEN || "", // fallback if only engineOutput sent
+                color: turnRef.current,
+                lessonFlag: false,
+            });
+
+            prevFenRef.current = currentFenRef.current;
+            currentFenRef.current = data.newFEN;
+            processMove();
+
+            if (isReady && chessBoard) {
+                chessBoard.postMessage(message, environment.urls.chessClientURL);
+            }
+        })
 
         // configure eventer
         const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
@@ -97,26 +132,11 @@ const LessonOverlay = () => {
                     // process the move for tracking
                     processMove()
 
-                    const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
-                    const chessBoard = iframe?.contentWindow;
-
-                    httpGetAsync( // get the next opponent move from stockfish
-                        `${environment.urls.stockFishURL}/?level=${level}&fen=${e.data}`,
-                        (response) => {
-                            const data = JSON.parse(response)
-                            const message = JSON.stringify({ boardState: data.fen, color: turnRef.current, lessonFlag: false});
-                            // update fens
-                            prevFenRef.current = currentFenRef.current
-                            currentFenRef.current = data.fen
-
-                            // process the move for tracking
-                            processMove()
-
-                            if (isReady) { // sends opponent moved board to client to update UI
-                                chessBoard.postMessage(message, environment.urls.chessClientURL);
-                            }
-                        }
-                    );
+                    socketRef.current.emit("evaluate-fen", {
+                        fen: e.data,
+                        move: "",
+                        level: level
+                    });
                 }
             }
         };
@@ -132,6 +152,7 @@ const LessonOverlay = () => {
             window.removeEventListener('message', handleMessage); // remove event listener
             window.removeEventListener('beforeunload', handleUnloadRef.current); // remove listener when unloading
             handleUnloadRef.current(); // when navigating away, stop recording time spent
+            socketRef.current?.disconnect();
         };
     }, []);
 
