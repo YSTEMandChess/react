@@ -9,14 +9,15 @@ const {
 } = require("../template/changePasswordTemplate");
 const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
-const { MongoClient } = require('mongodb');
+const { MongoClient } = require("mongodb");
 const config = require("config");
 
 let cachedClient = null; // cache db client to prevent repeated connections
 
 // get db client
 async function getDb() {
-  if (!cachedClient) { // if not cached, connect
+  if (!cachedClient) {
+    // if not cached, connect
     cachedClient = new MongoClient(config.get("mongoURI"));
     await cachedClient.connect();
   }
@@ -84,7 +85,6 @@ router.post(
       //Set the account created date for the new user
       const currDate = new Date();
 
-
       //Switch statement for functionality depending on role
       if (role === "parent") {
         let studentsArray = JSON.parse(students);
@@ -118,7 +118,7 @@ router.post(
                 timePlayed: 0,
               });
               await newStudent.save();
-            }),
+            })
           );
         }
       }
@@ -138,7 +138,7 @@ router.post(
       console.error(error.message);
       res.status(500).json("Server error");
     }
-  },
+  }
 );
 
 // @route   POST /user/children
@@ -194,7 +194,7 @@ router.post(
       console.error(error.message);
       res.status(500).json("Server error");
     }
-  },
+  }
 );
 // @route POST /user/sendMail
 // @desc sending the mail based on username and email
@@ -247,7 +247,7 @@ const updatePassword = async (body) => {
   const result = await users.findOneAndUpdate(
     { username: body.username, email: body.email },
     { password: body.password },
-    { new: true },
+    { new: true }
   );
   return result;
 };
@@ -255,17 +255,19 @@ const updatePassword = async (body) => {
 // @route GET /user/mentorless/:keyword
 // @desc for getting the mentorless students whose username matches keyword.
 router.get("/mentorless", async (req, res) => {
-  const keyword = req.query.keyword || ''; // get the keyword
+  const keyword = req.query.keyword || ""; // get the keyword
   try {
     const db = await getDb();
     const users = db.collection("users");
 
-    const userList = await users.find({
-      role: 'student',// get student
-      username: { $regex: keyword, $options: 'i' }, // case-insensitive match for username
-      mentorshipUsername: "" // students who don't have mentors
-    }).toArray();;
-    res.json(userList.map(user => user.username)); // return a list of the usernames
+    const userList = await users
+      .find({
+        role: "student", // get student
+        username: { $regex: keyword, $options: "i" }, // case-insensitive match for username
+        mentorshipUsername: "", // students who don't have mentors
+      })
+      .toArray();
+    res.json(userList.map((user) => user.username)); // return a list of the usernames
   } catch (err) {
     res.status(500).json({ error: err.message }); // error
   }
@@ -276,21 +278,28 @@ router.get("/mentorless", async (req, res) => {
 // @desc if user is mentor, update its student username to the mentorship= query
 // @access  Public with jwt Authentication
 router.put(
-  "/updateMentorship", 
+  "/updateMentorship",
   async (req, res, next) => {
-    passport.authenticate("jwt", { session: false }, async (err, user, info) => {
-      if (!user) {
-        return res.status(401).json({ message: "Unauthorized" });
+    passport.authenticate(
+      "jwt",
+      { session: false },
+      async (err, user, info) => {
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+        req.user = user;
+        next();
       }
-      req.user = user;
-      next();
-    })(req, res, next) // authenticate jwt
-  }, 
+    )(req, res, next); // authenticate jwt
+  },
   async (req, res) => {
     // get the student/mentor username
     const mentorship = req.query.mentorship;
-    if (!mentorship) { // mentorship query is required
-      return res.status(400).json({ message: "Missing mentorship username in query" });
+    if (!mentorship) {
+      // mentorship query is required
+      return res
+        .status(400)
+        .json({ message: "Missing mentorship username in query" });
     }
 
     try {
@@ -310,30 +319,41 @@ router.put(
 
       // if mentorship field is not modified
       if (result.modifiedCount === 0) {
-        return res.status(404).json({ message: "User not found or already has that mentorshipUsername, username: " + req.user.username });
+        return res
+          .status(404)
+          .json({
+            message:
+              "User not found or already has that mentorshipUsername, username: " +
+              req.user.username,
+          });
       }
 
       res.json({ message: "Mentorship updated successfully" });
     } catch (err) {
       res.status(500).json({ error: err.message }); // error
     }
-    }
+  }
 );
 
 // @route GET /user/getMentorship
 // @desc if user is a student, responds with its mentor's object {username, firstName, lastName}
 // @desc if user is a mentor, responds with its student's object {username, firstName, lastName}
 // @access  Public with jwt Authentication
-router.get("/getMentorship",
+router.get(
+  "/getMentorship",
   async (req, res, next) => {
-    passport.authenticate("jwt", { session: false }, async (err, user, info) => {
-      if (!user) {
-        return res.status(401).json({ message: "Unauthorized" });
+    passport.authenticate(
+      "jwt",
+      { session: false },
+      async (err, user, info) => {
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+        req.user = user;
+        next();
       }
-      req.user = user;
-      next();
-    })(req, res, next) // authenticate jwt
-  }, 
+    )(req, res, next); // authenticate jwt
+  },
   async (req, res) => {
     try {
       const db = await getDb();

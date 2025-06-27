@@ -73,7 +73,7 @@ router.post(
         function (err, token) {
           if (err) throw err;
           res.json({ token });
-        },
+        }
       );
 
       return jwt; //Return the encrypted jwt
@@ -81,7 +81,7 @@ router.post(
       console.error(error.message);
       res.status(500).send("Server error");
     }
-  },
+  }
 );
 
 module.exports = router;
