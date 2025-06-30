@@ -1813,7 +1813,7 @@ export function getScenario(index) {
         ...sub,
         board: parseFEN(sub.fen),
         left_ended: index == 0,
-        right_ended: index == scenariosArray.length - 1
+        right_ended: index == 5
     }))
     return scenario
 }

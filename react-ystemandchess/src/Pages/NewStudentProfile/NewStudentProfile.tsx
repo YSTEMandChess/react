@@ -6,6 +6,7 @@ import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
 import { StatsChart } from "./StatsChart";
+import Lessons from "../Lessons/Lessons";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
@@ -27,8 +28,9 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   // data for chart plotting
   const [displayMonths, setDisplayMonths] = useState(6); // display data from 6 many months back 
-  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
-  const [dataAxis, setDataAxis] = useState([0, 0, 0, 0, 0, 0]); // time spent on events each month
+  const [displayEvents, setDisplayEvents] = useState(["website", "play", "lesson", "puzzle", "mentor"])
+  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May"]);
+  const [dataAxis, setDataAxis] = useState<{[key: string]: number[]}>({website: [0, 0, 0, 0, 0],}); // time spent on events each month
 
   // event tracking for pagination
   const [events, setEvents] = useState([]);
@@ -138,19 +140,29 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     try {
       // fetch the time spent on the website in the past few months
       const response = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&eventType=website&months=${displayMonths}`, 
+        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&events=${displayEvents.join(",")}&months=${displayMonths}`, 
         {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${cookies.login}` }
         }
       );
       const data = await response.json(); 
-      const months = data.map(item => item.monthText); // month list for ploting
-      const times = data.map(item => item.timeSpent); // timeSpent for plotting
+
+      const newDataAxis = {} as {[key: string]: number[]};
+      for(let i = 0; i < displayEvents.length; i++)
+      {
+        // get time spent for each event for plotting
+        let event = displayEvents[i];
+        let value = data[event];
+        let months = value.map(item => item.monthText); // month list for ploting
+        let times = value.map(item => item.timeSpent); // timeSpent for plotting
+
+        setMonthAxis(months);
+        newDataAxis[event] = times;
+      }
 
       // update for graph plotting
-      setMonthAxis(months);
-      setDataAxis(times); 
+      setDataAxis(newDataAxis); 
     } catch (err) {
       console.error("Failed to fetch events", err);
     }
@@ -223,8 +235,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       case "learning":
         return (
           <div id="inventory-content-learning" className="inventory-content active-content">
-            <h2>Learning</h2>
-            <p>This is the content for the Learning tab.</p>
+            <Lessons/>
           </div>
         );
       case "chessLessons":
@@ -302,7 +313,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         <div className="inv-inventory-topbar"></div>
         <div className="inv-inventory-analytics">
           <div className="inv-inventory-analytics-graph">
-            <StatsChart key={dataAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
+            <StatsChart key={monthAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
           </div>
           <div className="inv-inventory-analytics-metrics">
             <h3>Time Spent:</h3>

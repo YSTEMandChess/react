@@ -13,7 +13,20 @@
 }
 
 .lessons-page {
+  padding: 3% 0;
+  background-image: url("chess_background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
 
+.left-right-container {
+  display: flex;
+}
+
+.left-container {
+  width: 60%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 /* Button styles */
@@ -65,7 +78,7 @@
 
 .right-container {
   box-sizing: border-box;
-  width: 87%;
+  width: 33%;
   display: flex;
   flex-direction: column;
   font-weight: bold;
@@ -74,6 +87,7 @@
   background: rgba(255,255,255,0.85);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
+  margin-left: 20px;
 }
 
 .button-container {
@@ -94,7 +108,7 @@
 }
 
 .subheading {
-  font-size: 22px;
+  font-size: 28px;
   margin: 3px 0;
   text-align: left;
   font-weight: bold;
@@ -102,8 +116,8 @@
 
 .reset-lesson {
   background-color: var(--green-color);
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -118,11 +132,11 @@
 
 .piece_description {
   text-align: left;
-  font-size: 22px;
+  font-size: 32px;
 }
 
 .lesson-description {
-  font-size: 20px;
+  font-size: 26px;
   color: var(--gray-color);
   max-height: 500px;
   overflow-y: auto;
@@ -132,12 +146,12 @@
 .prev-next-button-container {
   display: flex;
   justify-content: space-between;
-  margin-top: 15px;
+  margin-top: auto;
 }
 
 .prevNextLessonButton {
-  width: 100px;
-  height: 35px;
+  width: 160px;
+  height: 60px;
   border-radius: 5px;
   color: black;
   display: flex;
@@ -146,8 +160,8 @@
 }
 
 .prevNextLessonButton-inactive {
-  width: 100px;
-  height: 35px;
+  width: 160px;
+  height: 60px;
   border-radius: 5px;
   color: rgb(173, 169, 169);
   display: flex;
@@ -156,7 +170,7 @@
 }
 
 .button-description {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
 }
 
@@ -182,9 +196,11 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  margin-right: 0px;
+  margin-left: 100px;
+  margin-right: 100px;
   margin-top: 50px;
-  border-radius: 0px;
+  background-color: var(--gray-color);
+  border-radius: 4px;
   padding: 0;
 }
 
@@ -196,9 +212,9 @@
   cursor: pointer;
   z-index: 1; /* Ensure buttons appear above the chessboard */
   width: fit-content;
-  min-width: 90px;
+  min-width: 120px;
   height: 40px;
-  border-radius: 0px;
+  border-radius: 6px;
   transition: background-color 0.5s ease;
   font-weight: bold;
 }
@@ -286,7 +302,7 @@
 .chessboard-container_L {
   width: 44vw; /* Container width takes full space */
   height: 100%;
-  margin-left: 40px;
+  margin-left: 100px;
 }
 
 /* Chessboard styles */
@@ -294,8 +310,8 @@
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: repeat(8, 4.3vw); /* 8 columns with equal width */
-  grid-template-rows: repeat(8, 4.3vw);    /* 8 rows with equal height */
+  grid-template-columns: repeat(8, 5.5vw); /* 8 columns with equal width */
+  grid-template-rows: repeat(8, 5.5vw);    /* 8 rows with equal height */
   box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
 }
 

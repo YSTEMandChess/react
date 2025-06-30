@@ -291,29 +291,6 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
   return (
     <div className="lessons-page">
       <div className='left-right-container'>
-        {/* Div for elements on the left */}
-        <div className='left-container'>
-          <div className="chessboard-container_L">
-            <div className="button-container">
-              {/* <button className="lesson-button">Lessons</button>*/}
-              {/*<button className="play-button">Play</button>*/}
-            </div>
-            <div data-testid="chessboard-L" className="chessboard_L">
-              {createChessBoard(
-                board,
-                highlightedSquares,
-                setHighlightedSquares,
-                handleSquareHover,
-                handleDragStart,
-                handleDrop,
-                handleDragOver,
-                draggingPiece
-              )}
-            </div>
-            {isPromoting ? <PromotionPopup position={promotionPosition} promoteToPiece={promotePawn} /> : null /* Show promotion popup if needed */}
-          </div>
-        </div>
-
         {/* div for elements on the right */}
         <div className='right-container'>
           {/* Description part */}
@@ -347,6 +324,29 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
               <p className="button-description">Next</p>
             </button>
 
+          </div>
+        </div>
+        
+        {/* Div for elements on the left */}
+        <div className='left-container'>
+          <div className="chessboard-container_L">
+            <div className="button-container">
+              {/* <button className="lesson-button">Lessons</button>*/}
+              {/*<button className="play-button">Play</button>*/}
+            </div>
+            <div data-testid="chessboard-L" className="chessboard_L">
+              {createChessBoard(
+                board,
+                highlightedSquares,
+                setHighlightedSquares,
+                handleSquareHover,
+                handleDragStart,
+                handleDrop,
+                handleDragOver,
+                draggingPiece
+              )}
+            </div>
+            {isPromoting ? <PromotionPopup position={promotionPosition} promoteToPiece={promotePawn} /> : null /* Show promotion popup if needed */}
           </div>
         </div>
 
