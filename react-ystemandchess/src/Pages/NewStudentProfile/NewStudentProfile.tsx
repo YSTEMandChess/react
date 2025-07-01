@@ -7,6 +7,8 @@ import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
 import { StatsChart } from "./StatsChart";
 import Lessons from "../Lessons/Lessons";
+import LessonSelection from "../LessonsSelection/LessonsSelection";
+import LessonOverlay from "../piece-lessons/lesson-overlay/lesson-overlay";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
@@ -44,6 +46,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     month: 'long',
     day: 'numeric',
   }));
+
+  const [lessonSelected, setLessonSelected] = useState(false);
+  const [piece, setPiece] = useState("");
+  const [lessonNum, setLessonNum] = useState(0);
 
   useEffect(()=>{
     try {
@@ -241,8 +247,15 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       case "chessLessons":
         return (
           <div id="inventory-content-lessons" className="inventory-content active-content">
-            <h2>Chess Lessons</h2>
-            <p>This is the content for the Chess Lessons tab.</p>
+            {lessonSelected ? (
+              <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum}/>
+            ) : (
+              <LessonSelection onGo={(selectedScenario, lessonNum) => { 
+                setLessonSelected(true);
+                setPiece(selectedScenario);
+                setLessonNum(lessonNum);
+              }}/>
+            )}
           </div>
         );
       case "games":

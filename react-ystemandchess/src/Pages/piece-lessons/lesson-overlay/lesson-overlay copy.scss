@@ -1,7 +1,14 @@
 #lesson-container {
+    background-image: url("../../../images/chess_background.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: auto 1fr auto;
     align-content: center;
 
     #chess-board {
+        grid-row: 1 / span 2;
         display: flex;
         flex-direction: column;
         justify-content: center;

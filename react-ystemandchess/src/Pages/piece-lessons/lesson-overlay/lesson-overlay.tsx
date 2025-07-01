@@ -14,11 +14,22 @@ import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg'
 import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
 import { useNavigate, useLocation } from 'react-router';
 
-const LessonOverlay = () => {
+// types for the component props
+type LessonOverlayProps = {
+  propPieceName?: any;
+  propLessonNumber?: any;
+};
+
+const LessonOverlay: React.FC<LessonOverlayProps> = ({
+        propPieceName = "Checkmate Pattern 1 Recognize the patterns", 
+        propLessonNumber = 1,
+    }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const passedPieceName = location.state?.piece;
-    const passedLessonNumber = location.state?.lessonNum;
+    let passedPieceName = location.state?.piece; // if received from page navigation
+    if(propPieceName) passedPieceName = propPieceName;
+    let passedLessonNumber = location.state?.lessonNum; // if received from parent props
+    if(propLessonNumber) passedLessonNumber = propLessonNumber;
     const [cookies] = useCookies(['login']);
     const [username, setUsername] = useState(null);
 

@@ -1,4 +1,4 @@
-import "./LessonsStyle.css";
+import "./ProfileStyle.css";
 import { useNavigate } from "react-router";
 import React, { useState, useEffect, useCallback } from 'react';
 import { environment } from "../../environments/environment";
@@ -25,7 +25,7 @@ const LessonTemplate = React.memo(function LessonTemplate({ lesson, onClick }) {
 
 // When passing down props (e.g. lessontemplate & scenariotemplate) you can sometimes use memo & useCallback.
 
-export default function LessonSelection() {
+export default function LessonSelection({ onGo }) { // what to do when clicking go button, default to navigation
     const navigate = useNavigate();
     const [showScenarios, setShowScenarios] = useState(false);
     const [showLessons, setShowLessons] = useState(false);
@@ -95,7 +95,11 @@ export default function LessonSelection() {
             return;
         }
 
-        navigate("/lessons", { state: { piece: selectedScenario, lessonNum } });
+        if (onGo) {
+            onGo(selectedScenario, lessonNum);
+        } else {
+            navigate("/lessons", { state: { piece: selectedScenario, lessonNum } });
+        }
     };
 
     // Effect hook to update the list of lessons when the selected scenario or login cookie changes.
