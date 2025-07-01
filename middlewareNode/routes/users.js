@@ -319,13 +319,11 @@ router.put(
 
       // if mentorship field is not modified
       if (result.modifiedCount === 0) {
-        return res
-          .status(404)
-          .json({
-            message:
-              "User not found or already has that mentorshipUsername, username: " +
-              req.user.username,
-          });
+        return res.status(404).json({
+          message:
+            "User not found or already has that mentorshipUsername, username: " +
+            req.user.username,
+        });
       }
 
       res.json({ message: "Mentorship updated successfully" });
