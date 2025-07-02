@@ -31,7 +31,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   // data for chart plotting
   const [displayMonths, setDisplayMonths] = useState(6); // display data from 6 many months back 
   const [displayEvents, setDisplayEvents] = useState(["website", "play", "lesson", "puzzle", "mentor"])
-  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May"]);
+  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May"]); // display the time as X-axis
   const [dataAxis, setDataAxis] = useState<{[key: string]: number[]}>({website: [0, 0, 0, 0, 0],}); // time spent on events each month
 
   // event tracking for pagination

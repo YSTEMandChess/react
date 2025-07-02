@@ -457,9 +457,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
             <div className='left-right-container'>
                 <div className="switchLesson" onClick={() => navigate("/lessons-selection")}>Switch Lesson</div>
             </div>
-            <div id="chess-board">
-                <PlayLesson chessLessonSrc={environment.urls.chessClientURL} />
-            </div>
             <div className='right-container'>
                 {/* Lesson info */}
                 <div className='lesson-header'>
@@ -503,8 +500,9 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                     )
                 }
                 </div>
-                <MoveTracker moves={moves} />
+                {/* <MoveTracker moves={moves} /> */}
             </div>
+            <iframe src={environment.urls.chessClientURL} className='chess-board' id="chessBd" title="Chess Lesson Board"/>
 
             {/* connection error popup */}
             {ShowError && (
