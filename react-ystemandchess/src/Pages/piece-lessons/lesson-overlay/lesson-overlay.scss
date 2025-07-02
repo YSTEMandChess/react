@@ -1,14 +1,24 @@
 #lesson-container {
+    background-image: url("../../../images/chess_background.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: auto 1fr auto;
     align-content: center;
 
-    .chess-board {
-      margin-bottom: 30px;
-      margin-top: -150px;
-      transform: scale(0.7);
-      transform-origin: bottom center;
-      width: 600px;
-      height: 600px;
-      border: none;
+    #chess-board {
+        grid-row: 1 / span 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
+        padding: 8px;
+        //make all content smaller
+        width: 50%;
+        //make all content centered
+        margin: 0 auto;
     }
 
     .left-right-container {
@@ -53,7 +63,6 @@
 
 .right-container {
   margin-top: 30px;
-  padding-top: 10px;
   box-sizing: border-box;
   width: 100%;
   display: flex;
@@ -78,7 +87,7 @@
 }
 
 .subheading {
-  font-size: 22px;
+  font-size: 24px;
   margin: 3px 0;
   text-align: left;
   font-weight: bold;
@@ -86,8 +95,8 @@
 
 .reset-lesson {
   background-color: var(--green-color);
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -102,11 +111,11 @@
 
 .piece_description {
   text-align: left;
-  font-size: 22px;
+  font-size: 30px;
 }
 
 .lesson-description {
-  font-size: 18px;
+  font-size: 19px;
   color: var(--gray-color);
   max-height: 280px;
   overflow-y: auto;
@@ -116,12 +125,12 @@
 .prev-next-button-container {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
+  margin-top: auto;
 }
 
 .prevNextLessonButton {
-  width: 100px;
-  height: 35px;
+  width: 160px;
+  height: 60px;
   border-radius: 5px;
   color: black;
   display: flex;
@@ -130,8 +139,8 @@
 }
 
 .prevNextLessonButton-inactive {
-  width: 100px;
-  height: 35px;
+  width: 160px;
+  height: 60px;
   border-radius: 5px;
   color: rgb(173, 169, 169);
   display: flex;
@@ -140,7 +149,7 @@
 }
 
 .button-description {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
 }
 

@@ -248,7 +248,9 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         return (
           <div id="inventory-content-lessons" className="inventory-content active-content">
             {lessonSelected ? (
-              <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum}/>
+              <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum} navigateFunc={() => {
+                setLessonSelected(false);
+              }}/>
             ) : (
               <LessonSelection onGo={(selectedScenario, lessonNum) => { 
                 setLessonSelected(true);

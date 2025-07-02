@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../../environments/environment';
-import PlayLesson from '../play-lesson/PlayLesson';
-import './lesson-overlay.scss';
+import './lesson-overlay-profile.scss';
 import { SetPermissionLevel } from "../../../globals"; 
 // @ts-ignore
 import MoveTracker from '../move-tracker/MoveTracker';
@@ -18,18 +17,20 @@ import { useNavigate, useLocation } from 'react-router';
 type LessonOverlayProps = {
   propPieceName?: any;
   propLessonNumber?: any;
+  navigateFunc?: any;
 };
 
 const LessonOverlay: React.FC<LessonOverlayProps> = ({
-        propPieceName = "Checkmate Pattern 1 Recognize the patterns", 
-        propLessonNumber = 1,
+        propPieceName = null, 
+        propLessonNumber = null,
+        navigateFunc = null
     }) => {
     const navigate = useNavigate();
     const location = useLocation();
     let passedPieceName = location.state?.piece; // if received from page navigation
     if(propPieceName) passedPieceName = propPieceName;
     let passedLessonNumber = location.state?.lessonNum; // if received from parent props
-    if(propLessonNumber) passedLessonNumber = propLessonNumber;
+    if(propLessonNumber != null) passedLessonNumber = propLessonNumber;
     const [cookies] = useCookies(['login']);
     const [username, setUsername] = useState(null);
 
@@ -143,6 +144,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
             window.removeEventListener('message', handleMessage); // remove event listener
             window.removeEventListener('beforeunload', handleUnloadRef.current); // remove listener when unloading
             handleUnloadRef.current(); // when navigating away, stop recording time spent
+            if(navigateFunc) navigateFunc();
         };
     }, []);
 
@@ -455,7 +457,10 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     return (
         <div id="lesson-container">
             <div className='left-right-container'>
-                <div className="switchLesson" onClick={() => navigate("/lessons-selection")}>Switch Lesson</div>
+                <div className="switchLesson" onClick={() => {
+                    if(navigateFunc) navigateFunc();
+                    else navigate("/lessons-selection");
+                }}>Switch Lesson</div>
             </div>
             <div className='right-container'>
                 {/* Lesson info */}
