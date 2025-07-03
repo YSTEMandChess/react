@@ -12,92 +12,28 @@
   --shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.lessons-page {
-  padding: 3% 0;
-  background-image: url("chess_background.png");
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.left-right-container {
-  display: flex;
-}
-
-.left-container {
-  width: 60%;
-  height: 100%;
+.rightContainer {
   box-sizing: border-box;
-}
-
-/* Button styles */
-.lesson-button, .play-button {
-  padding: 10px 28px;
-  margin: 5px 10px;
-  border: none;
-  background: none;
-  font-size: 2.2rem;
-  font-weight: 800;
-  border-radius: 8px;
-  transition: 
-    color 0.2s var(--transition),
-    background-color 0.2s var(--transition),
-    box-shadow 0.2s var(--transition);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: none;
-  outline: none;
-}
-
-.lesson-button {
-  color: var(--green-color);
-  margin-left: -0.5rem;
-  border: 2px solid var(--green-color);
-  background-color: rgba(127,204,38,0.08);
-}
-
-.lesson-button:hover, .lesson-button:focus {
-  color: var(--dark-green-color);
-  background-color: rgba(127,204,38,0.18);
-  box-shadow: 0 2px 8px rgba(127,204,38,0.12);
-}
-
-.play-button {
-  color: var(--gray-color);
-  margin-right: -0.5rem;
-  border: 2px solid var(--gray-color);
-  background-color: rgba(122,122,122,0.08);
-}
-
-.play-button:hover, .play-button:focus {
-  color: black;
-  background-color: rgba(122,122,122,0.18);
-  box-shadow: 0 2px 8px rgba(122,122,122,0.12);
-}
-
-.right-container {
-  box-sizing: border-box;
-  width: 33%;
+  width: 87%;
   display: flex;
   flex-direction: column;
   font-weight: bold;
   text-align: left;
-  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  padding: 1rem 1rem 1rem 1.5rem;
+  margin: 1.7rem;
   background: rgba(255,255,255,0.85);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  margin-left: 20px;
 }
 
-.button-container {
+.buttonContainer {
   display: flex;
   justify-content: flex-end;
   gap: 18px;
   margin-top: 1.5rem;
 }
 
-.lesson-header {
+.lessonHeader {
   display: flex;
   justify-content: space-between;
   align-items:first baseline;
@@ -108,16 +44,16 @@
 }
 
 .subheading {
-  font-size: 28px;
+  font-size: 22px;
   margin: 3px 0;
   text-align: left;
   font-weight: bold;
 }
 
-.reset-lesson {
+.resetLesson {
   background-color: var(--green-color);
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -126,32 +62,32 @@
   padding: 5px;
 }
 
-.reset-lesson:hover {
+.resetLesson:hover {
   background-color: var(--dark-green-color);
 }
 
-.piece_description {
+.pieceDescription {
   text-align: left;
-  font-size: 32px;
+  font-size: 22px;
 }
 
-.lesson-description {
-  font-size: 26px;
+.lessonDescription {
+  font-size: 18px;
   color: var(--gray-color);
   max-height: 500px;
   overflow-y: auto;
   scrollbar-width: thin;
 }
 
-.prev-next-button-container {
+.prevNextContainer {
   display: flex;
   justify-content: space-between;
-  margin-top: auto;
+  margin-top: 10px;
 }
 
 .prevNextLessonButton {
-  width: 160px;
-  height: 60px;
+  width: 100px;
+  height: 35px;
   border-radius: 5px;
   color: black;
   display: flex;
@@ -159,9 +95,9 @@
   justify-content: space-between;
 }
 
-.prevNextLessonButton-inactive {
-  width: 160px;
-  height: 60px;
+.prevNextLessonButtonInactive {
+  width: 100px;
+  height: 35px;
   border-radius: 5px;
   color: rgb(173, 169, 169);
   display: flex;
@@ -169,8 +105,8 @@
   justify-content: space-between;
 }
 
-.button-description {
-  font-size: 20px;
+.buttonDescription {
+  font-size: 18px;
   font-weight: bold;
 }
 
@@ -192,19 +128,17 @@
   transition: background-color 100ms linear;
 }
 
-.lesson-buttons-container {
+.lessonButtonsContainer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  margin-left: 100px;
-  margin-right: 100px;
-  margin-top: 50px;
-  background-color: var(--gray-color);
-  border-radius: 4px;
+  margin-left: 20px;
+  margin-top: 30px;
+  border-radius: 0px;
   padding: 0;
 }
 
-.lesson-buttons {
+.lessonButtons {
   margin: 0 0;
   background-color: var(--gray-color); /* Gray background */
   color: white;
@@ -212,14 +146,14 @@
   cursor: pointer;
   z-index: 1; /* Ensure buttons appear above the chessboard */
   width: fit-content;
-  min-width: 120px;
+  min-width: 90px;
   height: 40px;
-  border-radius: 6px;
+  border-radius: 0px;
   transition: background-color 0.5s ease;
   font-weight: bold;
 }
 
-.lesson-buttons.active {
+.lessonButtons.active {
   background-color: var(--green-color);
   color: black;
   transition: background-color 0.5s ease;
@@ -235,9 +169,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000; 
 }
 
-.popup-content {
+.popupContent {
   width: 450px;
   height: 280px;
   background-color: white;
@@ -246,7 +181,7 @@
   text-align: center;
 }
 
-.success-checkmark {
+.successCheckmark {
   display: flex;
   justify-content: center;
   margin-bottom: 10px;
@@ -276,52 +211,53 @@
   }
 }
 
-.popup-header {
+.popupHeader {
   color: rgb(108, 107, 107);
   font-size: 30px;
   font-weight: bold;
   margin-bottom: 3px;
 }
 
-.popup-subheading {
+.popupSubheading {
   color: rgb(108, 107, 107);
   font-size: 20px;
 }
 
-.popup-button {
+.popupButton {
   border-radius: 9px;
   background-color: rgb(74, 145, 221);
   border: 3px solid rgb(156, 184, 214);
 }
 
-.popup-button:hover {
+.popupButton:hover {
   background-color: rgb(68, 133, 203);
 }
 
 /* Chessboard Container */
-.chessboard-container_L {
+.chessboardContainer {
   width: 44vw; /* Container width takes full space */
   height: 100%;
-  margin-left: 100px;
+  margin-left: 40px;
 }
 
 /* Chessboard styles */
-.chessboard_L {
+.chessboard {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: repeat(8, 5.5vw); /* 8 columns with equal width */
-  grid-template-rows: repeat(8, 5.5vw);    /* 8 rows with equal height */
+  margin-left: 60px;
+  grid-template-columns: repeat(8, 3.8vw); /* 8 columns with equal width */
+  grid-template-rows: repeat(8, 3.8vw);    /* 8 rows with equal height */
   box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
 }
 
-.square_L {
+.square {
   width: 100%;
   height: 100%;
   position: relative; /* Set the square as a positioning reference */
 }
 
-.highlight-circle {
+.highlightCircle {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -334,7 +270,7 @@
 }
 
 /* Labels for ranks (1-8) */
-.rank-label {
+.rankLabel {
   position: absolute;
   top: 4px; /* Top-left corner */
   left: 4px;
@@ -343,7 +279,7 @@
 }
 
 /* Labels for files (a-h) */
-.file-label {
+.fileLabel {
   position: absolute;
   bottom: 4px; /* Bottom-right corner */
   right: 4px;
@@ -351,7 +287,7 @@
   color: #333;
 }
 
-.pawn-image, .piece-image {
+.pawnImage, .pieceImage {
   width: 90%;  /* Scale pieces based on square size */
   height: 90%;
   object-fit: contain; /* Ensure the image fits nicely within the square */
@@ -359,7 +295,7 @@
 
 // STYLES FOR PRROMOTION POPUP
 
-.promotion-popup {
+.promotionPopup {
   border: 1px solid var(--gray-color);
   position: fixed;
   top: 0;
@@ -376,7 +312,7 @@
   z-index: 1000; /* Ensure it appears above other content */
 }
 
-.promotion-options {
+.promotionOptions {
   padding: 20px;
   border: 1px solid var(--gray-color);
   background-color: var(--light-gray-color);
@@ -385,10 +321,10 @@
   justify-content: space-around;
 }
 
-.promotion-option {
+.promotionOption {
   background-color: var(--green-color);
 }
 
-.promotion-option:hover {
+.promotionOption:hover {
   background-color: var(--dark-green-color);
 } 

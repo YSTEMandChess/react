@@ -241,7 +241,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       case "learning":
         return (
           <div id="inventory-content-learning" className="inventory-content active-content">
-            <Lessons/>
+            <Lessons styleType={"profile"}/>
           </div>
         );
       case "chessLessons":
@@ -250,7 +250,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             {lessonSelected ? (
               <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum} navigateFunc={() => {
                 setLessonSelected(false);
-              }}/>
+              }} styleType="profile"/>
             ) : (
               <LessonSelection onGo={(selectedScenario, lessonNum) => { 
                 setLessonSelected(true);

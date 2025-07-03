@@ -1,4 +1,4 @@
-import "./ProfileStyle.css";
+import "./ProfileStyle.scss";
 import { useNavigate } from "react-router";
 import React, { useState, useEffect, useCallback } from 'react';
 import { environment } from "../../environments/environment";

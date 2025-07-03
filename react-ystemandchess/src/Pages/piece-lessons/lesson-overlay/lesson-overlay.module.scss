@@ -1,65 +1,58 @@
-#lesson-container {
+.lessonContainer {
+    background-image: url("../../../images/chess_background.png");
+    background-repeat: no-repeat;
+    background-size: cover;
     align-content: center;
-
-    .chess-board {
-      margin-bottom: 30px;
-      margin-top: -150px;
-      transform: scale(0.7);
-      transform-origin: bottom center;
-      width: 600px;
-      height: 600px;
-      border: none;
-    }
-
-    .left-right-container {
-      padding-top: 0.3rem;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: -1rem;
-
-      .switchLesson {
-        font-size: 2rem;
-        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-weight: bold;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        color: var(--green-color);
-        margin-top: 1rem;
-        border: 0.1rem solid var(--green-color);
-        background-color: rgba(240, 248, 230, 0.5);
-      }
-
-      .switchLesson:hover {
-        cursor: pointer;
-        color: var(--dark-green-color);
-        background-color: rgba(127,204,38,0.18);
-        box-shadow: 0 2px 8px rgba(127,204,38,0.12);
-      }
-    }
 }
 
-#movesAhead {
-    width: 100px;
+.chessBoard {
+  transform: scale(0.9);
+  transform-origin: center;
+  width: 600px;
+  height: 600px;
+  border: none;
 }
 
-#tag {
-    padding: 20px;
-    font-family: 'Roboto', sans-serif;
-    background-color: #ADD8E6;
-    border-radius: 5px;
-    color: #4A4A4A;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+.switchLesson {
+  width: 30vw;
+  font-size: 28px;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: bold;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-left: 13vw;
+  margin-top: 5vh;
+  color: var(--green-color);
+  border: 0.1rem solid var(--green-color);
+  background-color: rgba(240, 248, 230, 0.5);
 }
 
-.right-container {
-  margin-top: 30px;
-  padding-top: 10px;
+.switchLesson:hover {
+  cursor: pointer;
+  color: var(--dark-green-color);
+  background-color: rgba(127,204,38,0.18);
+  box-shadow: 0 2px 8px rgba(127,204,38,0.12);
+}
+
+.container {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.rightContainer {
+  margin: 20px;
+  margin-right: 60px;
   box-sizing: border-box;
-  width: 100%;
+  width: 40vw;
   display: flex;
   flex-direction: column;
   font-weight: bold;
   text-align: left;
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  background: rgba(255,255,255,0.85);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
 }
 
 .button-container {
@@ -67,7 +60,7 @@
   justify-content: space-between;
 }
 
-.lesson-header {
+.lessonHeader {
   display: flex;
   justify-content: space-between;
   align-items:first baseline;
@@ -78,16 +71,16 @@
 }
 
 .subheading {
-  font-size: 22px;
+  font-size: 24px;
   margin: 3px 0;
   text-align: left;
   font-weight: bold;
 }
 
-.reset-lesson {
+.resetLesson {
   background-color: var(--green-color);
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -100,28 +93,28 @@
   background-color: var(--dark-green-color);
 }
 
-.piece_description {
+.pieceDescription {
   text-align: left;
-  font-size: 22px;
+  font-size: 30px;
 }
 
-.lesson-description {
-  font-size: 18px;
+.lessonDescription {
+  font-size: 19px;
   color: var(--gray-color);
   max-height: 280px;
   overflow-y: auto;
   scrollbar-width: thin;
 }
 
-.prev-next-button-container {
+.prevNextContainer {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
+  margin-top: auto;
 }
 
 .prevNextLessonButton {
-  width: 100px;
-  height: 35px;
+  width: 160px;
+  height: 60px;
   border-radius: 5px;
   color: black;
   display: flex;
@@ -129,9 +122,9 @@
   justify-content: space-between;
 }
 
-.prevNextLessonButton-inactive {
-  width: 100px;
-  height: 35px;
+.prevNextLessonButtonInactive {
+  width: 160px;
+  height: 60px;
   border-radius: 5px;
   color: rgb(173, 169, 169);
   display: flex;
@@ -139,8 +132,8 @@
   justify-content: space-between;
 }
 
-.button-description {
-  font-size: 18px;
+.buttonDescription {
+  font-size: 20px;
   font-weight: bold;
 }
 
@@ -174,7 +167,7 @@
   align-items: center;
 }
 
-.popup-content {
+.popupContent {
   width: 450px;
   height: fit-content;
   background-color: white;
@@ -183,17 +176,17 @@
   text-align: center;
 }
 
-.popup-button {
+.popupButton {
   background-color: var(--green-color);
   color: black;
   font-weight: bold;
 }
 
-.popup-button:hover {
+.popupButton:hover {
   background-color: var(--dark-green-color);
 }
 
-.success-checkmark {
+.successCheckmark {
   display: flex;
   justify-content: center;
   margin-bottom: 10px;
@@ -223,26 +216,26 @@
   }
 }
 
-.error-cross {
+.errorCross {
   display: flex;
   justify-content: center;
 }
 
-.popup-header {
+.popupHeader {
   color: rgb(108, 107, 107);
   font-size: 30px;
   font-weight: bold;
   margin-bottom: 3px;
 }
 
-.popup-subheading {
+.popupSubheading {
   color: rgb(108, 107, 107);
   font-size: 20px;
   max-height: 300px;
   overflow: scroll;
 }
 
-.loading-spinner {
+.loadingSpinner {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -250,13 +243,13 @@
   svg {
     animation: rotate 2s linear infinite;
   }
+}
 
-  .spinner {
-    stroke-dasharray: 339.292; // approx. circumference of r=54
-    stroke-dashoffset: 0;
-    transform-origin: 60px 60px;
-    animation: dash 1.5s ease-in-out infinite;
-  }
+.spinner {
+  stroke-dasharray: 339.292; // approx. circumference of r=54
+  stroke-dashoffset: 0;
+  transform-origin: 60px 60px;
+  animation: dash 1.5s ease-in-out infinite;
 }
 
 @keyframes rotate {
@@ -278,7 +271,6 @@
     transform: rotate(360deg);
   }
 }
-
 
 // BEGIN MOVE TRACK STYLES
 

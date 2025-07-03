@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../../environments/environment';
-import './lesson-overlay-profile.scss';
+import pageStyles from './lesson-overlay.module.scss';
+import profileStyles from './lesson-overlay-profile.module.scss';
 import { SetPermissionLevel } from "../../../globals"; 
 // @ts-ignore
 import MoveTracker from '../move-tracker/MoveTracker';
@@ -18,13 +19,18 @@ type LessonOverlayProps = {
   propPieceName?: any;
   propLessonNumber?: any;
   navigateFunc?: any;
+  styleType?: any;
 };
 
 const LessonOverlay: React.FC<LessonOverlayProps> = ({
         propPieceName = null, 
         propLessonNumber = null,
-        navigateFunc = null
+        navigateFunc = null,
+        styleType = "page"
     }) => {
+
+    const styles = styleType === 'profile' ? profileStyles : pageStyles;
+
     const navigate = useNavigate();
     const location = useLocation();
     let passedPieceName = location.state?.piece; // if received from page navigation
@@ -455,68 +461,67 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     };
 
     return (
-        <div id="lesson-container">
-            <div className='left-right-container'>
-                <div className="switchLesson" onClick={() => {
-                    if(navigateFunc) navigateFunc();
-                    else navigate("/lessons-selection");
-                }}>Switch Lesson</div>
-            </div>
-            <div className='right-container'>
-                {/* Lesson info */}
-                <div className='lesson-header'>
-                <h1 className="piece_description">{piece}</h1>
-                <button className='reset-lesson' onClick={handleReset}>
-                    <RedoIcon className='reset-icon'/>
-                </button>
+        <div className={styles.lessonContainer}>
+            <div className={styles.switchLesson} onClick={() => {
+                if(navigateFunc) navigateFunc();
+                else navigate("/lessons-selection");
+            }}>Switch Lesson</div>
+            <div className={styles.container}>
+                <div className={styles.rightContainer}>
+                    {/* Lesson info */}
+                    <div className={styles.lessonHeader}>
+                    <h1 className={styles.pieceDescription}>{piece}</h1>
+                    <button className={styles.resetLesson} onClick={handleReset}>
+                        <RedoIcon/>
+                    </button>
+                    </div>
+                    <h1 className={styles.subheading}>{lessonNum + 1} / {totalLessons}: {name}</h1>
+                    <p className={styles.lessonDescription}>{info}</p>
+        
+                
+                    {/* deactivate previous button, if there are no lessons before it*/}
+                    <div className={styles.prevNextContainer}>
+                    {
+                        lessonNum <= 0? ( 
+                        <button className={[styles.prevNextLessonButtonInactive, styles.prev].join(' ')}>
+                            <BackIconInactive/>
+                            <p className={styles.buttonDescription}>Back</p>
+                        </button>
+                        ) : (
+                            
+                        <button className={[styles.prevNextLessonButton, styles.prev].join(' ')} onClick={previousLesson}>
+                            <BackIcon/>
+                            <p className={styles.buttonDescription}>Back</p>
+                        </button>
+                        )
+                    }
+        
+                    {/* deactivate next button, if it goes beyond first uncompleted, or beyond last available lesson */}
+                    {((lessonNum >= completedNum) || (lessonNum >= totalLessons - 1))? (
+                        <button className={[styles.prevNextLessonButtonInactive, styles.next].join(' ')}>
+                            <p className={styles.buttonDescription}>Next</p>
+                            <NextIconInactive/>
+                        </button>
+                        ) : (
+                        <button className={[styles.prevNextLessonButton, styles.next].join(' ')} onClick={nextLesson}>
+                            <p className={styles.buttonDescription}>Next</p>
+                            <NextIcon/>
+                        </button>
+                        )
+                    }
+                    </div>
+                    {/* <MoveTracker moves={moves} /> */}
                 </div>
-                <h1 className='subheading'>{lessonNum + 1} / {totalLessons}: {name}</h1>
-                <p className="lesson-description">{info}</p>
-    
-            
-                {/* deactivate previous button, if there are no lessons before it*/}
-                <div className='prev-next-button-container'>
-                {
-                    lessonNum <= 0? ( 
-                    <button className="prevNextLessonButton-inactive prev">
-                        <BackIconInactive/>
-                        <p className="button-description">Back</p>
-                    </button>
-                    ) : (
-                        
-                    <button className="prevNextLessonButton prev" onClick={previousLesson}>
-                        <BackIcon/>
-                        <p className="button-description">Back</p>
-                    </button>
-                    )
-                }
-    
-                {/* deactivate next button, if it goes beyond first uncompleted, or beyond last available lesson */}
-                {((lessonNum >= completedNum) || (lessonNum >= totalLessons - 1))? (
-                    <button className="prevNextLessonButton-inactive next">
-                        <p className="button-description">Next</p>
-                        <NextIconInactive/>
-                    </button>
-                    ) : (
-                    <button className="prevNextLessonButton next" onClick={nextLesson}>
-                        <p className="button-description">Next</p>
-                        <NextIcon/>
-                    </button>
-                    )
-                }
-                </div>
-                {/* <MoveTracker moves={moves} /> */}
+                <iframe src={environment.urls.chessClientURL} className={styles.chessBoard} id="chessBd" title="Chess Lesson Board"/>
             </div>
-            <iframe src={environment.urls.chessClientURL} className='chess-board' id="chessBd" title="Chess Lesson Board"/>
-
             {/* connection error popup */}
             {ShowError && (
-                <div className="popup">
-                    <div className="popup-content">
-                    <div className="error-cross">
+                <div className={styles.popup}>
+                    <div className={styles.popupContent}>
+                    <div className={styles.errorCross}>
                         <svg width="80" height="80" viewBox="0 0 120 120">
                         <circle
-                            className="circle"
+                            className={styles.circle}
                             cx="60"
                             cy="60"
                             r="54"
@@ -525,7 +530,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                             strokeWidth="6"
                         ></circle>
                         <path
-                            className="cross-line1"
                             d="M40 40 L80 80"
                             fill="none"
                             stroke="#f57c7c"
@@ -533,7 +537,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                             strokeLinecap="round"
                         />
                         <path
-                            className="cross-line2"
                             d="M80 40 L40 80"
                             fill="none"
                             stroke="#f57c7c"
@@ -542,37 +545,37 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                         />
                         </svg>
                     </div>
-                    <p className="popup-header">Failed to load content</p>
-                    <p className="popup-subheading">Please reload page</p>
+                    <p className={styles.popupHeader}>Failed to load content</p>
+                    <p className={styles.popupSubheading}>Please reload page</p>
                     </div>
                 </div>
                 )}
             
             {/* lesson completed popup */}
             {showVPopup && (
-                <div className="popup">
-                <div className="popup-content">
-                    <div className="success-checkmark">
+                <div className={styles.popup}>
+                <div className={styles.popupContent}>
+                    <div className={styles.successCheckmark}>
                     <svg width="80" height="80" viewBox="0 0 120 120">
-                        <circle className="circle" cx="60" cy="60" r="54" fill="none" stroke="#beea8b" stroke-width="6"></circle>
-                        <path className="checkmark" d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <circle className={styles.circle} cx="60" cy="60" r="54" fill="none" stroke="#beea8b" stroke-width="6"></circle>
+                        <path className={styles.checkmark} d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>
                     </svg>
                     </div>
-                    <p className="popup-header">Lesson completed</p>
-                    <p className="popup-subheading">Good job</p>
-                    <button className="popup-button" onClick={handleVPopup}>OK</button>
+                    <p className={styles.popupHeader}>Lesson completed</p>
+                    <p className={styles.popupSubheading}>Good job</p>
+                    <button className={styles.popupButton} onClick={handleVPopup}>OK</button>
                 </div>
                 </div>
             )}
 
             {/* lesson not done yet popup */}
             {showXPopup && (
-                <div className="popup">
-                    <div className="popup-content">
-                    <div className="error-cross">
+                <div className={styles.popup}>
+                    <div className={styles.popupContent}>
+                    <div className={styles.errorCross}>
                         <svg width="80" height="80" viewBox="0 0 120 120">
                         <circle
-                            className="circle"
+                            className={styles.circle}
                             cx="60"
                             cy="60"
                             r="54"
@@ -581,7 +584,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                             strokeWidth="6"
                         ></circle>
                         <path
-                            className="cross-line1"
                             d="M40 40 L80 80"
                             fill="none"
                             stroke="#f57c7c"
@@ -589,7 +591,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                             strokeLinecap="round"
                         />
                         <path
-                            className="cross-line2"
                             d="M80 40 L40 80"
                             fill="none"
                             stroke="#f57c7c"
@@ -598,21 +599,21 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                         />
                         </svg>
                     </div>
-                    <p className="popup-header">Lesson failed</p>
-                    <p className="popup-subheading">Please try again</p>
-                    <button className="popup-button" onClick={handleXPopup}>OK</button>
+                    <p className={styles.popupHeader}>Lesson failed</p>
+                    <p className={styles.popupSubheading}>Please try again</p>
+                    <button className={styles.popupButton} onClick={handleXPopup}>OK</button>
                     </div>
                 </div>
                 )}
             
             {/* loading to wait for lesson fetching */}
             {showLPopup && (
-                <div className="popup">
-                    <div className="popup-content">
-                    <div className="loading-spinner">
+                <div className={styles.popup}>
+                    <div className={styles.popupContent}>
+                    <div className={styles.loadingSpinner}>
                         <svg width="80" height="80" viewBox="0 0 120 120">
                         <circle
-                            className="spinner"
+                            className={styles.spinner}
                             cx="60"
                             cy="60"
                             r="54"
@@ -622,19 +623,19 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                         ></circle>
                         </svg>
                     </div>
-                    <p className="popup-header">Loading lesson...</p>
-                    <p className="popup-subheading">Please wait</p>
+                    <p className={styles.popupHeader}>Loading lesson...</p>
+                    <p className={styles.popupSubheading}>Please wait</p>
                     </div>
                 </div>
             )}
 
             {/* have users read instructions first */}
             {showInstruction && (
-                <div className="popup">
-                    <div className="popup-content">
-                    <p className="popup-header">Read this instruction:</p>
-                    <p className="popup-subheading">{info}</p>
-                    <button className="popup-button" onClick={handleShowInstruction}>Finished reading!</button>
+                <div className={styles.popup}>
+                    <div className={styles.popupContent}>
+                    <p className={styles.popupHeader}>Read this instruction:</p>
+                    <p className={styles.popupSubheading}>{info}</p>
+                    <button className={styles.popupButton} onClick={handleShowInstruction}>Finished reading!</button>
                     </div>
                 </div>
             )}
