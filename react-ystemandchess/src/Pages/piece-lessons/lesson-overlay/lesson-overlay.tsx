@@ -70,7 +70,7 @@ const LessonOverlay = () => {
         window.addEventListener('beforeunload', handleUnloadRef.current); // when unloaded, end recording
 
         // Set up socket connection
-        socketRef.current = io(environment.urls.stockFishURL, {
+        socketRef.current = io("http://localhost:8080", {
             transports: ["websocket"],
         });
 
@@ -81,6 +81,10 @@ const LessonOverlay = () => {
                 infoMode: false
             })
         });
+
+        socketRef.current.on("evaluation-error", (msg) => {
+            console.log(`Error: ${msg.error}`);
+        })
 
         socketRef.current.on("evaluation-complete", (data) => {
             const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
@@ -211,6 +215,9 @@ const LessonOverlay = () => {
             turnRef.current = getTurnFromFEN(lessonData.startFen)
             setInfo(lessonData.info)
             setName(lessonData.name)
+
+            // Update the session's fen
+            socketRef.current.emit("update-fen", { fen: lessonData.startFen });
             
             // Check if we've reached the end of lessons
             if (!lessonData || lessonData.lessonNum === undefined) {

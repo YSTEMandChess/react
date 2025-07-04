@@ -11,6 +11,14 @@ const initializeSocket = (io, socket) => {
     }
   });
 
+  socket.on("update-fen", ({ fen }) => {
+    try {
+      stockfishManager.updateFen(socket.id, fen);
+    } catch (err) {
+      socket.emit("update-error", { err: err.message });
+    }
+  });
+
   socket.on("evaluate-fen", ({ fen, move, level }) => {
     try {
       stockfishManager.evaluateFen(socket.id, fen, move, level);
