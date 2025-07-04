@@ -231,6 +231,9 @@ const NavBar = () => {
             Lessons
           </Link>
         </li>
+        <Link to="/Puzzles" className="links">
+            Puzzles
+          </Link>
         {!username && (
           <li>
             <Link to="/login" className="links">
