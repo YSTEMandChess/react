@@ -689,7 +689,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                     </div>
                 </div>
             )}
-            <button onClick={handleVPopup}>mock complete</button>
+            {/* <button onClick={handleVPopup}>mock complete</button> */}
 
             {isPromoting ? <PromotionPopup position={promotionSource} promoteToPiece={promotePawn} /> : null /* Show promotion popup if needed */}
         </div>
