@@ -1,4 +1,5 @@
-import "./ProfileStyle.scss";
+import profileStyles from "./ProfileStyle.module.scss";
+import pageStyles from "./LessonsStyle.module.scss";
 import { useNavigate } from "react-router";
 import React, { useState, useEffect, useCallback } from 'react';
 import { environment } from "../../environments/environment";
@@ -6,18 +7,18 @@ import { getScenarioLength, getScenario } from "../Lessons/Scenarios"; // Assumi
 import { useCookies } from "react-cookie";
 
 // Component to display a single scenario item.
-const ScenarioTemplate = React.memo(function ScenarioTemplate({ scenario, onClick }) {
+const ScenarioTemplate = React.memo(function ScenarioTemplate({ scenario, onClick, styles }) {
     return (
-        <div className="item-template" onClick={onClick}>
+        <div className={styles.itemTemplate} onClick={onClick}>
             <div>{scenario.name}</div>
         </div>
     );
 });
 
 // Component to display a single lesson item within a scenario.
-const LessonTemplate = React.memo(function LessonTemplate({ lesson, onClick }) {
+const LessonTemplate = React.memo(function LessonTemplate({ lesson, onClick, styles }) {
     return (
-        <div className="item-template" onClick={onClick}>
+        <div className={styles.itemTemplate} onClick={onClick}>
             <div>{lesson.name}</div>
         </div>
     );
@@ -25,7 +26,10 @@ const LessonTemplate = React.memo(function LessonTemplate({ lesson, onClick }) {
 
 // When passing down props (e.g. lessontemplate & scenariotemplate) you can sometimes use memo & useCallback.
 
-export default function LessonSelection({ onGo }) { // what to do when clicking go button, default to navigation
+export default function LessonSelection({ onGo, styleType="page" }) { // what to do when clicking go button, default to navigation
+    
+    const styles = styleType === 'profile' ? profileStyles : pageStyles;
+    
     const navigate = useNavigate();
     const [showScenarios, setShowScenarios] = useState(false);
     const [showLessons, setShowLessons] = useState(false);
@@ -156,21 +160,21 @@ export default function LessonSelection({ onGo }) { // what to do when clicking 
     }, [selectedScenario, cookies.login]); 
 
     return (
-        <div className="whole-page">
+        <div className={styles.wholePage}>
             {/* Conditional rendering of the error message popup. */}
             {error && (
-                <div className="errorBackground">
-                    <div className="errorBox">
-                        <div className="errorText">{error}</div>
+                <div className={styles.errorBackground}>
+                    <div className={styles.errorBox}>
+                        <div className={styles.errorText}>{error}</div>
                         <button onClick={() => setError(null)}>OK</button>
                     </div>
                 </div>
             )}
-            <div className="title" data-testid="title">
+            <div className={styles.title} data-testid="title">
                 Lesson Selection
             </div>
             {/* Dropdown-like selector for choosing a scenario. */}
-            <div className="selector scenario-selector" data-testid="scenario-selector" onClick={() => setShowScenarios(!showScenarios)}>
+            <div className={styles.selector} data-testid="scenario-selector" onClick={() => setShowScenarios(!showScenarios)}>
                 <div>
                     {selectedScenario || "Select a scenario."}
                 </div>
@@ -181,19 +185,20 @@ export default function LessonSelection({ onGo }) { // what to do when clicking 
 
             {/* Conditional rendering of the scenarios list. */}
             {showScenarios && (
-                <div className="container scenario-container">
+                <div className={styles.container}>
                     {scenarios.map((scenarioItem) => (
                         <ScenarioTemplate
                             key={scenarioItem.name} // Use a stable unique key like scenario name
                             scenario={scenarioItem}
                             onClick={() => handleScenarioClick(scenarioItem.name)}
+                            styles={styles}
                         />
                     ))}
                 </div>
             )}
 
             {/* Dropdown-like selector for choosing a lesson within the selected scenario. */}
-            <div className="selector lesson-selector" data-testid="lesson-selector" onClick={() => setShowLessons(!showLessons)}>
+            <div className={styles.selector} data-testid="lesson-selector" onClick={() => setShowLessons(!showLessons)}>
                 <div>
                     {selectedLesson || "Select a lesson."}
                 </div>
@@ -203,23 +208,24 @@ export default function LessonSelection({ onGo }) { // what to do when clicking 
             </div>
             {/* Conditional rendering of the lessons list for the selected scenario. */}
             {showLessons && (
-                <div className="container scenario-container">
+                <div className={styles.container}>
                     {!isLessonsLoading ? (
                         lessons.map((lessonItem) => (
                             <LessonTemplate
                                 key={lessonItem.name} // Use a stable unique key like lesson name
                                 lesson={lessonItem}
                                 onClick={() => handleLessonClick(lessonItem.name)}
+                                styles={styles}
                             />
                         ))
                     ) : (
-                        <div className="item-template">Loading...</div>
+                        <div className={styles.itemTemplate}>Loading...</div>
                     )}
                 </div>
             )}
 
             {/* Button to submit the selection and navigate to the lesson. */}
-            <button className="enterInfo" data-testid="enterInfo" onClick={handleSubmit}>
+            <button className={styles.enterInfo} data-testid="enterInfo" onClick={handleSubmit}>
                 Go!
             </button>
         </div>

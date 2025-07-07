@@ -1,4 +1,4 @@
-.whole-page {
+.wholePage {
     margin-top: 200px;
     display: flex;
     justify-content: center;
@@ -26,7 +26,7 @@
 }
 
 
-.item-template {
+.itemTemplate {
     display: flex;
     background-color: whitesmoke;
     color: black;
@@ -42,11 +42,11 @@
     font-weight: 900;
 }
 
-.item-template:not(:last-child) {
+.itemTemplate:not(:last-child) {
     border-bottom: 0.1rem solid black;
 }
 
-.item-template:hover {
+.itemTemplate:hover {
     cursor: pointer;
     background-color: lightgray;
 }

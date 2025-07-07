@@ -13,6 +13,7 @@ import { ReactComponent as BackIconInactive} from '../../../images/icons/icon_ba
 import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg';
 import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
 import { useNavigate, useLocation } from 'react-router';
+import PromotionPopup from '../../Lessons/PromotionPopup';
 
 // types for the component props
 type LessonOverlayProps = {
@@ -50,7 +51,8 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     // Information for lesson
     const [piece, setPiece] = useState("Checkmate Pattern 1 Recognize the patterns"); // which category of lessons
     const lessonStartFENRef = useRef("");
-    let lessonEndFEN = "";
+    const lessonEndFENRef = useRef("");
+    const lessonTypeRef = useRef("default");
     const [lessonNum, setLessonNum] = useState(0); // current lesson number, 0-indexed
     const [completedNum, setCompletedNum] = useState(0); // # of lessons completed
     const [totalLessons, setTotalLessons] = useState(0); // # of lessons in the category
@@ -64,7 +66,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     const prevFenRef = useRef(null)
     const currentFenRef = useRef(null);
     const [moves, setMoves] = useState([])
-    const [level, setLevel] = useState(5);
+    const [level, setLevel] = useState(20);
 
     // Controlling popups
     const [showVPopup, setShowVPopup] = useState(false);
@@ -72,6 +74,10 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     const [ShowError, setShowError] = useState(false);
     const [showLPopup, setShowLPopup] = useState(true);
     const [showInstruction, setShowInstruction] = useState(false);
+
+    const [isPromoting, setIsPromoting] = useState(false);
+    const [promotionSource, setPromotionSource] = useState("");
+    const [promotionTarget, setPromotionTarget] = useState("");
 
     // Use Refs, so functions in event handler can access latest updated variable values
     const getLessonsCompletedRef = useRef(() => {});
@@ -91,6 +97,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
         const handleMessage = async (e) => {
             if (e.origin === environment.urls.chessClientURL) {
+                console.log("e.data!!!!", e.data)
                 // if client is ready to receive
                 if (e.data === 'ReadyToRecieve') {
                     isReady = true;
@@ -100,14 +107,27 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                 if (!lessonStarted) {
                     getLessonsCompletedRef.current();
                     lessonStarted = true;
-                } else if (e.data === lessonEndFEN ) { 
+                } else if (e.data === lessonEndFENRef.current ) { 
                     setShowVPopup(true); // complete lesson
-                } else if (e.data.startsWith("won")) {
+                } else if (typeof e.data === 'string' && e.data.startsWith("won")) { // for all lesson types, should check if there's checkmate
                     if (e.data.split(":")[1] == turnRef.current) setShowVPopup(true); // checkmated, complete lesson
-                    else setShowXPopup(true) // opponent checkmated, restart
-                } else if (e.data.startsWith("restart")){ // game ended without winning
-                    setShowXPopup(true)
-                }  else if (looksLikeFEN(e.data)) { // client sends board fen after user makes a move
+                    else setShowXPopup(true) // opponent checkmated, restart lesson
+                } else if (typeof e.data === 'string' && e.data.startsWith("draw")){ // for all lesson types, should check if there's a draw
+                    if (lessonTypeRef.current == "draw" || lessonTypeRef.current == "equalize"){
+                        setShowVPopup(true); // if lesson's goal is to draw or equalize
+                    } else {
+                        setShowXPopup(true) // if other lesson type, a draw is a failed lesson
+                    }
+                } else if (e.data.action == "promote"){
+                    if(lessonTypeRef.current == "promote") // if the goal of lesson is just to promote pawn
+                    {
+                        setShowVPopup(true); // lesson completed
+                    } else { // for other lesson types, allow user to choose what the pawn should promote to
+                        setIsPromoting(true);
+                        setPromotionSource(e.data.from);
+                        setPromotionTarget(e.data.to);
+                    }
+                } else if (typeof e.data === 'string' && looksLikeFEN(e.data)) { // client sends board fen after user makes a move
                     // update fens
                     prevFenRef.current = currentFenRef.current
                     currentFenRef.current = e.data
@@ -205,10 +225,26 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
             // Update lesson data & info
             lessonStartFENRef.current = lessonData.startFen
+            lessonEndFENRef.current = lessonData.endFen
             currentFenRef.current = lessonData.startFen
             turnRef.current = getTurnFromFEN(lessonData.startFen)
             setInfo(lessonData.info)
             setName(lessonData.name)
+
+            // update lesson type for completion checking
+            if(lessonData.info.includes("Checkmate the opponent") || lessonData.name.includes("= Win")){
+                lessonTypeRef.current = "checkmate";
+            } else if (lessonData.info.includes("Get a winning position")) {
+                lessonTypeRef.current = "position";
+            }  else if (lessonData.info.includes("Equalize in")) {
+                lessonTypeRef.current = "equalize";
+            } else if (lessonData.info.includes("promote your pawn")) {
+                lessonTypeRef.current = "promote";
+            } else if (lessonData.info.includes("Hold the draw") || lessonData.name.includes("Draw")) {
+                lessonTypeRef.current = "draw";
+            } else {
+                lessonTypeRef.current = "default";
+            }
             
             // Check if we've reached the end of lessons
             if (!lessonData || lessonData.lessonNum === undefined) {
@@ -283,8 +319,9 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         // post message to client
         const message = JSON.stringify({
             boardState: lessonStartFENRef.current,
-            endState: lessonEndFEN,
-            lessonFlag: true,
+            endState: lessonEndFENRef.current,
+            lessonFlag: true, 
+            choosePromotionFlag: true, // the user can select what to promote
             endSquare,
             color: turnRef.current,
             previousEndSquare,
@@ -337,7 +374,8 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     // user agrees to complete lesson
     const handleVPopup = () => {
         setShowVPopup(false); // disable popup
-        setShowLPopup(true) // load next lesson
+        setShowXPopup(false);
+        if(lessonNum < totalLessons - 1) setShowLPopup(true) // load next lesson
         updateCompletionRef.current(); // update # of lessons completed
 
         // clean move tracker
@@ -460,6 +498,18 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         }
     };
 
+    function promotePawn(position, piece) {
+        setIsPromoting(false);
+        
+        // get chessBoard iframe
+        const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
+        const chessBoard = iframe?.contentWindow;
+
+        // to alert client of new promotion
+        const message = JSON.stringify({ delayedPromote: true, from: promotionSource, to: promotionTarget, promotion: piece.toLowerCase()});
+        chessBoard.postMessage(message, environment.urls.chessClientURL);
+    }
+
     return (
         <div className={styles.lessonContainer}>
             <div className={styles.switchLesson} onClick={() => {
@@ -569,7 +619,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
             )}
 
             {/* lesson not done yet popup */}
-            {showXPopup && (
+            {showXPopup && !showVPopup && (
                 <div className={styles.popup}>
                     <div className={styles.popupContent}>
                     <div className={styles.errorCross}>
@@ -639,7 +689,9 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                     </div>
                 </div>
             )}
+            <button onClick={handleVPopup}>mock complete</button>
 
+            {isPromoting ? <PromotionPopup position={promotionSource} promoteToPiece={promotePawn} /> : null /* Show promotion popup if needed */}
         </div>
     );
 };

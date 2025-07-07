@@ -1,4 +1,4 @@
-.whole-page {
+.wholePage {
     height: 100vh;
     width: 98vw;
     display: flex;
@@ -27,7 +27,7 @@
 }
 
 
-.item-template {
+.itemTemplate {
     display: flex;
     background-color: whitesmoke;
     color: black;
@@ -43,11 +43,11 @@
     font-weight: 900;
 }
 
-.item-template:not(:last-child) {
+.itemTemplate:not(:last-child) {
     border-bottom: 0.1rem solid black;
 }
 
-.item-template:hover {
+.itemTemplate:hover {
     cursor: pointer;
     background-color: lightgray;
 }

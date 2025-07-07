@@ -252,7 +252,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                 setLessonSelected(false);
               }} styleType="profile"/>
             ) : (
-              <LessonSelection onGo={(selectedScenario, lessonNum) => { 
+              <LessonSelection styleType="profile" onGo={(selectedScenario, lessonNum) => { 
                 setLessonSelected(true);
                 setPiece(selectedScenario);
                 setLessonNum(lessonNum);
