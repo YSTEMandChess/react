@@ -45,9 +45,6 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     day: 'numeric',
   }));
 
-  // Meeting status
-  const [meetingStarted, setMeetingStarted] = useState(false);
-
   useEffect(()=>{
     try {
       fetchUserData(); // asynchronously fetch user data upon mounting
@@ -249,7 +246,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             <PlayMentor chessLessonSrc={environment.urls.chessClientURL} />
             <VideoCall meetingId={meetingId} meetingToken={meetingToken} />
           </div>
-        );  
+        );
       case "learning":
         return (
           <div id="inventory-content-learning" className="inventory-content active-content">

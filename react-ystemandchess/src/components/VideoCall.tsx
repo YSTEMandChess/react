@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import AgoraRTC from "agora-rtc-sdk-ng";
-import { environment } from "../environments/environment";
 
 const appId = "f2d75e6a8a804eac88bf09f9ac2c1aa5";  // You need to get this from your Agora dashboarde
 
@@ -9,7 +8,6 @@ const VideoCall = ({meetingId, meetingToken}) => {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const [joined, setJoined] = useState(false);
-  const [channel, setChannel] = useState();
 
   const [token, setToken] = useState("");
   const [channel, setChannel] = useState(""); // The meeting ID or unique room nam
