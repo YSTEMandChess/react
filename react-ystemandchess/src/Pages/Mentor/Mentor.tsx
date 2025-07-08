@@ -8,35 +8,35 @@ import makeADifference from "../../images/difference.png";
 
 const Mentor = () => {
   return (
-    <div className="board-container">
-      <div className="flex-container">
+    <main className="board-container">
+      <section className="flex-container" role="region" aria-label="Application Section" tabIndex={0}>
         <div className="text-content">
           <h1>Become a Mentor</h1>
           <p>
             Your time and talent can make a real difference in people's lives.
           </p>
-          <button className="apply-button">Apply Now</button>
+          <button className="apply-button" aria-label="Apply Button" tabIndex={0}>Apply Now</button>
         </div>
         <div className="image-content">
           <img src={cabbageImg} alt="Cabbage" />
         </div>
-      </div>
+      </section>
 
       <div className="line-break">
-        <img src={LogoLineBr} alt="Line Break" />
+        <img src={LogoLineBr} alt="" role="presentation" />
       </div>
 
-      <div className="mentor-details">
-        <img src={makeADifference} alt="Make a Difference" />
-      </div>
+      <section className="mentor-details" role="region">
+        <img src={makeADifference} alt="Make a difference by working with schools and underprivileged students." />
+      </section>
 
-      <div className="mentor-roles">
+      <section className="mentor-roles" role="region">
         <img src={volunteerImg} alt="Volunteer" />
         <img src={teacher} alt="Teaching and Learning" />
-      </div>
+      </section>
 
-      <button className="apply-button">Apply Now</button>
-    </div>
+      <button className="apply-button" arial-label="Apply Button" >Apply Now</button>
+    </main>
   );
 };
 
