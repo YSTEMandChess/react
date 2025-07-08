@@ -14,10 +14,12 @@ const meetings = require("../models/meetings");
 const movesList = require("../models/moves");
 const undoPermission = require("../models/undoPermission");
 const { startRecording, stopRecording } = require("../utils/recordings");
-const AgoraAccessToken = require("agora-access-token");
-const { env } = require("process");
+const {RtcTokenBuilder, RtcRole} = require("agora-access-token");
 
-const AGORA_APP_ID = process.env.AGORA_APP_ID;
+require('dotenv').config();
+
+const AGORA_APP_ID = process.env.AGORA_APP_ID; //Agora App ID from .env file
+const AGORA_APP_CERTIFICATE = process.env.AGORA_APP_CERTIFICATE; //Agora App Certificate from .env file
 
 var isBusy = false; //State variable to see if a query is already running.
 
@@ -279,7 +281,13 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
 
     let meetingId;
 
-    console.log(response);
+        
+    const uid = req.query.uid || 0;
+    const rtcRole = RtcRole.PUBLISHER;
+    const expirationTimeInSeconds = 3600;
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+    let token;
 
     if (
       response === "There are no current meetings with this user." &&
@@ -305,6 +313,26 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
         studentInfo.lastName = waitingQueue.lastName;
       }
       meetingId = uuidv4(); //Generate a random meetingId
+
+      const channelName = meetingId;
+
+      if(!channelName) {
+        return res.status(400).json({
+          error: "Missing required parameters"
+        })
+      }
+    
+      token = RtcTokenBuilder.buildTokenWithUid(
+        AGORA_APP_ID,
+        AGORA_APP_CERTIFICATE,
+        channelName,
+        uid,
+        rtcRole,
+        privilegeExpiredTs,
+      );
+
+      console.log("Here");
+      console.log("Token: ", token);
 
       const recordingInfo = await startRecording(meetingId); //Create and start the recording for the mentor and student
 
@@ -337,7 +365,8 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
       isBusy = false; //Set state to not busy
     }
     return res.status(200).json({
-      meetingId: meetingId
+      meetingId: meetingId,
+      token: token
     });
   } catch (error) {
     console.error(error.message);

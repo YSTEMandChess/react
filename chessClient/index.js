@@ -22,6 +22,7 @@ var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 var mentor = "";
 var student = "";
 var role = "student";
+var meetingId = "";
 
 var playerColor;
 
@@ -105,10 +106,10 @@ function greySquare(square) {
   $square.css("background-image", "url('img/chesspieces/wikipedia/dot.png')");
 }
 
-function sendNewGame()
+async function sendNewGame()
 {
   console.log("starting new game with server")
-  var data = {"mentor": mentor, "student": student, "role": role};
+  var data = {"mentor": mentor, "student": student, "role": role, meetingId: meetingId};
   console.log(data);
   socket.emit("newgame", JSON.stringify(data));
 }
@@ -315,6 +316,7 @@ eventer(
       mentor = data.mentor;
       student = data.student;
       role = data.role;
+      meetingId = data.meetingId;
       console.log(data);
     } else if (command == "undo") { sendUndo(); }
     // get and set lessonflag

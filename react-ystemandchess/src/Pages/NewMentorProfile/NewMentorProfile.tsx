@@ -96,6 +96,12 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     return () => el.removeEventListener("scroll", handleScroll);
   }, [loading]);
 
+  useEffect(() => {
+    if(activeTab == "mentor") {
+      fetchMeetingData();
+    }
+  }, [activeTab]);
+
 
   const fetchUserData = async () => {
       const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
@@ -209,6 +215,27 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
       console.error("Failed to fetch events", err);
     }
   }
+  
+  const [meetingId, setMeetingId] = useState("");
+  const [meetingToken, setMeetingToken] = useState("");
+
+  const fetchMeetingData = async () => {
+    try {
+      fetch (`${environment.urls.middlewareURL}/meetings/pairUp`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${cookies.login}` },
+      }).then(data => data.json())
+      .then(data => {
+        setMeetingId(data.meetingId);
+        setMeetingToken(data.token);
+        console.log("Meeting data:", data);
+        console.log("Token from mentor profile: " + data.token);
+      })
+    } catch (err) {
+      console.error("Failed to fetch events", err);
+    }
+  };
+  
 
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);
@@ -271,8 +298,8 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
           <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
             <h2>Mentor</h2>
             
-            <PlayStudent chessLessonSrc={environment.urls.chessClientURL} />
-            <VideoCall />
+            <PlayStudent chessLessonSrc={environment.urls.chessClientURL} meetingId={meetingId} />
+            <VideoCall meetingId={meetingId} meetingToken={meetingToken} />
           </div>
         );
       case "learning":

@@ -22,8 +22,11 @@ const registerSocketHandlers = (socket, io) => {
                 student: parsed.student,
                 mentor: parsed.mentor,
                 role: parsed.role,
+                meetingId: parsed.meetingId,
                 socketId: socket.id
             });
+
+            socket.join(meetingId);
 
             socket.emit(
                 "boardstate",

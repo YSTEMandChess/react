@@ -26,6 +26,8 @@ const PlayMentor = ({ chessLessonSrc }) => {
                             // tell chess client to start a new game
                             message = JSON.stringify({ command: "newgame" })
                             chessBoard.postMessage(message, environment.urls.chessClientURL);
+
+                            console.log("Message sent to chess client");
                         }
                     }
                 }

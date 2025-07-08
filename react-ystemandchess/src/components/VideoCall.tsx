@@ -2,52 +2,34 @@ import React, { useEffect, useRef, useState } from "react";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import { environment } from "../environments/environment";
 
-const appId = environment.agora.appId;  // You need to get this from your Agora dashboard
-const token = "007eJxTYDin8aOCT5P9H2vwe23p8K9Pv0y6HLlD7IL/8cXRWxXscmwUGNKMUsxNU80SLRItDExSE5MtLJLSDCzTLBOTjZINExNNixcHZDQEMjL4vRRjZWSAQBBfhSHZ3MQ0ydLYUtfIMCVJ18TY0kTXMjnFSDfZJNE4Lc0sMTXJIIWBAQDc9ygF";    // You’ll get or generate this from backend
+const appId = "f2d75e6a8a804eac88bf09f9ac2c1aa5";  // You need to get this from your Agora dashboarde
 
-const VideoCall = () => {
+const VideoCall = ({meetingId, meetingToken}) => {
   const client = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const [joined, setJoined] = useState(false);
   const [channel, setChannel] = useState();
 
-  useEffect(() => {
-      const fetchMeetingInfo = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/meetings/pairUp", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN0dWRlbnQiLCJmaXJzdE5hbWUiOiJzdHVkZW50IiwibGFzdE5hbWUiOiJzdHVkZW50Iiwicm9sZSI6InN0dWRlbnQiLCJlbWFpbCI6InN0dWRlbnRAc3R1ZGVudC5uZXQiLCJpYXQiOjE3NTAxMTI2NzQsImFjY291bnRDcmVhdGVkQXQiOiIxNTkyNDE2ODY5IiwicGFyZW50VXNlcm5hbWUiOiJwYXJlbnQiLCJleHAiOjE3NTA0NzI2NzR9.jo_wZHd0kID_ij64PKozqoio_W08gfMjLRp_-dBhKHU"
-          },
-        });
+  const [token, setToken] = useState("");
+  const [channel, setChannel] = useState(""); // The meeting ID or unique room nam
 
-        if(!response.ok) throw new Error("Failed to pair up");
-        const data = await response.json();
-        console.log(data);
-        setChannel(data.meetingId);
-      } catch (error) {
-        console.error("Error fetching meeting info: " + error);
-      }
-    }
+  console.log("Meeting ID: " + meetingId + ", Meeting Token: " + meetingToken);
 
-    fetchMeetingInfo();
-  });
+
 
   useEffect(() => {
-    if(!channel) {
-      return;
-    }
+    if(!meetingId || !meetingToken) return;
 
-    console.log("Channel: " + channel);
+    console.log("Meeting ID: " + meetingId + ", Meeting Token: " + meetingToken);
 
     client.current = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
     const startCall = async () => {
       // Join the channel
-      console.log("Channel: " + channel)
-      await client.current.join(appId, channel, token, null);
+      console.log("Joining channel");
+      console.log("Meeting ID: " + meetingId + ", Meeting Token: " + meetingToken);
+      await client.current.join(appId, meetingId, meetingToken, null);
 
       // Create local audio and video tracks
       const localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
@@ -85,7 +67,7 @@ const VideoCall = () => {
     return () => {
       client.current.leave();
     };
-  }, []);
+  }, [meetingId, meetingToken]);
 
   return (
     <div>

@@ -72,6 +72,12 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     return () => el.removeEventListener("scroll", handleScroll); // remove listener when dependencies are updated
   }, [loading]);
 
+  useEffect(() => {
+    if(activeTab == "mentor") {
+      fetchMeetingData();
+    }
+  }, [activeTab]);
+
   const fetchUserData = async () => {
       const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
       if (uInfo.error) {
@@ -161,6 +167,22 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     }
   }
 
+  const [meetingId, setMeetingId] = useState("");
+  const [meetingToken, setMeetingToken] = useState("");
+
+  const fetchMeetingData = async () => {
+    fetch (`${environment.urls.middlewareURL}/meetings/pairUp`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${cookies.login}` },
+      body: ''
+    }).then(data => data.json())
+    .then(data => {
+      setMeetingId(data.meetingId);
+      setMeetingToken(data.token);
+      console.log("Meeting data:", data);
+    })
+  }
+
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);
   };
@@ -224,14 +246,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             <h2>Mentor</h2>
             <p>This is the content for the Mentor tab.</p>
 
-            <button onClick={() => setMeetingStarted(true)}>Start Meeting</button>
-
-            {meetingStarted && (
-              <>
-                <PlayMentor chessLessonSrc={environment.urls.chessClientURL} />
-                <VideoCall />
-              </>
-            )}
+            <PlayMentor chessLessonSrc={environment.urls.chessClientURL} />
+            <VideoCall meetingId={meetingId} meetingToken={meetingToken} />
           </div>
         );  
       case "learning":
