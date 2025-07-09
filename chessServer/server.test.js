@@ -31,7 +31,7 @@ afterAll((done) => {
 });
 
 describe('Server Setup and Socket Tests', () => {
-  
+
   // Test server response
   it('should return a successful server connection', async () => {
     const response = await request(server).get('/');
@@ -90,6 +90,7 @@ describe('Server Setup and Socket Tests', () => {
       done();
     });
   });
+
 
   // Test undo action
   it('should undo the last move', (done) => {
