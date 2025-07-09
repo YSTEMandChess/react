@@ -8,6 +8,7 @@ import { useNavigate } from "react-router";
 import { StatsChart } from "../NewStudentProfile/StatsChart";
 import VideoCall from "../../components/VideoCall";
 import PlayStudent from "./PlayStudent";
+import { start } from "node:repl";
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
@@ -56,6 +57,8 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  let pollingInterval = null;
+
   // current date for display
   const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -100,6 +103,9 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     if(activeTab == "mentor") {
       fetchMeetingData();
     }
+    return () => {
+      clearInterval(pollingInterval);
+    }
   }, [activeTab]);
 
 
@@ -134,8 +140,6 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     setMentorTime(dataStats.mentor);
     setPuzzleTime(dataStats.puzzle);
   }
-
-
 
   const fetchStudentData = async () => {
     fetch(`${environment.urls.middlewareURL}/user/getMentorship`, {
@@ -221,22 +225,69 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
 
   const fetchMeetingData = async () => {
     try {
-      fetch (`${environment.urls.middlewareURL}/meetings/pairUp`, {
+      const response = await fetch(`${environment.urls.middlewareURL}/meetings/pairUp`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${cookies.login}` },
-      }).then(data => data.json())
-      .then(data => {
+        body: ''
+      });
+
+      const data = await response.json();
+      console.log("Meeting data:", data);
+      console.log("Meeting status:", response.status);
+
+      if (data.meetingId && data.token) {
         setMeetingId(data.meetingId);
         setMeetingToken(data.token);
-        console.log("Meeting data:", data);
-        console.log("Token from mentor profile: " + data.token);
-      })
-    } catch (err) {
-      console.error("Failed to fetch events", err);
+      } else if (data === "No one is available for matchmaking. Please wait for the next available person") {
+        fetchQueue();
+        startPollingForMatch();
+      }
+
+    } catch (error) {
+      console.error("Error fetching meeting data:", error);
     }
   };
-  
 
+  // queue the mentor if there are no students waiting to be matched
+  const fetchQueue = async () => {
+    try {
+      const response = await fetch(`${environment.urls.middlewareURL}/meetings/queue`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${cookies.login}` }
+      });
+
+      const data = await response.json();
+      console.log("Queue data:", data);
+
+    } catch (error) {
+      console.error("Error fetching queue:", error);
+    }
+  };
+
+  const startPollingForMatch = () => {
+    pollingInterval = setInterval(async () => {
+      const response = await fetch(`${environment.urls.middlewareURL}/meetings/inMeeting`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${cookies.login}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (Array.isArray(data) && data[0].meetingId && data[0].token) {
+        clearInterval(pollingInterval);
+        console.log("Matched! Meeting ID:", data[0].meetingId);
+        setMeetingId(data[0].meetingId);
+        setMeetingToken(data[0].token);
+      } else {
+        console.log("Still waiting...");
+      }
+    }, 3000);
+  };
+  
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);
   };

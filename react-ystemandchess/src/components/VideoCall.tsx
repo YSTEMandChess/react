@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import AgoraRTC from "agora-rtc-sdk-ng";
+import { environment } from "../environments/environment"
+import { useCookies } from "react-cookie";
 
 const appId = "f2d75e6a8a804eac88bf09f9ac2c1aa5";  // You need to get this from your Agora dashboarde
 
@@ -8,13 +10,20 @@ const VideoCall = ({meetingId, meetingToken}) => {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const [joined, setJoined] = useState(false);
+  const [cookies] = useCookies(['login']);
 
   const [token, setToken] = useState("");
   const [channel, setChannel] = useState(""); // The meeting ID or unique room nam
 
   console.log("Meeting ID: " + meetingId + ", Meeting Token: " + meetingToken);
 
-
+  useEffect(() => {
+    return () => {
+      fetchEndMeeting();
+      fetchDequeue();
+      if(client.current) client.current.leave();
+    }
+  }, [])
 
   useEffect(() => {
     if(!meetingId || !meetingToken) return;
@@ -44,6 +53,7 @@ const VideoCall = ({meetingId, meetingToken}) => {
       client.current.on("user-published", async (user, mediaType) => {
         await client.current.subscribe(user, mediaType);
         if (mediaType === "video") {
+          console.log("bbbbbbb");
           user.videoTrack.play(remoteVideoRef.current);
         }
         if (mediaType === "audio") {
@@ -66,6 +76,38 @@ const VideoCall = ({meetingId, meetingToken}) => {
       client.current.leave();
     };
   }, [meetingId, meetingToken]);
+
+  // end the meeting 
+  const fetchEndMeeting = async () => {
+    try {
+      const response = await fetch(`${environment.urls.middlewareURL}/meetings/endMeeting`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${cookies.login}` }
+      });
+      const data = await response.json();
+
+      console.log("Ended meeting with:", data);
+
+    } catch (error) {
+      console.error("Error ending meeting:", error);
+    }
+  };
+
+  // remove queue
+  const fetchDequeue = async () => {
+    try {
+      const response = await fetch(`${environment.urls.middlewareURL}/meetings/dequeue`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${cookies.login}` }
+      });
+      const data = await response.json();
+
+      console.log("Dequeued with:", data);
+
+    } catch (error) {
+      console.error("Error with dequeue:", error);
+    }
+  };
 
   return (
     <div>

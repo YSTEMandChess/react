@@ -39,6 +39,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [hasMore, setHasMore] = useState(true); // if there are more events
   const containerRef = useRef<HTMLDivElement>(null);
 
+  let pollingInterval = null;
+
   // current date for display
   const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -72,6 +74,9 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   useEffect(() => {
     if(activeTab == "mentor") {
       fetchMeetingData();
+    }
+    return () => {
+      clearInterval(pollingInterval);
     }
   }, [activeTab]);
 
@@ -168,17 +173,68 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [meetingToken, setMeetingToken] = useState("");
 
   const fetchMeetingData = async () => {
-    fetch (`${environment.urls.middlewareURL}/meetings/pairUp`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${cookies.login}` },
-      body: ''
-    }).then(data => data.json())
-    .then(data => {
-      setMeetingId(data.meetingId);
-      setMeetingToken(data.token);
+    try {
+      const response = await fetch(`${environment.urls.middlewareURL}/meetings/pairUp`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${cookies.login}` },
+        body: ''
+      });
+
+      const data = await response.json();
       console.log("Meeting data:", data);
-    })
-  }
+
+      if (data.meetingId && data.token) {
+        setMeetingId(data.meetingId);
+        setMeetingToken(data.token);
+      } else if (data === "No one is available for matchmaking. Please wait for the next available person") {
+        fetchQueue();
+        startPollingForMatch();
+      }
+
+    } catch (error) {
+      console.error("Error fetching meeting data:", error);
+    }
+  };
+
+  // queue the student if there are no mentors waiting to be matched
+  const fetchQueue = async () => {
+    try {
+      const response = await fetch(`${environment.urls.middlewareURL}/meetings/queue`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${cookies.login}` }
+      });
+
+      const data = await response.json();
+      console.log("Queue data:", data);
+
+    } catch (error) {
+      console.error("Error fetching queue:", error);
+    }
+  };
+
+  const startPollingForMatch = () => {
+    pollingInterval = setInterval(async () => {
+      const response = await fetch(`${environment.urls.middlewareURL}/meetings/inMeeting`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${cookies.login}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (Array.isArray(data) && data[0].meetingId && data[0].token) {
+        clearInterval(pollingInterval);
+        console.log("Matched! Meeting ID:", data[0].meetingId);
+        setMeetingId(data[0].meetingId);
+        setMeetingToken(data[0].token);
+      } else {
+        console.log("Still waiting...");
+      }
+    }, 3000);
+  };
 
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);

@@ -62,6 +62,10 @@ const meetingsSchema = new mongoose.Schema(
       type: Array,
       default: [],
     },
+    token: {
+      type: String,
+      default: "",
+    }
   },
   { versionKey: false },
 );

@@ -217,6 +217,7 @@ router.post("/queue", passport.authenticate("jwt"), async (req, res) => {
         lastName,
         requestedGameAt: new Date(),
       });
+      console.log("created a waiting mentor")
     } else if (role === "student") {
       await waitingStudents.create({
         username,
@@ -224,6 +225,7 @@ router.post("/queue", passport.authenticate("jwt"), async (req, res) => {
         lastName,
         requestedGameAt: new Date(),
       });
+      console.log("created a waiting student")
     } else {
       return res
         .status(400)
@@ -280,7 +282,6 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
     );
 
     let meetingId;
-
         
     const uid = req.query.uid || 0;
     const rtcRole = RtcRole.PUBLISHER;
@@ -289,11 +290,11 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
     const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
     let token;
 
-    if (
-      response === "There are no current meetings with this user." &&
-      secondResponse === "There are no current meetings with this user." &&
-      !isBusy
-    ) {
+    if(response != "There are no current meetings with this user."){
+      return res.status(200).json("You are still in a meeting.");
+    } else if (secondResponse != "There are no current meetings with this user."){
+      return res.status(200).json("Requested user is still in a meeting.");
+    } else {
       isBusy = true; //Change state to busy to complete query
 
       //Set information for ease of access and less redundant meeting creation code
@@ -313,6 +314,7 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
         studentInfo.lastName = waitingQueue.lastName;
       }
       meetingId = uuidv4(); //Generate a random meetingId
+      console.log("generated meetingid", meetingId);
 
       const channelName = meetingId;
 
@@ -322,6 +324,7 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
         })
       }
     
+      console.log(channelName);
       token = RtcTokenBuilder.buildTokenWithUid(
         AGORA_APP_ID,
         AGORA_APP_CERTIFICATE,
@@ -330,9 +333,6 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
         rtcRole,
         privilegeExpiredTs,
       );
-
-      console.log("Here");
-      console.log("Token: ", token);
 
       const recordingInfo = await startRecording(meetingId); //Create and start the recording for the mentor and student
 
@@ -358,6 +358,7 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
         resourceId: recordingInfo.resourceId,
         sid: recordingInfo.sid,
         meetingStartTime: new Date(),
+        token: token,
       });
 
       await deleteUser("student", studentInfo.username); //Remove user from the waitingStudents collection
@@ -456,7 +457,7 @@ router.put("/endMeeting", passport.authenticate("jwt"), async (req, res) => {
       return res.status(404).json(returnMessage);
     }
 
-    return res.sendStatus(200);
+    return res.status(200).json("Successfully exited meeting");
   } catch (error) {
     console.error(error.message);
     res.status(500).json("Server error");
@@ -494,7 +495,7 @@ const inMeeting = async (role, username) => {
   if (foundMeeting.length !== 0) {
     await deleteUser(role, username);
     return foundMeeting;
-  }
+  } 
   return "There are no current meetings with this user.";
 };
 
