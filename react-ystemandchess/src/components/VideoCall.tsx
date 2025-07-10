@@ -2,14 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import AgoraRTC from "agora-rtc-sdk-ng";
 import { environment } from "../environments/environment"
 import { useCookies } from "react-cookie";
+import userEvent from "@testing-library/user-event";
 
 const appId = "f2d75e6a8a804eac88bf09f9ac2c1aa5";  // You need to get this from your Agora dashboarde
 
 const VideoCall = ({meetingId, meetingToken}) => {
   const client = useRef(null);
+  const joined = useRef(false);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-  const [joined, setJoined] = useState(false);
   const [cookies] = useCookies(['login']);
 
   const [token, setToken] = useState("");
@@ -18,10 +19,10 @@ const VideoCall = ({meetingId, meetingToken}) => {
   console.log("Meeting ID: " + meetingId + ", Meeting Token: " + meetingToken);
 
   useEffect(() => {
+    window.addEventListener('beforeunload', endMeeting); // end meeting if closed browser window
     return () => {
-      fetchEndMeeting();
-      fetchDequeue();
-      if(client.current) client.current.leave();
+      window.removeEventListener('beforeunload', endMeeting);
+      endMeeting(); // end meeting if navigated away
     }
   }, [])
 
@@ -47,7 +48,7 @@ const VideoCall = ({meetingId, meetingToken}) => {
 
       // Publish local tracks
       await client.current.publish([localAudioTrack, localVideoTrack]);
-      setJoined(true);
+      joined.current = true;
 
       // Subscribe and play remote users’ tracks when they publish
       client.current.on("user-published", async (user, mediaType) => {
@@ -65,19 +66,16 @@ const VideoCall = ({meetingId, meetingToken}) => {
       client.current.on("user-unpublished", (user, mediaType) => {
         if (mediaType === "video") {
           remoteVideoRef.current.innerHTML = "";
+          joined.current = false;
         }
       });
     };
 
     startCall();
 
-    // Cleanup when component unmounts
-    return () => {
-      client.current.leave();
-    };
   }, [meetingId, meetingToken]);
 
-  // end the meeting 
+  // stop recording the meeting 
   const fetchEndMeeting = async () => {
     try {
       const response = await fetch(`${environment.urls.middlewareURL}/meetings/endMeeting`, {
@@ -93,7 +91,7 @@ const VideoCall = ({meetingId, meetingToken}) => {
     }
   };
 
-  // remove queue
+  // remove the user from queue
   const fetchDequeue = async () => {
     try {
       const response = await fetch(`${environment.urls.middlewareURL}/meetings/dequeue`, {
@@ -108,6 +106,13 @@ const VideoCall = ({meetingId, meetingToken}) => {
       console.error("Error with dequeue:", error);
     }
   };
+
+  // ending the meeting
+  const endMeeting = () => {
+    if(joined.current) fetchEndMeeting(); // if meeting started, stop recording
+    else fetchDequeue(); // if still queued, remove user from queue
+    if(client.current) client.current.leave();
+  }
 
   return (
     <div>

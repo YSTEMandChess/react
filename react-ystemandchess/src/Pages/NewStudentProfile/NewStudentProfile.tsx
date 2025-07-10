@@ -39,6 +39,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [hasMore, setHasMore] = useState(true); // if there are more events
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // interval timer for polling whether other users have joined
   let pollingInterval = null;
 
   // current date for display
@@ -76,6 +77,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       fetchMeetingData();
     }
     return () => {
+      // if navigated away, stop waiting for others to join
       clearInterval(pollingInterval);
     }
   }, [activeTab]);
@@ -172,8 +174,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [meetingId, setMeetingId] = useState("");
   const [meetingToken, setMeetingToken] = useState("");
 
+  // try to connect to a meeting
   const fetchMeetingData = async () => {
     try {
+      // try to pair up with another user
       const response = await fetch(`${environment.urls.middlewareURL}/meetings/pairUp`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${cookies.login}` },
@@ -183,10 +187,12 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       const data = await response.json();
       console.log("Meeting data:", data);
 
-      if (data.meetingId && data.token) {
+      if (data.meetingId && data.token) { // there is another user waiting
+        // set up info to start meeting
         setMeetingId(data.meetingId);
         setMeetingToken(data.token);
       } else if (data === "No one is available for matchmaking. Please wait for the next available person") {
+        // no others users are available, queue current user & poll to wait 
         fetchQueue();
         startPollingForMatch();
       }
@@ -204,6 +210,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         headers: { 'Authorization': `Bearer ${cookies.login}` }
       });
 
+      // logging data
       const data = await response.json();
       console.log("Queue data:", data);
 
@@ -212,8 +219,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     }
   };
 
+  // fetch periodically to see if another user has requested a pair up
   const startPollingForMatch = () => {
     pollingInterval = setInterval(async () => {
+      // checking if the user is being paired up in a meeting
       const response = await fetch(`${environment.urls.middlewareURL}/meetings/inMeeting`, {
         method: 'GET',
         headers: {
@@ -222,18 +231,22 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         }
       });
 
+      // logging data
       const data = await response.json();
       console.log(data);
 
       if (Array.isArray(data) && data[0].meetingId && data[0].token) {
+        // if being paired up, stop polling
         clearInterval(pollingInterval);
+
+        // set up info to start meeting
         console.log("Matched! Meeting ID:", data[0].meetingId);
         setMeetingId(data[0].meetingId);
         setMeetingToken(data[0].token);
       } else {
         console.log("Still waiting...");
       }
-    }, 3000);
+    }, 3000); // fetch every 3 seconds
   };
 
   const handleTabClick = (tab: any) => {

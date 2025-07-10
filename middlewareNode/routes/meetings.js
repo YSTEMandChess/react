@@ -207,7 +207,7 @@ router.post("/queue", passport.authenticate("jwt"), async (req, res) => {
     //Check if the user is in a meeting
     let message = await inMeeting(role, username);
     if (message !== "There are no current meetings with this user.") {
-      return res.status(400).json(message);
+      return res.status(400).json("User is in a meeting, can't be queued");
     }
 
     if (role === "mentor") {
