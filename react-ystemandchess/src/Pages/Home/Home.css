@@ -1,359 +1,318 @@
-* {
-  font-family: sans-serif;
-}
-
+/* Root Container */
 .home-container {
-  width: 100%;
-  height: auto;
-  margin-top: 10px;
-}
-
-/* FIRST SECTOR OF LANDING PAGE*/
-.home-content1 {
-  width: 85%;
-  height: 460px;
-  margin-left: auto;
-  margin-right: auto;
+  padding: 2rem 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
   display: flex;
-  gap: 2rem;
-  margin-bottom: 50px;
+  flex-direction: column;
+  gap: 3rem;
 }
 
-.info {
-  width: 50%;
-  height: 100%;
+/* Section spacing wrapper */
+.section {
+  width: 100%;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+}
+
+/* Hero Section */
+.home-hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero-text {
+  flex: 1 1 500px;
+}
+
+.hero-text h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hero-text p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.hero-image {
+  flex: 1 1 400px;
   display: flex;
   justify-content: center;
-  align-items: center;
-  flex-direction: column;
 }
 
+.hero-image img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Donate Button */
 .donateButton {
-  margin-top: 2rem;
-  background-color: #1A1A1A;
-  border: solid 0.1rem white;
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 1.5rem;
+  border-radius: 9999px;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: white;
-  border-radius: 1rem;
-}
-
-.info h1 {
-  padding-top: 5%;
-  font-size: 30px;
-  text-align: left;
-}
-
-.info p {
-  font-size: 25px;
-  padding-top: 40px;
-  text-align: left;
-}
-
-/* .donate-button {
-  text-align: center;
-  margin-right: 30%;
-  margin-top: 5%;
-  width: 25%;
-  font-size: 140%;
-  border: none;
-  border-radius: 20px;
-  height: 10%;
-  background-color: rgb(182, 180, 180);
-  box-shadow: 5px 5px 1px greenyellow;
-}
-
-.donate-button:hover {
-  background-color: rgb(211, 209, 209);
+  background-color: #0f172a; /* same as bg-slate-950 */
   cursor: pointer;
-  transform: scale(1.05);
-  transition: 0.2s;
-} */
-
-#tree-group-img {
-  width: 110%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  backdrop-filter: blur(12px);
 }
 
-/* Logo Line Break */
+.donateButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
 
+/* Divider Line */
 .logo-break {
-  width: 100%;
-  justify-self: center;
+  display: block;
+  margin: 2rem auto;
+  width: 90%;
+  max-width: 900px;
+  height: auto;
 }
 
+/* Floating Heading */
 #floating-h1 {
   text-align: center;
-  font-size: 24px;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-  font-size: 3rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2rem 0;
 }
 
-/* SECTOR 2 -- Cards for subscription plans */
+/* Pricing Cards */
 .home-content2 {
   width: 85%;
-  height: 700px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 20px;
+  margin: 0 auto;
   display: flex;
-  align-items: center;
-  gap: 10em;
+  align-items: stretch;
   justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.card1, .card2 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 350px;
+  min-height: 500px;
+  padding: 2.5rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.card1:hover, .card2:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .card1 {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 35%;
-  height: 43.75rem;
-  background-color: rgb(115, 179, 19);
-  border-radius: 1.25rem;
-  box-shadow: 1.25rem 1.25rem 0.063rem rgb(209, 230, 28);
+  background: linear-gradient(145deg, #73b313 0%, #8bc34a 100%);
+  color: white;
 }
-
-.card1 img {
-  width: 25%;
-}
-
-#h1-home {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  font-size: 2rem;
-}
-
-.card1 p {
-  font-size: 180%;
-  margin-top: 5%;
-  margin-bottom: 2rem;
-}
-
-/* .card1 button {
-  width: 40%;
-  height: 10%;
-  font-size: 160%;
-  border: none;
-  border-radius: 20px;
-  background-color: rgb(209, 230, 28);
-  box-shadow: 5px 5px 1px rgb(255, 255, 255);
-}
-
-.card1 button:hover {
-  background-color: rgb(228, 243, 96);
-  transform: scale(1.1);
-  transition: 0.2s;
-  cursor: pointer;
-} */
 
 .card2 {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 35%;
-  height: 43.75rem;
-  background-color: rgb(255, 255, 255);
-  border-radius: 1.25rem;
-  box-shadow: 1.25rem 1.25rem 0.063rem rgb(115, 179, 19);
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
+  color: #333;
+  border: 2px solid #73b313;
+}
+
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.card1 img, .card2 img {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1.5rem;
+  border-radius: 50%;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  animation: float 3s ease-in-out infinite;
 }
 
 .card2 img {
-  width: 25%;
+  background: linear-gradient(145deg, #73b313, #8bc34a);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.card1 h1, .card2 h1 {
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 .card2 h1 {
-  margin-bottom: -7%;
+  background: linear-gradient(45deg, #73b313, #8bc34a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.card2 p {
-  font-size: 180%;
-  margin-top: 5%;
-  margin-bottom: 2rem;
-}
-
-/* .card2 button {
-  width: 40%;
-  height: 10%;
-  font-size: 160%;
-  border: none;
-  border-radius: 20px;
-  background-color: rgb(201, 200, 200);
-  box-shadow: 5px 5px 1px rgb(115, 179, 19);
-}
-
-.card2 button:hover {
-  background-color: rgb(238, 238, 238);
-  transform: scale(1.1);
-  cursor: pointer;
-  transition: 0.2s;
-} */
-
-/* ------------------------------------------------------------*/
-
-/* SECTOR 3 -- Introduction (Play, Learn, Donate) */
-
-.home-content3 {
-  display: flex;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-}
-.home-content3 img {
-  width: 100%;
-}
-
-/* SECTION Video */
-
+/* Video Container */
 .home-video-container {
   display: flex;
-  width: 100%;
-  height: 90vh;
   justify-content: center;
+  margin: 2rem 0;
+}
+
+/* Chess Divider (if used) */
+.chess-divider {
+  display: flex;
   align-items: center;
+  justify-content: center;
+  margin: 4rem 0;
+  gap: 1rem;
 }
 
-.home-video {
-  width: 85%;
-  height: 90%;
+.chess-divider .line {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(to right, #f4d03f, #f4d03f);
+  max-width: 600px;
 }
 
-/* Section 4 -- Labels */
+.chess-divider img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
 
+/* Chess Pieces Section */
 .home-content4 {
   display: flex;
   justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 55vh;
-  margin-top: 5%;
-  margin-bottom: 5%;
+  background-color: #eaf4e2;
+  border-radius: 24px;
+  padding: 2.5rem 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
 }
 
 .home-content4-box {
+  text-align: center;
+  max-width: 800px;
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
-  width: 70%;
-  height: 100%;
-  border: 4px solid rgb(54, 206, 54);
-  padding-top: 50px;
+  align-items: center;
+  gap: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
 }
 
-.home-content4-box button{
-  margin-top: 0.6rem;
+.home-content4-box img {
+  max-width: 180px;
+  height: auto;
+  object-fit: contain;
+  animation: float 4s ease-in-out infinite;
 }
 
 .lesson-link-text {
-  margin-top: 2rem;
-  font-size: 2.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0.5rem 0;
 }
 
-/* .home-content4-box button {
-  width: 20%;
-  height: 10%;
-  border: none;
-  border-radius: 20px;
-  font-size: 120%;
-  margin-top: 2%;
-  background-color: rgb(235, 235, 12);
-  box-shadow: 5px 5px 1px rgb(153, 153, 153);
-}
-
-.home-content4-box button:hover {
-  background-color: rgb(248, 246, 115);
-  cursor: pointer;
-  transform: scale(1.1);
-  transition: 0.2s;
-} */
-
-/* Logo Line Break */
-
-.logo-break {
-  width: 85%;
-  margin-top: 40px;
-}
-
-/* Section 5 -- Books by Devin Nakano */
-
+/* Books Section */
 .home-content5 {
-  width: 100%;
-  height: 55vh;
-  margin-top: 5%;
-  margin-bottom: 30%;
+  text-align: left;
 }
 
-#h1-home {
-  text-align: center;
-  margin-bottom: 5%;
-}
-
-footer {
-  text-align: center;
+.home-content5 h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
 }
 
 .book {
   display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 2rem;
   align-items: flex-start;
-  border: 1px solid #ccc;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-.book-left {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-left: 5%;
-  margin-right: 5%;
 }
 
 .book-image {
-  max-width: 150px;
-  margin-right: 5%;
-}
-
-.book-details {
-  flex: 1;
-}
-
-.book-details h2 {
-  text-align: left;
-  font-size: 1.5em;
-  margin-top: 0;
-  margin-right: 10%;
-  margin-bottom: 1%;
-}
-
-.book-details h3 {
-  margin: 0;
-  text-align: left;
-  font-size: 1.2em;
-  margin-top: 0;
-  margin-right: 10%;
-  margin-bottom: 1%;
-  color: #555;
-}
-
-.book-details p {
-  text-align: left;
-  margin-top: 2.5%;
-  line-height: 1.5;
-}
-
-.buy-now {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  margin-top: 5%;
-}
-
-.buy-now img {
-  width: 150px;
+  width: 180px;
   height: auto;
 }
 
-.buy-now:hover img {
-  filter: brightness(0.9);
+.book-details {
+  max-width: 700px;
+}
+
+.buy-now-button {
+  margin-top: 1rem;
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  background-color: #0f172a;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+
+.buy-now-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .home-hero-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-text, .hero-image {
+    flex: 1 1 100%;
+  }
+
+  .home-content2 {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .card1, .card2 {
+    width: 100%;
+    max-width: 350px;
+  }
+
+  .home-content4-box img {
+    max-width: 140px;
+  }
+
+  .lesson-link-text {
+    font-size: 1.3rem;
+  }
 }
