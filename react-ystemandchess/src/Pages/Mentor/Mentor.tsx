@@ -8,7 +8,7 @@ import makeADifference from "../../images/difference.png";
 
 const Mentor = () => {
   return (
-    <main className="board-container">
+    <main className="board-container" role="main">
       <section className="flex-container" role="region" aria-label="Application Section" tabIndex={0}>
         <div className="text-content">
           <h1>Become a Mentor</h1>
