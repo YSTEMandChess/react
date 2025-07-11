@@ -34,6 +34,8 @@ const mouseImage = 'img/cursor.png';
 var opponentMouseX = 0;
 var opponentMouseY = 0;
 
+var nextPuzzleMove = [];
+
 // Listen for mouse position change 
 document.addEventListener('mousemove', (event) => {
   myMouseX = event.clientX;
@@ -274,10 +276,10 @@ socket.on('mousexy', (msg)=>{
 
 // Handle reset message from the client
 socket.on('reset', () => {
-  // reload page
-  location.reload();
-  deleteAllCookies();
-  console.log("resetting board");
+  console.log("soft-resetting board (no reload)");
+  currentState = new Chess(); // fresh game
+  board.position(currentState.fen());
+  updateStatus();
 });
 
 // Handle lastmove message from the client
@@ -306,6 +308,26 @@ eventer(
     console.log("client event: ", e); // uncomment for debugging
     let data = JSON.parse(e.data);
 
+    console.log("Apache recieved: ", data);
+
+    // move a piece
+    // used to move a piece in puzzles
+    if ("from" in data && "to" in data && "nextMove" in data) {
+      var source = data.from;
+      var target = data.to;
+      nextPuzzleMove = data.nextMove;
+      
+      currentState.move({from: source, to:target});
+      sendMove(source,target);
+
+      // move highlight
+      highlightMove(data.from, data.to, "lastmove");
+
+      updateStatus();
+      board.position(currentState.fen());
+      sendToParent(currentState.fen());
+    }
+    
     // get command from parent and send to server
     var command = data.command;
     if (command == "newgame") { sendNewGame(); }
@@ -320,6 +342,34 @@ eventer(
       role = data.role;
       console.log(data);
     } else if (command == "undo") { sendUndo(); }
+
+    // check if puzzle
+    if (
+      data?.PuzzleId &&
+      typeof data.FEN === "string" &&
+      data.FEN.includes("/") &&
+      data.FEN.split("/").length === 8 &&
+      data.FEN.includes(" ") &&
+      data.FEN.split(" ").length >= 2
+    ) {
+      console.log("loading puzzle: ", data.PuzzleId);
+      try {
+        currentState.load(data.FEN);
+        board.position(data.FEN);
+
+        const parts = data.FEN.split(" ");
+        const activeColor = parts[1]; // safer than direct index
+        board.orientation(activeColor === 'w' ? 'black' : 'white');
+
+        sendToParent(currentState.fen());
+      } catch (err) {
+        console.error("Invalid FEN received for puzzle:", data.FEN, err);
+      }
+    } else {
+      console.warn("Skipping puzzle due to invalid FEN format:", data?.FEN);
+    }
+
+
 
 
     // get and set lessonflag
@@ -403,6 +453,13 @@ eventer(
       board.position(data.boardState);
       updateStatus();
     }
+
+    // highlight message
+    // if ("highlightFrom" in data && "highlightTo" in data) {
+    //   highlightMove(data.highlightFrom, data.highlightTo);
+    // }
+
+    
       
   },
   false,
@@ -435,10 +492,8 @@ function onDragStart(source, piece, position, orientation) {
   {
       
     // if it's your turn
-    if (playerColor[0] == currentState.turn())
+    if (playerColor && playerColor[0] == currentState.turn())
       {
-        
-        
 
         // do not pick up pieces if the game is over
         if (isLesson == false) {
@@ -479,7 +534,18 @@ function onDrop(source, target, draggedPieceSource) {
   // if we're not in freeplay
   if (!freemoveFlag)
   {
-      
+    
+    // if we're doing a puzzle, check if the move is correct
+    if (nextPuzzleMove.length == 2) {
+      // incorrect move, snapback
+      if (source !== nextPuzzleMove[0] || target !== nextPuzzleMove[1]) {
+        return "snapback";
+      }
+      // correct move, clear the next expected move
+      else
+        nextPuzzleMove = [];
+    }
+
     // see if the move is legal
     var move = currentState.move({
       from: source,
@@ -517,22 +583,14 @@ function onDrop(source, target, draggedPieceSource) {
 }
 // To add possible move suggestion on chessboard
 function onMouseoverSquare(square, piece) {
-  if (playerColor[0] == currentState.turn())
-  {
-    // get list of possible moves for this square
-    var moves = currentState.moves({
-      square: square,
-      verbose: true,
-    });
+  if (!playerColor || playerColor[0] !== currentState.turn()) return;
 
-    // exit if there are no moves available for this square
-    if (moves.length === 0) return;
+  const moves = currentState.moves({ square, verbose: true });
+  if (!moves || moves.length === 0) return;
 
-    // highlight the possible squares for this piece
-    for (var i = 0; i < moves.length; i++) {
-      greySquare(moves[i].to);
-      sendGreySquare(moves[i].to);
-    }
+  for (let i = 0; i < moves.length; i++) {
+    greySquare(moves[i].to);
+    sendGreySquare(moves[i].to);
   }
 }
 // To remove possible move suggestion on chessboard
