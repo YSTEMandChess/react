@@ -4,6 +4,7 @@ const router = express.Router();
 const crypto = require("crypto");
 const { check, validationResult } = require("express-validator");
 const users = require("../models/users");
+const verifyJWT = require("../utils/verifyJWT");
 const {
   ChangePasswordTemplateForUser,
 } = require("../template/changePasswordTemplate");
@@ -377,5 +378,52 @@ router.get(
     }
   }
 );
+router.delete("/delete", async (req, res) => {
+  const token = decodeURIComponent(req.query.jwt || "");
+  const credentials = verifyJWT(token);
 
+  if (typeof credentials === "string") {
+    return res.status(400).send(credentials); // error string from verifyJWT
+  }
+
+  const { username, role, parentUsername } = credentials;
+
+  const client = new MongoClient(mongoURI);
+  try {
+    await client.connect();
+    const db = client.db("ystem");
+    const usersCollection = db.collection("users");
+
+    const user = await usersCollection.findOne({ username });
+    if (!user) {
+      return res.status(404).send("Failure. Document does not exist.");
+    }
+
+    // Delete the user
+    await usersCollection.deleteOne({ username });
+
+    // If student: remove from parent's children array
+    if (role === "student" && parentUsername) {
+      await usersCollection.updateOne(
+        { username: parentUsername },
+        { $pull: { children: username } }
+      );
+    }
+
+    // If parent: update all their children to remove parentUsername reference
+    if (role === "parent") {
+      await usersCollection.updateMany(
+        { parentUsername: username },
+        { $set: { parentUsername: null } }
+      );
+    }
+
+    return res.status(200).send("Success");
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return res.status(500).send("Internal Server Error");
+  } finally {
+    await client.close();
+  }
+});
 module.exports = router;

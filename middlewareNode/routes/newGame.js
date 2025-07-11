@@ -54,4 +54,44 @@ router.get("/join", async (req, res) => {
   }
 });
 
+router.delete("/leave", async (req, res) => {
+  const token = decodeURIComponent(req.query.jwt || "");
+  const credentials = verifyJWT(token);
+
+  if (typeof credentials === "string") {
+    return res.status(400).send(credentials); // "Error: 405..." or "406..."
+  }
+
+  const { username, role } = credentials;
+
+  if (role !== "mentor" && role !== "student") {
+    return res.status(400).send("Please be either a student or a mentor.");
+  }
+
+  const client = new MongoClient(mongoURI);
+  try {
+    await client.connect();
+    const db = client.db("ystem");
+    const collection =
+      role === "mentor"
+        ? db.collection("waitingMentors")
+        : db.collection("waitingStudents");
+
+    const existing = await collection.findOne({ username });
+
+    if (!existing) {
+      return res.status(404).send("Person is not waiting for a match.");
+    }
+
+    await collection.deleteOne({ username });
+
+    return res.status(200).send("Person Removed Successfully.");
+  } catch (error) {
+    console.error("Error removing from waiting list:", error);
+    return res.status(500).send("Internal Server Error");
+  } finally {
+    await client.close();
+  }
+});
+
 module.exports = router;
