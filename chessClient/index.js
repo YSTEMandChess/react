@@ -304,7 +304,13 @@ eventer(
   messageEvent,
   (e) => {
     console.log("client event: ", e); // uncomment for debugging
-    let data = JSON.parse(e.data);
+    let data;
+try {
+  data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+} catch (err) {
+  console.error("Invalid JSON message from parent:", e.data);
+  return;
+}
 
     // get command from parent and send to server
     var command = data.command;
@@ -435,7 +441,7 @@ function onDragStart(source, piece, position, orientation) {
   {
       
     // if it's your turn
-    if (playerColor[0] == currentState.turn())
+    if (playerColor && playerColor[0] == currentState.turn())
       {
         
         
@@ -517,7 +523,7 @@ function onDrop(source, target, draggedPieceSource) {
 }
 // To add possible move suggestion on chessboard
 function onMouseoverSquare(square, piece) {
-  if (playerColor[0] == currentState.turn())
+  if (playerColor && playerColor[0] == currentState.turn())
   {
     // get list of possible moves for this square
     var moves = currentState.moves({

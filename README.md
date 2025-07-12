@@ -62,7 +62,7 @@ This project consists of several services. Here's how to set each one up:
 
 #### Chess Client (`chessClient`)
 
-The purpose of the chess Client is to 
+Run the http server using on port 80: `npx http-server -p 80` to ensure that the chess board frame loads during any session.
 
 1. Navigate to the `chessClient` directory inside the `react` folder.
 2. Run `npm i dotenv` to install the necessary dependencies.

@@ -33,7 +33,7 @@ class StockfishManager {
       throw new Error("Stockfish instance not set up for this session");
     }
 
-    // Attach an event listener to the listen for output from the engine
+    // Attach an event listener to listen for output from the engine
     engine.stdout.on("data", (data) => {
       const lines = data.toString().trim().split("\n");
 

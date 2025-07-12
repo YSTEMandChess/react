@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --detectOpenHandles --forceExit"
   },
   "author": "",
   "license": "ISC",
@@ -19,5 +19,9 @@
   },
   "volta": {
     "node": "14.21.3"
+  },
+  "devDependencies": {
+    "jest": "^30.0.4",
+    "socket.io-client": "^4.8.1"
   }
 }

@@ -5,7 +5,7 @@ const initializeSocket = (io, socket) => {
   socket.on("start-session", ({ sessionType, fen }) => {
     try {
       stockfishManager.registerSession(socket, sessionType, fen);
-      socket.emit("session-started", { success: true });
+      socket.emit("session-started", { success: true, id: socket.id });
     } catch (err) {
       socket.emit("session-error", { error: err.message });
     }
@@ -33,3 +33,4 @@ const initializeSocket = (io, socket) => {
 };
 
 module.exports = initializeSocket;
+module.exports.__stockfishManager = stockfishManager;

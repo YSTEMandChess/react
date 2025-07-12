@@ -111,6 +111,7 @@ const LessonOverlay = () => {
         const messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message';
 
         const handleMessage = async (e) => {
+            console.log(e);
             if (e.origin === environment.urls.chessClientURL) {
                 // if client is ready to receive
                 if (e.data === 'ReadyToRecieve') {
@@ -141,6 +142,8 @@ const LessonOverlay = () => {
                         move: "",
                         level: level
                     });
+
+                    console.log("FEN SENT to stockfishServer");
                 }
             }
         };
@@ -173,6 +176,9 @@ const LessonOverlay = () => {
             );
             const completedCount = await response.json();
             setCompletedNum(completedCount);
+
+            console.log("LESSONS COMPLETED #:");
+            console.log(completedCount);
 
             if (passedLessonNumber != null) {
                 // if navigated from menu, with specified lesson number
@@ -234,6 +240,7 @@ const LessonOverlay = () => {
 
     // get total # of lessons for category
     getTotalLessonsRef.current = async () => {
+        console.log("INSIDE TOTAL LESSON REF");
         try {
             // fetch
             const response = await fetch(
@@ -245,6 +252,8 @@ const LessonOverlay = () => {
             );
             const total = await response.json();
             setTotalLessons(total); // update in UI
+            console.log("TOTAL LESSONS FETCHED");
+            console.log(total);
         } catch (error) {
             console.error('Error fetching total lessons:', error);
         }
