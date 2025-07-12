@@ -13,6 +13,7 @@ import { ReactComponent as BackIconInactive} from '../../../images/icons/icon_ba
 import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg';
 import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
 import { useNavigate, useLocation } from 'react-router';
+import io from 'socket.io-client';
 
 const LessonOverlay = () => {
     const navigate = useNavigate();
@@ -62,9 +63,47 @@ const LessonOverlay = () => {
     const getCurrentLessonsRef = useRef<(input: number) => void>(() => {});
     const handleUnloadRef = useRef(() => {});
 
+    const socketRef = useRef(null);
+
     useEffect(() => {
         startRecording(); // start recording
         window.addEventListener('beforeunload', handleUnloadRef.current); // when unloaded, end recording
+
+        // Set up socket connection
+        socketRef.current = io("http://localhost:8080", {
+            transports: ["websocket"],
+        });
+
+        socketRef.current.on("connect", () => {
+            socketRef.current.emit("start-session", {
+                sessionType: "lesson",
+                fen: "",
+                infoMode: false
+            })
+        });
+
+        socketRef.current.on("evaluation-error", (msg) => {
+            console.log(`Error: ${msg.error}`);
+        })
+
+        socketRef.current.on("evaluation-complete", (data) => {
+            const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
+            const chessBoard = iframe?.contentWindow;
+
+            const message = JSON.stringify({
+                boardState: data.newFEN || "", // fallback if only engineOutput sent
+                color: turnRef.current,
+                lessonFlag: false,
+            });
+
+            prevFenRef.current = currentFenRef.current;
+            currentFenRef.current = data.newFEN;
+            processMove();
+
+            if (isReady && chessBoard) {
+                chessBoard.postMessage(message, environment.urls.chessClientURL);
+            }
+        })
 
         // configure eventer
         const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
@@ -72,6 +111,7 @@ const LessonOverlay = () => {
         const messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message';
 
         const handleMessage = async (e) => {
+            console.log(e);
             if (e.origin === environment.urls.chessClientURL) {
                 // if client is ready to receive
                 if (e.data === 'ReadyToRecieve') {
@@ -97,26 +137,13 @@ const LessonOverlay = () => {
                     // process the move for tracking
                     processMove()
 
-                    const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
-                    const chessBoard = iframe?.contentWindow;
+                    socketRef.current.emit("evaluate-fen", {
+                        fen: e.data,
+                        move: "",
+                        level: level
+                    });
 
-                    httpGetAsync( // get the next opponent move from stockfish
-                        `${environment.urls.stockFishURL}/?level=${level}&fen=${e.data}`,
-                        (response) => {
-                            const data = JSON.parse(response)
-                            const message = JSON.stringify({ boardState: data.fen, color: turnRef.current, lessonFlag: false});
-                            // update fens
-                            prevFenRef.current = currentFenRef.current
-                            currentFenRef.current = data.fen
-
-                            // process the move for tracking
-                            processMove()
-
-                            if (isReady) { // sends opponent moved board to client to update UI
-                                chessBoard.postMessage(message, environment.urls.chessClientURL);
-                            }
-                        }
-                    );
+                    console.log("FEN SENT to stockfishServer");
                 }
             }
         };
@@ -132,6 +159,7 @@ const LessonOverlay = () => {
             window.removeEventListener('message', handleMessage); // remove event listener
             window.removeEventListener('beforeunload', handleUnloadRef.current); // remove listener when unloading
             handleUnloadRef.current(); // when navigating away, stop recording time spent
+            socketRef.current?.disconnect();
         };
     }, []);
 
@@ -148,6 +176,9 @@ const LessonOverlay = () => {
             );
             const completedCount = await response.json();
             setCompletedNum(completedCount);
+
+            console.log("LESSONS COMPLETED #:");
+            console.log(completedCount);
 
             if (passedLessonNumber != null) {
                 // if navigated from menu, with specified lesson number
@@ -190,6 +221,9 @@ const LessonOverlay = () => {
             turnRef.current = getTurnFromFEN(lessonData.startFen)
             setInfo(lessonData.info)
             setName(lessonData.name)
+
+            // Update the session's fen
+            socketRef.current.emit("update-fen", { fen: lessonData.startFen });
             
             // Check if we've reached the end of lessons
             if (!lessonData || lessonData.lessonNum === undefined) {
@@ -206,6 +240,7 @@ const LessonOverlay = () => {
 
     // get total # of lessons for category
     getTotalLessonsRef.current = async () => {
+        console.log("INSIDE TOTAL LESSON REF");
         try {
             // fetch
             const response = await fetch(
@@ -217,6 +252,8 @@ const LessonOverlay = () => {
             );
             const total = await response.json();
             setTotalLessons(total); // update in UI
+            console.log("TOTAL LESSONS FETCHED");
+            console.log(total);
         } catch (error) {
             console.error('Error fetching total lessons:', error);
         }

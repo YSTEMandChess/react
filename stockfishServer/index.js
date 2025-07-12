@@ -1,66 +1,87 @@
 require("dotenv").config();
-var http = require("http").createServer(); //Create nodejs server
-var chess = require("chess.js");
-var Stockfish = require("stockfish");
+
+const express = require("express");
+const rateLimit = require("express-rate-limit");
+const { Chess } = require("chess.js");
+const Stockfish = require("stockfish");
 const querystring = require("querystring");
 const url = require("url");
 const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require("constants");
 
-//create a server object:
-http.on("request", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*"); //Set the header for stockfish
+const app = express();
+
+// Set rate limit - 30 requests/minute per IP
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: "Too many requests! Please try again." },
+});
+app.use(limiter);
+
+// CORS headers
+app.use((req, res, next) => {
+  // WARNING: allow only selected access for production
+  res.setHeader("Access-Control-Allow-Origin", "*");  
+
   res.setHeader("Content-Type", "application/json");
-
-  const engine = Stockfish(); // Initialize stockfish server
-
-  let params = querystring.parse(url.parse(req.url, true).search?.substring(1));
-  console.log("params -> ", params);
-  var maxLevel = 30;
-  var lines = [];
-
-  engine.onmessage = function (line) {
-    console.log("line -> ", line);
-    if (params.info) {
-      lines.push(line);
-      if (line.substring(0, 4) == "best") {
-        console.log("lines -> ", lines);
-        res.write(JSON.stringify(lines));
-        res.end();
-      }
-    } 
-    else if (line.substring(0, 4) == "best") {
-      console.log("paramsssss -> ", params);
-      const game = new chess.Chess(params.fen);
-      const result = game.move(line.split(" ")[1], { sloppy: true });
-      console.log("result -> ", result);
-      // check for the result exist or not
-      if (result) {
-        const color = result.color;
-        const image = result.piece.toUpperCase();
-        const move = color + image;
-        const target = result.to;
-        res.write(game.fen());
-        res.write(` move:${move}`);
-        res.write(`target:${target}`);
-        res.end();
-      } else {
-        console.log("Else called");
-        res.end();
-      }
-    }
-  };
-
-  //limit maximum dpeth
-  if (params.level > maxLevel) {
-    params.level = maxLevel;
-  }
-  console.log(`position fen ${params.fen} moves ${params.move}`);
-  engine.postMessage(`position fen ${params.fen} moves ${params.move}`);
-  engine.postMessage(`go depth ${params.level}`);
-  // process.removeAllListeners();
+  next();
 });
 
-//Listen on the requested port
-http.listen(process.env.PORT, () => {
-  console.log("listening on *:" + process.env.PORT);
+// Main API route
+app.get("/", (req, res) => {
+  const params = querystring.parse(url.parse(req.url, true).search?.substring(1));
+  const { fen, move = "", level = 10, info = false } = params;
+
+  // Validate input
+  if (!fen || isNaN(level)) {
+    return res.status(400).json({ error: "Missing or invalid parameters!" });
+  }
+
+  const maxLevel = 30;
+  var lines = [];
+  var depth = Math.min(parseInt(level), maxLevel);
+  const engine = Stockfish();
+
+  const game = new Chess(fen);
+
+  engine.onmessage = (line) => {
+    if (info) {
+      lines.push(line);
+      if (line.startsWith("bestmove")) {
+        res.json({ output: lines });
+      }
+    }
+    else if (line.startsWith("bestmove")) {
+      const moveResult = game.move(line.split(" ")[1], { sloppy: true });
+
+      if (moveResult) {
+        const color = moveResult.color;
+        const piece = moveResult.piece.toUpperCase();
+        const move = color + piece;
+        const target = moveResult.to;
+        res.end(`${game.fen()} move:${move} target:${target}`);
+      }
+      else {
+        res.end("Invalid move or game state");
+      }
+    }
+  }
+
+  // Send position + evaluation command to the engine
+  engine.postMessage(`position fen ${fen} moves ${move}`);
+  engine.postMessage(`go depth ${depth}`);
+
+  // Set timeout for safety
+  setTimeout(() => {
+    if (!res.writableEnded) {
+      res.status(504).json({ error: "Engine timeout!" });
+    }
+  }, 5000);
+});
+
+
+// Start the server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Stockfish server running on port ${PORT}`);
 });
