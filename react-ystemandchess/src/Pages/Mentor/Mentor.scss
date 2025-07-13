@@ -1,86 +1,124 @@
-.board-container {
+.mentor-roles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+
+.mentor-card {
+  flex: 1 1 300px;
+  max-width: 400px;
+  min-width: 280px;
+  padding: 2.5rem;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   text-align: center;
-  padding: 20px;
+}
 
-  .flex-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.mentor-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
 
-    .text-content {
-      flex: 1;
-      text-align: left;
+.icon-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
 
-      h1 {
-        font-size: 2em;
-        color: #333;
-        margin-bottom: 10px;
-      }
+.icon-container span {
+  font-size: 2rem;
+  color: white;
+}
 
-      p {
-        font-size: 1.2em;
-        color: #666;
-        margin-bottom: 20px;
-      }
+.transform-icon:hover span {
+  transform: rotate(360deg);
+  transition: transform 0.6s ease-in-out;
+}
 
-      .apply-button {
-        @extend .apply-button; // Reuse the same button styling
-      }
-    }
+.breathe-icon span {
+  animation: breathe 2.5s ease-in-out infinite;
+}
 
-    .image-content {
-      flex: 1;
-      text-align: right;
-
-      img {
-        max-width: 100%;
-        height: auto;
-      }
-    }
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
   }
-
-  .line-break {
-    margin-top: 20px;
-    margin-bottom: 20px;
-  }
-
-  .mentor-details img {
-    width: 100%;
-    height: auto;
-    margin-bottom: 20px;
-  }
-
-  .mentor-roles {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-
-    img {
-      width: 45%;
-      height: auto;
-      margin: 0 5px;
-    }
+  50% {
+    transform: scale(1.15);
   }
 }
 
-.apply-button {
-  background-color: #ead94c; /* Same color as view-button */
-  border: none;
-  border-radius: 5px;
-  padding: 10px 20px;
-  font-size: 1em;
-  cursor: pointer;
-  font-weight: bold;
-  transition:
-    background-color 0.3s,
-    transform 0.2s;
+.mentor-card h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
 
-  &:hover {
-    background-color: #ffe066; /* Brighter yellow on hover */
-    transform: translateY(-1px); /* Slight push up on hover */
+.mentor-card p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.green-card {
+  background: linear-gradient(145deg, #73b313 0%, #8bc34a 100%);
+  color: #ffffff;
+}
+
+.white-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
+  border: 2px solid #73b313;
+  color: #333;
+}
+
+.apply-wrapper {
+  text-align: center;
+}
+
+.apply-button {
+  background-color: #0f172a;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.apply-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.apply-button:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    flex-direction: column;
+    text-align: center;
   }
 
-  &:active {
-    transform: translateY(1px); /* Slight push down on click */
+  .hero-text {
+    text-align: center;
+  }
+
+  .mentor-card {
+    width: 100%;
+    max-width: 350px;
   }
 }

@@ -108,6 +108,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: center;
   width: 350px;
   min-height: 500px;
@@ -119,7 +120,9 @@
   overflow: hidden;
   cursor: pointer;
 }
-
+.card1 p, .card2 p{
+  text-align:center
+}
 .card1:hover, .card2:hover {
   transform: translateY(-10px) scale(1.02);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);

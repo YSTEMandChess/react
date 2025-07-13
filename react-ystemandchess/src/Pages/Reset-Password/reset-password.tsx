@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
+import './reset-password.component.scss'; // matches file name
 
 const ResetPassword = () => {
   const [username, setUsername] = useState('');
@@ -8,7 +9,7 @@ const ResetPassword = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleResetRequest = async (e: any) => {
+  const handleResetRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
@@ -16,9 +17,7 @@ const ResetPassword = () => {
     try {
       const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
       const response = await fetch(
-        `${baseURL}/user/sendMail?username=${encodeURIComponent(
-          username
-        )}&email=${encodeURIComponent(email)}`,
+        `${baseURL}/user/sendMail?username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`,
         {
           method: 'POST',
           headers: {
@@ -34,7 +33,7 @@ const ResetPassword = () => {
       } else {
         setError(data.message || 'Error requesting password reset');
       }
-    } catch (error) {
+    } catch {
       setError('Error connecting to server. Please try again.');
     } finally {
       setIsLoading(false);
@@ -42,59 +41,52 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className='max-w-md mx-auto p-6'>
-      <h2 className='text-2xl font-bold mb-6'>Reset Password</h2>
+    <div className="reset-page">
+      <h1 className="reset-title">Reset Password</h1>
 
-      {error != '' && (
-        <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
-          {error}
-        </div>
-      )}
+      {error && <p className="reset-error">{error}</p>}
 
-      <form onSubmit={handleResetRequest} className='space-y-4'>
-        <div>
-          <label htmlFor='username' className='block text-sm font-medium mb-1'>
-            Username
-          </label>
+      <form className="reset-form" onSubmit={handleResetRequest}>
+        <div className="input-wrapper">
+          <label htmlFor="username">Username</label>
           <input
-            id='username'
-            type='text'
+            id="username"
+            type="text"
+            placeholder="Enter your username"
+            className="reset-input"
             value={username}
-            placeholder='UserName'
             onChange={(e) => setUsername(e.target.value)}
-            className='w-full p-2 border rounded'
             required
             disabled={isLoading}
           />
         </div>
 
-        <div>
-          <label htmlFor='email' className='block text-sm font-medium mb-1'>
-            Email
-          </label>
+        <div className="input-wrapper">
+          <label htmlFor="email">Email</label>
           <input
-            id='email'
-            type='email'
-            placeholder='Email'
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            className="reset-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className='w-full p-2 border rounded'
             required
             disabled={isLoading}
           />
         </div>
 
         <button
-          type='submit'
+          type="submit"
+          className="reset-button"
           disabled={isLoading}
-          data-testid="reset-submit"
-          className={`w-full bg-blue-500 text-white p-2 rounded ${
-            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
-          }`}
         >
-          {isLoading ? 'Sending...' : 'Reset Password'}
+          {isLoading ? 'Sending...' : 'Send Reset Link'}
         </button>
       </form>
+
+      <div className="reset-links">
+        <a href="/login">Back to Login</a>
+      </div>
     </div>
   );
 };
