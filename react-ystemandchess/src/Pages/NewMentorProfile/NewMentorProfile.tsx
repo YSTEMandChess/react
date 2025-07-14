@@ -355,7 +355,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         </div>
         <div className="inv-inventory-analytics">
           <div className="inv-inventory-analytics-graph">
-            <StatsChart key={dataAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
+
           </div>
           <div className="inv-inventory-analytics-metrics">
             <h3>Time Spent:</h3>
