@@ -22,9 +22,8 @@ const books = [
   },
 ];
 
-
 const Home = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   // Sends the user to donat
   // e page, when donate button is clicked
   const handleDonateButton = () => {
@@ -36,14 +35,18 @@ const Home = () => {
     // Handle the Buy Now button click event
     // alert("Buy Now button clicked!");
     if (title === "How to Start a Tech-Based Nonprofit") {
-      window.open("https://www.amazon.com/How-Start-Tech-based-Nonprofit-Opportunity/dp/B0C4MML5WG", "_blank");
+      window.open(
+        "https://www.amazon.com/How-Start-Tech-based-Nonprofit-Opportunity/dp/B0C4MML5WG",
+        "_blank"
+      );
     }
 
     if (title === "The Zero Dollar Workforce") {
-      window.open("https://www.amazon.com/Zero-Dollar-Workforce-Company-Spend/dp/B09NGVLQSS", "_blank");
+      window.open(
+        "https://www.amazon.com/Zero-Dollar-Workforce-Company-Spend/dp/B09NGVLQSS",
+        "_blank"
+      );
     }
-
-
   };
   return (
     <div role="main" className="home-container">
@@ -64,8 +67,11 @@ const Home = () => {
           {/* <strong>Donate</strong> */}
           {/* </button> */}
 
-          <button className="donateButton" aria-label="Donate to Y STEM and Chess">
-              Donate
+          <button
+            className="donateButton"
+            aria-label="Donate to Y STEM and Chess"
+          >
+            Donate
           </button>
         </div>
         <div className="pic">
@@ -95,7 +101,10 @@ const Home = () => {
             <br></br>
             Our lessons are free.
           </p>
-          <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50" aria-label="Join now for free button">
+          <button
+            className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
+            aria-label="Join now for free button"
+          >
             {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" /> */}
             <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
               Join Now !
@@ -110,7 +119,10 @@ const Home = () => {
             <br></br>
             $25 / Week <br></br> First lesson is FREE. <br></br> Cancel anytime.
           </p>
-          <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50" aria-label="Join now premium button">
+          <button
+            className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
+            aria-label="Join now premium button"
+          >
             {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" /> */}
             <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
               Join Now !
@@ -120,7 +132,11 @@ const Home = () => {
       </div>
 
       <div className="home-content3" role="region">
-        <img src={Images.LargeInfo} alt="Y STEM mission statement emphasising Play, Learn and Donate" aria-label="Y STEM mission statement emphasising Play, Learn and Donate"></img>
+        <img
+          src={Images.LargeInfo}
+          alt="Y STEM mission statement emphasising Play, Learn and Donate"
+          aria-label="Y STEM mission statement emphasising Play, Learn and Donate"
+        ></img>
       </div>
 
       <div className="home-video-container">
@@ -130,23 +146,27 @@ const Home = () => {
           width="560"
           height="315"
           src="https://www.youtube.com/embed/SBr0bGgddIc"
-          style={{ "border": "0" }}
+          style={{ border: "0" }}
           allowFullScreen
         ></iframe>
       </div>
 
       <div className="home-content4" role="region">
         <div className="home-content4-box">
-          <img src={Images.ChessGroup} alt="Chess peices lined up next to eachother" aria-label="Chess peices lined up next to eachother"></img>
-          <div className="lesson-link-text">
-            Start now and sign up later!
-          </div>
-          <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-          onClick={() => navigate('./lessons')}
-          aria-label="Get started with lessons">
+          <img
+            src={Images.ChessGroup}
+            alt="Chess peices lined up next to eachother"
+            aria-label="Chess peices lined up next to eachother"
+          ></img>
+          <div className="lesson-link-text">Start now and sign up later!</div>
+          <button
+            className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
+            onClick={() => navigate("./lessons")}
+            aria-label="Get started with lessons"
+          >
             {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" /> */}
             <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
-             Get Started!
+              Get Started!
             </span>
           </button>
         </div>
@@ -169,7 +189,11 @@ const Home = () => {
                 alt={`${book.title} cover image`}
                 className="book-image"
               />
-              <button className="buy-now" aria-label={`Buy now ${book.title}`} onClick={() => handleBuyNow(book.title)}>
+              <button
+                className="buy-now"
+                aria-label={`Buy now ${book.title}`}
+                onClick={() => handleBuyNow(book.title)}
+              >
                 <img src={Images.BuyNow} alt="Buy now" />
               </button>
             </div>
@@ -189,5 +213,3 @@ const Home = () => {
 };
 
 export default Home;
-
-
