@@ -69,6 +69,15 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
     goToNextLesson();
   };
 
+  // Accessibility improvements for popup
+  const popupRef = useRef(null);
+
+  useEffect(() => {
+    if (showPopup && popupRef.current) {
+      popupRef.current.focus();
+    }
+  }, [showPopup]);
+
   // Check for black pieces every time the board state changes
   useEffect(() => {
     checkBlackPieces();
@@ -318,47 +327,63 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
         <div className='right-container'>
           {/* Description part */}
           <div className='lesson-header'>
-            <h1 data-testid="piece_description" className="piece_description">{scenario.name}</h1>
-            <button data-testid="reset-lesson" className='reset-lesson' onClick={resetBoard}>
-              <RedoIcon className='reset-icon'/>
+            <h1 data-testid="piece_description" className="piece_description" aria-label="Scenario Description">
+              {scenario.name}
+            </h1>
+            <button
+              data-testid="reset-lesson"
+              className='reset-lesson'
+              onClick={resetBoard}
+              aria-label="Reset Lesson"
+            >
+              <RedoIcon className='reset-icon' aria-hidden="true" />
             </button>
           </div>
 
-          <h1 data-testid="subheading" className='subheading'>{lesson.name}</h1>
-          <p data-testid="lesson-description" className="lesson-description">{lesson.info}</p>
+          <h1 data-testid="subheading" className='subheading' aria-label="Lesson Subheading">
+            {lesson.name}
+          </h1>
+          <p data-testid="lesson-description" className="lesson-description" aria-label="Lesson Description">
+            {lesson.info}
+          </p>
 
           <div className='prev-next-button-container'>
             {/* Back button */}
-            <button 
-            data-testid="backLessonButton" 
-            className={leftEnded ? "prevNextLessonButton-inactive prev" : "prevNextLessonButton prev"} 
-            onClick={leftEnded ? undefined : () => setupScenario(-1)}
+            <button
+              data-testid="backLessonButton"
+              className={leftEnded ? "prevNextLessonButton-inactive prev" : "prevNextLessonButton prev"}
+              onClick={leftEnded ? undefined : () => setupScenario(-1)}
+              aria-label="Previous Lesson"
+              aria-disabled={leftEnded}
             >
-              { leftEnded ? <BackIconInactive/> : <BackIcon/> }
+              {leftEnded ? <BackIconInactive aria-hidden="true" /> : <BackIcon aria-hidden="true" />}
               <p className="button-description">Back</p>
             </button>
 
-            <button 
-            data-testid="prevNextLessonButton" 
-            className={rightEnded ? "prevNextLessonButton-inactive next" : "prevNextLessonButton next"} 
-            onClick={rightEnded ? undefined : () => setupScenario(1)}
+            <button
+              data-testid="prevNextLessonButton"
+              className={rightEnded ? "prevNextLessonButton-inactive next" : "prevNextLessonButton next"}
+              onClick={rightEnded ? undefined : () => setupScenario(1)}
+              aria-label="Next Lesson"
+              aria-disabled={rightEnded}
             >
-              { rightEnded ? <NextIconInactive/> : <NextIcon/> }
+              {rightEnded ? <NextIconInactive aria-hidden="true" /> : <NextIcon aria-hidden="true" />}
               <p className="button-description">Next</p>
             </button>
-
           </div>
         </div>
-
       </div>
+
       <div>
         <div className="lesson-buttons-container">
           {scenario.subSections?.map((section, index) => (
-            <button 
+            <button
               key={index}
               data-testid="lesson-button"
-              className={section.name == lesson.name ? "lesson-buttons active" : "lesson-buttons"}  
+              className={section.name == lesson.name ? "lesson-buttons active" : "lesson-buttons"}
               onClick={() => setupLesson(section)}
+              aria-label={`${section.name}`}
+              aria-pressed={section.name == lesson.name}
             >
               {section.name}
             </button>
@@ -368,17 +393,25 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
 
       {/* Popup for lesson completion */}
       {showPopup && (
-        <div className="popup">
+        <div
+          className="popup"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="popup-header"
+          aria-describedby="popup-subheading"
+          ref={popupRef}
+          tabIndex={-1}
+        >
           <div className="popup-content">
             <div className="success-checkmark">
-              <svg width="80" height="80" viewBox="0 0 120 120">
+              <svg width="80" height="80" viewBox="0 0 120 120" aria-hidden="true">
                 <circle className="circle" cx="60" cy="60" r="54" fill="none" stroke="#beea8b" stroke-width="6"></circle>
                 <path className="checkmark" d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>
               </svg>
             </div>
-            <p className="popup-header">Lesson completed</p>
-            <p className="popup-subheading">Good job</p>
-            <button className="popup-button" onClick={handlePopupConfirm}>OK</button>
+            <p id="popup-header" className="popup-header">Lesson completed</p>
+            <p id="popup-subheading" className="popup-subheading">Good job</p>
+            <button className="popup-button" onClick={handlePopupConfirm} aria-label="Confirm Lesson Completion">OK</button>
           </div>
         </div>
       )}
