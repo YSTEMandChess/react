@@ -8,7 +8,7 @@ import { useCookies } from "react-cookie";
 // Component to display a single scenario item.
 const ScenarioTemplate = React.memo(function ScenarioTemplate({ scenario, onClick }) {
     return (
-        <div className="item-template" onClick={onClick}>
+        <div className="item-template" onClick={onClick} role="option" tabIndex="0" aria-label={`${scenario.name}`}>
             <div>{scenario.name}</div>
         </div>
     );
@@ -17,7 +17,7 @@ const ScenarioTemplate = React.memo(function ScenarioTemplate({ scenario, onClic
 // Component to display a single lesson item within a scenario.
 const LessonTemplate = React.memo(function LessonTemplate({ lesson, onClick }) {
     return (
-        <div className="item-template" onClick={onClick}>
+        <div className="item-template" onClick={onClick} role="option" tabIndex="0" aria-label={`${lesson.name}`}>
             <div>{lesson.name}</div>
         </div>
     );
@@ -155,10 +155,10 @@ export default function LessonSelection() {
         <div className="whole-page">
             {/* Conditional rendering of the error message popup. */}
             {error && (
-                <div className="errorBackground">
+                <div className="errorBackground" role="alert" aria-live="assertive">
                     <div className="errorBox">
                         <div className="errorText">{error}</div>
-                        <button onClick={() => setError(null)}>OK</button>
+                        <button onClick={() => setError(null)} aria-label="Dismiss error">OK</button>
                     </div>
                 </div>
             )}
@@ -166,7 +166,7 @@ export default function LessonSelection() {
                 Lesson Selection
             </div>
             {/* Dropdown-like selector for choosing a scenario. */}
-            <div className="selector scenario-selector" data-testid="scenario-selector" onClick={() => setShowScenarios(!showScenarios)}>
+            <div className="selector scenario-selector" data-testid="scenario-selector" onClick={() => setShowScenarios(!showScenarios)} role="button" tabIndex="0" aria-expanded={showScenarios} aria-label="Select a scenario">
                 <div>
                     {selectedScenario || "Select a scenario."}
                 </div>
@@ -177,7 +177,7 @@ export default function LessonSelection() {
 
             {/* Conditional rendering of the scenarios list. */}
             {showScenarios && (
-                <div className="container scenario-container">
+                <div className="container scenario-container" role="listbox" aria-label="List of scenarios">
                     {scenarios.map((scenarioItem) => (
                         <ScenarioTemplate
                             key={scenarioItem.name} // Use a stable unique key like scenario name
@@ -188,8 +188,7 @@ export default function LessonSelection() {
                 </div>
             )}
 
-            {/* Dropdown-like selector for choosing a lesson within the selected scenario. */}
-            <div className="selector lesson-selector" data-testid="lesson-selector" onClick={() => setShowLessons(!showLessons)}>
+            <div className="selector lesson-selector" data-testid="lesson-selector" onClick={() => setShowLessons(!showLessons)} role="button" tabIndex="0" aria-expanded={showLessons} aria-label="Select a lesson">
                 <div>
                     {selectedLesson || "Select a lesson."}
                 </div>
@@ -199,7 +198,7 @@ export default function LessonSelection() {
             </div>
             {/* Conditional rendering of the lessons list for the selected scenario. */}
             {showLessons && (
-                <div className="container scenario-container">
+                <div className="container scenario-container" role="listbox" aria-label="List of lessons">
                     {!isLessonsLoading ? (
                         lessons.map((lessonItem) => (
                             <LessonTemplate
@@ -209,13 +208,12 @@ export default function LessonSelection() {
                             />
                         ))
                     ) : (
-                        <div className="item-template">Loading...</div>
+                        <div className="item-template" aria-busy="true">Loading...</div>
                     )}
                 </div>
             )}
 
-            {/* Button to submit the selection and navigate to the lesson. */}
-            <button className="enterInfo" data-testid="enterInfo" onClick={handleSubmit}>
+            <button className="enterInfo" data-testid="enterInfo" onClick={handleSubmit} aria-label="Submit lesson selection">
                 Go!
             </button>
         </div>
