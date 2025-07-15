@@ -442,9 +442,9 @@ const LessonOverlay = () => {
     };
 
     return (
-        <div id="lesson-container">
+        <div id="lesson-container" role="main">
             <div className='left-right-container'>
-                <div className="switchLesson" onClick={() => navigate("/lessons-selection")}>Switch Lesson</div>
+                <div className="switchLesson" onClick={() => navigate("/lessons-selection")} aria-label="Switch to lesson selection">Switch Lesson</div>
             </div>
             <div id="chess-board">
                 <PlayLesson chessLessonSrc={environment.urls.chessClientURL} />
@@ -453,7 +453,7 @@ const LessonOverlay = () => {
                 {/* Lesson info */}
                 <div className='lesson-header'>
                 <h1 className="piece_description">{piece}</h1>
-                <button className='reset-lesson' onClick={handleReset}>
+                <button className='reset-lesson' onClick={handleReset} aria-label="Reset lesson">
                     <RedoIcon className='reset-icon'/>
                 </button>
                 </div>
@@ -465,13 +465,12 @@ const LessonOverlay = () => {
                 <div className='prev-next-button-container'>
                 {
                     lessonNum <= 0? ( 
-                    <button className="prevNextLessonButton-inactive prev">
+                    <button className="prevNextLessonButton-inactive prev" aria-disabled="true">
                         <BackIconInactive/>
                         <p className="button-description">Back</p>
                     </button>
                     ) : (
-                        
-                    <button className="prevNextLessonButton prev" onClick={previousLesson}>
+                    <button className="prevNextLessonButton prev" onClick={previousLesson} aria-label="Go to previous lesson">
                         <BackIcon/>
                         <p className="button-description">Back</p>
                     </button>
@@ -480,12 +479,12 @@ const LessonOverlay = () => {
     
                 {/* deactivate next button, if it goes beyond first uncompleted, or beyond last available lesson */}
                 {((lessonNum >= completedNum) || (lessonNum >= totalLessons - 1))? (
-                    <button className="prevNextLessonButton-inactive next">
+                    <button className="prevNextLessonButton-inactive next" aria-disabled="true">
                         <p className="button-description">Next</p>
                         <NextIconInactive/>
                     </button>
                     ) : (
-                    <button className="prevNextLessonButton next" onClick={nextLesson}>
+                    <button className="prevNextLessonButton next" onClick={nextLesson} aria-label="Go to next lesson">
                         <p className="button-description">Next</p>
                         <NextIcon/>
                     </button>
@@ -497,9 +496,9 @@ const LessonOverlay = () => {
 
             {/* connection error popup */}
             {ShowError && (
-                <div className="popup">
+                <div className="popup" role="alert">
                     <div className="popup-content">
-                    <div className="error-cross">
+                    <div className="error-cross" aria-hidden="true">
                         <svg width="80" height="80" viewBox="0 0 120 120">
                         <circle
                             className="circle"
@@ -536,9 +535,9 @@ const LessonOverlay = () => {
             
             {/* lesson completed popup */}
             {showVPopup && (
-                <div className="popup">
+                <div className="popup" role="dialog" aria-modal="true">
                 <div className="popup-content">
-                    <div className="success-checkmark">
+                    <div className="success-checkmark" aria-hidden="true">
                     <svg width="80" height="80" viewBox="0 0 120 120">
                         <circle className="circle" cx="60" cy="60" r="54" fill="none" stroke="#beea8b" stroke-width="6"></circle>
                         <path className="checkmark" d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -546,16 +545,16 @@ const LessonOverlay = () => {
                     </div>
                     <p className="popup-header">Lesson completed</p>
                     <p className="popup-subheading">Good job</p>
-                    <button className="popup-button" onClick={handleVPopup}>OK</button>
+                    <button className="popup-button" onClick={handleVPopup} aria-label="Confirm lesson completion">OK</button>
                 </div>
                 </div>
             )}
 
             {/* lesson not done yet popup */}
             {showXPopup && (
-                <div className="popup">
+                <div className="popup" role="dialog" aria-modal="true">
                     <div className="popup-content">
-                    <div className="error-cross">
+                    <div className="error-cross" aria-hidden="true">
                         <svg width="80" height="80" viewBox="0 0 120 120">
                         <circle
                             className="circle"
@@ -586,16 +585,16 @@ const LessonOverlay = () => {
                     </div>
                     <p className="popup-header">Lesson failed</p>
                     <p className="popup-subheading">Please try again</p>
-                    <button className="popup-button" onClick={handleXPopup}>OK</button>
+                    <button className="popup-button" onClick={handleXPopup} aria-label="Restart lesson">OK</button>
                     </div>
                 </div>
                 )}
             
             {/* loading to wait for lesson fetching */}
             {showLPopup && (
-                <div className="popup">
+                <div className="popup" role="status">
                     <div className="popup-content">
-                    <div className="loading-spinner">
+                    <div className="loading-spinner" aria-hidden="true">
                         <svg width="80" height="80" viewBox="0 0 120 120">
                         <circle
                             className="spinner"
@@ -616,11 +615,11 @@ const LessonOverlay = () => {
 
             {/* have users read instructions first */}
             {showInstruction && (
-                <div className="popup">
+                <div className="popup" role="dialog" aria-modal="true">
                     <div className="popup-content">
                     <p className="popup-header">Read this instruction:</p>
                     <p className="popup-subheading">{info}</p>
-                    <button className="popup-button" onClick={handleShowInstruction}>Finished reading!</button>
+                    <button className="popup-button" onClick={handleShowInstruction} aria-label="Confirm instruction reading">Finished reading!</button>
                     </div>
                 </div>
             )}
