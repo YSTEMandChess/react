@@ -1,4 +1,5 @@
-import "./Lessons.scss";
+import pageStyles from "./Lessons.module.scss";
+import profileStyles from "./Lessons-profile.module.scss";
 import React, { useState, useEffect, useRef } from 'react';
 import { ReactComponent as RedoIcon } from './icon_redo.svg';
 import { ReactComponent as BackIcon} from './icon_back.svg';
@@ -15,9 +16,13 @@ type Board = (string | null)[][];
 
 type LessonsProps = {
   testOverrides?: any;
+  styleType?: any;
 };
 
-const Lessons = ({ testOverrides }: LessonsProps) => {
+const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
+
+  const styles = styleType === 'profile' ? profileStyles : pageStyles;
+
   const navigate = useNavigate();
   const [board, setBoard] = useState(getScenario(0).subSections[0].board); // Initialize the board with chess pieces
   const [highlightedSquares, setHighlightedSquares] = useState([]);
@@ -298,16 +303,47 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
   const backButtonClassname = rightEnded ? "prevNextLessonButton-inactive prev" : "prevNextLessonButton prev";
 
   return (
-    <div className="lessons-page">
-      <div className='left-right-container'>
+    <div className={styles.lessonsPage}>
+      <div className={styles.leftRightContainer}>
+        {/* div for elements on the right */}
+        <div className={styles.rightContainer}>
+          {/* Description part */}
+          <div className={styles.lessonHeader}>
+            <h1 data-testid="piece_description" className={styles.pieceDescription}>{scenario.name}</h1>
+            <button data-testid="reset-lesson" className={styles.resetLesson} onClick={resetBoard}>
+              <RedoIcon/>
+            </button>
+          </div>
+
+          <h1 data-testid="subheading" className={styles.subheading}>{lesson.name}</h1>
+          <p data-testid="lesson-description" className={styles.lessonDescription}>{lesson.info}</p>
+
+          <div className={styles.prevNextContainer}>
+            {/* Back button */}
+            <button 
+            data-testid="backLessonButton" 
+            className={leftEnded ? [styles.prevNextLessonButtonInactive, styles.prev].join(' ') : [styles.prevNextLessonButton, styles.prev].join(' ')} 
+            onClick={leftEnded ? undefined : () => setupScenario(-1)}
+            >
+              { leftEnded ? <BackIconInactive/> : <BackIcon/> }
+              <p className={styles.buttonDescription}>Back</p>
+            </button>
+
+            <button 
+            data-testid="prevNextLessonButton" 
+            className={rightEnded ? [styles.prevNextLessonButtonInactive, styles.next].join(' ') : [styles.prevNextLessonButton, styles.next].join(' ')} 
+            onClick={rightEnded ? undefined : () => setupScenario(1)}
+            >
+              { rightEnded ? <NextIconInactive/> : <NextIcon/> }
+              <p className={styles.buttonDescription}>Next</p>
+            </button>
+          </div>
+        </div>
+        
         {/* Div for elements on the left */}
-        <div className='left-container'>
-          <div className="chessboard-container_L">
-            <div className="button-container">
-              {/* <button className="lesson-button">Lessons</button>*/}
-              {/*<button className="play-button">Play</button>*/}
-            </div>
-            <div data-testid="chessboard-L" className="chessboard_L">
+        <div className={styles.leftContainer}>
+          <div className={styles.chessboardContainer}>
+            <div data-testid="chessboard-L" className={styles.chessboard}>
               {createChessBoard(
                 board,
                 highlightedSquares,
@@ -316,71 +352,23 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
                 handleDragStart,
                 handleDrop,
                 handleDragOver,
-                draggingPiece
+                draggingPiece,
+                styles
               )}
             </div>
             {isPromoting ? <PromotionPopup position={promotionPosition} promoteToPiece={promotePawn} /> : null /* Show promotion popup if needed */}
           </div>
         </div>
 
-        {/* div for elements on the right */}
-        <div className='right-container'>
-          {/* Description part */}
-          <div className='lesson-header'>
-            <h1 data-testid="piece_description" className="piece_description" aria-label="Scenario Description">
-              {scenario.name}
-            </h1>
-            <button
-              data-testid="reset-lesson"
-              className='reset-lesson'
-              onClick={resetBoard}
-              aria-label="Reset Lesson"
-            >
-              <RedoIcon className='reset-icon' aria-hidden="true" />
-            </button>
-          </div>
-
-          <h1 data-testid="subheading" className='subheading' aria-label="Lesson Subheading">
-            {lesson.name}
-          </h1>
-          <p data-testid="lesson-description" className="lesson-description" aria-label="Lesson Description">
-            {lesson.info}
-          </p>
-
-          <div className='prev-next-button-container'>
-            {/* Back button */}
-            <button
-              data-testid="backLessonButton"
-              className={leftEnded ? "prevNextLessonButton-inactive prev" : "prevNextLessonButton prev"}
-              onClick={leftEnded ? undefined : () => setupScenario(-1)}
-              aria-label="Previous Lesson"
-              aria-disabled={leftEnded}
-            >
-              {leftEnded ? <BackIconInactive aria-hidden="true" /> : <BackIcon aria-hidden="true" />}
-              <p className="button-description">Back</p>
-            </button>
-
-            <button
-              data-testid="prevNextLessonButton"
-              className={rightEnded ? "prevNextLessonButton-inactive next" : "prevNextLessonButton next"}
-              onClick={rightEnded ? undefined : () => setupScenario(1)}
-              aria-label="Next Lesson"
-              aria-disabled={rightEnded}
-            >
-              {rightEnded ? <NextIconInactive aria-hidden="true" /> : <NextIcon aria-hidden="true" />}
-              <p className="button-description">Next</p>
-            </button>
-          </div>
-        </div>
       </div>
 
       <div>
-        <div className="lesson-buttons-container">
+        <div className={styles.lessonButtonsContainer}>
           {scenario.subSections?.map((section, index) => (
             <button
               key={index}
               data-testid="lesson-button"
-              className={section.name == lesson.name ? "lesson-buttons active" : "lesson-buttons"}
+              className={section.name == lesson.name ? [styles.lessonButtons, styles.active].join(' ') : styles.lessonButtons}  
               onClick={() => setupLesson(section)}
               aria-label={`${section.name}`}
               aria-pressed={section.name == lesson.name}
@@ -393,25 +381,17 @@ const Lessons = ({ testOverrides }: LessonsProps) => {
 
       {/* Popup for lesson completion */}
       {showPopup && (
-        <div
-          className="popup"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="popup-header"
-          aria-describedby="popup-subheading"
-          ref={popupRef}
-          tabIndex={-1}
-        >
-          <div className="popup-content">
-            <div className="success-checkmark">
-              <svg width="80" height="80" viewBox="0 0 120 120" aria-hidden="true">
-                <circle className="circle" cx="60" cy="60" r="54" fill="none" stroke="#beea8b" stroke-width="6"></circle>
-                <path className="checkmark" d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>
+        <div className={styles.popup}>
+          <div className={styles.popupContent}>
+            <div className={styles.successCheckmark}>
+              <svg width="80" height="80" viewBox="0 0 120 120">
+                <circle className={styles.circle} cx="60" cy="60" r="54" fill="none" stroke="#beea8b" stroke-width="6"></circle>
+                <path className={styles.checkmark} d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>
               </svg>
             </div>
-            <p id="popup-header" className="popup-header">Lesson completed</p>
-            <p id="popup-subheading" className="popup-subheading">Good job</p>
-            <button className="popup-button" onClick={handlePopupConfirm} aria-label="Confirm Lesson Completion">OK</button>
+            <p className={styles.popupHeader}>Lesson completed</p>
+            <p className={styles.popupSubheading}>Good job</p>
+            <button className={styles.popupButton} onClick={handlePopupConfirm}>OK</button>
           </div>
         </div>
       )}
@@ -428,7 +408,8 @@ export function createChessBoard(
   handleDragStart: any,
   handleDrop: any,
   handleDragOver: any,
-  draggingPiece: any
+  draggingPiece: any,
+  styles: any
 ) {
   const rows = 8;
   const cols = 8;
@@ -451,7 +432,7 @@ export function createChessBoard(
       chessBoard.push(
         <div
           key={key}
-          className="square_L"
+          className={styles.square}
           data-testid={`square-${key}`}
           style={{
             backgroundColor: squareColor,
@@ -465,16 +446,16 @@ export function createChessBoard(
           onDragOver={handleDragOver} // Allow drag-over for dropping
         >
           {/* Show gray circle for possible moves on hover */}
-          {highlightedSquares.includes(key) && <div className="highlight-circle" />}
+          {highlightedSquares.includes(key) && <div className={styles.highlightCircle} />}
 
           {/* If there is a piece here, show the circle for the opponent's piece */}
           {piece && piece[0] !== draggingPiece?.piece[0] && highlightedSquares.includes(key) && (
-            <div className="highlight-circle" />
+            <div className={styles.highlightCircle} />
           )}
 
           {/* Add rank and file labels */}
-          {j === 0 && <span className="rank-label">{ranks[i]}</span>} {/* Rank labels (1-8) */}
-          {i === 7 && <span className="file-label">{files[j]}</span>} {/* File labels (a-h) */}
+          {j === 0 && <span className={styles.rankLabel}>{ranks[i]}</span>} {/* Rank labels (1-8) */}
+          {i === 7 && <span className={styles.fileLabel}>{files[j]}</span>} {/* File labels (a-h) */}
 
           {/* Display piece image */}
           {pieceImage && (
@@ -482,7 +463,7 @@ export function createChessBoard(
               src={pieceImage}
               alt={piece}
               data-testid={`piece-${piece}`}
-              className="piece-image"
+              className={styles.pieceImage}
               draggable // Allow dragging
               onDragStart={(e) => handleDragStart(e, piece, key)} // Dragging starts
             />

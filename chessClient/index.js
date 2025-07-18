@@ -185,13 +185,11 @@ function sendPieceDrop()
 // Handle boardstate message from the client
 socket.on('boardstate', (msg) => {
     parsedMsg = JSON.parse(msg);
-    console.log(parsedMsg);
-
+    
     // update state of chess board
     console.log(currentState);
     console.log(currentState.fen());
     currentState = new Chess(parsedMsg.boardState);
-
 
     // setting player color 
     if (parsedMsg.color)
@@ -312,7 +310,6 @@ eventer(
     else if (command == "endgame") {
       // delete game on server
       sendEndGame(); 
-      
     }
     else if (command == "userinfo") {
       mentor = data.mentor;
@@ -320,8 +317,6 @@ eventer(
       role = data.role;
       console.log(data);
     } else if (command == "undo") { sendUndo(); }
-
-
     // get and set lessonflag
     lessonFlag = data.lessonFlag;
     if (lessonFlag == true) {
@@ -396,14 +391,13 @@ eventer(
       currentState = new Chess();
     }
     
-    if (isLesson == false) {
+    if (isLesson == false && data.color && data.boardState) {
       playerColor = data.color;
       board.orientation(playerColor);
       currentState.load(data.boardState);
       board.position(data.boardState);
       updateStatus();
     }
-      
   },
   false,
 );
@@ -433,13 +427,14 @@ function onDragStart(source, piece, position, orientation) {
   // if freeplay mode is off
   if (!freemoveFlag)
   {
+
+    if(!playerColor) {
+      console.log("Player color not set");
+    }
       
     // if it's your turn
-    if (playerColor[0] == currentState.turn())
+    if (playerColor && playerColor[0] == currentState.turn())
       {
-        
-        
-
         // do not pick up pieces if the game is over
         if (isLesson == false) {
           if (currentState.game_over()) {
@@ -517,7 +512,7 @@ function onDrop(source, target, draggedPieceSource) {
 }
 // To add possible move suggestion on chessboard
 function onMouseoverSquare(square, piece) {
-  if (playerColor[0] == currentState.turn())
+  if (playerColor && playerColor[0] == currentState.turn())
   {
     // get list of possible moves for this square
     var moves = currentState.moves({

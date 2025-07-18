@@ -37,9 +37,15 @@ const navbarVariants = {
 };
 
 const NavBar = () => {
-  const [cookies, setCookie, removeCookie] = useCookies(["login", "eventId", "timerStatus"]);
-  const [dropdown, setDropdown] = useState(false);
-  const dropdownRef = useRef<any>(null);
+  const [cookies, setCookie, removeCookie] = useCookies([
+    "login",
+    "eventId",
+    "timerStatus",
+  ]);
+  const [mobileMenuDropDown, setMobileMenuDropDown] = useState(false); // hamburger
+  const [aboutUsDropDown, setAboutUsDropDown] = useState(false); // about us
+  const aboutUsRef = useRef<any>(null);
+  const mobileMenuRef = useRef<any>(null);
   const [link, setLink] = useState("");
   const [logged, setLogged] = useState(false);
   const [username, setUsername] = useState("");
@@ -48,8 +54,12 @@ const NavBar = () => {
   const profileDropdownRef = useRef<any>(null);
 
   // toggles dropdown menu
-  const toggleDropdown = () => {
-    setDropdown((prevDropdown) => !prevDropdown);
+  const toggleMobileMenu = () => {
+    setMobileMenuDropDown((prev) => !prev);
+  };
+
+  const toggleAboutUs = () => {
+    setAboutUsDropDown((prev) => !prev);
   };
 
   const profileToggleDropdown = () => {
@@ -58,13 +68,21 @@ const NavBar = () => {
 
   // close dropdown menu when user clicks outside of dropdown
   useEffect(() => {
-    const closeDropdown = (event: { target: any; }) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdown(false);
+    const closeDropdown = (event: { target: any }) => {
+      if (aboutUsRef.current && !aboutUsRef.current.contains(event.target)) {
+        setAboutUsDropDown(false);
+      }
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target) &&
+        aboutUsRef.current &&
+        !aboutUsRef.current.contains(event.target)
+      ) {
+        setMobileMenuDropDown(false);
       }
     };
 
-    const closeProfileDropdown = (event: { target: any; }) => {
+    const closeProfileDropdown = (event: { target: any }) => {
       if (
         profileDropdownRef.current &&
         !profileDropdownRef.current.contains(event.target)
@@ -113,193 +131,260 @@ const NavBar = () => {
     window.location.pathname = "/login"; // Redirect to login page
   };
 
-  return (
-    <header role="navigation" aria-label="Main navbar" className="nav-bar">
-      <Link to="/">
-        <img src={FullLogo} alt="YSTEM Logo" />
+  const renderLinks = () => (
+    <>
+      <Link
+        to="/programs"
+        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+      >
+        Programs
       </Link>
-      <nav>
-      <ul className="nav-links">
-        <li>
-          <Link to="/programs" className="links">Programs</Link>
-        </li>
-        <li className="dropdown" ref={dropdownRef}>
-          <button 
-            onClick={toggleDropdown} 
-            className="links"
-            aria-haspopup="true"
-            aria-expanded={dropdown}
-            aria-controls="aboutus-menu"
+
+      <div ref={aboutUsRef} className="relative">
+        {/* About Us is now a link-like div with flex for icon */}
+        <div
+          onClick={toggleAboutUs}
+          className="flex items-center cursor-pointer justify-center text-gray-700 hover:text-black text-lg px-3 py-1 select-none"
+          aria-haspopup="true"
+          aria-expanded={aboutUsDropDown}
+          aria-controls="aboutus-menu"
+        >
+          About Us
+          <FontAwesomeIcon
+            icon={aboutUsDropDown ? faCaretUp : faCaretDown}
+            className="ml-1"
+          />
+        </div>
+        {aboutUsDropDown && (
+          <motion.div
+            id="aboutus-menu"
+            className="absolute bg-white shadow-md p-4 z-20 mt-2 w-64 rounded-md"
+            initial="parentInitial"
+            animate="parentAnimate"
+            variants={navbarVariants}
           >
-            About Us
-            {dropdown ? (
-              <FontAwesomeIcon icon={faCaretUp} className="dropdown-icon" />
-            ) : (
-              <FontAwesomeIcon icon={faCaretDown} className="dropdown-icon" />
-            )}
+            <h3 className="font-bold mb-2 text-lg">Education</h3>
+            <div className="flex flex-col gap-2">
+              <Link
+                to="/benefit-of-computer-science"
+                onClick={toggleAboutUs}
+                className="text-gray-700 hover:text-black text-base"
+              >
+                Benefit of Computer Science
+              </Link>
+              <Link
+                to="/benefit-of-chess"
+                onClick={toggleAboutUs}
+                className="text-gray-700 hover:text-black text-base"
+              >
+                Benefit of Chess
+              </Link>
+              <Link
+                to="/benefit-of-math-tutoring"
+                onClick={toggleAboutUs}
+                className="text-gray-700 hover:text-black text-base"
+              >
+                Benefit of Math Tutoring
+              </Link>
+              <Link
+                to="/benefit-of-mentoring"
+                onClick={toggleAboutUs}
+                className="text-gray-700 hover:text-black text-base"
+              >
+                Benefit of Mentoring
+              </Link>
+            </div>
+
+            <h3 className="font-bold mt-4 mb-2 text-lg">What We Do</h3>
+            <div className="flex flex-col gap-2">
+              <Link
+                to="/online-expansion"
+                onClick={toggleAboutUs}
+                className="text-gray-700 hover:text-black text-base"
+              >
+                Online Expansion
+              </Link>
+              <Link
+                to="/about-us"
+                onClick={toggleAboutUs}
+                className="text-gray-700 hover:text-black text-base"
+              >
+                About Us
+              </Link>
+              <Link
+                to="/mission"
+                onClick={toggleAboutUs}
+                className="text-gray-700 hover:text-black text-base"
+              >
+                Mission
+              </Link>
+              <Link
+                to="/financial"
+                onClick={toggleAboutUs}
+                className="text-gray-700 hover:text-black text-base"
+              >
+                Financial
+              </Link>
+              <Link
+                to="/board"
+                onClick={toggleAboutUs}
+                className="text-gray-700 hover:text-black text-base"
+              >
+                Board
+              </Link>
+              <Link
+                to="/sponsors&partners"
+                onClick={toggleAboutUs}
+                className="text-gray-700 hover:text-black text-base"
+              >
+                Sponsors & Partners
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      <Link
+        to="/mentor"
+        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+      >
+        Mentor
+      </Link>
+      <Link
+        to="/learnings"
+        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+      >
+        Learn
+      </Link>
+      <Link
+        to="/lessons-selection"
+        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+      >
+        Lessons
+      </Link>
+
+      {!username && (
+        <Link
+          to="/login"
+          className="text-gray-700 hover:text-black text-lg px-3 py-1"
+        >
+          Login
+        </Link>
+      )}
+
+      {username && (
+        <div ref={profileDropdownRef} className="relative">
+          <button
+            onClick={profileToggleDropdown}
+            className="flex items-center text-gray-700 hover:text-black text-lg px-3 py-1"
+            aria-haspopup="true"
+            aria-expanded={profileDropdown}
+            aria-controls="login-menu"
+          >
+            {username}
+            <FontAwesomeIcon
+              icon={profileDropdown ? faCaretUp : faCaretDown}
+              className="ml-1"
+            />
           </button>
-          {dropdown && (
+
+          {profileDropdown && (
             <motion.div
-              id="aboutus-menu"
-              className="dropdown-menu"
+              id="login-menu"
+              className="absolute bg-white shadow-md mt-2 w-48 rounded-md p-3 z-20"
               initial="parentInitial"
               animate="parentAnimate"
               variants={navbarVariants}
-              role="menu"
             >
-              <motion.div
-                className="education"
-                initial="childInitial"
-                animate="childAnimate"
-                variants={navbarVariants}
-              >
-                <h3><strong>Education</strong></h3>
-                <Link to="/benefit-of-computer-science" role="menuitem">
-                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
-                    Benefit of Computer Science
-                  </motion.h4>
+              <div className="flex flex-col gap-2">
+                <Link
+                  to={`/${role}-profile`}
+                  onClick={profileToggleDropdown}
+                  className="text-gray-700 hover:text-black text-base"
+                >
+                  Profile
                 </Link>
-                <Link to="/benefit-of-chess" role="menuitem">
-                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
-                    Benefit of Chess
-                  </motion.h4>
-                </Link>
-                <Link to="/benefit-of-math-tutoring" role="menuitem">
-                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
-                    Benefit of Math Tutoring
-                  </motion.h4>
-                </Link>
-                <Link to="/benefit-of-mentoring" role="menuitem">
-                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
-                    Benefit of Mentoring
-                  </motion.h4>
-                </Link>
-              </motion.div>
-              <motion.div
-                className="what-we-do"
-                initial="childInitial"
-                animate="childAnimate"
-                variants={navbarVariants}
-              >
-                <h3><strong>What We Do</strong></h3>
-                <Link to="/online-expansion" role="menuitem">
-                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
-                    Online Expansion
-                  </motion.h4>
-                </Link>
-                <Link to="about-us" role="menuitem">
-                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
-                    About Us
-                  </motion.h4>
-                </Link>
-                <Link to="/mission" role="menuitem">
-                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
-                    Mission
-                  </motion.h4>
-                </Link>
-                <Link to="/financial" role="menuitem">
-                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
-                    Financial
-                  </motion.h4>
-                </Link>
-                <Link to="/board" role="menuitem">
-                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
-                    Board
-                  </motion.h4>
-                </Link>
-                <Link to="/sponsors&partners" role="menuitem">
-                  <motion.h4 variants={navbarVariants} onClick={toggleDropdown}>
-                    Sponsors & Partners
-                  </motion.h4>
-                </Link>
-              </motion.div>
+                {role === "parent" && (
+                  <Link
+                    to="/parent-add-student"
+                    onClick={profileToggleDropdown}
+                    className="text-gray-700 hover:text-black text-base"
+                  >
+                    Add Student
+                  </Link>
+                )}
+                <button
+                  onClick={logout}
+                  className="text-left text-gray-700 hover:text-black text-base"
+                >
+                  Log Out
+                </button>
+              </div>
             </motion.div>
           )}
-        </li>
-        <li>
-          <Link to="/mentor" className="links">
-            Mentor
-          </Link>
-        </li>
-        <li>
-          <Link to="/learnings" className="links">
-            Learn
-          </Link>
-        </li>
-        <li>
-          <Link to="/lessons-selection" className="links">
-            Lessons
-          </Link>
-        </li>
-        {!username && (
-          <li>
-            <Link to="/login" className="links">
-              Login
-            </Link>
-          </li>
-        )}
-        {username && (
-          <li className="dropdown" ref={profileDropdownRef}>
-            <button 
-              onClick={profileToggleDropdown} 
-              className="links"
-              aria-haspopup="true"
-              aria-expanded={username ? "true" : "false"}
-              aria-controls="login-menu"
-            >
-              {username}
-              {profileDropdown ? (
-                <FontAwesomeIcon icon={faCaretUp} className="dropdown-icon" />
-              ) : (
-                <FontAwesomeIcon icon={faCaretDown} className="dropdown-icon" />
-              )}
-            </button>
-            {profileDropdown && (
-              <motion.div
-                id="login-menu"
-                role="menu"
-                className="profile-dropdown-menu"
-                initial="parentInitial"
-                animate="parentAnimate"
-                variants={navbarVariants}
-              >
-                <motion.div
-                  className="education"
-                  initial="childInitial"
-                  animate="childAnimate"
-                  variants={navbarVariants}
-                >
-                  <Link to={"/" + role + "-profile"} role="menuitem">
-                    <motion.h4
-                      variants={navbarVariants}
-                      onClick={profileToggleDropdown}
-                    >
-                      Profile
-                    </motion.h4>
-                  </Link>
-                  {role === "parent" && (
-                    <Link to="/parent-add-student"role="menuitem">
-                      <motion.h4
-                        variants={navbarVariants}
-                        onClick={profileToggleDropdown}
-                      >
-                        Add Student
-                      </motion.h4>
-                    </Link>
-                  )}
+        </div>
+      )}
+    </>
+  );
 
-                  <Link to="/" role="menuitem">
-                    <motion.h4 variants={navbarVariants} onClick={logout}>
-                      Log Out
-                    </motion.h4>
-                  </Link>
-                </motion.div>
-              </motion.div>
-            )}
-          </li>
-        )}
-      </ul>
-      </nav>
+  return (
+    <header className="bg-white shadow-md sticky top-0 z-50">
+      <div className="max-w-full mx-auto">
+        <div className="flex justify-between items-center h-24 lg:pr-8">
+          {/* Logo */}
+          <div className="">
+            <Link to="/">
+              <img src={FullLogo} alt="YSTEM Logo" className="h-24 w-auto" />
+            </Link>
+          </div>
+
+          {/* Hamburger Menu (Mobile) */}
+          <div ref={mobileMenuRef} className="flex md:hidden">
+            <button
+              type="button"
+              className="text-gray-700 bg-transparent hover:text-black  focus:outline-none "
+              onClick={toggleMobileMenu}
+              aria-label="Toggle menu"
+            >
+              <svg
+                className="h-6 w-6"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                {mobileMenuDropDown ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Nav Links */}
+          <nav className="hidden md:flex md:items-center md:gap-6">
+            {renderLinks()}
+          </nav>
+        </div>
+      </div>
+
+      {/* Mobile Dropdown */}
+      {mobileMenuDropDown && (
+        <div ref={mobileMenuRef} className="md:hidden px-4 pb-4">
+          <nav className="flex flex-col gap-4">{renderLinks()}</nav>
+        </div>
+      )}
     </header>
   );
 };
