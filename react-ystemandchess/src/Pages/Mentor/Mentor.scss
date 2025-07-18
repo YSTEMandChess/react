@@ -82,3 +82,64 @@
     transform: translateY(1px); /* Slight push down on click */
   }
 }
+@media screen and (max-width: 768px) {
+  .board-container {
+    padding: 10px;
+
+    .flex-container {
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+
+      .text-content {
+        text-align: center;
+
+        h1 {
+          font-size: 1.5em;
+        }
+
+        p {
+          font-size: 1em;
+        }
+
+        .apply-button {
+          width: 100%;
+        }
+      }
+
+      .image-content {
+        text-align: center;
+
+        img {
+          width: 100%;
+          max-width: 300px;
+        }
+      }
+    }
+
+    .mentor-details img {
+      margin-bottom: 10px;
+    }
+
+    .mentor-roles {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+
+      img {
+        width: 80%;
+        margin: 0;
+      }
+    }
+
+    .line-break {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+  }
+
+  .apply-button {
+    font-size: 1.1em;
+    padding: 12px;
+  }
+}
