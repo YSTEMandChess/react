@@ -13,7 +13,7 @@ interface StudentTemplateProps {
 // Renamed to start with a capital letter and typed its props
 const StudentTemplate: React.FC<StudentTemplateProps> = ({ studentUsername, onClick }) => {
     return (
-        <div className="item-template" onClick={() => onClick(studentUsername)}>
+        <div className="item-template" onClick={() => onClick(studentUsername)} role="option">
             <div>{studentUsername}</div>
         </div>
     );
@@ -493,10 +493,10 @@ const Signup = () => {
     };
 
     return (
-        <form className='signupForm' onSubmit={(e) => e.preventDefault()}>
-            <h2 className="sign-up-title"  data-testid="title">Sign up</h2>
+        <form className='signupForm' onSubmit={(e) => e.preventDefault()} aria-labelledby="signup-title">
+            <h2 className="sign-up-title" id="signup-title" data-testid="title">Sign up</h2>
 
-            <div className={`errorMessages ${Object.values(errors).some(Boolean) ? 'visible' : ''}`}>
+            <div className={`errorMessages ${Object.values(errors).some(Boolean) ? 'visible' : ''}`} role="alert" aria-live="polite">
                 {/* Maps through the errors object and displays any error messages. */}
                 {Object.values(errors).map((error, index) =>
                     error ? <h3 key={index}>{error}</h3> : null
@@ -504,53 +504,78 @@ const Signup = () => {
             </div>
 
             <div className='form-fields' data-testid="form-fields">
+                <label htmlFor="firstName">First name</label>
                 <input
                     type='text'
                     name='firstName'
+                    id='firstName'
                     placeholder='First name'
                     value={formData.firstName}
                     onChange={handleInputChange}
+                    aria-required="true"
                 />
+                <label htmlFor="lastName">Last name</label>
                 <input
                     type='text'
                     name='lastName'
+                    id='lastName'
                     placeholder='Last name'
                     value={formData.lastName}
                     onChange={handleInputChange}
+                    aria-required="true"
                 />
+                <label htmlFor="email">Email</label>
                 <input
-                    type='text'
+                    type='email'
                     name='email'
+                    id='email'
                     placeholder='Email'
                     value={formData.email}
                     onChange={handleInputChange}
+                    aria-required="true"
                 />
+                <label htmlFor="username">Username</label>
                 <input
                     type='text'
                     name='username'
+                    id='username'
                     placeholder='Username'
                     value={formData.username}
                     onChange={handleInputChange}
+                    aria-required="true"
                 />
+                <label htmlFor="password">Password</label>
                 <input
                     type='password'
                     name='password'
+                    id='password'
                     placeholder='Password'
                     value={formData.password}
                     onChange={handleInputChange}
+                    aria-required="true"
                 />
+                <label htmlFor="retypedPassword">Re-type password</label>
                 <input
                     type='password'
                     name='retypedPassword'
+                    id='retypedPassword'
                     placeholder='Re-type password'
                     value={formData.retypedPassword}
                     onChange={handleInputChange}
+                    aria-required="true"
                 />
             </div>
 
             <div className='account-type' data-testid='account-type'>
                 <p>Select Account Type</p>
-                <select value={formData.accountType} data-testid='account-selector' onChange={handleAccountTypeChange}> {/* Corrected to handleAccountTypeChange */}
+                <label htmlFor="account-selector">Account Type</label>
+                <select
+                    id="account-selector"
+                    value={formData.accountType}
+                    data-testid='account-selector'
+                    onChange={handleAccountTypeChange}
+                    aria-required="true"
+                >
                     <option value='mentor' data-testid="account-mentor">Mentor</option>
                     <option value='parent' data-testid="account-parent">Parent</option>
                 </select>
@@ -558,6 +583,7 @@ const Signup = () => {
 
             {!parentAccountFlag && (
                 <> {/* Using a React Fragment to wrap without an extra div */}
+                    <label htmlFor="mentee-search-input">Find a student</label>
                     <input
                         type="text"
                         name="setMentee"
@@ -568,9 +594,9 @@ const Signup = () => {
                         autoComplete="off" // Prevent browser's default autocomplete
                     />
                     {activeDropdown && (
-                        <div className="dropdown-users" id="mentee-dropdown-container"> {/* Keep ID for click outside handler */}
+                        <div className="dropdown-users" id="mentee-dropdown-container" role="listbox"> {/* Keep ID for click outside handler */}
                             {dropdownLoading ? (
-                                <div className="item-template">Loading...</div>
+                                <div className="item-template" role="option">Loading...</div>
                             ) : (
                                 matchingStudents.length > 0 ? (
                                     matchingStudents.map((username) => (
@@ -581,7 +607,7 @@ const Signup = () => {
                                         />
                                     ))
                                 ) : (
-                                    <div className="item-template">No matching students found.</div>
+                                    <div className="item-template" role="option">No matching students found.</div>
                                 )
                             )}
                         </div>
@@ -689,12 +715,12 @@ const Signup = () => {
             )}
 
             <div className='terms' data-testid='terms'>
-                <input type='checkbox' id='termsCheckbox' onChange={termsCheckChange} required />
+                <input type='checkbox' id='termsCheckbox' onChange={termsCheckChange} required aria-required="true" />
                 <label htmlFor='termsCheckbox'>I accept the terms and conditions</label>
             </div>
 
             {/* Submit button for the signup form. */}
-            <button type='submit' className='submit-btn' data-testid='submit-btn' onClick={handleSubmit}>
+            <button type='submit' className='submit-btn' data-testid='submit-btn' onClick={handleSubmit} aria-label="Sign up">
                 Sign up
             </button>
         </form>

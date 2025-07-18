@@ -68,7 +68,11 @@ const SetPassword = () => {
   if (!token) {
     return (
       <div className='max-w-md mx-auto p-6'>
-        <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded'>
+        <div
+          className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded'
+          role='alert'
+          aria-live='assertive'
+        >
           Invalid reset link. Please request a new password reset.
           <button
             onClick={() => navigate('/reset-password')}
@@ -86,7 +90,11 @@ const SetPassword = () => {
       <h2 className='text-2xl font-bold mb-6'>Set New Password</h2>
 
       {error && (
-        <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
+        <div
+          className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'
+          role='alert'
+          aria-live='assertive'
+        >
           {error}
         </div>
       )}
@@ -135,6 +143,7 @@ const SetPassword = () => {
           className={`w-full bg-blue-500 text-white p-2 rounded ${
             isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
           }`}
+          aria-busy={isLoading}
         >
           {isLoading ? 'Updating...' : 'Set New Password'}
         </button>

@@ -74,6 +74,15 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
     goToNextLesson();
   };
 
+  // Accessibility improvements for popup
+  const popupRef = useRef(null);
+
+  useEffect(() => {
+    if (showPopup && popupRef.current) {
+      popupRef.current.focus();
+    }
+  }, [showPopup]);
+
   // Check for black pieces every time the board state changes
   useEffect(() => {
     checkBlackPieces();
@@ -328,7 +337,6 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
               { rightEnded ? <NextIconInactive/> : <NextIcon/> }
               <p className={styles.buttonDescription}>Next</p>
             </button>
-
           </div>
         </div>
         
@@ -353,14 +361,17 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
         </div>
 
       </div>
+
       <div>
         <div className={styles.lessonButtonsContainer}>
           {scenario.subSections?.map((section, index) => (
-            <button 
+            <button
               key={index}
               data-testid="lesson-button"
               className={section.name == lesson.name ? [styles.lessonButtons, styles.active].join(' ') : styles.lessonButtons}  
               onClick={() => setupLesson(section)}
+              aria-label={`${section.name}`}
+              aria-pressed={section.name == lesson.name}
             >
               {section.name}
             </button>
