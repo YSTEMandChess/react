@@ -1,7 +1,7 @@
 import React from 'react';
 import "./lesson-content.scss";
 
-const PlayLesson = ({ chessLessonSrc }: any) => {
+const PlayLesson = ({ chessLessonSrc }) => {
     return (
         <div className="cont">
             <div className="row">

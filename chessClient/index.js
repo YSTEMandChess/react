@@ -1,4 +1,3 @@
-
 let flag = false;
 let lessonFlag = false;
 let isLesson = false;
@@ -188,19 +187,17 @@ function sendPieceDrop()
 // Handle boardstate message from the client
 socket.on('boardstate', (msg) => {
     parsedMsg = JSON.parse(msg);
-    console.log(parsedMsg);
-
+    
     // update state of chess board
     console.log(currentState);
     console.log(currentState.fen());
     currentState = new Chess(parsedMsg.boardState);
 
-
     // setting player color 
     if (parsedMsg.color)
     { 
       // setting player color for turn keeping 
-      playerColor = parsedMsg.color[0];
+      playerColor = parsedMsg.color;
       console.log(playerColor);
 
       // setting chess board orientation
@@ -303,9 +300,10 @@ function deleteAllCookies() {
 
 
 // Listen to message from parent window
-window.addEventListener('message', (e) => {
-
-    // parse message
+eventer(
+  messageEvent,
+  (e) => {
+    console.log("client event: ", e); // uncomment for debugging
     let data = JSON.parse(e.data);
 
     console.log("Apache recieved: ", data);
@@ -334,7 +332,6 @@ window.addEventListener('message', (e) => {
     else if (command == "endgame") {
       // delete game on server
       sendEndGame(); 
-      
     }
     else if (command == "userinfo") {
       mentor = data.mentor;
@@ -368,6 +365,26 @@ window.addEventListener('message', (e) => {
     lessonFlag = data.lessonFlag;
     if (lessonFlag == true) {
       isLesson = true;
+    }
+
+    // move a piece if it's a move message
+    if ("from" in data && "to" in data) {
+      game.move({ from: data.from, to: data.to });
+
+      // move highlight
+      highlightMove(data.from, data.to);
+
+      updateStatus();
+      sendToParent(game.fen());
+    }
+
+    // highlight message
+    if ("highlightFrom" in data && "highlightTo" in data) {
+      highlightMove(data.highlightFrom, data.highlightTo);
+    }
+
+    if ("clearhighlight" in data) {
+      $board.find("." + squareClass).removeClass("lastmove");;
     }
 
     // if this is a lesson, setup lesson
@@ -417,15 +434,14 @@ window.addEventListener('message', (e) => {
     } else if (data.boardState == defaultFEN) {
       currentState = new Chess();
     }
-    /*
-    if (isLesson == false) {
+    
+    if (isLesson == false && data.color && data.boardState) {
       playerColor = data.color;
       board.orientation(playerColor);
       currentState.load(data.boardState);
       board.position(data.boardState);
       updateStatus();
     }
-      */
 
     // highlight message
     // if ("highlightFrom" in data && "highlightTo" in data) {
@@ -462,11 +478,14 @@ function onDragStart(source, piece, position, orientation) {
   // if freeplay mode is off
   if (!freemoveFlag)
   {
+
+    if(!playerColor) {
+      console.log("Player color not set");
+    }
       
     // if it's your turn
-    if (playerColor == currentState.turn())
+    if (playerColor && playerColor[0] == currentState.turn())
       {
-
         // do not pick up pieces if the game is over
         if (isLesson == false) {
           if (currentState.game_over()) {
@@ -555,7 +574,7 @@ function onDrop(source, target, draggedPieceSource) {
 }
 // To add possible move suggestion on chessboard
 function onMouseoverSquare(square, piece) {
-  if (playerColor == currentState.turn())
+  if (playerColor && playerColor[0] == currentState.turn())
   {
     // get list of possible moves for this square
     var moves = currentState.moves({
@@ -619,6 +638,16 @@ function updateStatus() {
     // check?
     if (currentState.in_check()) {
       status += ", " + moveColor + " is in check";
+    }
+
+    if(currentState.game_over()){
+      if (currentState.in_check() && moveColor == "Black") {
+        parent.postMessage("won:white", "*");
+      } else if (currentState.in_check() && moveColor == "Black") {
+        parent.postMessage("won:black", "*");
+      } else {
+        parent.postMessage("restart", "*");
+      }
     }
   }
 }

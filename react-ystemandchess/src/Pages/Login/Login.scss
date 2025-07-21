@@ -2,14 +2,17 @@
   margin-top: 5rem;
 }
 
-#loginError-h3 {
-  display: none;  // Hide the element by default
+// #loginError-h3 {
+//   display: none;  // Hide the element by default
   
-  &.show {
-    display: block;  // Show the element when it has content
-  }
-}
+//   &.show {
+//     display: block;  // Show the element when it has content
+//   }
+// }
 
+#loginError-h3 {
+  color: red;
+}
 
 
 footer {
