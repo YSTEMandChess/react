@@ -3,6 +3,12 @@ body {
     background-image: url("../../images/chess-piece-pattern.png");
 }
 
+.chessBoard {
+    width: 600px;
+    height: 600px;
+    transform: scale(0.8);
+}
+
 #mainElements {
     padding: 20px 0px 20px 0px;
     height: 46rem;

@@ -115,6 +115,22 @@ function sendNewGame()
   socket.emit("newgame", JSON.stringify(data));
 }
 
+function sendNewPuzzle()
+{
+  console.log("starting new puzzle with server")
+  var data = {"mentor": mentor, "student": student, "role": role};
+  console.log(data);
+  socket.emit("newPuzzle", JSON.stringify(data));
+}
+
+function sendSetStateColor(fen, color)
+{
+  console.log("setting a new board state");
+  var data = {"state": fen, "color": color};
+  console.log(data);
+  socket.emit("setstateColor", JSON.stringify(data));
+}
+
 function sendMove(from, to)
 {
   console.log("sending move to server");
@@ -183,15 +199,48 @@ function sendPieceDrop()
   socket.emit("piecedrop", JSON.stringify(data)); 
 }
 
+socket.on('host', () => {
+  parent.postMessage("host", "*");
+})
+
+socket.on('guest', () => {
+  parent.postMessage("guest", "*");
+})
 
 // Handle boardstate message from the client
 socket.on('boardstate', (msg) => {
     parsedMsg = JSON.parse(msg);
+
+    if (nextPuzzleMove.length == 2) {
+      var source = nextPuzzleMove[0];
+      var target = nextPuzzleMove[1];
+      if (parsedMsg.boardState == currentState.fen()) return;
+      
+      const testState = new Chess(currentState.fen());
+      testState.move({ from: source, to: target }); 
+
+      if (testState.fen() != parsedMsg.boardState) {
+        sendSetStateColor(currentState.fen(), playerColor);
+      } else {
+        nextPuzzleMove = [];
+        currentState = new Chess(parsedMsg.boardState);
+        board.position(currentState.fen());
+        console.log("!!!!! correct move")
+        sendToParent(
+          JSON.stringify({
+            from: source,
+            to: target,
+          }),
+        );
+      }
+      return;
+    }
     
     // update state of chess board
     console.log(currentState);
     console.log(currentState.fen());
     currentState = new Chess(parsedMsg.boardState);
+    console.log("received board state". parsedMsg);
 
     // setting player color 
     if (parsedMsg.color)
@@ -303,9 +352,7 @@ function deleteAllCookies() {
 eventer(
   messageEvent,
   (e) => {
-    console.log("client event: ", e); // uncomment for debugging
     let data = JSON.parse(e.data);
-
     console.log("Apache recieved: ", data);
 
     // move a piece
@@ -328,8 +375,11 @@ eventer(
     
     // get command from parent and send to server
     var command = data.command;
-    if (command == "newgame") { sendNewGame(); }
-    else if (command == "endgame") {
+    if (command == "newgame") { 
+      sendNewGame(); 
+    } else if (command == "newPuzzle"){
+      sendNewPuzzle();
+    } else if (command == "endgame") {
       // delete game on server
       sendEndGame(); 
     }
@@ -337,7 +387,6 @@ eventer(
       mentor = data.mentor;
       student = data.student;
       role = data.role;
-      console.log(data);
     } else if (command == "undo") { sendUndo(); }
 
     // check if puzzle
@@ -352,12 +401,15 @@ eventer(
       // change board orientation accordingly
       // i.e. if active color is w, then player is black, and vice versa
       if (activeColor === 'w'){
+        playerColor = "black";
         board.orientation('black');
       }
       else{
+        playerColor = "white";
         board.orientation('white');
       }
 
+      sendSetStateColor(currentState.fen(), playerColor);
       sendToParent(currentState.fen());
     }
 
@@ -369,13 +421,13 @@ eventer(
 
     // move a piece if it's a move message
     if ("from" in data && "to" in data) {
-      game.move({ from: data.from, to: data.to });
+      currentState.move({ from: data.from, to: data.to });
 
       // move highlight
       highlightMove(data.from, data.to);
 
       updateStatus();
-      sendToParent(game.fen());
+      sendToParent(currentState.fen());
     }
 
     // highlight message

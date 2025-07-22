@@ -24,6 +24,7 @@ class GameManager {
 
         // Player already in a game
         if (game) {
+            console.log("already in a game")
             if (role == "student") {
                 game.student.id = socketId;
                 return { game, color: game.student.color, newGame: false };
@@ -37,7 +38,7 @@ class GameManager {
             }
         }
 
-
+        console.log("creating new game in game manager")
         // Create a new game instance
         const board = new Chess();
         const studentColor = role === "student" ? "black" : "white";
@@ -59,7 +60,7 @@ class GameManager {
         };
 
         this.ongoingGames.push(newGame);
-
+        console.log("pushing new game");
 
         return {
             game: newGame,
@@ -67,6 +68,75 @@ class GameManager {
             newGame: true
         };
     }
+
+    /**
+     * 
+     * @param {Object} param0 - Contains student, mentor, role, socketId
+     * @returns {Object} Game object, assigned color, and new game status
+     */
+    createOrJoinPuzzle({ student, mentor, role, socketId }, io) {
+        let game = this.ongoingGames.find(
+            (g) => g.student.username === student || g.mentor.username === mentor
+        );
+        const socket = io.sockets.sockets.get(socketId);
+
+        if (role != "student" && role != "mentor") {
+            throw new Error("Invalid role!");
+        }
+
+        // Player already in a game
+        if (game) {
+            console.log("already in a game")
+            if (role == "student") {
+                game.student.id = socketId;
+                socket.emit("guest");
+                socket.emit("boardstate", JSON.stringify({ boardState: game.boardState.fen(), color: game.student.color}));
+                return { game, color: game.student.color, newGame: false };
+            }
+            else if (role == "mentor") {
+                game.mentor.id = socketId;
+                socket.emit("guest");
+                socket.emit("boardstate", JSON.stringify({ boardState: game.boardState.fen(), color: game.student.color }));
+                return { game, color: game.mentor.color, newGame: false };
+            }
+            else {
+                throw new Error("Invalid role!");
+            }
+        }
+
+        console.log("creating new game in game manager")
+        // Create a new game instance
+        const board = new Chess();
+        const studentColor = role === "student" ? "black" : "white";
+        const mentorColor = role === "student" ? "white" : "black";
+
+        const newGame = {
+            student: {
+                username: student,
+                id: role === "student" ? socketId : null,
+                color: studentColor
+            },
+            mentor: {
+                username: mentor,
+                id: role === "mentor" ? socketId : null,
+                color: mentorColor
+            },
+            boardState: board,
+            pastStates: []
+        };
+
+        this.ongoingGames.push(newGame);
+        console.log("pushing new game");
+
+        socket.emit("host");
+
+        return {
+            game: newGame,
+            color: role === "student" ? studentColor : mentorColor,
+            newGame: true
+        };
+    }
+
 
     /**
      * Handles a player making a move.
@@ -186,6 +256,30 @@ class GameManager {
         }
 
         game.boardState.load(fen);
+
+        return {
+            game,
+            boardState: game.boardState.fen(),
+            studentId: game.student.id,
+            mentorId: game.mentor.id
+        };
+    }
+
+    /**
+     * Sets board state as well as player color (same side) for puzzles
+     * @param {*} socketId 
+     * @param {*} fen 
+     */
+    setBoardColor(socketId, fen, color) {
+        const game = this.getGameBySocketId(socketId);
+
+        if (!game) {
+            throw new Error("Game not found for this socket!");
+        }
+
+        game.boardState.load(fen);
+        game.student.color = color;
+        game.mentor.color = color;
 
         return {
             game,

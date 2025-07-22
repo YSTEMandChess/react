@@ -9,6 +9,7 @@ import { StatsChart } from "./StatsChart";
 import Lessons from "../Lessons/Lessons";
 import LessonSelection from "../LessonsSelection/LessonsSelection";
 import LessonOverlay from "../piece-lessons/lesson-overlay/lesson-overlay";
+import Puzzles from "../Puzzles/Puzzles";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
@@ -17,9 +18,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const navigate = useNavigate();
 
   // user info
-  const [username, setUsername] = useState(" ");
-  const [firstName, setFirstName] = useState(" ");
-  const [lastName, setLastName] = useState(" ");
+  const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [mentorUsername, setMentorUsername] = useState("");
 
   // time usage for different events, displayed on header
   const [webTime, setWebTime] = useState(0);
@@ -54,6 +56,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   useEffect(()=>{
     try {
       fetchUserData(); // asynchronously fetch user data upon mounting
+      fetchMentorData();
     } catch (err) {
       console.log(err)
     }
@@ -92,6 +95,18 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       fetchGraphData(uInfo.username)
       // fetch latest usage history to show in Activity tab
       fetchActivity(uInfo.username)
+  }
+
+  const fetchMentorData = async () => {
+    fetch(`${environment.urls.middlewareURL}/user/getMentorship`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${cookies.login}` }
+    }).then(data => data.json())
+      .then(data => {
+        if (data) {
+          setMentorUsername(data.username);
+        }
+      });
   }
 
   // fetch usage time stats to display in header
@@ -270,8 +285,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       case "puzzles":
         return (
           <div id="inventory-content-puzzles" className="inventory-content active-content">
-            <h2>Puzzles</h2>
-            <p>This is the content for the Puzzles tab.</p>
+            <Puzzles student={username} mentor={mentorUsername} role={"student"}/>
           </div>
         );
       case "playComputer":

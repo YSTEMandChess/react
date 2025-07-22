@@ -15,7 +15,19 @@ var isPuzzleEnd = false;
 var prevFEN: string;
 var currentPuzzle: any;
 
-function Puzzles() {
+// types for the puzzle props
+type PuzzlesProps = {
+  student?: any;
+  mentor?: any;
+  role?: any;
+};
+
+const Puzzles: React.FC<PuzzlesProps> = ({
+        student = null,
+        mentor = null,
+        role = null
+    }) => {
+
     const chessboard = useRef<HTMLIFrameElement>(null);
     const [puzzleArray, setPuzzleArray] = useState<any[]>([]);
     const [playerMove, setPlayerMove] = useState<string[]>([]);
@@ -26,6 +38,7 @@ function Puzzles() {
     const [info, setInfo] = useState<string>("Welcome to puzzles");
     const [playerColor, setPlayerColor] = useState<string>('');
     const [themeList, setThemeList] = useState<string[]>([]);
+    const [status, setStatus] = useState<string>("");
 
     const postToBoard = (msg: any) => {
     const board = chessboard.current;
@@ -142,10 +155,6 @@ function Puzzles() {
       isPuzzleEnd = false;
       setPrevMove(["", ""]);
 
-      // 1. Reset the iframe board
-      postToBoard({ command: "reset" });
-
-      // 2. Wait for reset, then send puzzle setup
       setTimeout(() => {
         if (!fen || fen.split(" ").length < 2 || fen.split("/").length !== 8) {
             console.warn("Invalid FEN detected before sending to iframe:", fen);
@@ -153,13 +162,12 @@ function Puzzles() {
         }
 
         postToBoard({
-        PuzzleId: currentPuzzle?.PuzzleId,
-        FEN: fen,
-        Moves: currentPuzzle?.Moves,
-        Rating: currentPuzzle?.Rating,
-        Themes: currentPuzzle?.Themes
+            PuzzleId: currentPuzzle?.PuzzleId,
+            FEN: fen,
+            Moves: currentPuzzle?.Moves,
+            Rating: currentPuzzle?.Rating,
+            Themes: currentPuzzle?.Themes
         });
-
 
         // 3. Wait for setup, then send the first computer move if needed
         setTimeout(() => {
@@ -277,27 +285,27 @@ function Puzzles() {
       }
     };
 
-    useEffect(() => {
-        const initializeComponent = async () => {
-            const puzzles = await initPuzzleArray();
-            if (puzzles && puzzles.length > 0) {
-                setPuzzleArray(puzzles);
-                // Initialize first puzzle
-                const firstPuzzle = puzzles[0];
-                currentPuzzle = firstPuzzle;
-                moveList = firstPuzzle?.Moves?.split(" ") || [];
-                if (moveList.length === 0) {
-                    console.warn("No valid moves in initial puzzle:", firstPuzzle);
-                    return;
-                }
-
-                setThemeList(firstPuzzle.Themes.split(" "));
-                setStateAsActive(firstPuzzle);
-                updateInfoBox(firstPuzzle.Themes.split(" "));
+    const initializeComponent = async () => {
+        const puzzles = await initPuzzleArray();
+        if (puzzles && puzzles.length > 0) {
+            setPuzzleArray(puzzles);
+            // Initialize first puzzle
+            const firstPuzzle = puzzles[0];
+            currentPuzzle = firstPuzzle;
+            moveList = firstPuzzle?.Moves?.split(" ") || [];
+            if (moveList.length === 0) {
+                console.warn("No valid moves in initial puzzle:", firstPuzzle);
+                return;
             }
-        };
-        
-        initializeComponent();
+
+            setThemeList(firstPuzzle.Themes.split(" "));
+            setStateAsActive(firstPuzzle);
+            updateInfoBox(firstPuzzle.Themes.split(" "));
+        }
+    };
+
+    useEffect(() => {
+ // try joining or creating a puzzle
     }, []);
     
     useEffect(() => {
@@ -307,7 +315,7 @@ function Puzzles() {
     
         const messageHandler = (e: MessageEvent) => {
             let info = e.data;
-
+            console.log("fornt end!!!!", e.data)
             if (typeof info === 'string' && info[0] === "{") {
                 try {
                     let jsonInfo = JSON.parse(info);
@@ -369,6 +377,11 @@ function Puzzles() {
                         setPrevMove(["", ""]); // Reset after highlighting
                     }
                 }
+            } else if (typeof info == "string" && info == "host"){
+                setStatus("host");
+                initializeComponent();
+            } else if (typeof info == "string" && info == "guest"){
+                setStatus("guest")
             }
             
         };
@@ -380,11 +393,21 @@ function Puzzles() {
             const cleanupMessageEvent = window.removeEventListener ? 'message' : 'onmessage';
             cleanupEventer(cleanupMessageEvent, messageHandler, false);
         };
-    }, [currentFen, prevFen, playerColor, puzzleArray, currentPuzzle, isPuzzleEnd, prevMove]);
+    }, [currentFen, prevFen, playerColor, puzzleArray, currentPuzzle, isPuzzleEnd, prevMove, status, themeList]);
 
     return (
         <div id="mainElements">
-            <iframe ref={chessboard} src={chessClientURL} title="board" id="chessBoard"></iframe>
+            <iframe onLoad={() => {
+                if(student && mentor && role) {
+                    postToBoard({ 
+                        command: "userinfo",
+                        student: student,
+                        mentor: mentor,
+                        role: role
+                    });
+                }
+                postToBoard({command: "newPuzzle"});
+            }} ref={chessboard} className="chessBoard" src={chessClientURL} title="board" id="chessBoard"></iframe>
 
             <div id="hintMenu">
                 <button 

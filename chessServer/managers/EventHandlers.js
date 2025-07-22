@@ -39,6 +39,27 @@ const registerSocketHandlers = (socket, io) => {
     });
 
     /**
+     * Handles creating a new puzzle or joining an existing one
+     * Expected payload: { student, mentor, role }
+     */
+    socket.on("newPuzzle", (msg) => {
+        try {
+            const parsed = JSON.parse(msg);
+            console.log("new puzzle!");
+            const result = gameManager.createOrJoinPuzzle({
+                student: parsed.student,
+                mentor: parsed.mentor,
+                role: parsed.role,
+                socketId: socket.id
+            }, io);
+        }
+        catch (err) {
+            socket.emit("gameerror", err.message);
+            console.log(err.message);
+        }
+    });
+
+    /**
      * Handles player move request
      * Expected payload: { from, to }
      */
@@ -50,6 +71,7 @@ const registerSocketHandlers = (socket, io) => {
         }
         catch (err) {
             socket.emit("error", err.message);
+            console.log("move error")
         }
     });
 
@@ -90,6 +112,21 @@ const registerSocketHandlers = (socket, io) => {
         try {
             const { state } = JSON.parse(msg);
             const result = gameManager.setBoardState(socket.id, state);
+            gameManager.broadcastBoardState(result, io);
+        }
+        catch (err) {
+            socket.emit("error", err.message);
+        }
+    });
+
+    /**
+     * Allows board state override
+     * Expected payload: { state: fenString }
+     */
+    socket.on("setstateColor", (msg) => {
+        try {
+            const { state, color } = JSON.parse(msg);
+            const result = gameManager.setBoardColor(socket.id, state, color);
             gameManager.broadcastBoardState(result, io);
         }
         catch (err) {
