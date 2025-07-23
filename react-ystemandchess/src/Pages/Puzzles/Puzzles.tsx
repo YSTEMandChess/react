@@ -4,6 +4,7 @@ import { Chess } from "chess.js";
 import { themesName, themesDescription } from '../../services/themesService';
 import Swal from 'sweetalert2';
 import { environment } from "../../environments/environment";
+import { v4 as uuidv4 } from "uuid";
 
 const chessClientURL = environment.urls.chessClientURL;
 
@@ -25,7 +26,7 @@ type PuzzlesProps = {
 const Puzzles: React.FC<PuzzlesProps> = ({
         student = null,
         mentor = null,
-        role = null
+        role = "student"
     }) => {
 
     const chessboard = useRef<HTMLIFrameElement>(null);
@@ -308,6 +309,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
     // try joining puzzle as guest / creating puzzle as host
     const joinOrCreatePuzzle = () => {
+        if(!student) student = uuidv4();
+        if(!mentor) mentor = uuidv4();
         postToBoard({ // send student & mentor info  before server creates a game
             command: "userinfo",
             student: student,

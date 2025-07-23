@@ -98,8 +98,10 @@ const registerSocketHandlers = (socket, io) => {
             const result = gameManager.endGame(student, mentor);
             io.to(result.studentId).emit("reset");
             io.to(result.mentorId).emit("reset");
+            console.log("game ended successfully")
         } 
         catch (err) {
+            console.log("error", err.message);
             socket.emit("error", err.message);
         }
     });
@@ -162,7 +164,6 @@ const registerSocketHandlers = (socket, io) => {
         }
     });
 
-
     const relayEvents = [
         "addgrey",
         "removegrey",
@@ -182,6 +183,23 @@ const registerSocketHandlers = (socket, io) => {
             socket.emit("error", err.message);
         }
         });
+    });
+
+    socket.on("disconnect", () => {
+        const game = gameManager.getGameBySocketId(socket.id);
+        if (!game) {
+            console.log("game not found for this socket")
+            return;
+        }
+        // for now, end game upon disconnect is implemented for puzzles only
+        if (game.student.color == game.mentor.color) { // (puzzle players have same colors)
+            const result = gameManager.endGame(game.student.username, game.mentor.username);
+
+            // reset game
+            io.to(result.studentId).emit("reset");
+            io.to(result.mentorId).emit("reset");
+            console.log("game ended successfully")
+        }
     });
 }
 
