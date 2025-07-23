@@ -45,8 +45,8 @@ const registerSocketHandlers = (socket, io) => {
     socket.on("newPuzzle", (msg) => {
         try {
             const parsed = JSON.parse(msg);
-            console.log("new puzzle!");
-            const result = gameManager.createOrJoinPuzzle({
+            // create the new puzzle
+            gameManager.createOrJoinPuzzle({
                 student: parsed.student,
                 mentor: parsed.mentor,
                 role: parsed.role,
@@ -120,14 +120,14 @@ const registerSocketHandlers = (socket, io) => {
     });
 
     /**
-     * Allows board state override
-     * Expected payload: { state: fenString }
+     * Allows board state & color override (specifically for puzzles)
+     * Expected payload: { state: fenString, color }
      */
     socket.on("setstateColor", (msg) => {
         try {
             const { state, color } = JSON.parse(msg);
-            const result = gameManager.setBoardColor(socket.id, state, color);
-            gameManager.broadcastBoardState(result, io);
+            const result = gameManager.setBoardColor(socket.id, state, color); // modify the game in the server game manager
+            gameManager.broadcastBoardState(result, io); // broadcast state changes to all clients
         }
         catch (err) {
             socket.emit("error", err.message);

@@ -49,9 +49,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     day: 'numeric',
   }));
 
-  const [lessonSelected, setLessonSelected] = useState(false);
-  const [piece, setPiece] = useState("");
-  const [lessonNum, setLessonNum] = useState(0);
+  // states for lessons tab
+  const [lessonSelected, setLessonSelected] = useState(false); // whether user has navigated into a lesson
+  const [piece, setPiece] = useState(""); // lesson name for props
+  const [lessonNum, setLessonNum] = useState(0); // lesson number for props
 
   useEffect(()=>{
     try {

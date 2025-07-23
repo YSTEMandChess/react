@@ -161,6 +161,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             return;
         }
 
+        // 1. First send puzzle setup
         postToBoard({
             PuzzleId: currentPuzzle?.PuzzleId,
             FEN: fen,
@@ -169,15 +170,15 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             Themes: currentPuzzle?.Themes
         });
 
-        // 3. Wait for setup, then send the first computer move if needed
+        // 2. Wait for setup, then send the first computer move if needed
         setTimeout(() => {
-          // If the puzzle starts with a computer move, play it
-          const tempChess = new Chess(fen);
+            // If the puzzle starts with a computer move, play it
+            const tempChess = new Chess(fen);
 
-        // First move is always by computer
-        playComputerMove();
+            // First move is always by computer
+            playComputerMove();
 
-          // Otherwise, wait for player move
+            // Otherwise, wait for player move
         }, 200);
       }, 200);
     };
@@ -285,6 +286,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       }
     };
 
+    // initialize component, fetch puzzles & initiate first puzzle
     const initializeComponent = async () => {
         const puzzles = await initPuzzleArray();
         if (puzzles && puzzles.length > 0) {
@@ -304,9 +306,17 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         }
     };
 
-    useEffect(() => {
- // try joining or creating a puzzle
-    }, []);
+    // try joining puzzle as guest / creating puzzle as host
+    const joinOrCreatePuzzle = () => {
+        postToBoard({ // send student & mentor info  before server creates a game
+            command: "userinfo",
+            student: student,
+            mentor: mentor,
+            role: role
+        });
+        // try creating / joining, server will then notify whether user is a guest or host
+        postToBoard({command: "newPuzzle"}); 
+    }
     
     useEffect(() => {
         const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
@@ -377,11 +387,12 @@ const Puzzles: React.FC<PuzzlesProps> = ({
                         setPrevMove(["", ""]); // Reset after highlighting
                     }
                 }
-            } else if (typeof info == "string" && info == "host"){
-                setStatus("host");
-                initializeComponent();
-            } else if (typeof info == "string" && info == "guest"){
-                setStatus("guest")
+            } else if (typeof info == "string" && info == "host"){ // user has created a new puzzle in server
+                setStatus("host"); // change status
+                initializeComponent(); 
+            } else if (typeof info == "string" && info == "guest"){ // user has joined an existing puzzle in server
+                setStatus("guest"); // change status
+                // no need to fetch lessons, guest's chessboard is dependent on host's for simplicity
             }
             
         };
@@ -393,22 +404,11 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             const cleanupMessageEvent = window.removeEventListener ? 'message' : 'onmessage';
             cleanupEventer(cleanupMessageEvent, messageHandler, false);
         };
-    }, [currentFen, prevFen, playerColor, puzzleArray, currentPuzzle, isPuzzleEnd, prevMove, status, themeList]);
+    }, [currentFen, prevFen, playerColor, puzzleArray, currentPuzzle, isPuzzleEnd, prevMove, status]);
 
     return (
         <div id="mainElements">
-            <iframe onLoad={() => {
-                if(student && mentor && role) {
-                    postToBoard({ 
-                        command: "userinfo",
-                        student: student,
-                        mentor: mentor,
-                        role: role
-                    });
-                }
-                postToBoard({command: "newPuzzle"});
-            }} ref={chessboard} className="chessBoard" src={chessClientURL} title="board" id="chessBoard"></iframe>
-
+            <iframe onLoad={joinOrCreatePuzzle} ref={chessboard} className="chessBoard" src={chessClientURL} title="board" id="chessBoard"></iframe>
             <div id="hintMenu">
                 <button 
                     id="newPuzzle"

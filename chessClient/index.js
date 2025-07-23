@@ -115,6 +115,7 @@ function sendNewGame()
   socket.emit("newgame", JSON.stringify(data));
 }
 
+// similar to sendNewGame, but for puzzles specifically
 function sendNewPuzzle()
 {
   console.log("starting new puzzle with server")
@@ -123,6 +124,7 @@ function sendNewPuzzle()
   socket.emit("newPuzzle", JSON.stringify(data));
 }
 
+// for chess server to modify the game's board state & player color, (designed just for puzzles for now)
 function sendSetStateColor(fen, color)
 {
   console.log("setting a new board state");
@@ -199,10 +201,12 @@ function sendPieceDrop()
   socket.emit("piecedrop", JSON.stringify(data)); 
 }
 
+// notify front end that their user has created a new game/puzzle as host
 socket.on('host', () => {
   parent.postMessage("host", "*");
 })
 
+// notify front end that their user has joined an existing new game/puzzle as guest
 socket.on('guest', () => {
   parent.postMessage("guest", "*");
 })
@@ -211,29 +215,38 @@ socket.on('guest', () => {
 socket.on('boardstate', (msg) => {
     parsedMsg = JSON.parse(msg);
 
+    // if served as a client for a puzzle host (a guest does not store nextPuzzleMove for simplicity)
     if (nextPuzzleMove.length == 2) {
+      // for a puzzle host, 'boardstate' message is either initiated by host itself or its guest
+      
+      // if initiated by host itself, ignore the message
+      if (parsedMsg.boardState == currentState.fen()) return;
+      // else 'boardstate' message is initiated by puzzle guest
+
+      // the expected puzzle moves
       var source = nextPuzzleMove[0];
       var target = nextPuzzleMove[1];
-      if (parsedMsg.boardState == currentState.fen()) return;
       
+      // the expected chess board based on expected moves
       const testState = new Chess(currentState.fen());
       testState.move({ from: source, to: target }); 
 
+      // new board state is different from expected board, so client has made an incorrect move
       if (testState.fen() != parsedMsg.boardState) {
+        // snap back, reset puzzle to current state
         sendSetStateColor(currentState.fen(), playerColor);
+        return; // no need to change states
       } else {
-        nextPuzzleMove = [];
-        currentState = new Chess(parsedMsg.boardState);
-        board.position(currentState.fen());
-        console.log("!!!!! correct move")
-        sendToParent(
+      // else client has made the expected move
+        nextPuzzleMove = []; // clear next moves
+        sendToParent( // notify front end that a move has been made
           JSON.stringify({
             from: source,
             to: target,
           }),
         );
+        // continue to have board states modified
       }
-      return;
     }
     
     // update state of chess board
@@ -375,11 +388,11 @@ eventer(
     
     // get command from parent and send to server
     var command = data.command;
-    if (command == "newgame") { 
+    if (command == "newgame") { // front end wants to create / join game
       sendNewGame(); 
-    } else if (command == "newPuzzle"){
+    } else if (command == "newPuzzle"){ // front end wants to create / join puzzle
       sendNewPuzzle();
-    } else if (command == "endgame") {
+    } else if (command == "endgame") { // front end wants to end existing game / puzzle
       // delete game on server
       sendEndGame(); 
     }
