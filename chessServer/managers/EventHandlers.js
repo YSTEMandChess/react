@@ -148,6 +148,20 @@ const registerSocketHandlers = (socket, io) => {
         }
     });
 
+    /**
+     * Broadcasts any simple string messages
+     * Expected payload: { message }
+     */
+    socket.on("message", (msg) => {
+        try {
+            const { message } = JSON.parse(msg);
+            gameManager.broadcastSimpleMessage(socket.id, message, io);
+        }
+        catch (err) {
+            socket.emit("error", err.message);
+        }
+    });
+
 
     const relayEvents = [
         "addgrey",

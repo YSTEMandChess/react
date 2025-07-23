@@ -325,7 +325,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     
         const messageHandler = (e: MessageEvent) => {
             let info = e.data;
-            console.log("fornt end!!!!", e.data)
             if (typeof info === 'string' && info[0] === "{") {
                 try {
                     let jsonInfo = JSON.parse(info);
@@ -350,8 +349,11 @@ const Puzzles: React.FC<PuzzlesProps> = ({
                             if (moveList.length === 0) {
                                 isPuzzleEnd = true;
                                 setTimeout(() => {
-                                    Swal.fire('Puzzle completed', 'Good Job', 'success').then(() => getNextPuzzle());
+                                    Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
+                                        if(result.isConfirmed) postToBoard({command: "message", message: "next puzzle"}); // notify other players to move on to the next puzzle
+                                    });
                                 }, 200);
+                                postToBoard({command: "message", message: "puzzle completed"}) // notify other players of the completed puzzle
                             } else {
                                 // Now it's computer's turn, play the next move automatically
                                 playComputerMove();
@@ -393,6 +395,15 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             } else if (typeof info == "string" && info == "guest"){ // user has joined an existing puzzle in server
                 setStatus("guest"); // change status
                 // no need to fetch lessons, guest's chessboard is dependent on host's for simplicity
+            } else if (typeof info == "string" && info == "puzzle completed" ) { // puzzle completed
+                if (status == "guest") { // host would already have fired alert
+                    Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
+                        if(result.isConfirmed) postToBoard({command: "message", message: "next puzzle"}); // notify other players to move on to the next puzzle
+                    });
+                }
+            } else if (typeof info == "string" && info == "next puzzle") { // player / other users want to move to the next puzzle
+                Swal.close();
+                getNextPuzzle();
             }
             
         };

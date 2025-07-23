@@ -201,6 +201,14 @@ function sendPieceDrop()
   socket.emit("piecedrop", JSON.stringify(data)); 
 }
 
+// sending simple string messages
+function sendMessage(message)
+{
+  console.log("sending message:", message);
+  var data = {"message": message};
+  socket.emit("message", JSON.stringify(data)); 
+}
+
 // notify front end that their user has created a new game/puzzle as host
 socket.on('host', () => {
   parent.postMessage("host", "*");
@@ -209,6 +217,12 @@ socket.on('host', () => {
 // notify front end that their user has joined an existing new game/puzzle as guest
 socket.on('guest', () => {
   parent.postMessage("guest", "*");
+})
+
+socket.on('message', (msg) => {
+  console.log("chess client received message", msg);
+  parsedMsg = JSON.parse(msg);
+  parent.postMessage(parsedMsg.message, "*");
 })
 
 // Handle boardstate message from the client
@@ -235,18 +249,19 @@ socket.on('boardstate', (msg) => {
       if (testState.fen() != parsedMsg.boardState) {
         // snap back, reset puzzle to current state
         sendSetStateColor(currentState.fen(), playerColor);
-        return; // no need to change states
       } else {
       // else client has made the expected move
         nextPuzzleMove = []; // clear next moves
+        currentState = new Chess(parsedMsg.boardState); // rearrange board according to guest move
+        board.position(currentState.fen());
         sendToParent( // notify front end that a move has been made
           JSON.stringify({
             from: source,
             to: target,
           }),
         );
-        // continue to have board states modified
       }
+      return;
     }
     
     // update state of chess board
@@ -392,6 +407,8 @@ eventer(
       sendNewGame(); 
     } else if (command == "newPuzzle"){ // front end wants to create / join puzzle
       sendNewPuzzle();
+    } else if (command == "message"){ // front end wants to broadcast a message
+      sendMessage(data.message);
     } else if (command == "endgame") { // front end wants to end existing game / puzzle
       // delete game on server
       sendEndGame(); 

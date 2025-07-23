@@ -252,6 +252,26 @@ class GameManager {
     }
 
     /**
+     * Emits simple messages to both players.
+     * @param {*} socketId 
+     * @param {*} message
+     * @param {*} io 
+     */
+    broadcastSimpleMessage(socketId, message, io) {
+        const game = this.getGameBySocketId(socketId);
+
+        if (!game) {
+            throw new Error("Game not found");
+        }
+
+        const payload = JSON.stringify({ message });
+
+        console.log("broadcasting message:", message);
+        io.to(game.student.id).emit("message", payload);
+        io.to(game.mentor.id).emit("message", payload);
+    }
+
+    /**
      * Sets board state from provided FEN string.
      * @param {*} socketId 
      * @param {*} fen 
@@ -314,7 +334,7 @@ class GameManager {
             throw new Error("Game not found");
         }
 
-        const payload = JSON.stringify({ from, to });
+        const payload = JSON.stringify({ fromMove, toMove });
 
         io.to(game.student.id).emit("lastmove", payload);
         io.to(game.mentor.id).emit("lastmove", payload);
