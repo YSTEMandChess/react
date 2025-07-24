@@ -286,7 +286,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       case "puzzles":
         return (
           <div id="inventory-content-puzzles" className="inventory-content active-content">
-            <Puzzles student={username} mentor={mentorUsername} role={"student"}/>
+            <Puzzles student={username} mentor={mentorUsername} role={"student"} styleType="profile" />
           </div>
         );
       case "playComputer":

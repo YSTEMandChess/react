@@ -320,7 +320,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
       case "puzzles":
         return (
           <div id="inventory-content-puzzles" className="inventory-content active-content">
-            <Puzzles student={studentUsername} mentor={username} role={"mentor"}/>
+            <Puzzles student={studentUsername} mentor={username} role={"mentor"} styleType="profile"/>
           </div>
         );
       case "playComputer":

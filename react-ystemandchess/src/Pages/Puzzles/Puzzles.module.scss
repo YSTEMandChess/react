@@ -1,54 +1,65 @@
 body {
-    background-color: #E5F3D2;
-    background-image: url("../../images/chess-piece-pattern.png");
+  background-color: #e5f3d2;
+  background-image: url("../../images/chess-piece-pattern.png");
 }
 
 .mainElements {
-    padding: 20px 0px 20px 0px;
-    height: 46rem;
-    iframe {
-        min-width: 670px;
-        min-height: 670px;
-        overflow: visible;
-    }
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px;
+  gap: 60px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+
+.chessBoard {
+  width: 600px;
+  height: 600px;
+  border: none;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 }
 
 .hintMenu {
-    padding: 20px 0px 20px 0px;
-    height: 650px;
-    width: 400px;
-    background: rgba(255,255,255,0.50);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-bottom: 2rem;
-    margin-left: 30px;
-    flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  padding-top: 40px;
+  max-width: 400px;
+}
+
+.hintButtonRow {
+  display: flex;
+  gap: 24px;
+}
+
+.puzzleButton {
+  background-color: #0057ff;
+  color: white;
+  border: none;
+  padding: 18px 28px;
+  border-radius: 8px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.3s ease;
+}
+
+.puzzleButton:hover {
+  background-color: #0041cc;
 }
 
 .hintText {
-  padding: 12px;
-  margin-left: 30px;
-  margin-right: 20px;
-  border-radius: 6px;
-  max-width: 400px;
-  color: rgb(106, 106, 106);
-  font-size: 22px;
-  text-align: left;
-  line-height: 1.5;
-  white-space: normal;
-}
-
-.button {
-    display: inline-block;
-    font-size: large;
-    font-weight: bold;
-    background-color: #7FCC26;
-    color: black;
+  margin-top: 16px;
+  background-color: #f2f2f2;
+  padding: 24px;
+  border-radius: 10px;
+  font-size: 17px;
+  line-height: 1.8;
+  color: #222;
+  white-space: pre-wrap;
+  max-width: 100%;
 }

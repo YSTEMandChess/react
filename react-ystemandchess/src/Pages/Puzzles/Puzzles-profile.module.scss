@@ -1,57 +1,57 @@
-body {
-    background-color: #E5F3D2;
-    background-image: url("../../images/chess-piece-pattern.png");
+.mainElements {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem;
+  gap: 2rem;
 }
 
-.mainElements {
-    padding: 20px 0px 20px 0px;
-    height: 46rem;
-    iframe {
-        min-width: 500px;
-        min-height: 500px;
-        overflow: visible;
-        margin-left: 35px;
-        margin-top: 15px;
-    }
+.chessBoard {
+  width: 600px;
+  height: 600px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 }
 
 .hintMenu {
-    padding: 20px 0px 20px 0px;
-    height: 250px;
-    width: 45vw;
-    background: rgba(255,255,255,0.60);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-bottom: 2rem;
-    flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.puzzleButtonGroup {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.puzzleButton {
+  padding: 0.8rem 1.6rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.puzzleButton:hover {
+  background-color: #0056b3;
 }
 
 .hintText {
-  max-height: 150px;
-  overflow-y: scroll;
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  padding: 12px;
-  margin-top: 10px;
-  margin-left: 30px;
-  margin-right: 30px;
-  border-radius: 6px;
-  color: rgb(106, 106, 106);
-  font-size: 16px;
+  max-width: 600px;
+  padding: 1.5rem;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #333;
   text-align: left;
-  line-height: 1.1;
-  white-space: normal;
-}
-
-.button {
-    display: inline-block;
-    font-size: 17px;
-    font-weight: bold;
-    background-color: #7FCC26;
-    color: black;
-    padding-top: 5px;
-    padding-bottom: 5px;
 }

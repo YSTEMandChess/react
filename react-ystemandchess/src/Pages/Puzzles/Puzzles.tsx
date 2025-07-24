@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
-import "./Puzzles.scss";
+import pageStyles from "./Puzzles.module.scss";
+import profileStyles from "./Puzzles-profile.module.scss";
 import { Chess } from "chess.js";
 import { themesName, themesDescription } from '../../services/themesService';
 import Swal from 'sweetalert2';
@@ -21,13 +22,16 @@ type PuzzlesProps = {
   student?: any;
   mentor?: any;
   role?: any;
+  styleType?: any;
 };
 
 const Puzzles: React.FC<PuzzlesProps> = ({
-        student = null,
-        mentor = null,
-        role = "student"
-    }) => {
+  student = null,
+  mentor = null,
+  role = "student",
+  styleType = "page"
+}) => {
+  const styles = styleType === "profile" ? profileStyles : pageStyles;
 
     const chessboard = useRef<HTMLIFrameElement>(null);
     const [puzzleArray, setPuzzleArray] = useState<any[]>([]);
@@ -432,30 +436,41 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     }, [currentFen, prevFen, playerColor, puzzleArray, currentPuzzle, isPuzzleEnd, prevMove, status]);
 
     return (
-        <div id="mainElements">
-            <iframe onLoad={joinOrCreatePuzzle} ref={chessboard} className="chessBoard" src={chessClientURL} title="board" id="chessBoard"></iframe>
-            <div id="hintMenu">
-                <button 
-                    id="newPuzzle"
-                    onClick={() => {
-                        isPuzzleEnd = false;
-                        postToBoard({command: "message", message: "next puzzle"});
-                    }}
-                >
-                    Get New Puzzle
-                </button>
-                
-                <button 
-                    id="openDialog"
-                    onClick={openDialog}
-                >
-                    Show Hint
-                </button>
-                
-                <div id="hint-text" style={{ display: 'none' }}></div>
-            </div>
+    <div className={styles.mainElements}>
+        <iframe
+        onLoad={joinOrCreatePuzzle}
+        ref={chessboard}
+        className={styles.chessBoard}
+        src={chessClientURL}
+        title="board"
+        id="chessBoard"
+        />
+        <div className={styles.hintMenu}>
+        <div className={styles.hintButtonRow}>
+            <button
+            className={styles.puzzleButton}
+            onClick={() => {
+                isPuzzleEnd = false;
+                getNextPuzzle();
+            }}
+            >
+            Get New Puzzle
+            </button>
+
+            <button className={styles.puzzleButton} onClick={openDialog}>
+            Show Hint
+            </button>
         </div>
+        <div
+            id="hint-text"
+            className={styles.hintText}
+            style={{ display: 'none' }}
+        ></div>
+        </div>
+    </div>
     );
+
+
 }
 
 export default Puzzles;
