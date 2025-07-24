@@ -273,6 +273,9 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         hints += `<div style="margin-bottom: 14px;"><b>${name}:</b> ${desc}</div>`;
       }
 
+      // notify other players to also update their hints
+      postToBoard({command: "message", message: hints})
+
       const hintText = document.getElementById("hint-text");
       if (hintText) {
         hintText.innerHTML = hints;
@@ -309,7 +312,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
     // try joining puzzle as guest / creating puzzle as host
     const joinOrCreatePuzzle = () => {
-        if(!student) student = uuidv4();
+        if(!student) student = uuidv4(); // generate random username for navBar puzzles & unlogged-in users
         if(!mentor) mentor = uuidv4();
         postToBoard({ // send student & mentor info  before server creates a game
             command: "userinfo",
@@ -407,6 +410,14 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             } else if (typeof info == "string" && info == "next puzzle") { // player / other users want to move to the next puzzle
                 Swal.close();
                 getNextPuzzle();
+            } else if (typeof info == "string" && info.startsWith("<div")) { // other users want to update the hint text
+                if(status == "guest") { // host initiates, only guests receive
+                    const hintText = document.getElementById("hint-text");
+                    if (hintText) {
+                        hintText.innerHTML = info;
+                        hintText.style.display = "none"; // Still hidden until Show Hint clicked
+                    }
+                }
             }
             
         };
@@ -428,7 +439,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
                     id="newPuzzle"
                     onClick={() => {
                         isPuzzleEnd = false;
-                        getNextPuzzle();
+                        postToBoard({command: "message", message: "next puzzle"});
                     }}
                 >
                     Get New Puzzle

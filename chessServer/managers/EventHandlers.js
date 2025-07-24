@@ -128,8 +128,7 @@ const registerSocketHandlers = (socket, io) => {
     socket.on("setstateColor", (msg) => {
         try {
             const { state, color } = JSON.parse(msg);
-            const result = gameManager.setBoardColor(socket.id, state, color); // modify the game in the server game manager
-            gameManager.broadcastBoardState(result, io); // broadcast state changes to all clients
+            gameManager.setBoardColor(socket.id, state, color, io); // modify the game in the server game manager
         }
         catch (err) {
             socket.emit("error", err.message);
@@ -191,15 +190,13 @@ const registerSocketHandlers = (socket, io) => {
             console.log("game not found for this socket")
             return;
         }
-        // for now, end game upon disconnect is implemented for puzzles only
-        if (game.student.color == game.mentor.color) { // (puzzle players have same colors)
-            const result = gameManager.endGame(game.student.username, game.mentor.username);
 
-            // reset game
-            io.to(result.studentId).emit("reset");
-            io.to(result.mentorId).emit("reset");
-            console.log("game ended successfully")
-        }
+        const result = gameManager.endGame(game.student.username, game.mentor.username);
+
+        // reset game
+        io.to(result.studentId).emit("reset");
+        io.to(result.mentorId).emit("reset");
+        console.log("game ended successfully")
     });
 }
 

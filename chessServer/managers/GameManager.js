@@ -266,7 +266,6 @@ class GameManager {
 
         const payload = JSON.stringify({ message });
 
-        console.log("broadcasting message:", message);
         io.to(game.student.id).emit("message", payload);
         io.to(game.mentor.id).emit("message", payload);
     }
@@ -299,7 +298,7 @@ class GameManager {
      * @param {*} fen 
      * @param {*} color
      */
-    setBoardColor(socketId, fen, color) {
+    setBoardColor(socketId, fen, color, io) {
         const game = this.getGameBySocketId(socketId); // find the corresponding game of the client
 
         if (!game) { // if game does not exist
@@ -311,6 +310,19 @@ class GameManager {
         // modify player color (mentor & player on same side for puzzles)
         game.student.color = color;
         game.mentor.color = color;
+
+        const studentSocket = io.sockets.sockets.get(game.student.id);
+        const mentorSocket = io.sockets.sockets.get(game.mentor.id);
+
+        // broadcast state changes to all players, including changes in color
+        if (studentSocket) {
+            console.log("sent color to student", color)
+            studentSocket.emit("boardstate", JSON.stringify({ boardState: fen, color: color }));
+        }
+        if (mentorSocket) {
+            console.log("sent color to mentor", color)
+            mentorSocket.emit("boardstate", JSON.stringify({ boardState: fen, color: color }));
+        }
 
         return {
             game,

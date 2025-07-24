@@ -1,0 +1,54 @@
+body {
+    background-color: #E5F3D2;
+    background-image: url("../../images/chess-piece-pattern.png");
+}
+
+.mainElements {
+    padding: 20px 0px 20px 0px;
+    height: 46rem;
+    iframe {
+        min-width: 670px;
+        min-height: 670px;
+        overflow: visible;
+    }
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    align-items: center;
+}
+
+.hintMenu {
+    padding: 20px 0px 20px 0px;
+    height: 650px;
+    width: 400px;
+    background: rgba(255,255,255,0.50);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 2rem;
+    margin-left: 30px;
+    flex-wrap: wrap;
+}
+
+.hintText {
+  padding: 12px;
+  margin-left: 30px;
+  margin-right: 20px;
+  border-radius: 6px;
+  max-width: 400px;
+  color: rgb(106, 106, 106);
+  font-size: 22px;
+  text-align: left;
+  line-height: 1.5;
+  white-space: normal;
+}
+
+.button {
+    display: inline-block;
+    font-size: large;
+    font-weight: bold;
+    background-color: #7FCC26;
+    color: black;
+}
