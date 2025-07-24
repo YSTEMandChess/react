@@ -125,6 +125,15 @@ function sendNewPuzzle()
 }
 
 // for chess server to modify the game's board state & player color, (designed just for puzzles for now)
+function sendSetState(fen)
+{
+  console.log("setting a new board state");
+  var data = {"state": fen};
+  console.log(data);
+  socket.emit("setstate", JSON.stringify(data));
+}
+
+// for chess server to modify the game's board state & player color, (designed just for puzzles for now)
 function sendSetStateColor(fen, color)
 {
   console.log("setting a new board state");
@@ -220,7 +229,6 @@ socket.on('guest', () => {
 })
 
 socket.on('message', (msg) => {
-  console.log("chess client received message", msg);
   parsedMsg = JSON.parse(msg);
   parent.postMessage(parsedMsg.message, "*");
 })
@@ -248,7 +256,7 @@ socket.on('boardstate', (msg) => {
       // new board state is different from expected board, so client has made an incorrect move
       if (testState.fen() != parsedMsg.boardState) {
         // snap back, reset puzzle to current state
-        sendSetStateColor(currentState.fen(), playerColor);
+        sendSetState(currentState.fen())
       } else {
       // else client has made the expected move
         nextPuzzleMove = []; // clear next moves
@@ -353,7 +361,7 @@ socket.on('mousexy', (msg)=>{
 socket.on('reset', () => {
   // reload page
   location.reload();
-  deleteAllCookies();
+  // deleteAllCookies();
   console.log("resetting board");
 });
 
@@ -395,6 +403,7 @@ eventer(
 
       // move highlight
       highlightMove(data.from, data.to, "lastmove");
+      sendHighLight(data.from, data.to);
 
       updateStatus();
       board.position(currentState.fen());
