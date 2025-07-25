@@ -166,13 +166,16 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             return;
         }
 
+        const hintText = document.getElementById("hint-text");
+
         // 1. First send puzzle setup
         postToBoard({
             PuzzleId: currentPuzzle?.PuzzleId,
             FEN: fen,
             Moves: currentPuzzle?.Moves,
             Rating: currentPuzzle?.Rating,
-            Themes: currentPuzzle?.Themes
+            Themes: currentPuzzle?.Themes,
+            Hints: hintText.innerHTML
         });
 
         // 2. Wait for setup, then send the first computer move if needed
@@ -423,7 +426,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
                     }
                 }
             }
-            
         };
     
         eventer(messageEvent, messageHandler, false);
@@ -451,7 +453,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             className={styles.puzzleButton}
             onClick={() => {
                 isPuzzleEnd = false;
-                getNextPuzzle();
+                postToBoard({command: "message", message: "next puzzle"});
             }}
             >
             Get New Puzzle

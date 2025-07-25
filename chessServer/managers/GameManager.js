@@ -60,7 +60,6 @@ class GameManager {
         };
 
         this.ongoingGames.push(newGame);
-        console.log("pushing new game");
 
         return {
             game: newGame,
@@ -95,6 +94,8 @@ class GameManager {
                     boardState: game.boardState.fen(), // pass existing game state to guest client
                     color: game.student.color
                 }));
+                socket.emit("message", JSON.stringify({ message: game.puzzle }));
+                console.log("emtting hints!!", game.puzzle);
                 return { game, color: game.student.color, newGame: false };
             }
             else if (role == "mentor") {
@@ -104,6 +105,8 @@ class GameManager {
                     boardState: game.boardState.fen(), // pass existing game state to guest client
                     color: game.student.color 
                 }));
+                socket.emit("message", JSON.stringify({ message: game.puzzle }));
+                console.log("emtting hints!!", game.puzzle);
                 return { game, color: game.mentor.color, newGame: false };
             }
             else {
@@ -132,8 +135,10 @@ class GameManager {
                 color: mentorColor
             },
             boardState: board,
-            pastStates: []
+            pastStates: [],
+            puzzle: "No hints available",
         };
+        console.log("created puzzle:", newGame.puzzle);
 
         // record the new game created
         this.ongoingGames.push(newGame);
@@ -298,7 +303,7 @@ class GameManager {
      * @param {*} fen 
      * @param {*} color
      */
-    setBoardColor(socketId, fen, color, io) {
+    setBoardColor(socketId, fen, color, hints, io) {
         const game = this.getGameBySocketId(socketId); // find the corresponding game of the client
 
         if (!game) { // if game does not exist
@@ -307,6 +312,7 @@ class GameManager {
 
         // modify board state by fen parameter
         game.boardState.load(fen);
+        game.puzzle = hints;
         // modify player color (mentor & player on same side for puzzles)
         game.student.color = color;
         game.mentor.color = color;
@@ -316,11 +322,9 @@ class GameManager {
 
         // broadcast state changes to all players, including changes in color
         if (studentSocket) {
-            console.log("sent color to student", color)
             studentSocket.emit("boardstate", JSON.stringify({ boardState: fen, color: color }));
         }
         if (mentorSocket) {
-            console.log("sent color to mentor", color)
             mentorSocket.emit("boardstate", JSON.stringify({ boardState: fen, color: color }));
         }
 

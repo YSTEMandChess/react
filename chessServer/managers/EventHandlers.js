@@ -123,12 +123,12 @@ const registerSocketHandlers = (socket, io) => {
 
     /**
      * Allows board state & color override (specifically for puzzles)
-     * Expected payload: { state: fenString, color }
+     * Expected payload: { state: fenString, color, hints }
      */
     socket.on("setstateColor", (msg) => {
         try {
-            const { state, color } = JSON.parse(msg);
-            gameManager.setBoardColor(socket.id, state, color, io); // modify the game in the server game manager
+            const { state, color, hints } = JSON.parse(msg);
+            gameManager.setBoardColor(socket.id, state, color, hints, io); // modify the game in the server game manager
         }
         catch (err) {
             socket.emit("error", err.message);

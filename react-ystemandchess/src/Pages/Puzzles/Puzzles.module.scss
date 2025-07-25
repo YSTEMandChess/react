@@ -36,20 +36,20 @@ body {
 }
 
 .puzzleButton {
-  background-color: #0057ff;
-  color: white;
+  background-color: #7FCC26;
+  color: black;
   border: none;
   padding: 18px 28px;
   border-radius: 8px;
   font-size: 17px;
-  font-weight: 600;
+  font-weight: bold;
   cursor: pointer;
   white-space: nowrap;
   transition: background-color 0.3s ease;
 }
 
 .puzzleButton:hover {
-  background-color: #0041cc;
+  background-color: #5d971b;
 }
 
 .hintText {

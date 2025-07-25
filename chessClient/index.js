@@ -35,6 +35,7 @@ var opponentMouseX = 0;
 var opponentMouseY = 0;
 
 var nextPuzzleMove = [];
+var isPuzzle = false;
 
 // Listen for mouse position change 
 document.addEventListener('mousemove', (event) => {
@@ -134,10 +135,10 @@ function sendSetState(fen)
 }
 
 // for chess server to modify the game's board state & player color, (designed just for puzzles for now)
-function sendSetStateColor(fen, color)
+function sendSetStateColor(fen, color, hints)
 {
   console.log("setting a new board state");
-  var data = {"state": fen, "color": color};
+  var data = {"state": fen, "color": color, "hints": hints};
   console.log(data);
   socket.emit("setstateColor", JSON.stringify(data));
 }
@@ -221,11 +222,13 @@ function sendMessage(message)
 // notify front end that their user has created a new game/puzzle as host
 socket.on('host', () => {
   parent.postMessage("host", "*");
+  isPuzzle = true;
 })
 
 // notify front end that their user has joined an existing new game/puzzle as guest
 socket.on('guest', () => {
   parent.postMessage("guest", "*");
+  isPuzzle = true;
 })
 
 socket.on('message', (msg) => {
@@ -310,6 +313,12 @@ socket.on('piecedrag', (msg) => {
 
 });
 
+socket.on('color', (msg) => {
+  console.log("received color", msg);
+  parsedMsg = JSON.parse(msg);
+  playerColor = parsedMsg.color;
+});
+
 socket.on('piecedrop', () => {
 
   console.log('recieved piece drop');
@@ -349,8 +358,13 @@ socket.on('mousexy', (msg)=>{
 
   if (parsedMsg.x && parsedMsg.y)
   {  
-    opponentMouseX = (-1 * parsedMsg.x) + viewportWidth - 28;
-    opponentMouseY = (-1 * parsedMsg.y) + viewportHeight - 28;
+    if (isPuzzle) {
+      opponentMouseX = parsedMsg.x - 28;
+      opponentMouseY = parsedMsg.y - 28;
+    } else {
+      opponentMouseX = (-1 * parsedMsg.x) + viewportWidth - 28;
+      opponentMouseY = (-1 * parsedMsg.y) + viewportHeight - 28;
+    }
     
     updateOpponentMouseXY();
   }
@@ -448,7 +462,7 @@ eventer(
         board.orientation('white');
       }
 
-      sendSetStateColor(currentState.fen(), playerColor);
+      sendSetStateColor(currentState.fen(), playerColor, data.Hints);
       sendToParent(currentState.fen());
     }
 
