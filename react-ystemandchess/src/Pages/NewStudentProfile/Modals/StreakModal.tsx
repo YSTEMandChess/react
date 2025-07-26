@@ -3,30 +3,11 @@ import "./StreakModal.scss";
 import { ReactComponent as Polygon } from "../../../images/StreakProgressAssets/polygon.svg";
 import { ReactComponent as Polygon_2 } from "../../../images/StreakProgressAssets/polygon_2.svg";
 import streakClock from "../../../images/StreakProgressAssets/streak_progress_clock.png";
-import { ReactComponent as ChessPiece } from "../../../images/StreakProgressAssets/chess_piece.svg";
 import { ReactComponent as Stemette } from "../../../images/StreakProgressAssets/stemette.svg";
 import { ReactComponent as Stemmy } from "../../../images/StreakProgressAssets/stemmy.svg";
 
 // Calendar placeholder. Delete once an actual calendar is implemented
 import calendarIcon from "../../../images/StreakProgressAssets/Calendar.png";
-
-// Type alias and props interface for a day's progress state
-type DayStatus = "complete" | "current" | "incomplete";
-
-interface DayProps {
-  label: string;
-  status: DayStatus;
-}
-
-// Renders a single day with label and a ChessPiece icon styled by its status
-const DayProgress: React.FC<DayProps> = ({ label, status }) => {
-  return (
-    <div className={`day-progress ${status}`}>
-      <span className="day-label">{label}</span>
-      <ChessPiece className="chess-piece" />
-    </div>
-  );
-};
 
 // Displays the modal with streak information, visual characters, and daily progress
 const StreakModal = ({ onClose }: { onClose: () => void }) => {
@@ -36,23 +17,6 @@ const StreakModal = ({ onClose }: { onClose: () => void }) => {
       onClose();
     }
   };
-
-  // Days of the week
-  const week = ["Sat", "Mon", "Tue", "Wed", "Thu", "Fri", "Sun"];
-
-  // ===============================
-  // Placeholder hardcoded statuses
-  // This will eventually be replaced with data from the backend
-  // ===============================
-  const statuses: DayStatus[] = [
-    "complete",
-    "complete",
-    "complete",
-    "complete",
-    "complete",
-    "current",
-    "incomplete",
-  ];
 
   return (
     <div className="streak-modal-overlay" onClick={handleOverlayClick}>
@@ -92,16 +56,6 @@ const StreakModal = ({ onClose }: { onClose: () => void }) => {
           <div className="streak-text streak-right">
             <p className="small">Today is</p>
             <p className="big">6/9</p>
-          </div>
-        </div>
-
-        {/* Weekly progress section with mapped days */}
-        <div className="weekly-progress">
-          <h3 className="weekly-title">Weekly Progress</h3>
-          <div className="weekly-days">
-            {week.map((day, index) => (
-              <DayProgress key={day} label={day} status={statuses[index]} />
-            ))}
           </div>
         </div>
 

@@ -87,7 +87,7 @@
       }
 
       &.left {
-        top: 12.1875rem;
+        top: 8.1875rem;
         left: 1.875rem;
 
         .speech-tail {
@@ -97,7 +97,7 @@
       }
 
       &.right {
-        top: 37.1875rem;
+        top: 33.1875rem;
         right: 1.0625rem;
 
         .speech-box {
@@ -119,7 +119,7 @@
     .leaning-left-inside {
       position: absolute;
       left: 0;
-      top: 11.25rem;
+      top: 7.25rem;
       width: 21.875rem !important;
       height: auto !important;
       display: block;
@@ -131,7 +131,7 @@
       position: absolute;
       right: 0;
       bottom: 0;
-      top: 11.25rem;
+      top: 7.25rem;
       width: 15.625rem !important;
       height: auto !important;
       display: block;
@@ -147,8 +147,8 @@
 .streak-header {
   position: relative;
   width: 100%;
-  max-width: 23.4375rem;
-  margin: 3rem auto 0 auto;
+  max-width: 28rem;
+  margin: 3rem auto 5rem auto;
 
   .streak-clock {
     width: 100%;
@@ -183,62 +183,6 @@
       top: 50%;
       left: 73%;
       transform: translate(-50%, -50%);
-    }
-  }
-}
-
-// ==========================
-// Weekly Progress Section
-// ==========================
-.weekly-progress {
-  margin-top: 2rem;
-  text-align: center;
-
-  .weekly-title {
-    font-family: 'Lato', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    color: #231F20;
-  }
-
-  .weekly-days {
-    display: flex;
-    justify-content: center;
-    gap: 0.55rem;
-  }
-
-  .day-progress {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-family: 'Lato', sans-serif;
-
-    .day-label {
-      font-size: 1rem;
-      font-weight: 400;
-      margin-bottom: 0.4rem;
-      color: #231F20;
-    }
-
-    .chess-piece {
-      width: 3.125rem;
-      height: 3.125rem;
-      fill: #5C5C5C;
-    }
-
-    &.complete .chess-piece {
-      fill: #7FCC26;
-    }
-
-    &.current .chess-piece {
-      fill: #7FCC26;
-      stroke: #EAD94C;
-      stroke-width: 6px;
-    }
-
-    &.incomplete .chess-piece {
-      fill: #5C5C5C;
     }
   }
 }
