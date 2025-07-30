@@ -279,7 +279,7 @@ socket.on('boardstate', (msg) => {
     console.log(currentState);
     console.log(currentState.fen());
     currentState = new Chess(parsedMsg.boardState);
-    console.log("received board state". parsedMsg);
+    console.log("received board state", parsedMsg);
 
     // setting player color 
     if (parsedMsg.color)
@@ -291,6 +291,7 @@ socket.on('boardstate', (msg) => {
       // setting chess board orientation
       config.orientation = parsedMsg.color;
       board = Chessboard("myBoard", config);
+      parent.postMessage("new game received", "*");
     }
 
     // update visuals of chessboard

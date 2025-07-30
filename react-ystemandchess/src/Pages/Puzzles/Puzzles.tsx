@@ -44,6 +44,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     const [playerColor, setPlayerColor] = useState<string>('');
     const [themeList, setThemeList] = useState<string[]>([]);
     const [status, setStatus] = useState<string>("");
+    const swalRef = useRef<string>("");
 
     const postToBoard = (msg: any) => {
     const board = chessboard.current;
@@ -405,8 +406,24 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             } else if (typeof info == "string" && info == "host"){ // user has created a new puzzle in server
                 setStatus("host"); // change status
                 initializeComponent(); 
+                if (styleType === "profile") {
+                    if (status){
+                        if (role == "student") Swal.fire('Your mentor has left!', 'Creating a new puzzle for you', 'success');
+                        else Swal.fire('Your student has left!', 'Creating a new puzzle for you', 'success');
+                    } else {
+                        if (role == "student") Swal.fire('You hosted a new puzzle!', 'Your mentor might join later', 'success');
+                        else Swal.fire('You hosted a new puzzle!', 'Your student might join later', 'success');
+                    }
+                }
             } else if (typeof info == "string" && info == "guest"){ // user has joined an existing puzzle in server
-                setStatus("guest"); // change status
+                if (status == "host") {
+                    if (role == "student") Swal.fire('Your mentor has joined you!', 'You can now also see their moves,', 'success');
+                    else Swal.fire('Your student has joined you!', 'You can now also see their moves,', 'success');
+                } else {
+                    setStatus("guest"); 
+                    if (role == "student") Swal.fire('You joined your mentor\'s puzzle!', 'Have fun collaborating.', 'success');
+                    else Swal.fire('You joined your student\'s puzzle!', 'Have fun collaborating.', 'success');
+                }
                 // no need to fetch lessons, guest's chessboard is dependent on host's for simplicity
             } else if (typeof info == "string" && info == "puzzle completed" ) { // puzzle completed
                 if (status == "guest") { // host would already have fired alert
@@ -416,6 +433,22 @@ const Puzzles: React.FC<PuzzlesProps> = ({
                 }
             } else if (typeof info == "string" && info == "next puzzle") { // player / other users want to move to the next puzzle
                 Swal.close();
+                if(status == "guest"){
+                    Swal.fire({
+                        title: 'Loading next lesson',
+                        text: 'Please wait...',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                            swalRef.current = "loading";
+                        },
+                        willClose: () => {
+                            swalRef.current = "";
+                        }
+                    });
+                }
                 getNextPuzzle();
             } else if (typeof info == "string" && info.startsWith("<div")) { // other users want to update the hint text
                 if(status == "guest") { // host initiates, only guests receive
@@ -425,6 +458,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
                         hintText.style.display = "none"; // Still hidden until Show Hint clicked
                     }
                 }
+            } else if (typeof info == "string" && info == "new game received") {
+                if(swalRef.current == "loading") Swal.close();
             }
         };
     

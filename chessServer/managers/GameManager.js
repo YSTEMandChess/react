@@ -90,6 +90,8 @@ class GameManager {
             if (role == "student") {
                 game.student.id = socketId; // record guest socket id
                 socket.emit("guest"); // notify client that they join as guest
+                const socket2 = io.sockets.sockets.get(game.mentor.id);
+                socket2.emit("guest"); 
                 socket.emit("boardstate", JSON.stringify({ 
                     boardState: game.boardState.fen(), // pass existing game state to guest client
                     color: game.student.color
@@ -101,6 +103,8 @@ class GameManager {
             else if (role == "mentor") {
                 game.mentor.id = socketId; // record guest socket id
                 socket.emit("guest"); // notify client that they join as guest
+                const socket2 = io.sockets.sockets.get(game.student.id);
+                socket2.emit("guest"); 
                 socket.emit("boardstate", JSON.stringify({ 
                     boardState: game.boardState.fen(), // pass existing game state to guest client
                     color: game.student.color 
