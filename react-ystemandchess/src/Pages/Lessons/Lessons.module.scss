@@ -2,19 +2,19 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-  --green-color: #7FCC26;
-  --gray-color: #7A7A7A;
-  --light-gray-color: #D4DDDD;
+  font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+  --green-color: #7fcc26;
+  --gray-color: #7a7a7a;
+  --light-gray-color: #d4dddd;
   --dark-green-color: #5d971b;
   --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --border-radius: 10px;
-  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .lessonsPage {
   padding: 3% 0;
-  background-image: url("chess_background.png");
+  background-image: url("./assets/chess_background.png");
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -38,7 +38,7 @@
   padding: 2rem 1.5rem 1.5rem 1.5rem;
   margin-left: 100px;
   margin-right: 80px;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
 }
@@ -46,7 +46,7 @@
 .lessonHeader {
   display: flex;
   justify-content: space-between;
-  align-items:first baseline;
+  align-items: first baseline;
 }
 
 .description {
@@ -256,7 +256,7 @@
   height: 100%;
   display: grid;
   grid-template-columns: repeat(8, 5.5vw); /* 8 columns with equal width */
-  grid-template-rows: repeat(8, 5.5vw);    /* 8 rows with equal height */
+  grid-template-rows: repeat(8, 5.5vw); /* 8 rows with equal height */
   box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
 }
 
@@ -296,8 +296,9 @@
   color: #333;
 }
 
-.pawnImage, .pieceImage {
-  width: 90%;  /* Scale pieces based on square size */
+.pawnImage,
+.pieceImage {
+  width: 90%; /* Scale pieces based on square size */
   height: 90%;
   object-fit: contain; /* Ensure the image fits nicely within the square */
 }
@@ -336,4 +337,4 @@
 
 .promotionOption:hover {
   background-color: var(--dark-green-color);
-} 
+}
