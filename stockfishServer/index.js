@@ -18,6 +18,7 @@ http.on("request", (req, res) => {
   var maxLevel = 30;
   var lines = [];
 
+
   engine.onmessage = function (line) {
     console.log("line -> ", line);
     if (params.info) {

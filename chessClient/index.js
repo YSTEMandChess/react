@@ -37,6 +37,9 @@ var opponentMouseY = 0;
 var nextPuzzleMove = [];
 var isPuzzle = false;
 
+var highlightFrom = "";
+var highlightTo = "";
+
 // Listen for mouse position change 
 document.addEventListener('mousemove', (event) => {
   myMouseX = event.clientX;
@@ -259,7 +262,8 @@ socket.on('boardstate', (msg) => {
       // new board state is different from expected board, so client has made an incorrect move
       if (testState.fen() != parsedMsg.boardState) {
         // snap back, reset puzzle to current state
-        sendSetState(currentState.fen())
+        sendSetState(currentState.fen());
+        highlightMove(highlightFrom, highlightTo, "lastmove");
       } else {
       // else client has made the expected move
         nextPuzzleMove = []; // clear next moves
@@ -334,7 +338,7 @@ socket.on('highlight', (msg) => {
   // Highlight the anticipated space
   console.log("highlight recieved")
   parsedMsg = JSON.parse(msg);
-  highlightMove(parsedMsg.from, parsedMsg.to, 'nextMove');
+  highlightMove(parsedMsg.from, parsedMsg.to, 'lastMove');
 
 });
 
@@ -384,6 +388,7 @@ socket.on('reset', () => {
 socket.on('lastmove', (msg) => {
   // Highlight the last moved spaces
   parsedMsg = JSON.parse(msg);
+  if(!parsedMsg.from && !parsedMsg.to && nextPuzzleMove.length > 0) return;
   highlightMove(parsedMsg.from, parsedMsg.to, "lastmove");
 
 });
@@ -486,7 +491,7 @@ eventer(
 
     // highlight message
     if ("highlightFrom" in data && "highlightTo" in data) {
-      highlightMove(data.highlightFrom, data.highlightTo);
+      highlightMove(data.highlightFrom, data.highlightTo, "lastmove");
     }
 
     if ("clearhighlight" in data) {
@@ -560,8 +565,13 @@ eventer(
 );
 
 function highlightMove(from, to, style) {
+  console.log("hightlight!!!", from, to);
   $board.find("." + squareClass).removeClass(style);
   if (from !== "remove" || to !== "remove") {
+    if (from && to) {
+      highlightFrom = from;
+      highlightTo = to;
+    }
     $board.find(".square-" + from).addClass(style);
     $board.find(".square-" + to).addClass(style);
   }

@@ -52,10 +52,16 @@ body {
   padding: 1rem;
   font-size: 1rem;
   width: 100%;
-  background-color: #84cc16;
+  font-weight: bold;
+  background-color: #7FCC26;
+  color: black;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.puzzleButton:hover {
+  background-color: #5d971b;
 }
 
 @media (min-width: 800px) {

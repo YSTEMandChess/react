@@ -168,6 +168,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         }
 
         const hintText = document.getElementById("hint-text");
+        if(!hintText) return;
 
         // 1. First send puzzle setup
         postToBoard({
