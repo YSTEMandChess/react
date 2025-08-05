@@ -196,6 +196,7 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
 
   // Helper function to get possible moves for a piece
   const getPieceMoves = (piece: string | any[], position: any) => {
+    console.log("getPieceMoves called with piece:", piece, "at position:", position);
     const color = piece[0]; // Get color from the piece (first character)
     switch (piece[1]) {
       case 'P':
@@ -221,7 +222,10 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
     const piece = board[row][col];
 
     // Clear previous highlights
-    setHighlightedSquares([]);
+    setHighlightedSquares(prev => {
+      if (prev.length === 0) return prev; // Maintain referential equality to reduce board renders
+      return [];
+    });
 
     if (piece) {
       const possibleMoves = getPieceMoves(piece, key);
@@ -303,6 +307,21 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
   // Determine the classname for the back button based on whether there are previous lessons
   const backButtonClassname = rightEnded ? "prevNextLessonButton-inactive prev" : "prevNextLessonButton prev";
 
+  // Memoize the calculation of the chess board to avoid unnecessary re-renders
+  const chessBoard = React.useMemo(() => {
+    return createChessBoard(
+      board,
+      highlightedSquares,
+      setHighlightedSquares,
+      handleSquareHover,
+      handleDragStart,
+      handleDrop,
+      handleDragOver,
+      draggingPiece,
+      styles
+    );
+  }, [board, highlightedSquares, draggingPiece, styles]);
+
   return (
     <div className={styles.lessonsPage}>
       <div className={styles.leftRightContainer}>
@@ -345,17 +364,7 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
         <div className={styles.leftContainer}>
           <div className={styles.chessboardContainer}>
             <div data-testid="chessboard-L" className={styles.chessboard}>
-              {createChessBoard(
-                board,
-                highlightedSquares,
-                setHighlightedSquares,
-                handleSquareHover,
-                handleDragStart,
-                handleDrop,
-                handleDragOver,
-                draggingPiece,
-                styles
-              )}
+              {chessBoard}
             </div>
             {isPromoting ? <PromotionPopup position={promotionPosition} promoteToPiece={promotePawn} /> : null /* Show promotion popup if needed */}
           </div>
@@ -412,6 +421,7 @@ export function createChessBoard(
   draggingPiece: any,
   styles: any
 ) {
+
   const rows = 8;
   const cols = 8;
   const chessBoard = [];
@@ -441,8 +451,14 @@ export function createChessBoard(
             position: 'relative', // Allow positioning for labels and circles
             transition: 'filter 0.4s ease'
           }}
+
           onMouseEnter={() => handleSquareHover(key)} // Show possible moves on hover
-          onMouseLeave={() => setHighlightedSquares([])} // Clear highlights when mouse leaves
+
+          onMouseLeave={() => setHighlightedSquares(prev => {
+            if (prev.length === 0) return prev; // Maintain referential equality
+            return [];
+          })} // Clear highlights when mouse leaves
+
           onDrop={() => handleDrop(key)} // Handle drop
           onDragOver={handleDragOver} // Allow drag-over for dropping
         >
