@@ -6,6 +6,9 @@ import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
 import { StatsChart } from "./StatsChart";
+import Lessons from "../Lessons/Lessons";
+import LessonSelection from "../LessonsSelection/LessonsSelection";
+import LessonOverlay from "../piece-lessons/lesson-overlay/lesson-overlay";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
@@ -27,8 +30,9 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   // data for chart plotting
   const [displayMonths, setDisplayMonths] = useState(6); // display data from 6 many months back 
-  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
-  const [dataAxis, setDataAxis] = useState([0, 0, 0, 0, 0, 0]); // time spent on events each month
+  const [displayEvents, setDisplayEvents] = useState(["website", "play", "lesson", "puzzle", "mentor"])
+  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May"]); // display the time as X-axis
+  const [dataAxis, setDataAxis] = useState<{[key: string]: number[]}>({website: [0, 0, 0, 0, 0],}); // time spent on events each month
 
   // event tracking for pagination
   const [events, setEvents] = useState([]);
@@ -37,15 +41,23 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [hasMore, setHasMore] = useState(true); // if there are more events
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Animation states
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [celebrateAction, setCelebrateAction] = useState(false);
+
   // current date for display
   const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
   }));
 
+  const [lessonSelected, setLessonSelected] = useState(false);
+  const [piece, setPiece] = useState("");
+  const [lessonNum, setLessonNum] = useState(0);
+
   useEffect(()=>{
     try {
-      fetchUserData(); // asynchronously fetch user data upon mounting
+      fetchUserData(); 
     } catch (err) {
       console.log(err)
     }
@@ -138,19 +150,29 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     try {
       // fetch the time spent on the website in the past few months
       const response = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&eventType=website&months=${displayMonths}`, 
+        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&events=${displayEvents.join(",")}&months=${displayMonths}`, 
         {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${cookies.login}` }
         }
       );
       const data = await response.json(); 
-      const months = data.map(item => item.monthText); // month list for ploting
-      const times = data.map(item => item.timeSpent); // timeSpent for plotting
+
+      const newDataAxis = {} as {[key: string]: number[]};
+      for(let i = 0; i < displayEvents.length; i++)
+      {
+        // get time spent for each event for plotting
+        let event = displayEvents[i];
+        let value = data[event];
+        let months = value.map(item => item.monthText); // month list for ploting
+        let times = value.map(item => item.timeSpent); // timeSpent for plotting
+
+        setMonthAxis(months);
+        newDataAxis[event] = times;
+      }
 
       // update for graph plotting
-      setMonthAxis(months);
-      setDataAxis(times); 
+      setDataAxis(newDataAxis); 
     } catch (err) {
       console.error("Failed to fetch events", err);
     }
@@ -158,14 +180,25 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);
+    // Add celebration animation for certain tabs
+    if (tab === "learning" || tab === "chessLessons") {
+      setCelebrateAction(true);
+      setTimeout(() => setCelebrateAction(false), 1000);
+    }
   };
 
   // navigate to previous activities
   const handleNavigateEvent = (type: string, name: string) => {
-    if(type == "lesson") { // if event is a lesson
+    if(type === "lesson") { // if event is a lesson
       navigate("/lessons", { state: { piece: name } });
     }
   }
+
+  // Fun click handler for portrait
+  const handlePortraitClick = () => {
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 2000);
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -208,64 +241,80 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                   </article>
                 );
               })}
-              {loading && <p>Loading more...</p>}
-              {!hasMore && <p>No more activity left!</p>}
+              {loading && (
+                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                  <div className="loading-spinner"></div>
+                  <p>Loading more amazing activities...</p>
+                </div>
+              )}
+              {!hasMore && <p style={{ textAlign: 'center', padding: '1rem', color: '#666' }}>🎉 You've seen all your awesome activities!</p>}
             </div>
           </div>
         );
       case "mentor":
         return (
-          <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
-            <h2>Mentor</h2>
+          <div id="inventory-content-mentor" className="inventory-content active-content">
+            <h2>🎓 Mentor</h2>
             <p>This is the content for the Mentor tab.</p>
           </div>
         );
       case "learning":
         return (
           <div id="inventory-content-learning" className="inventory-content active-content">
-            <h2>Learning</h2>
-            <p>This is the content for the Learning tab.</p>
+            <Lessons />
           </div>
         );
       case "chessLessons":
         return (
           <div id="inventory-content-lessons" className="inventory-content active-content">
-            <h2>Chess Lessons</h2>
-            <p>This is the content for the Chess Lessons tab.</p>
+            {lessonSelected ? (
+              <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum} navigateFunc={() => {
+                setLessonSelected(false);
+              }} styleType="profile"/>
+            ) : (
+              <LessonSelection styleType="profile" onGo={(selectedScenario, lessonNum) => { 
+                setLessonSelected(true);
+                setPiece(selectedScenario);
+                setLessonNum(lessonNum);
+                // Add celebration for starting a lesson
+                setCelebrateAction(true);
+                setTimeout(() => setCelebrateAction(false), 1000);
+              }}/>
+            )}
           </div>
         );
       case "games":
         return (
           <div id="inventory-content-games" className="inventory-content active-content">
-            <h2>Games</h2>
+            <h2>🎮 Games</h2>
             <p>This is the content for the Games tab.</p>
           </div>
         );
       case "puzzles":
         return (
           <div id="inventory-content-puzzles" className="inventory-content active-content">
-            <h2>Puzzles</h2>
+            <h2>🧩 Puzzles</h2>
             <p>This is the content for the Puzzles tab.</p>
           </div>
         );
       case "playComputer":
         return (
           <div id="inventory-content-computer" className="inventory-content active-content">
-            <h2>Play with Computer</h2>
+            <h2>🤖 Play with Computer</h2>
             <p>This is the content for the Play with Computer tab.</p>
           </div>
         );
       case "recordings":
         return (
           <div id="inventory-content-recordings" className="inventory-content active-content">
-            <h2>Recordings</h2>
+            <h2>📹 Recordings</h2>
             <p>This is the content for the Recordings tab.</p>
           </div>
         );
       case "backpack":
         return (
           <div id="inventory-content-backpack" className="inventory-content active-content">
-            <h2>Backpack</h2>
+            <h2>🎒 Backpack</h2>
             <p>This is the content for the Backpack tab.</p>
           </div>
         );
@@ -280,38 +329,55 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   return (
     <main id="main-inventory-content">
+      {/* Confetti effect */}
+      {showConfetti && (
+        <div className="confetti-container">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="confetti-piece"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                backgroundColor: ['#3a7cca', '#d64309', '#ffd700', '#ff6b6b', '#4ecdc4'][Math.floor(Math.random() * 5)]
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       <section className="inv-intro">
-        <div className="inv-intro-portrait">
+        <div className="inv-intro-portrait" onClick={handlePortraitClick}>
           <img
             className="inv-intro-portrait-face"
             src={userPortraitSrc}
             alt="user portrait"
-          ></img>
+          />
           <img
             className="inv-intro-portrait-camera"
             src={Images.userPortraitCamera}
             alt="user portrait camera icon"
-          ></img>
+          />
         </div>
         <div className="inv-intro-welcome">
           <h1>Hello, {firstName} {lastName}!</h1>
         </div>
       </section>
 
-      <section className="inv-inventory">
+      <section className={`inv-inventory ${celebrateAction ? 'celebrate' : ''}`}>
         <div className="inv-inventory-topbar"></div>
         <div className="inv-inventory-analytics">
           <div className="inv-inventory-analytics-graph">
-            <StatsChart key={dataAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
+            <StatsChart key={monthAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis as any}/>
           </div>
           <div className="inv-inventory-analytics-metrics">
-            <h3>Time Spent:</h3>
+            <h3>🏆 Time Spent:</h3>
             <ul>
-              <li>Website: <strong>{webTime} minutes</strong></li>
-              <li>Playing: <strong>{playTime} minutes</strong></li>
-              <li>Lessons: <strong>{lessonTime} minutes</strong></li>
-              <li>Puzzle: <strong>{puzzleTime} minutes</strong></li>
-              <li>Mentoring: <strong>{mentorTime} minutes</strong></li>
+              <li>🌐 Website: <strong>{webTime} minutes</strong></li>
+              <li>🎯 Playing: <strong>{playTime} minutes</strong></li>
+              <li>📚 Lessons: <strong>{lessonTime} minutes</strong></li>
+              <li>🧩 Puzzle: <strong>{puzzleTime} minutes</strong></li>
+              <li>👨‍🏫 Mentoring: <strong>{mentorTime} minutes</strong></li>
             </ul>
           </div>
         </div>
@@ -320,12 +386,27 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             <ul>
               {["activity", "mentor", "learning",
                 "chessLessons", "games", "puzzles",
-                "playComputer", "recordings", "backpack"].map((tab) => { const displayName =
+                "playComputer", "recordings", "backpack"].map((tab) => { 
+                const displayName =
                     tab === "chessLessons"
-                      ? "Chess Lessons"
+                      ? "♟️ Chess Lessons"
                       : tab === "playComputer"
-                        ? "Play with Computer"
-                        : tab.charAt(0).toUpperCase() + tab.slice(1);
+                        ? "🤖 Play Computer"
+                        : tab === "activity"
+                          ? "📊 Activity"
+                          : tab === "mentor"
+                            ? "🎓 Mentor"
+                            : tab === "learning"
+                              ? "📖 Learning"
+                              : tab === "games"
+                                ? "🎮 Games"
+                                : tab === "puzzles"
+                                  ? "🧩 Puzzles"
+                                  : tab === "recordings"
+                                    ? "📹 Recordings"
+                                    : tab === "backpack"
+                                      ? "🎒 Backpack"
+                                      : tab.charAt(0).toUpperCase() + tab.slice(1);
 
                   return (
                     <div
@@ -344,6 +425,48 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
           <div className="inv-inventory-content-content">{renderTabContent()}</div>
         </div>
       </section>
+
+      {/* Inline styles for confetti animation */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            overflow: hidden;
+          }
+
+          .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: confetti-fall 3s linear infinite;
+          }
+
+          @keyframes confetti-fall {
+            to {
+              transform: translateY(100vh) rotate(360deg);
+            }
+          }
+
+          .celebrate {
+            animation: celebrate-pulse 1s ease-in-out;
+          }
+
+          @keyframes celebrate-pulse {
+            0%, 100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.02);
+            }
+          }
+        `
+      }} />
     </main>
   );
 };
