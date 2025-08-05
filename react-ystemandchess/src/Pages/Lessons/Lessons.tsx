@@ -1,6 +1,6 @@
 import pageStyles from "./Lessons.module.scss";
 import profileStyles from "./Lessons-profile.module.scss";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ReactComponent as RedoIcon } from './icon_redo.svg';
 import { ReactComponent as BackIcon} from './icon_back.svg';
 import { ReactComponent as BackIconInactive} from './icon_back_inactive.svg';
@@ -21,7 +21,8 @@ type LessonsProps = {
 
 const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
 
-  const styles = styleType === 'profile' ? profileStyles : pageStyles;
+  // Use memoization to maintain referential equality and avoid unnecessary re-renders
+  const styles = useMemo(() => styleType === 'profile' ? profileStyles : pageStyles, [styleType]);
 
   const navigate = useNavigate();
   const [board, setBoard] = useState(getScenario(0).subSections[0].board); // Initialize the board with chess pieces
