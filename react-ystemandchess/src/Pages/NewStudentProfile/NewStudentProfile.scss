@@ -1,277 +1,616 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
 
-$brand-color-primary: #e5f3d2;
-$brand-color-secondary: #bfd99e;
-$brand-color-tertiary: #7fcc26;
-$brand-color-background-grey: #d4dddd;
-$inventory-tab-color: #e2cc44;
-$inventory-tab-active: linear-gradient(
-  120deg,
-  #ff4747,
-  #3faeff,
-  #7fff30,
-  #a8ec16
-);
+$brand-color-primary: #ffffff;
+$brand-color-secondary: #eaf4f4;
+$brand-color-tertiary: #3a7cca;
+$brand-color-accent: #d64309;
+$brand-color-background-grey: #f7f7f7;
+$inventory-tab-color: #ffffff;
+$inventory-tab-active: #3a7cca;
 
-#main-inventory-content {
-  background-color: $brand-color-primary;
-  background-image: url("../../images/chess-piece-pattern.png");
-  background-size: 95%;
-  background-repeat: repeat;
-  font-family: "Roboto", sans-serif;
-  padding-bottom: 48px;
-
-  // Inventory Intro Section
-  .inv-intro {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 3em 0;
+// Keyframe animations
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.3) translateY(-50px);
+    opacity: 0;
   }
-
-  .inv-intro-portrait {
-    position: relative;
-    border: 2px solid black;
-    background: $brand-color-background-grey;
-    border-radius: 6px;
-    width: 96px;
-    height: 96px;
+  50% {
+    transform: scale(1.05);
   }
-
-  .inv-intro-portrait-face {
-    width: 100%;
-    height: 100%;
+  70% {
+    transform: scale(0.9);
   }
-
-  .inv-intro-portrait-camera {
-    position: absolute;
-    background: rgba($color: white, $alpha: 0.85);
-    border-radius: 6px;
-    bottom: 0;
-    right: 0;
-    width: 24px;
-    height: 24px;
-    padding: 1px;
-    margin: 4px;
-  }
-
-  .inv-intro-welcome > h1 {
-    margin: 2rem 0 0 0;
-    padding: 0;
-    font-size: 1.7rem;
-    font-weight: bold;
-  }
-
-  // Inventory Section
-  .inv-inventory {
-    background: $brand-color-background-grey;
-    width: clamp(1100px, 80%, 1200px);
-    margin: auto;
-    border-radius: 0.8rem;
-    overflow: hidden;
-  }
-
-  .inv-inventory-topbar {
-    background: $brand-color-tertiary;
-    padding: 1.2em 0;
-    margin: 0;
-  }
-
-  .inv-inventory-analytics {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-top: 3%;
-    padding-bottom: 0%;
-  }
-
-  .inv-inventory-analytics-graph {
-    height: 18rem;
-    width: 27rem;
-    padding: 0.8rem;
-    margin-right: 3rem;
-  }
-
-  .inv-inventory-analytics-metrics {
-    text-align: left;
-  }
-
-  .inv-inventory-analytics-metrics > ul {
-    padding: 0 0.2rem;
-  }
-  .inv-inventory-analytics-metrics > ul > li {
-    position: relative;
-    margin: 0 0 12px 0;
-    list-style: none;
-  }
-  .inv-inventory-analytics-metrics > ul > li::before {
-    content: "";
-    position: relative;
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    padding: 0 0 0 0;
-    margin: 0 1rem 0 0;
-    background-color: $brand-color-tertiary;
-    border: 4px solid black;
-  }
-
-  .inv-inventory-analytics-metrics > h3 {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin: 0 0 1.5rem 0;
-  }
-
-  // Inventory Menu Section
-  .inv-inventory-content-section {
-    background: $brand-color-secondary;
-    width: 95%;
-    margin: 2rem auto;
-    border-radius: 1rem;
-    display: grid;
-    grid-template-columns: 35% 65%;
-  }
-
-  .inv-inventory-content-tabs {
-    position: relative;
-  }
-
-  .inv-inventory-content-tabs > ul {
-    background: $brand-color-background-grey;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .inv-inventory-content-tabs > ul > :first-child {
-    border-top-left-radius: 1rem;
-  }
-  .inv-inventory-content-tabs > ul > :last-child {
-    border-bottom-left-radius: 1rem;
-    margin: 0;
-  }
-
-  .inventory-tab {
-    background: $inventory-tab-color;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    height: 75px;
-    text-align: left;
-    font-weight: 600;
-    margin: 0 0 1rem 0;
-    cursor: pointer;
-
-    img {
-      filter: grayscale(1);
-      transition: filter 0.3s, transform 0.3s;
-    }
-  
-    &.active-tab {
-      img {
-        filter: none;
-        transform: scale(1.1);
-      }
-    }
-
-  }
-
-  .inv-inventory-content-content {
-    padding: 1rem 4rem;
-    display: flex;
-    align-items: center;
-  }
-
-  .inventory-content {
-    position: relative;
-    display: none;
-    height: 100%;
-  }
-
-  .active-tab {
-    background-color: $brand-color-secondary;
-  }
-  .active-content {
-    display: block;
-  }
-
-  .inventory-content-headingbar {
-    min-width: 35rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 1rem 0 0.7rem 0;
-    border-bottom: 1px solid rgb(120, 120, 120);
-  }
-  .inventory-content-headingbar > h2,
-  .inventory-content-headingbar > h4 {
-    padding: 0;
-    margin: 0;
-  }
-
-  .inventory-content-headingbar > h4 {
-    color: rgb(120, 120, 120);
-    font-weight: 400;
-    font-size: 0.9rem;
-  }
-
-  .inventory-content-body {
-    position: relative;
-    display: grid;
-    height: 44rem;
-    overflow-y: auto;
-    scrollbar-width: none;
-  }
-
-  .inventory-content-line {
-    position: absolute;
-    height: 78%;
-    top: 16%;
-    left: 1.5%;
-  }
-
-  .inventory-content-line::after {
-    content: "";
-    position: absolute;
-    z-index: 0;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    border-left: 3px dotted #222;
-  }
-
-  .inventory-content-timecard {
-    display: grid;
-    grid-template-columns: 10% 45% 45%;
-    text-align: left;
-    margin: 3rem 0;
-  }
-
-  .inventory-content-timecard > div {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-  }
-
-  .inventory-content-col1::before {
-    content: "";
-    position: relative;
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    padding: 0 0 0 0;
-    margin: 0 1rem 0 0;
-    background-color: $brand-color-tertiary;
-    border: 4px solid black;
-  }
-
-  .inventory-content-col3 > p > strong {
-    text-decoration: underline;
-    cursor: pointer;
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
   }
 }
 
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-up {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(58, 124, 202, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(58, 124, 202, 0.6);
+  }
+}
+
+@keyframes wiggle {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#main-inventory-content {
+  background-color: $brand-color-primary;
+  font-family: "Roboto", sans-serif;
+  min-height: 100vh;
+  animation: slide-in-up 0.8s ease-out;
+
+  .inv-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2rem;
+    animation: bounce-in 1s ease-out;
+
+    .inv-intro-portrait {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: #ffffff; 
+      border: 4px solid #3a7cca; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(58, 124, 202, 0.3);
+      transition: all 0.3s ease;
+      animation: pulse-glow 3s infinite;
+      cursor: pointer;
+
+      &:hover {
+        transform: scale(1.1);
+        animation: wiggle 0.5s ease-in-out;
+        box-shadow: 0 8px 25px rgba(58, 124, 202, 0.5);
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 20px;
+        height: 20px;
+        background: radial-gradient(circle, #ffd700, #ffed4e);
+        border-radius: 50%;
+        animation: sparkle 2s infinite;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        width: 10px;
+        height: 10px;
+        background: radial-gradient(circle, #ff6b6b, #ff8e8e);
+        border-radius: 50%;
+        animation: sparkle 2s infinite 1s;
+      }
+    }
+
+    .inv-intro-portrait-face {
+      width: 60%;
+      height: 60%;
+      object-fit: contain;
+      filter: brightness(0) saturate(100%) invert(29%) sepia(81%) saturate(746%) hue-rotate(189deg) brightness(95%) contrast(91%);
+      transition: all 0.3s ease;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .inv-intro-portrait-camera {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      transform: translate(30%, 30%);
+      width: 30px;
+      height: 30px;
+      background: #ffffff; 
+      border: 2px solid #3a7cca;
+      border-radius: 50%;
+      padding: 4px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+
+      &:hover {
+        transform: translate(30%, 30%) scale(1.2) rotate(15deg);
+        background: #3a7cca;
+        box-shadow: 0 4px 15px rgba(58, 124, 202, 0.4);
+      }
+    }
+
+    .inv-intro-welcome {
+      margin-top: 1.5rem;
+      animation: slide-in-up 1s ease-out 0.5s both;
+
+      h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        position: relative;
+        overflow: hidden;
+        white-space: nowrap;
+        animation: typewriter 2s steps(20, end) 1s both;
+        
+        &::after {
+          content: '|';
+          color: $brand-color-accent;
+          animation: blink 1s infinite;
+        }
+      }
+    }
+  }
+
+  .inv-inventory {
+    background: $brand-color-background-grey;
+    width: clamp(300px, 80%, 1200px);
+    margin: 2rem auto;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    animation: slide-in-up 1s ease-out 0.3s both;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      transform: translateY(-5px);
+    }
+
+    .inv-inventory-topbar {
+      background: $brand-color-tertiary;
+      padding: 1rem 0;
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        animation: shimmer 3s infinite;
+      }
+    }
+
+    .inv-inventory-analytics {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 2rem;
+      animation: slide-in-left 1s ease-out 0.6s both;
+
+      .inv-inventory-analytics-graph {
+        height: 18rem;
+        width: 28rem;
+        margin-right: 2rem;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          transform: scale(1.02);
+        }
+      }
+
+      .inv-inventory-analytics-metrics {
+        animation: slide-in-right 1s ease-out 0.8s both;
+
+        ul {
+          list-style: none;
+          padding: 0;
+
+          li {
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            animation: fade-in-up 0.5s ease-out both;
+
+            &:nth-child(1) { animation-delay: 0.1s; }
+            &:nth-child(2) { animation-delay: 0.2s; }
+            &:nth-child(3) { animation-delay: 0.3s; }
+            &:nth-child(4) { animation-delay: 0.4s; }
+            &:nth-child(5) { animation-delay: 0.5s; }
+
+            &:hover {
+              background: rgba(58, 124, 202, 0.1);
+              transform: translateX(10px);
+              cursor: pointer;
+            }
+
+            strong {
+              color: $brand-color-accent;
+              transition: all 0.3s ease;
+              
+              &:hover {
+                font-size: 1.1em;
+                text-shadow: 0 2px 4px rgba(214, 67, 9, 0.3);
+              }
+            }
+          }
+        }
+
+        h3 {
+          margin-bottom: 1rem;
+          font-size: 1.2rem;
+          color: #333;
+          animation: slide-in-right 0.8s ease-out 0.5s both;
+        }
+      }
+    }
+
+    .inv-inventory-content-section {
+      display: grid;
+      grid-template-columns: 30% 70%;
+      background: $brand-color-primary;
+
+      .inv-inventory-content-tabs {
+        animation: slide-in-left 1s ease-out 1s both;
+
+        ul {
+          list-style: none;
+          padding: 1rem;
+          background: $brand-color-secondary;
+          border-right: 1px solid #ddd;
+
+          .inventory-tab {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: slide-in-left 0.5s ease-out both;
+
+            &:nth-child(1) { animation-delay: 0.1s; }
+            &:nth-child(2) { animation-delay: 0.2s; }
+            &:nth-child(3) { animation-delay: 0.3s; }
+            &:nth-child(4) { animation-delay: 0.4s; }
+            &:nth-child(5) { animation-delay: 0.5s; }
+            &:nth-child(6) { animation-delay: 0.6s; }
+            &:nth-child(7) { animation-delay: 0.7s; }
+            &:nth-child(8) { animation-delay: 0.8s; }
+            &:nth-child(9) { animation-delay: 0.9s; }
+
+            &::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: -100%;
+              width: 100%;
+              height: 100%;
+              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+              transition: left 0.5s ease;
+            }
+
+            img {
+              width: 24px;
+              height: 24px;
+              margin-right: 0.5rem;
+              filter: grayscale(1);
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            li {
+              list-style: none;
+              font-size: 1rem;
+              font-weight: 500;
+              color: #333;
+              transition: all 0.3s ease;
+            }
+
+            &:hover {
+              background: lighten($brand-color-tertiary, 40%);
+              transform: translateX(5px) scale(1.02);
+              
+              &::before {
+                left: 100%;
+              }
+
+              img {
+                transform: scale(1.2) rotate(5deg);
+                filter: grayscale(0.5);
+              }
+
+              li {
+                font-weight: 600;
+              }
+            }
+
+            &.active-tab {
+              background: $brand-color-tertiary;
+              transform: translateX(5px);
+              box-shadow: 0 4px 15px rgba(58, 124, 202, 0.3);
+
+              img {
+                filter: none;
+                transform: scale(1.1);
+                animation: bounce 0.6s ease;
+              }
+
+              li {
+                color: white;
+                font-weight: 600;
+              }
+
+              &::after {
+                content: '✨';
+                position: absolute;
+                right: 1rem;
+                animation: sparkle 1.5s infinite;
+              }
+            }
+          }
+        }
+      }
+
+      .inv-inventory-content-content {
+        padding: 2rem;
+        overflow-y: auto;
+        animation: slide-in-right 1s ease-out 1.2s both;
+
+        .inventory-content-headingbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          border-bottom: 1px solid #ccc;
+          margin-bottom: 1rem;
+          animation: slide-in-up 0.6s ease-out both;
+
+          h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            position: relative;
+            
+            &::after {
+              content: '';
+              position: absolute;
+              bottom: -5px;
+              left: 0;
+              width: 0;
+              height: 3px;
+              background: $brand-color-accent;
+              transition: width 0.5s ease;
+            }
+            
+            &:hover::after {
+              width: 100%;
+            }
+          }
+
+          h4 {
+            font-size: 0.9rem;
+            color: #666;
+            animation: fade-in-up 0.6s ease-out 0.3s both;
+          }
+        }
+
+        .inventory-content-body {
+          max-height: 500px;
+          overflow-y: auto;
+
+          .inventory-content-timecard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: slide-in-up 0.5s ease-out both;
+
+            &:nth-child(odd) {
+              animation-delay: 0.1s;
+            }
+            &:nth-child(even) {
+              animation-delay: 0.2s;
+            }
+
+            &::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 4px;
+              height: 100%;
+              background: $brand-color-tertiary;
+              transform: scaleY(0);
+              transition: transform 0.3s ease;
+            }
+
+            &:hover {
+              transform: translateY(-3px);
+              box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+              border-color: $brand-color-tertiary;
+              
+              &::before {
+                transform: scaleY(1);
+              }
+            }
+
+            p {
+              margin: 0;
+              transition: all 0.3s ease;
+
+              strong {
+                text-decoration: underline;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                position: relative;
+
+                &::after {
+                  content: '→';
+                  margin-left: 5px;
+                  opacity: 0;
+                  transform: translateX(-10px);
+                  transition: all 0.3s ease;
+                }
+
+                &:hover {
+                  color: $brand-color-tertiary;
+                  transform: scale(1.05);
+                  
+                  &::after {
+                    opacity: 1;
+                    transform: translateX(0);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Additional keyframes
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: scale(1.1) translateY(0);
+  }
+  40%, 43% {
+    transform: scale(1.1) translateY(-8px);
+  }
+  70% {
+    transform: scale(1.1) translateY(-4px);
+  }
+  90% {
+    transform: scale(1.1) translateY(-2px);
+  }
+}
+
+// Loading and success states
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(58, 124, 202, 0.3);
+  border-radius: 50%;
+  border-top-color: $brand-color-tertiary;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Responsive animations
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

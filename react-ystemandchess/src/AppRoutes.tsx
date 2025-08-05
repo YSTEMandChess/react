@@ -1,4 +1,3 @@
-// Imports for React Components/Pages
 import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
@@ -28,6 +27,7 @@ import LessonSelection from "./Pages/LessonsSelection/LessonsSelection";
 import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
 
 import userPortraitImg from './images/user-portrait-placeholder.svg';
+
 const userName = 'Nimesh Patel';
 
 const AppRoutes = () => {
@@ -47,7 +47,20 @@ const AppRoutes = () => {
       <Route path='/mentor' element={<Mentor />} />
       <Route path='/financial' element={<Financial />} />
       <Route path='/lessons-selection' element={<LessonSelection />} />
-      <Route path='/lessons' element={<LessonOverlay />} />
+
+      {/* ✅ Updated: Add required props */}
+      <Route
+        path='/lessons'
+        element={
+          <LessonOverlay
+            propPieceName="queen"
+            propLessonNumber={2}
+            navigateFunc={() => console.log('Navigating...')}
+            styleType="default"
+          />
+        }
+      />
+
       <Route path='/sponsors&partners' element={<SponsorsPartners />} />
       <Route path='/board' element={<Board />} />
       <Route path='/reset-password' element={<ResetPassword />} />
@@ -55,16 +68,15 @@ const AppRoutes = () => {
       <Route path='/about-us' element={<AboutUs />} />
       <Route path='/learnings' element={<Lessons />} />
       <Route path='/student' element={<Student />} />
+
       <Route
         path='/student-profile'
         element={
-          cookies.login ? (
-            <NewStudentProfile userPortraitSrc={userPortraitImg} />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      />
+           <NewStudentProfile userPortraitSrc={userPortraitImg} />
+    }
+    />
+
+
       <Route
         path='/mentor-profile'
         element={
@@ -75,6 +87,7 @@ const AppRoutes = () => {
           )
         }
       />
+
       <Route
         path='/student-inventory'
         element={
