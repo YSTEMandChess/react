@@ -154,7 +154,6 @@ export default function LessonSelection({ onGo, styleType="page" }) { // what to
     }, [scenarios, styles]);
 
     const renderedLessons = useMemo(() => {
-        console.log("Caclulating lessons")
         return lessons.map((lessonItem) => (
             <LessonTemplate
                 key={lessonItem.name}

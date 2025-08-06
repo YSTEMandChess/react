@@ -5,7 +5,7 @@ import { SetPermissionLevel } from '../../globals';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
-import { StatsChart } from "../NewStudentProfile/StatsChart";
+import StatsChart from "../NewStudentProfile/StatsChart";
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
