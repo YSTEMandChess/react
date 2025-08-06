@@ -1,34 +1,16 @@
 import profileStyles from "./ProfileStyle.module.scss";
 import pageStyles from "./LessonsStyle.module.scss";
 import { useNavigate } from "react-router";
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { environment } from "../../environments/environment";
 import { getScenarioLength, getScenario } from "../Lessons/Scenarios"; // Assuming scenariosArray is implicitly used by these functions or can be imported.
 import { useCookies } from "react-cookie";
-
-// Component to display a single scenario item.
-const ScenarioTemplate = React.memo(function ScenarioTemplate({ scenario, onClick, styles }) {
-    return (
-        <div className={styles.itemTemplate} onClick={onClick}>
-            <div>{scenario.name}</div>
-        </div>
-    );
-});
-
-// Component to display a single lesson item within a scenario.
-const LessonTemplate = React.memo(function LessonTemplate({ lesson, onClick, styles }) {
-    return (
-        <div className={styles.itemTemplate} onClick={onClick}>
-            <div>{lesson.name}</div>
-        </div>
-    );
-});
-
-// When passing down props (e.g. lessontemplate & scenariotemplate) you can sometimes use memo & useCallback.
+import ScenarioTemplate from "./ScenarioTemplate/ScenarioTemplate.jsx"; // Importing the ScenarioTemplate component
+import LessonTemplate from "./LessonTemplate/LessonTemplate.jsx"; // Importing the LessonTemplate component
 
 export default function LessonSelection({ onGo, styleType="page" }) { // what to do when clicking go button, default to navigation
     
-    const styles = styleType === 'profile' ? profileStyles : pageStyles;
+    const styles = useMemo(() => (styleType === 'profile' ? profileStyles : pageStyles), [styleType]);
     
     const navigate = useNavigate();
     const [showScenarios, setShowScenarios] = useState(false);
@@ -157,7 +139,31 @@ export default function LessonSelection({ onGo, styleType="page" }) { // what to
             setLoadingLessons(false);
         }
         fetchLessonsForScenario();
-    }, [selectedScenario, cookies.login]); 
+    }, [selectedScenario, cookies.login]);
+
+
+    const renderedScenarios = useMemo(() => {
+        return scenarios.map((scenarioItem) => (
+            <ScenarioTemplate
+                key={scenarioItem.name}
+                scenario={scenarioItem}
+                onClick={() => handleScenarioClick(scenarioItem.name)}
+                styles={styles}
+            />
+        ));
+    }, [scenarios, styles]);
+
+    const renderedLessons = useMemo(() => {
+        console.log("Caclulating lessons")
+        return lessons.map((lessonItem) => (
+            <LessonTemplate
+                key={lessonItem.name}
+                lesson={lessonItem}
+                onClick={() => handleLessonClick(lessonItem.name)}
+                styles={styles}
+            />
+        ));
+    }, [lessons, styles]);
 
     return (
         <div className={styles.wholePage}>
@@ -186,14 +192,7 @@ export default function LessonSelection({ onGo, styleType="page" }) { // what to
             {/* Conditional rendering of the scenarios list. */}
             {showScenarios && (
                 <div className={styles.container}>
-                    {scenarios.map((scenarioItem) => (
-                        <ScenarioTemplate
-                            key={scenarioItem.name} // Use a stable unique key like scenario name
-                            scenario={scenarioItem}
-                            onClick={() => handleScenarioClick(scenarioItem.name)}
-                            styles={styles}
-                        />
-                    ))}
+                    {renderedScenarios}
                 </div>
             )}
 
@@ -209,16 +208,8 @@ export default function LessonSelection({ onGo, styleType="page" }) { // what to
             {/* Conditional rendering of the lessons list for the selected scenario. */}
             {showLessons && (
                 <div className={styles.container}>
-                    {!isLessonsLoading ? (
-                        lessons.map((lessonItem) => (
-                            <LessonTemplate
-                                key={lessonItem.name} // Use a stable unique key like lesson name
-                                lesson={lessonItem}
-                                onClick={() => handleLessonClick(lessonItem.name)}
-                                styles={styles}
-                            />
-                        ))
-                    ) : (
+                    {!isLessonsLoading ? (renderedLessons)
+                     : (
                         <div className={styles.itemTemplate}>Loading...</div>
                     )}
                 </div>
