@@ -198,6 +198,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const handleNavigateEvent = (type: string, name: string) => {
     if(type == "lesson") { // if event is a lesson
       navigate("/lessons", { state: { piece: name } });
+    } else if (type =="puzzle") {
+      navigate("/puzzles");
     }
   }
 
@@ -235,8 +237,12 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                     </div>
                     <div className="inventory-content-col3">
                       <p>
-                        Working on {event.eventType}:{' '}
-                        <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventName}</strong>
+                        Working on :{' '}
+                        {event.eventName == "Untitled event" ? (
+                          <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventType}</strong>
+                        ) : (
+                          <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventName}</strong>
+                        )}
                       </p>
                     </div>
                   </article>

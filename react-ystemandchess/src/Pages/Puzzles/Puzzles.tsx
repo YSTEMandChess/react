@@ -6,6 +6,8 @@ import { themesName, themesDescription } from '../../services/themesService';
 import Swal from 'sweetalert2';
 import { environment } from "../../environments/environment";
 import { v4 as uuidv4 } from "uuid";
+import { SetPermissionLevel } from "../../globals";
+import { useCookies } from 'react-cookie'; 
 
 const chessClientURL = environment.urls.chessClientURL;
 
@@ -45,6 +47,13 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     const [themeList, setThemeList] = useState<string[]>([]);
     const [status, setStatus] = useState<string>("");
     const swalRef = useRef<string>("");
+    const [cookies] = useCookies(['login']);
+
+    // needed for time tracking
+    const [eventID, setEventID] = useState(null);
+    const [startTime, setStartTime] = useState(null);
+    const [username, setUsername] = useState(null);
+    const handleUnloadRef = useRef(() => {});
 
     const postToBoard = (msg: any) => {
     const board = chessboard.current;
@@ -76,7 +85,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
     board.contentWindow.postMessage(JSON.stringify(payload), chessClientURL);
   };
-
 
     // Helper: Play the next computer move from moveList, update FEN, and highlight
     const playComputerMove = () => {
@@ -332,6 +340,64 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         // try creating / joining, server will then notify whether user is a guest or host
         postToBoard({command: "newPuzzle"}); 
     }
+
+    // start recording when users started browsing website
+    async function startRecording() {
+        const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
+
+        // do nothing if the user is not logged in
+        if(uInfo.error) return;
+        setUsername(uInfo.username); // else record username
+
+        // start recording user's time spent browsing the website
+        const response = await fetch(
+        `${environment.urls.middlewareURL}/timeTracking/start?username=${uInfo.username}&eventType=puzzle`, 
+        {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${cookies.login}` }
+        }
+        );
+        if(response.status != 200) console.log(response) // error handling
+
+        // if data is fetched, record for later updates
+        const data = await response.json();
+        setEventID(data.eventId);
+        setStartTime(data.startTime);
+    }
+
+    // handler called when user exist the website, complete recording time
+    handleUnloadRef.current = async () => {
+        try {
+            const startDate = new Date(startTime)
+            const endDate = new Date();
+            const diffInMs = endDate.getTime() - startDate.getTime(); // time elapsed in milliseconds
+            const diffInSeconds = Math.floor(diffInMs / 1000); // time elapsed in seconds
+
+            // update the time users spent browsing website
+            const response = await fetch(
+                `${environment.urls.middlewareURL}/timeTracking/update?username=${username}&eventType=puzzle&eventId=${eventID}&totalTime=${diffInSeconds}`, 
+                {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${cookies.login}` }
+                }
+            );
+            if(response.status != 200) console.log(response) // error handling
+
+            console.log("time spent on puzzles:", diffInSeconds);
+        } catch (err) {
+            console.log(err)
+        }
+    };
+
+    useEffect(() => {
+        startRecording();
+        window.addEventListener('beforeunload', handleUnloadRef.current);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleUnloadRef.current); // remove listener when unloading
+            handleUnloadRef.current(); // when navigating away, stop recording time spent
+        }
+    }, [])
     
     useEffect(() => {
         const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
