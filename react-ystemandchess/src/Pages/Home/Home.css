@@ -30,7 +30,7 @@
 
 .donateButton {
   margin-top: 2rem;
-  background-color: #1A1A1A;
+  background-color: #1a1a1a;
   border: solid 0.1rem white;
   color: white;
   border-radius: 1rem;
@@ -240,7 +240,7 @@
   padding-top: 50px;
 }
 
-.home-content4-box button{
+.home-content4-box button {
   margin-top: 0.6rem;
 }
 
@@ -356,4 +356,190 @@ footer {
 
 .buy-now:hover img {
   filter: brightness(0.9);
+}
+
+/* ----------------------- Responsive Styles ----------------------- */
+
+/* MOBILE FIRST BASELINE ADJUSTMENTS */
+.home-content1,
+.home-content2,
+.home-content4,
+.book {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.home-content1,
+.home-content2 {
+  gap: 2rem;
+  height: auto;
+}
+
+.info,
+.card1,
+.card2 {
+  width: 90%;
+}
+
+.info h1,
+#floating-h1,
+.lesson-link-text,
+.card1 p,
+.card2 p {
+  font-size: 1.5rem;
+}
+
+.info p {
+  font-size: 1.2rem;
+}
+
+#tree-group-img,
+.logo-break,
+.home-video,
+.home-content3 img {
+  width: 100%;
+  height: auto;
+}
+
+.home-content5 {
+  height: auto;
+  padding-bottom: 3rem;
+}
+
+.book {
+  margin: 1rem 0;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.book-left {
+  margin: 0 auto 1rem auto;
+}
+
+.book-image {
+  max-width: 60vw;
+}
+
+.home-video-container {
+  height: auto;
+  padding: 2rem 0;
+}
+
+.home-content4 {
+  height: auto;
+  padding: 2rem 0;
+}
+
+.lesson-link-text {
+  font-size: 1.8rem;
+}
+
+/* ------------------- TABLET (min-width: 768px) ------------------- */
+@media screen and (min-width: 768px) {
+  .home-content1 {
+    flex-direction: row;
+    height: auto;
+  }
+
+  .info,
+  .pic {
+    width: 50%;
+  }
+
+  .info h1 {
+    font-size: 2.2rem;
+    text-align: left;
+  }
+
+  .info p {
+    font-size: 1.5rem;
+    text-align: left;
+  }
+
+  .home-content2 {
+    flex-direction: row;
+    gap: 4rem;
+    justify-content: space-evenly;
+  }
+
+  .card1,
+  .card2 {
+    width: 45%;
+    height: auto;
+  }
+
+  .card1 p,
+  .card2 p {
+    font-size: 1.4rem;
+  }
+
+  .book {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .book-left {
+    margin-left: 2rem;
+    margin-right: 2rem;
+  }
+
+  .book-image {
+    max-width: 150px;
+  }
+
+  .lesson-link-text {
+    font-size: 2.2rem;
+  }
+}
+
+/* ------------------ DESKTOP (min-width: 1024px) ------------------ */
+@media screen and (min-width: 1024px) {
+  .home-content1 {
+    width: 85%;
+    margin: 0 auto 4rem auto;
+    height: 460px;
+  }
+
+  .home-content2 {
+    width: 85%;
+    margin: 2rem auto;
+    gap: 10em;
+  }
+
+  .card1,
+  .card2 {
+    width: 35%;
+    height: 43.75rem;
+  }
+
+  .home-video-container {
+    height: 90vh;
+  }
+
+  .home-video {
+    width: 85%;
+    height: 90%;
+  }
+
+  .home-content4 {
+    height: 55vh;
+  }
+
+  .home-content5 {
+    margin-bottom: 10%;
+  }
+
+  #floating-h1 {
+    font-size: 3rem;
+  }
+
+  .lesson-link-text {
+    font-size: 2.5rem;
+  }
+
+  .book-image {
+    max-width: 150px;
+  }
 }

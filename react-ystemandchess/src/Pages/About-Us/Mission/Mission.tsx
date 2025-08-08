@@ -1,56 +1,76 @@
 import React from "react";
 import "./Mission.scss";
 import ImageOne from "../../../images/mission-image.png";
-import ImageTwo from "../../../images/LogoLineBreak.png";
-import ImageThree from "../../../images/founder-story.png";
-import ImageFour from "../../../images/donate.png";
-import ImageFive from "../../../images/free-lunch.png";
-import ImageSix from "../../../images/premium.png";
+import LogoLineBreak from "../../../images/LogoLineBreak.png";
+import FounderStory from "../../../images/founder-story.png";
+import Images from "../../../images/imageImporter";
 
 const Mission = () => {
   return (
-    <main id="main-content">
-      <section className="container">
-        <div className="text-title-md txt-p">
+    <main role="main" className="main-content">
+      <section role="region" aria-label="Mission statement header section" className="mission-header" tabIndex={0}>
+        <div className="mission-statement-container">
+        <div className="our-mission">
           <h1>Our Mission</h1>
+          <p>
+            Empower underserved and at-risk children with an opportunity to
+            pursue STEM careers and change their life trajectory.
+          </p>
         </div>
-        <div className="text-normal txt-p">
-          <p>Empower underserved and at-risk children with an opportunity to</p>
-        </div>
-        <div className="text-normal txt-p">
-          <p>pursue STEM careers and change their life trajectory.</p>
-        </div>
-        <figure>
-          <img className="picture" src={ImageOne} alt="mission-page" />
-        </figure>
-        <div className="text-title-md2 txt-p">
+        <div className="what-we-do">
           <h1>What We Do</h1>
+          <p>
+            We teach children chess, math, and computer science to empower them
+            to pursue STEM majors/professions with the support of professionals.
+          </p>
         </div>
-        <div className="text-normal txt-p">
-          <p>We teach children chess, math, and computer science to empower</p>
-        </div>
-        <div className="text-normal txt-p">
-          <p>them to pursue STEM majors/professions with the support of</p>
-        </div>
-        <div className="text-normal txt-p">
-          <p>professionals.</p>
         </div>
         <figure>
-          <img className="picture2" src={ImageTwo} alt="mission-page" />
-        </figure>
-        <figure>
-          <img className="picture3" src={ImageThree} alt="mission-page" />
-        </figure>
-        <figure>
-          <img className="picture4" src={ImageFour} alt="mission-page" />
-        </figure>
-        <figure>
-          <img className="picture5" src={ImageFive} alt="mission-page" />
-        </figure>
-        <figure>
-          <img className="picture6" src={ImageSix} alt="mission-page" />
+          <img className="picture" src={ImageOne} alt="" role="presentation" />
         </figure>
       </section>
+      <figure className="logo-break">
+        <img src={LogoLineBreak} alt="" role="presentaion"/> 
+      </figure>  
+
+      <figure className="founder-story">
+        <img src={FounderStory} alt="Story of the founding of YSTEM" />
+      </figure>
+
+      <figure className="logo-break">
+        <img src={LogoLineBreak} alt="" role="presentaion"/> 
+      </figure> 
+
+      <div className="home-content2" role="region">
+        <div className="card1">
+          <img src={Images.Heart} alt="Heart icon"></img>
+          <h1 id="h1-home">Free</h1>
+          <p>
+          For students who qualify for <br /> free and reduced lunch.
+          <br />
+          Our lessons are free.
+          </p>
+          <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50" aria-label="Join now for free button">      
+            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
+              Join Now !
+            </span>
+          </button>
+        </div>
+        <div className="card2">
+          <img src={Images.Gem} alt="Gem icon"></img>
+          <h1 id="h1-home">Premium</h1>
+          <p>
+            For students who don't qualify <br /> for free and reduced lunch.{" "}
+            <br />
+            $25 / Week <br /> First lesson is FREE. <br /> Cancel anytime.
+            </p>
+            <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50" aria-label="Join now premium button">
+            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
+              Join Now !
+            </span>
+          </button>
+        </div>
+      </div>
     </main>
   );
 };
