@@ -9,6 +9,7 @@ import { StatsChart } from "./StatsChart";
 import Lessons from "../Lessons/Lessons";
 import LessonSelection from "../LessonsSelection/LessonsSelection";
 import LessonOverlay from "../piece-lessons/lesson-overlay/lesson-overlay";
+import Puzzles from "../Puzzles/Puzzles";
 
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
@@ -17,9 +18,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const navigate = useNavigate();
 
   // user info
-  const [username, setUsername] = useState(" ");
-  const [firstName, setFirstName] = useState(" ");
-  const [lastName, setLastName] = useState(" ");
+  const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [mentorUsername, setMentorUsername] = useState("");
 
   // time usage for different events, displayed on header
   const [webTime, setWebTime] = useState(0);
@@ -47,13 +49,15 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     day: 'numeric',
   }));
 
-  const [lessonSelected, setLessonSelected] = useState(false);
-  const [piece, setPiece] = useState("");
-  const [lessonNum, setLessonNum] = useState(0);
+  // states for lessons tab
+  const [lessonSelected, setLessonSelected] = useState(false); // whether user has navigated into a lesson
+  const [piece, setPiece] = useState(""); // lesson name for props
+  const [lessonNum, setLessonNum] = useState(0); // lesson number for props
 
   useEffect(()=>{
     try {
       fetchUserData(); // asynchronously fetch user data upon mounting
+      fetchMentorData();
     } catch (err) {
       console.log(err)
     }
@@ -92,6 +96,18 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       fetchGraphData(uInfo.username)
       // fetch latest usage history to show in Activity tab
       fetchActivity(uInfo.username)
+  }
+
+  const fetchMentorData = async () => {
+    fetch(`${environment.urls.middlewareURL}/user/getMentorship`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${cookies.login}` }
+    }).then(data => data.json())
+      .then(data => {
+        if (data) {
+          setMentorUsername(data.username);
+        }
+      });
   }
 
   // fetch usage time stats to display in header
@@ -182,6 +198,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const handleNavigateEvent = (type: string, name: string) => {
     if(type == "lesson") { // if event is a lesson
       navigate("/lessons", { state: { piece: name } });
+    } else if (type =="puzzle") {
+      navigate("/puzzles");
     }
   }
 
@@ -219,8 +237,12 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                     </div>
                     <div className="inventory-content-col3">
                       <p>
-                        Working on {event.eventType}:{' '}
-                        <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventName}</strong>
+                        Working on :{' '}
+                        {event.eventName == "Untitled event" ? (
+                          <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventType}</strong>
+                        ) : (
+                          <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventName}</strong>
+                        )}
                       </p>
                     </div>
                   </article>
@@ -270,8 +292,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       case "puzzles":
         return (
           <div id="inventory-content-puzzles" className="inventory-content active-content">
-            <h2>Puzzles</h2>
-            <p>This is the content for the Puzzles tab.</p>
+            <Puzzles student={username} mentor={mentorUsername} role={"student"} styleType="profile" />
           </div>
         );
       case "playComputer":

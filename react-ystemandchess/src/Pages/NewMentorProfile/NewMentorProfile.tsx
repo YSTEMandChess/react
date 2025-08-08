@@ -6,6 +6,10 @@ import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
 import { StatsChart } from "../NewStudentProfile/StatsChart";
+import Lessons from "../Lessons/Lessons";
+import LessonSelection from "../LessonsSelection/LessonsSelection";
+import LessonOverlay from "../piece-lessons/lesson-overlay/lesson-overlay";
+import Puzzles from "../Puzzles/Puzzles";
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
@@ -39,8 +43,9 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
 
   // data for chart plotting
   const [displayMonths, setDisplayMonths] = useState(6); // display data from 6 many months back 
-  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
-  const [dataAxis, setDataAxis] = useState([0, 0, 0, 0, 0, 0]); // time spent on events each month
+  const [displayEvents, setDisplayEvents] = useState(["website", "play", "lesson", "puzzle", "mentor"])
+  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May"]); // display the time as X-axis
+  const [dataAxis, setDataAxis] = useState<{[key: string]: number[]}>({website: [0, 0, 0, 0, 0],}); // time spent on events each month
 
   // student info
   const [studentFirstName, setStudentFirstName] = useState("");
@@ -56,10 +61,15 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
 
   // current date for display
   const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-  })
-);
+      month: 'long',
+      day: 'numeric',
+    })
+  );
+
+  // states for lessons tab
+  const [lessonSelected, setLessonSelected] = useState(false); // whether user has navigated into a lesson
+  const [piece, setPiece] = useState(""); // lesson name for props
+  const [lessonNum, setLessonNum] = useState(0); // lesson number for props
 
   // Runs once upon first render
   useEffect(()=>{
@@ -126,8 +136,6 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     setPuzzleTime(dataStats.puzzle);
   }
 
-
-
   const fetchStudentData = async () => {
     fetch(`${environment.urls.middlewareURL}/user/getMentorship`, {
       method: 'GET',
@@ -189,19 +197,29 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     try {
       // fetch the time spent on the website in the past few months
       const response = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&eventType=website&months=${displayMonths}`,
+        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&events=${displayEvents.join(",")}&months=${displayMonths}`, 
         {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${cookies.login}` }
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${cookies.login}` }
         }
       );
-      const data = await response.json();
-      const months = data.map(item => item.monthText); // month list for plotting
-      const times = data.map(item => item.timeSpent); // timeSpent for plotting
+      const data = await response.json(); 
+
+      const newDataAxis = {} as {[key: string]: number[]};
+      for(let i = 0; i < displayEvents.length; i++)
+      {
+        // get time spent for each event for plotting
+        let event = displayEvents[i];
+        let value = data[event];
+        let months = value.map(item => item.monthText); // month list for ploting
+        let times = value.map(item => item.timeSpent); // timeSpent for plotting
+
+        setMonthAxis(months);
+        newDataAxis[event] = times;
+      }
 
       // update for graph plotting
-      setMonthAxis(months);
-      setDataAxis(times);
+      setDataAxis(newDataAxis); 
     } catch (err) {
       console.error("Failed to fetch events", err);
     }
@@ -273,15 +291,23 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
       case "learning":
         return (
           <div id="inventory-content-learning" className="inventory-content active-content">
-            <h2>Learning</h2>
-            <p>This is the content for the Learning tab.</p>
+            <Lessons styleType={"profile"}/>
           </div>
         );
       case "chessLessons":
         return (
           <div id="inventory-content-lessons" className="inventory-content active-content">
-            <h2>Chess Lessons</h2>
-            <p>This is the content for the Chess Lessons tab.</p>
+            {lessonSelected ? (
+              <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum} navigateFunc={() => {
+                setLessonSelected(false);
+              }} styleType="profile"/>
+            ) : (
+              <LessonSelection styleType="profile" onGo={(selectedScenario, lessonNum) => { 
+                setLessonSelected(true);
+                setPiece(selectedScenario);
+                setLessonNum(lessonNum);
+              }}/>
+            )}
           </div>
         );
       case "games":
@@ -294,8 +320,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
       case "puzzles":
         return (
           <div id="inventory-content-puzzles" className="inventory-content active-content">
-            <h2>Puzzles</h2>
-            <p>This is the content for the Puzzles tab.</p>
+            <Puzzles student={studentUsername} mentor={username} role={"mentor"} styleType="profile"/>
           </div>
         );
       case "playComputer":
@@ -355,7 +380,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         </div>
         <div className="inv-inventory-analytics">
           <div className="inv-inventory-analytics-graph">
-
+            <StatsChart key={monthAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
           </div>
           <div className="inv-inventory-analytics-metrics">
             <h3>Time Spent:</h3>

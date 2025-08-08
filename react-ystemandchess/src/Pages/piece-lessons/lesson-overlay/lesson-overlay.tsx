@@ -142,7 +142,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                         `${environment.urls.stockFishURL}/?level=${level}&fen=${e.data}`,
                         (response) => {
                             const data = JSON.parse(response)
-                            const message = JSON.stringify({ boardState: data.fen, color: turnRef.current, lessonFlag: false});
+                            const message = JSON.stringify({ boardState: data.fen, highlightFrom: data.from, highlightTo: data.to, color: turnRef.current, lessonFlag: false});
                             // update fens
                             prevFenRef.current = currentFenRef.current
                             currentFenRef.current = data.fen
