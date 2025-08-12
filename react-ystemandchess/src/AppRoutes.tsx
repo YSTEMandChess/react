@@ -29,6 +29,7 @@ import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
 import { LessonProvider } from "./Pages/Lessons/context/LessonContext";
 // Variables and Mutable Data
 import userPortraitImg from "./images/user-portrait-placeholder.svg";
+import { MentorProfileProvider } from "./Pages/NewMentorProfile/context/MentorProfileContext";
 const userName = "Nimesh Patel";
 
 const AppRoutes = () => {
@@ -68,7 +69,11 @@ const AppRoutes = () => {
       <Route path="/student" element={<Student />} />
       <Route
         path="/mentor-profile"
-        element={<NewMentorProfile userPortraitSrc={userPortraitImg} />}
+        element={
+          <MentorProfileProvider>
+            <NewMentorProfile userPortraitSrc={userPortraitImg} />
+          </MentorProfileProvider>
+        }
       />
       <Route
         path="/student-profile"
