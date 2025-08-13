@@ -408,22 +408,15 @@ function deleteAllCookies() {
 eventer(
   messageEvent,
   (e) => {
-    let data = JSON.parse(e.data);
-    console.log("Apache recieved: ", data);
 
-    // move a piece
-    // used to move a piece in puzzles
-    if ("from" in data && "to" in data && "nextMove" in data) {
-      var source = data.from;
-      var target = data.to;
-      nextPuzzleMove = data.nextMove;
-      
-      currentState.move({from: source, to:target});
-      sendMove(source,target);
-
-      // move highlight
-      highlightMove(data.from, data.to, "lastmove");
-      sendHighLight(data.from, data.to);
+    console.log("client event: ", e); // uncomment for debugging
+    let data;
+try {
+  data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+} catch (err) {
+  console.error("Invalid JSON message from parent:", e.data);
+  return;
+}
 
       updateStatus();
       board.position(currentState.fen());
