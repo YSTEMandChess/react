@@ -12,26 +12,27 @@ const Login = () => {
   const [loginError, setLoginError] = useState('');
   const [usernameFlag, setUsernameFlag] = useState(false);
   const [passwordFlag, setPasswordFlag] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const usernameVerification = () => {
     if (username.length > 2) {
-      setUsernameFlag(true);
-    } else {
       setUsernameFlag(false);
+    } else {
+      setUsernameFlag(true);
     }
   };
 
   const passwordVerification = () => {
     if (password.length < 8) {
-      setPasswordFlag(false);
+      setPasswordFlag(true);
     } else {
       console.log('verifying pw')
-      setPasswordFlag(true);
+      setPasswordFlag(false);
     }
   };
 
   const errorMessages = () => {
-    if (passwordFlag === false || usernameFlag === false) {
+    if (passwordFlag === true || usernameFlag === true) {
       setLoginError('Invalid username or password');
     } else {
       setLoginError('');
@@ -40,8 +41,11 @@ const Login = () => {
 
   const submitLogin = (e: any) => {
     e.preventDefault();
+    setIsLoading(true);
     // errorMessages();
     if (password.length < 8 || username.length <= 2) {
+      setUsernameFlag(true);
+      setPasswordFlag(true);
       setLoginError('Invalid username or password');
       return;
     } else {
@@ -70,6 +74,7 @@ const Login = () => {
     httpGetAsync(url, (response: any) => {
       if (response === 'The username or password is incorrect.') {
         setLoginError('The username or password is incorrect.');
+        setIsLoading(false);
       } else {
         const expires = new Date();
         expires.setDate(expires.getDate() + 1);
@@ -96,18 +101,21 @@ const Login = () => {
             window.location.pathname = '';
         }
       }
+      setIsLoading(false);
     }, () => {
       setLoginError('The username or password is incorrect.');
+      setIsLoading(false);
     });
   };
 
   return (
-    <>
+    <main role="main" aria-labelledby='login-h1'>
       <h1 id='login-h1'>Login</h1>
-      {loginError && <h3 id='loginError-h3'>{loginError}</h3>}
+      {loginError && <h3 id='loginError-h3' role="alert">{loginError}</h3>}
 
-      <form className='login-input-container' onSubmit={submitLogin}>
+      <form className='login-input-container' aria-label="Login Form" aria-busy={isLoading} onSubmit={submitLogin}>
         <div className='login-input-field'>
+          <label htmlFor='username' id="username-label">Username</label>
           <input
             type='text'
             name='username'
@@ -118,10 +126,13 @@ const Login = () => {
               setUsername(e.target.value);
               //usernameVerification();
             }}
+            aria-describedby='loginError-h3'
+            aria-invalid={usernameFlag}
             required
           />
         </div>
         <div className='login-input-field'>
+          <label htmlFor='password' id="password-label">Password</label>
           <input
             type='password'
             name='password'
@@ -132,23 +143,25 @@ const Login = () => {
               setPassword(e.target.value);
               //passwordVerification();
             }}
+            aria-describedby='loginError-h3'
+            aria-invalid={passwordFlag}
             required
           />
         </div>
-        <button id='button-login' type='submit'>
+        <button id='button-login' type='submit' aria-label='Login Button' disabled={isLoading}>
           Enter
         </button>
       </form>
 
-      <div className='additional-options'>
+      <nav className='additional-options' aria-label="Account Options">
         <a href='/signup' className='option'>
           Create a new account
         </a>
         <a href='/reset-password' className='option'>
           Forgot password?
         </a>
-      </div>
-    </>
+      </nav>
+    </main>
   );
 };
 

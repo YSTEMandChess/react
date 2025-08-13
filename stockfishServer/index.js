@@ -46,6 +46,7 @@ app.get("/", (req, res) => {
 
   engine.onmessage = (line) => {
     if (info) {
+
       lines.push(line);
       if (line.startsWith("bestmove")) {
         res.json({ output: lines });

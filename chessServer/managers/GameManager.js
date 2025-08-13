@@ -24,6 +24,7 @@ class GameManager {
 
         // Player already in a game
         if (game) {
+            console.log("already in a game")
             if (role == "student") {
                 game.student.id = socketId;
                 return { game, color: game.student.color, newGame: false };
@@ -37,7 +38,7 @@ class GameManager {
             }
         }
 
-
+        console.log("creating new game in game manager")
         // Create a new game instance
         const board = new Chess();
         const studentColor = role === "student" ? "black" : "white";
@@ -60,6 +61,91 @@ class GameManager {
 
         this.ongoingGames.push(newGame);
 
+        return {
+            game: newGame,
+            color: role === "student" ? studentColor : mentorColor,
+            newGame: true
+        };
+    }
+
+    /**
+     * 
+     * @param {Object} param0 - Contains student, mentor, role, socketId
+     * @returns {Object} Game object, assigned color, and new game status
+     */
+    createOrJoinPuzzle({ student, mentor, role, socketId }, io) {
+        let game = this.ongoingGames.find(
+            (g) => g.student.username === student || g.mentor.username === mentor
+        );
+        const socket = io.sockets.sockets.get(socketId); // the socket id that initiated connection
+
+        // must be a student or mentor to connect to server
+        if (role != "student" && role != "mentor") {
+            throw new Error("Invalid role!");
+        }
+
+        // Player already in a puzzle, so serve as a guest
+        if (game) {
+            console.log("already in a game")
+            if (role == "student") {
+                game.student.id = socketId; // record guest socket id
+                socket.emit("guest"); // notify client that they join as guest
+                const socket2 = io.sockets.sockets.get(game.mentor.id);
+                socket2.emit("guest"); 
+                socket.emit("boardstate", JSON.stringify({ 
+                    boardState: game.boardState.fen(), // pass existing game state to guest client
+                    color: game.student.color
+                }));
+                socket.emit("message", JSON.stringify({ message: game.puzzle }));
+                console.log("emtting hints!!", game.puzzle);
+                return { game, color: game.student.color, newGame: false };
+            }
+            else if (role == "mentor") {
+                game.mentor.id = socketId; // record guest socket id
+                socket.emit("guest"); // notify client that they join as guest
+                const socket2 = io.sockets.sockets.get(game.student.id);
+                socket2.emit("guest"); 
+                socket.emit("boardstate", JSON.stringify({ 
+                    boardState: game.boardState.fen(), // pass existing game state to guest client
+                    color: game.student.color 
+                }));
+                socket.emit("message", JSON.stringify({ message: game.puzzle }));
+                console.log("emtting hints!!", game.puzzle);
+                return { game, color: game.mentor.color, newGame: false };
+            }
+            else {
+                throw new Error("Invalid role!");
+            }
+        }
+
+        // Game has not been created yet, so player will serve as host
+        socket.emit("host");
+        console.log("creating new game in game manager")
+
+        // Create a new game instance
+        const board = new Chess(); // default to a simple chess game
+        const studentColor = "white"; // default to white
+        const mentorColor = "white"; // in a puzzle, student and mentor are on the same side
+
+        const newGame = {
+            student: {
+                username: student,
+                id: role === "student" ? socketId : null,
+                color: studentColor
+            },
+            mentor: {
+                username: mentor,
+                id: role === "mentor" ? socketId : null,
+                color: mentorColor
+            },
+            boardState: board,
+            pastStates: [],
+            puzzle: "No hints available",
+        };
+        console.log("created puzzle:", newGame.puzzle);
+
+        // record the new game created
+        this.ongoingGames.push(newGame);
 
         return {
             game: newGame,
@@ -67,6 +153,7 @@ class GameManager {
             newGame: true
         };
     }
+
 
     /**
      * Handles a player making a move.
@@ -174,6 +261,25 @@ class GameManager {
     }
 
     /**
+     * Emits simple messages to both players.
+     * @param {*} socketId 
+     * @param {*} message
+     * @param {*} io 
+     */
+    broadcastSimpleMessage(socketId, message, io) {
+        const game = this.getGameBySocketId(socketId);
+
+        if (!game) {
+            throw new Error("Game not found");
+        }
+
+        const payload = JSON.stringify({ message });
+
+        io.to(game.student.id).emit("message", payload);
+        io.to(game.mentor.id).emit("message", payload);
+    }
+
+    /**
      * Sets board state from provided FEN string.
      * @param {*} socketId 
      * @param {*} fen 
@@ -186,6 +292,45 @@ class GameManager {
         }
 
         game.boardState.load(fen);
+
+        return {
+            game,
+            boardState: game.boardState.fen(),
+            studentId: game.student.id,
+            mentorId: game.mentor.id
+        };
+    }
+
+    /**
+     * Sets board state as in setBoardState, but allows modifying colors (specifically for puzzles)
+     * @param {*} socketId 
+     * @param {*} fen 
+     * @param {*} color
+     */
+    setBoardColor(socketId, fen, color, hints, io) {
+        const game = this.getGameBySocketId(socketId); // find the corresponding game of the client
+
+        if (!game) { // if game does not exist
+            throw new Error("Game not found for this socket!");
+        }
+
+        // modify board state by fen parameter
+        game.boardState.load(fen);
+        game.puzzle = hints;
+        // modify player color (mentor & player on same side for puzzles)
+        game.student.color = color;
+        game.mentor.color = color;
+
+        const studentSocket = io.sockets.sockets.get(game.student.id);
+        const mentorSocket = io.sockets.sockets.get(game.mentor.id);
+
+        // broadcast state changes to all players, including changes in color
+        if (studentSocket) {
+            studentSocket.emit("boardstate", JSON.stringify({ boardState: fen, color: color }));
+        }
+        if (mentorSocket) {
+            mentorSocket.emit("boardstate", JSON.stringify({ boardState: fen, color: color }));
+        }
 
         return {
             game,
@@ -209,7 +354,7 @@ class GameManager {
             throw new Error("Game not found");
         }
 
-        const payload = JSON.stringify({ from, to });
+        const payload = JSON.stringify({ fromMove, toMove });
 
         io.to(game.student.id).emit("lastmove", payload);
         io.to(game.mentor.id).emit("lastmove", payload);

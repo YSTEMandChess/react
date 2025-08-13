@@ -5,7 +5,10 @@
   display: flex;
   justify-content: center;
   gap: 10em;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
 }
+
 .footer-info {
   width: 25%;
   height: 100%;
@@ -18,29 +21,37 @@
   gap: 2em;
   margin-top: 70px;
 }
+
 .footer-email {
   margin-bottom: -7vh;
 }
+
 .footer-phone {
   margin-bottom: -4vh;
 }
+
 .footer-icons #twitter-icon {
   width: 30%;
 }
+
 .footer-icons #instagram-icon {
   width: 30%;
 }
+
 .footer-icons #facebook-icon {
   width: 20%;
 }
+
 .footer-icons #google-icon {
   width: 30%;
 }
+
 .footer-sponsors {
   width: 20%;
   height: 100%;
   text-align: center;
 }
+
 .sponsors-list {
   display: flex;
   row-gap: 1rem;
@@ -48,19 +59,23 @@
   justify-content: center;
   align-items: center;
 }
+
 .sponsors-list li {
   margin-top: 1vh;
   margin-bottom: 1vh;
 }
+
 .footer-PH {
   justify-self: center;
   width: 30%;
 }
+
 .footer-partners {
   width: 20%;
   height: 100%;
   text-align: center;
 }
+
 .partners-list-1 {
   display: flex;
   row-gap: 0.5rem;
@@ -68,4 +83,48 @@
   justify-content: center;
   align-items: center;
   list-style-type: none;
+}
+
+/* ✅ Responsive overrides only on small screens */
+@media screen and (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+  }
+
+  .footer-info,
+  .footer-sponsors,
+  .footer-partners {
+    width: 90%;
+    text-align: center;
+  }
+
+  .footer-info .footer-icons {
+    justify-content: center;
+    gap: 1.5rem;
+    height: auto;
+    margin-top: 2rem;
+  }
+
+  .footer-icons img,
+  .footer-icons #twitter-icon,
+  .footer-icons #instagram-icon,
+  .footer-icons #facebook-icon,
+  .footer-icons #google-icon {
+    width: 25px !important;
+  }
+
+  .sponsors-list img,
+  .partners-list-1 img {
+    max-width: 120px;
+    width: 60%;
+    height: auto;
+  }
+
+  .footer-email,
+  .footer-phone {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
 }
