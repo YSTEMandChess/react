@@ -13,6 +13,11 @@ jest.mock('../../globals', () => ({
   }),
 }));
 
+// mock the chart
+jest.mock('react-chartjs-2', () => ({
+  Line: () => <div data-testid="mock-line-chart" />,
+}));
+
 // mock usage fetching from database
 beforeEach(() => {
   global.fetch = jest.fn((url) => {
@@ -44,6 +49,16 @@ beforeEach(() => {
           }, 
         ]),
       });
+    } else if (url.includes('graph-data')) {
+      return Promise.resolve({
+        json: () => Promise.resolve({
+          "lesson": [{"monthText": "Jan", timeSpent: 0}],
+          "mentor": [{"monthText": "Jan", timeSpent: 0}],
+          "play": [{"monthText": "Jan", timeSpent: 0}],
+          "puzzle": [{"monthText": "Jan", timeSpent: 0}],
+          "website": [{"monthText": "Jan", timeSpent: 0}]
+        })
+      })
     }
 
     return Promise.reject(new Error('Unhandled fetch request: ' + url));

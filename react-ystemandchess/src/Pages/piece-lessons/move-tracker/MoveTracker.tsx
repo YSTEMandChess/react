@@ -1,4 +1,5 @@
 import React from "react"
+import pageStyles from '../lesson-overlay/lesson-overlay.module.scss';
 
 export default function MoveTracker({ moves=[] }) {
 
@@ -8,18 +9,18 @@ export default function MoveTracker({ moves=[] }) {
     for (let i = 0; i < moves.length; i += 2) {
         count += 1
         moveElements.push(
-            <div key={i} className="move-item">
+            <div key={i} className={pageStyles.moveItem}>
                 <div>{`${count}.`}</div>
                 <div className="move">{moves[i]}</div>
-                {(i+1) <= moves.length - 1 ? <div className="move">{moves[i+1]}</div> : null}
+                {(i+1) <= moves.length - 1 ? <div className={pageStyles.move}>{moves[i+1]}</div> : null}
             </div>
         )
     }
 
     return (
     <> 
-        <div className="move-list">
-            <div className="move-title">Moves</div>
+        <div className={pageStyles.moveList}>
+            <div className={pageStyles.moveTitle}>Moves</div>
             {moveElements.length === 0 ? <p>Make a move to see it here!</p> : moveElements}
         </div>
     </>
