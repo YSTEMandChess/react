@@ -561,7 +561,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                     {/* Lesson info */}
                     <div className={styles.lessonHeader}>
                     <h1 className={styles.pieceDescription}>{piece}</h1>
-                    <button className={styles.resetLesson} onClick={handleReset}>
+                    <button className={styles.resetLesson} data-testid="reset-button" onClick={handleReset}>
                         <RedoIcon/>
                     </button>
                     </div>
@@ -600,7 +600,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                         )
                     }
                     </div>
-                    {/* <MoveTracker moves={moves} /> */}
+                    { styleType != 'profile' && (<MoveTracker moves={moves} />) }
                 </div>
                 <iframe src={environment.urls.chessClientURL} className={styles.chessBoard} id="chessBd" title="Chess Lesson Board"/>
             </div>
