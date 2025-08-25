@@ -40,6 +40,13 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   // State for managing active content tab
   const [activeTab, setActiveTab] = useState("activity");
+  const [previousTab, setPreviousTab] = useState("");
+
+  // Animation states
+  const [isLoading, setIsLoading] = useState(true);
+  const [animateContent, setAnimateContent] = useState(false);
+  const [visibleTimeCards, setVisibleTimeCards] = useState<number[]>([]);
+  const [hoveredButton, setHoveredButton] = useState<string | null>(null);
 
   // Cookie state to get login token
   const [cookies] = useCookies(['login']);
@@ -99,43 +106,86 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     })
   );
 
+  // Animation utility functions
+  const staggerTimeCards = () => {
+    setVisibleTimeCards([]);
+    events.forEach((_, index) => {
+      setTimeout(() => {
+        setVisibleTimeCards(prev => [...prev, index]);
+      }, index * 100); // 100ms delay between each card
+    });
+  };
+
+  const handleTabTransition = (newTab: string) => {
+    if (newTab !== activeTab) {
+      setPreviousTab(activeTab);
+      setAnimateContent(false);
+      
+      // Small delay to allow fade out, then switch tab and fade in
+      setTimeout(() => {
+        setActiveTab(newTab);
+        setAnimateContent(true);
+      }, 150);
+    }
+  };
+
   // Fetch user data and stats when component mounts
   useEffect(() => {
-    try {
-      fetchUserData(); // asynchronously fetch user data upon mounting
-      fetchMentorData();
-    } catch (err) {
-      console.log(err)
+    const initializeComponent = async () => {
+      setIsLoading(true);
+      try {
+        await fetchUserData(); // asynchronously fetch user data upon mounting
+        await fetchMentorData();
+      } catch (err) {
+        console.log(err);
+      } finally {
+        // Simulate minimum loading time for smooth animation
+        setTimeout(() => {
+          setIsLoading(false);
+          setAnimateContent(true);
+        }, 800);
+      }
+    };
+    
+    initializeComponent();
+  }, []);
+
+  // Stagger time card animations when events change
+  useEffect(() => {
+    if (events.length > 0 && !loading) {
+      staggerTimeCards();
     }
-  }, [])
+  }, [events, loading]);
 
   // Add scroll listener to activity feed container for infinite scroll
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+    
     const handleScroll = () => {
       // If scrolling within 50px of displayed height
       if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) {
         fetchActivity(username); // Fetch new activity
       }
     };
+    
     el.addEventListener("scroll", handleScroll); // Add listener to the updated activity element
     return () => el.removeEventListener("scroll", handleScroll); // Remove listener when dependencies are updated
-  }, [loading]);
+  }, [loading, username]);
 
   // Fetch user info, usage stats, and activity history
   const fetchUserData = async () => {
     const uInfo = await SetPermissionLevel(cookies);
-    if (uInfo.error) {
-      navigate("/login");
-    } else {
-      setUsername(uInfo.username);
-      setFirstName(uInfo.firstName);
-      setLastName(uInfo.lastName);
-    }
-    fetchUsageTime(uInfo.username);
-    fetchGraphData(uInfo.username);
-    fetchActivity(uInfo.username);
+    //if (uInfo.error) {
+    //  navigate("/login");
+    //} else {
+    //  setUsername(uInfo.username);
+     // setFirstName(uInfo.firstName);
+     // setLastName(uInfo.lastName);
+    //}
+    //fetchUsageTime(uInfo.username);
+    //fetchGraphData(uInfo.username);
+    //fetchActivity(uInfo.username);
   }
 
   // Fetch mentor data
@@ -152,7 +202,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   }
 
   // Fetch time spent on different categories
-  const fetchUsageTime = async (username) => {
+  const fetchUsageTime = async (username: string) => {
     const responseStats = await fetch(
       `${environment.urls.middlewareURL}/timeTracking/statistics?username=${username}`,
       {
@@ -170,7 +220,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   }
 
   // Fetch latest usage history (Activity Tab)
-  const fetchActivity = async (username) => {
+  const fetchActivity = async (username: string) => {
     if (loading || !hasMore) return; // Return if already fetching or no more activity left
     setLoading(true);
     const limit = 6; // Fetch at most 6 activities at a time
@@ -191,11 +241,12 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       setLoading(false);
     } catch (err) {
       console.error("Failed to fetch events", err);
+      setLoading(false);
     }
   }
 
   // Fetch data for graph visualization
-  const fetchGraphData = async (username) => {
+  const fetchGraphData = async (username: string) => {
     try {
       // Fetch time spent on the website in the past few months
       const response = await fetch(
@@ -213,8 +264,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         // get time spent for each event for plotting
         let event = displayEvents[i];
         let value = data[event];
-        let months = value.map(item => item.monthText); // month list for ploting
-        let times = value.map(item => item.timeSpent); // timeSpent for plotting
+        let months = value.map((item: any) => item.monthText); // month list for ploting
+        let times = value.map((item: any) => item.timeSpent); // timeSpent for plotting
 
         setMonthAxis(months);
         newDataAxis[event] = times;
@@ -227,9 +278,17 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     }
   }
 
-  // Handle tab switch
-  const handleTabClick = (tab: any) => {
-    setActiveTab(tab);
+  // Handle tab switch with animation
+  const handleTabClick = (tab: string) => {
+    handleTabTransition(tab);
+  };
+
+  // Handle modal opening with animation
+  const handleModalOpen = (modalType: "streak" | "activities" | "badges" | "leaderboard") => {
+    // Add a small delay for button press animation
+    setTimeout(() => {
+      setActiveModal(modalType);
+    }, 100);
   };
 
   // Redirect user when clicking on an activity item (e.g., lesson)
@@ -243,17 +302,19 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   // Render content based on active tab
   const renderTabContent = () => {
+    const contentClass = `inventory-content ${animateContent ? 'active-content' : ''}`;
+    
     switch (activeTab) {
       case "activity":
         return (
-          <div id="inventory-content-activity" className="inventory-content active-content">
+          <div id="inventory-content-activity" className={contentClass}>
             <div className="inventory-content-headingbar">
               <h2>Activity</h2>
               <h4>{date}</h4>
             </div>
             <div className="inventory-content-line"></div>
             <div className="inventory-content-body" ref={containerRef}>
-              {events && events.map((event, index) => {
+              {events && events.map((event: any, index: number) => {
                 const dateObj = new Date(event.startTime);
                 const dateStr = dateObj.toLocaleDateString('en-US', {
                   year: 'numeric',
@@ -265,8 +326,15 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                   minute: '2-digit'
                 });
 
+                const isVisible = visibleTimeCards.includes(index);
+                const cardStyle = {
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                  transition: `all 0.5s ease ${index * 0.1}s`
+                };
+
                 return (
-                  <article key={index} className="inventory-content-timecard">
+                  <article key={index} className="inventory-content-timecard" style={cardStyle}>
                     <div className="inventory-content-col1"></div>
                     <div className="inventory-content-col2">
                       <p>
@@ -279,60 +347,163 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                       <p>
                         Working on :{' '}
                         {event.eventName == "Untitled event" ? (
-                          <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventType}</strong>
+                          <strong 
+                            onClick={() => handleNavigateEvent(event.eventType, event.eventName)}
+                            className="clickable-event"
+                          >
+                            {event.eventType}
+                          </strong>
                         ) : (
-                          <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventName}</strong>
+                          <strong 
+                            onClick={() => handleNavigateEvent(event.eventType, event.eventName)}
+                            className="clickable-event"
+                          >
+                            {event.eventName}
+                          </strong>
                         )}
                       </p>
                     </div>
                   </article>
                 );
               })}
-              {loading && <p>Loading more...</p>}
-              {!hasMore && <p>No more activity left!</p>}
+              {loading && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '20px',
+                  animation: 'pulse 1.5s infinite'
+                }}>
+                  <p>Loading more...</p>
+                </div>
+              )}
+              {!hasMore && events.length > 0 && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '20px',
+                  opacity: '0.7'
+                }}>
+                  <p>No more activity left!</p>
+                </div>
+              )}
             </div>
           </div>
         );
       case "mentor":
-        return <div id="inventory-content-mentor" className="inventory-content active-content"><h2>Mentor</h2><p>This is the content for the Mentor tab.</p></div>;
+        return (
+          <div id="inventory-content-mentor" className={contentClass}>
+            <div className="inventory-content-headingbar">
+              <h2>Mentor</h2>
+              <h4>{date}</h4>
+            </div>
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <p>This is the content for the Mentor tab.</p>
+            </div>
+          </div>
+        );
       case "prodev":
-                return (
-          <div id="inventory-content-learning" className="inventory-content active-content">
+        return (
+          <div id="inventory-content-learning" className={contentClass}>
             <Lessons styleType={"profile"}/>
           </div>
         );
       case "mathLessons":
-                return (
-          <div id="inventory-content-lessons" className="inventory-content active-content">
+        return (
+          <div id="inventory-content-lessons" className={contentClass}>
             {lessonSelected ? (
-              <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum} navigateFunc={() => {
-                setLessonSelected(false);
-              }} styleType="profile"/>
+              <LessonOverlay 
+                propPieceName={piece} 
+                propLessonNumber={lessonNum} 
+                navigateFunc={() => {
+                  setLessonSelected(false);
+                }} 
+                styleType="profile"
+              />
             ) : (
-              <LessonSelection styleType="profile" onGo={(selectedScenario, lessonNum) => { 
-                setLessonSelected(true);
-                setPiece(selectedScenario);
-                setLessonNum(lessonNum);
-              }}/>
+              <LessonSelection 
+                styleType="profile" 
+                onGo={(selectedScenario: string, lessonNum: number) => { 
+                  setLessonSelected(true);
+                  setPiece(selectedScenario);
+                  setLessonNum(lessonNum);
+                }}
+              />
             )}
           </div>
         );
       case "games":
-        return <div id="inventory-content-games" className="inventory-content active-content"><h2>Games</h2><p>This is the content for the Games tab.</p></div>;
+        return (
+          <div id="inventory-content-games" className={contentClass}>
+            <div className="inventory-content-headingbar">
+              <h2>Games</h2>
+              <h4>{date}</h4>
+            </div>
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <p>This is the content for the Games tab.</p>
+            </div>
+          </div>
+        );
       case "puzzles":
         return (
-          <div id="inventory-content-puzzles" className="inventory-content active-content">
-            <Puzzles student={username} mentor={mentorUsername} role={"student"} styleType="profile" />
+          <div id="inventory-content-puzzles" className={contentClass}>
+            <Puzzles 
+              student={username} 
+              mentor={mentorUsername} 
+              role={"student"} 
+              styleType="profile" 
+            />
           </div>
         );
       case "playComputer":
-        return <div id="inventory-content-computer" className="inventory-content active-content"><h2>Play with Computer</h2><p>This is the content for the Play with Computer tab.</p></div>;
+        return (
+          <div id="inventory-content-computer" className={contentClass}>
+            <div className="inventory-content-headingbar">
+              <h2>Play with Computer</h2>
+              <h4>{date}</h4>
+            </div>
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <p>This is the content for the Play with Computer tab.</p>
+            </div>
+          </div>
+        );
       case "recordings":
-        return <div id="inventory-content-recordings" className="inventory-content active-content"><h2>Recordings</h2><p>This is the content for the Recordings tab.</p></div>;
+        return (
+          <div id="inventory-content-recordings" className={contentClass}>
+            <div className="inventory-content-headingbar">
+              <h2>Recordings</h2>
+              <h4>{date}</h4>
+            </div>
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <p>This is the content for the Recordings tab.</p>
+            </div>
+          </div>
+        );
       default:
-        return <div className="inventory-content active-content"><h2>Select a tab to view its content.</h2></div>;
+        return (
+          <div className={contentClass}>
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <h2>Select a tab to view its content.</h2>
+            </div>
+          </div>
+        );
     }
   };
+
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#e5f3d2',
+        fontSize: '1.5rem',
+        fontFamily: '"Roboto", sans-serif'
+      }}>
+        <div style={{ animation: 'pulse 1.5s infinite' }}>
+          Loading your profile...
+        </div>
+      </div>
+    );
+  }
 
   // Final render return block
   return (
@@ -341,30 +512,38 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       <section className="inv-toolbar">
         <div className="inv-toolbar-buttons">
           <button
-            className={`toolbar-button ${activeModal === "streak" ? "active" : ""}`}
+            className={`toolbar-button ${activeModal === "streak" ? "active" : ""} ${hoveredButton === "streak" ? "hovered" : ""}`}
             aria-label="Streak"
-            onClick={() => setActiveModal("streak")}
+            onClick={() => handleModalOpen("streak")}
+            onMouseEnter={() => setHoveredButton("streak")}
+            onMouseLeave={() => setHoveredButton(null)}
           >
             <StreakIcon className="toolbar-icon" />
           </button>
           <button
-            className={`toolbar-button ${activeModal === "activities" ? "active" : ""}`}
+            className={`toolbar-button ${activeModal === "activities" ? "active" : ""} ${hoveredButton === "activities" ? "hovered" : ""}`}
             aria-label="Activities"
-            onClick={() => setActiveModal("activities")}
+            onClick={() => handleModalOpen("activities")}
+            onMouseEnter={() => setHoveredButton("activities")}
+            onMouseLeave={() => setHoveredButton(null)}
           >
             <ActivitiesIcon className="toolbar-icon" />
           </button>
           <button
-            className={`toolbar-button ${activeModal === "badges" ? "active" : ""}`}
+            className={`toolbar-button ${activeModal === "badges" ? "active" : ""} ${hoveredButton === "badges" ? "hovered" : ""}`}
             aria-label="Badges"
-            onClick={() => setActiveModal("badges")}
+            onClick={() => handleModalOpen("badges")}
+            onMouseEnter={() => setHoveredButton("badges")}
+            onMouseLeave={() => setHoveredButton(null)}
           >
             <BadgesIcon className="toolbar-icon" />
           </button>
           <button
-            className={`toolbar-button ${activeModal === "leaderboard" ? "active" : ""}`}
+            className={`toolbar-button ${activeModal === "leaderboard" ? "active" : ""} ${hoveredButton === "leaderboard" ? "hovered" : ""}`}
             aria-label="Leaderboard"
-            onClick={() => setActiveModal("leaderboard")}
+            onClick={() => handleModalOpen("leaderboard")}
+            onMouseEnter={() => setHoveredButton("leaderboard")}
+            onMouseLeave={() => setHoveredButton(null)}
           >
             <LeaderboardIcon className="toolbar-icon" />
           </button>
@@ -394,11 +573,11 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
           <div className="inv-inventory-analytics-metrics">
             <h3>Time Spent:</h3>
             <ul>
-              <li>Website: <strong>{webTime} min</strong></li>
-              <li>Playing: <strong>{playTime} min</strong></li>
-              <li>Lessons: <strong>{lessonTime} min</strong></li>
-              <li>Puzzle: <strong>{puzzleTime} min</strong></li>
-              <li>Mentoring: <strong>{mentorTime} min</strong></li>
+              <li style={{ animationDelay: '1.0s' }}>Website: <strong>{webTime} min</strong></li>
+              <li style={{ animationDelay: '1.1s' }}>Playing: <strong>{playTime} min</strong></li>
+              <li style={{ animationDelay: '1.2s' }}>Lessons: <strong>{lessonTime} min</strong></li>
+              <li style={{ animationDelay: '1.3s' }}>Puzzle: <strong>{puzzleTime} min</strong></li>
+              <li style={{ animationDelay: '1.4s' }}>Mentoring: <strong>{mentorTime} min</strong></li>
             </ul>
           </div>
         </div>
@@ -407,12 +586,15 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         <div className="inv-inventory-content-section">
           <nav className="inv-inventory-content-tabs">
             <ul>
-            {Object.keys(tabImages).map((tab) => (
-              <li key={tab}>
+            {Object.keys(tabImages).map((tab, index) => (
+              <li key={tab} style={{ animationDelay: `${1.5 + index * 0.1}s` }}>
                 <button
                   className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
                   onClick={() => handleTabClick(tab)}
                   aria-label={tab}
+                  style={{
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}
                 >
                   <img src={tabImages[tab]} alt={`${tab} icon`} />
               </button>
@@ -426,11 +608,27 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         </div>
       </section>
       
-      {/* Render modals conditionally */}
-      {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} />}
-      {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} />}
-      {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} />}
-      {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
+      {/* Render modals conditionally with fade in animation */}
+      {activeModal === "streak" && (
+        <div style={{ animation: 'fadeInUp 0.3s ease-out' }}>
+          <StreakModal onClose={() => setActiveModal(null)} />
+        </div>
+      )}
+      {activeModal === "activities" && (
+        <div style={{ animation: 'fadeInUp 0.3s ease-out' }}>
+          <ActivitiesModal onClose={() => setActiveModal(null)} />
+        </div>
+      )}
+      {activeModal === "badges" && (
+        <div style={{ animation: 'fadeInUp 0.3s ease-out' }}>
+          <BadgesModal onClose={() => setActiveModal(null)} />
+        </div>
+      )}
+      {activeModal === "leaderboard" && (
+        <div style={{ animation: 'fadeInUp 0.3s ease-out' }}>
+          <LeaderboardModal onClose={() => setActiveModal(null)} />
+        </div>
+      )}
       
     </main>
   );

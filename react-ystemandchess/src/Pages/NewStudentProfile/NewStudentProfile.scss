@@ -15,6 +15,157 @@ $brand-color-tertiary: #7fcc26;
 $brand-color-background-grey: #d4dddd;
 
 // =====================================
+// Animation Keyframes
+// =====================================
+
+@keyframes fadeInUp {
+  0% { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeInDown {
+  0% { 
+    opacity: 0; 
+    transform: translateY(-30px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeInLeft {
+  0% { 
+    opacity: 0; 
+    transform: translateX(-50px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes fadeInRight {
+  0% { 
+    opacity: 0; 
+    transform: translateX(50px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes scaleIn {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.8); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% { 
+    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+    transform: translate3d(0,0,0); 
+  }
+  40%, 43% { 
+    animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060);
+    transform: translate3d(0, -8px, 0); 
+  }
+  70% { 
+    animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060);
+    transform: translate3d(0, -4px, 0); 
+  }
+  90% { 
+    transform: translate3d(0,-2px,0); 
+  }
+}
+
+@keyframes shimmer {
+  0% { 
+    background-position: -468px 0; 
+  }
+  100% { 
+    background-position: 468px 0; 
+  }
+}
+
+@keyframes pulse {
+  0% { 
+    opacity: 0.3; 
+  }
+  50% { 
+    opacity: 0.8; 
+  }
+  100% { 
+    opacity: 0.3; 
+  }
+}
+
+@keyframes float {
+  0% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-10px); 
+  }
+  100% { 
+    transform: translateY(0px); 
+  }
+}
+
+@keyframes glow {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(127, 204, 38, 0.5); 
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(127, 204, 38, 0.8), 0 0 30px rgba(127, 204, 38, 0.6); 
+  }
+}
+
+@keyframes slideInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rollIn {
+  0% {
+    opacity: 0;
+    transform: rotate(-120deg);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes wiggle {
+  0%, 7% { transform: rotateZ(0); }
+  15% { transform: rotateZ(-15deg); }
+  20% { transform: rotateZ(10deg); }
+  25% { transform: rotateZ(-10deg); }
+  30% { transform: rotateZ(6deg); }
+  35% { transform: rotateZ(-4deg); }
+  40%, 100% { transform: rotateZ(0); }
+}
+
+// =====================================
 // Main Container
 // =====================================
 
@@ -26,6 +177,7 @@ $brand-color-background-grey: #d4dddd;
   font-family: "Roboto", sans-serif;
   padding-bottom: 3.0rem;
   position: relative;
+  animation: fadeInUp 0.8s ease-out;
 
   // ===========================
   // Toolbar Section
@@ -38,6 +190,7 @@ $brand-color-background-grey: #d4dddd;
     display: flex;
     align-items: center;
     justify-content: center;
+    animation: fadeInDown 0.6s ease-out;
   }
 
   .inv-toolbar-buttons {
@@ -57,19 +210,42 @@ $brand-color-background-grey: #d4dddd;
     border-radius: 8px;
     cursor: pointer;
     overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInDown 0.8s ease-out;
+
+    // Staggered animation delays for each button
+    &:nth-child(1) { animation-delay: 0.1s; }
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.3s; }
+    &:nth-child(4) { animation-delay: 0.4s; }
 
     .toolbar-icon {
       width: 100%;
       height: 100%;
-      transition: filter 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: block;
       color: #FDD835;
       object-fit: contain;
     }
 
-    &:hover .toolbar-icon,
+    &:hover {
+      transform: translateY(-5px) scale(1.05);
+      animation: bounce 1s ease-in-out;
+      
+      .toolbar-icon {
+        color: #FFFF00;
+        animation: glow 1s ease-in-out infinite;
+      }
+    }
+
     &.active .toolbar-icon {
       color: #FFFF00;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    // Click animation
+    &:active {
+      transform: translateY(-2px) scale(0.98);
     }
   }
 
@@ -83,6 +259,7 @@ $brand-color-background-grey: #d4dddd;
     justify-content: center;
     align-items: center;
     padding: 0;
+    animation: scaleIn 0.8s ease-out 0.3s both;
 
     .inv-intro-portrait {
       position: relative;
@@ -92,10 +269,13 @@ $brand-color-background-grey: #d4dddd;
       width: 9.375rem;
       height: 9.375rem;
       margin-top: 2rem;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: float 3s ease-in-out infinite;
 
       .inv-intro-portrait-face {
         width: 100%;
         height: 100%;
+        transition: all 0.3s ease;
       }
 
       .inv-intro-portrait-camera {
@@ -108,16 +288,40 @@ $brand-color-background-grey: #d4dddd;
         height: 2.9869rem;
         padding: 0.0625rem;
         margin: 0.25rem;
+        transition: all 0.3s ease;
+        animation: rollIn 0.8s ease-out 0.5s both;
+      }
+
+      &:hover {
+        transform: scale(1.1) rotate(2deg);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        animation: wiggle 1s ease-in-out;
+        
+        .inv-intro-portrait-camera {
+          transform: scale(1.2);
+          animation: bounce 0.6s ease-in-out;
+        }
       }
     }
 
-    .inv-intro-welcome > h1 {
-      font-family: "Lato", sans-serif;
-      margin: 0 0 1rem 0;
-      padding: 0;
-      font-size: 2.5rem;
-      font-weight: bold;
-      color: #000;
+    .inv-intro-welcome {
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+      
+      > h1 {
+        font-family: "Lato", sans-serif;
+        margin: 0 0 1rem 0;
+        padding: 0;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #000;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          color: $brand-color-tertiary;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+          transform: scale(1.05);
+        }
+      }
     }
   }
 
@@ -131,11 +335,13 @@ $brand-color-background-grey: #d4dddd;
     margin: auto;
     border-radius: 0.8rem;
     overflow: hidden;
+    animation: slideInFromBottom 0.8s ease-out 0.4s both;
 
     .inv-inventory-topbar {
       background: $brand-color-tertiary;
       padding: 0.2em 0;
       margin: 0;
+      animation: fadeInRight 0.6s ease-out 0.7s both;
 
       .progress-heading {
         font-family: "Lato", sans-serif;
@@ -143,6 +349,12 @@ $brand-color-background-grey: #d4dddd;
         font-size: 2.25rem;
         color: #000;
         margin: 0;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          transform: scale(1.02);
+          text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
       }
     }
 
@@ -157,15 +369,29 @@ $brand-color-background-grey: #d4dddd;
         width: 40rem;
         padding: 0.8rem;
         margin-right: 3rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: fadeInLeft 0.8s ease-out 0.8s both;
+        
+        &:hover {
+          transform: scale(1.05) translateY(-5px);
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
       }
 
       .inv-inventory-analytics-metrics {
         text-align: left;
+        animation: fadeInRight 0.8s ease-out 0.9s both;
 
         h3 {
           font-size: 1.2rem;
           font-weight: bold;
           margin: 0 0 1.5rem 0;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            color: $brand-color-tertiary;
+            transform: translateX(5px);
+          }
         }
 
         ul {
@@ -175,6 +401,15 @@ $brand-color-background-grey: #d4dddd;
             position: relative;
             margin: 0 0 12px 0;
             list-style: none;
+            transition: all 0.3s ease;
+            animation: fadeInRight 0.6s ease-out;
+
+            // Staggered animation for list items
+            &:nth-child(1) { animation-delay: 1.0s; }
+            &:nth-child(2) { animation-delay: 1.1s; }
+            &:nth-child(3) { animation-delay: 1.2s; }
+            &:nth-child(4) { animation-delay: 1.3s; }
+            &:nth-child(5) { animation-delay: 1.4s; }
 
             &::before {
               content: "";
@@ -186,6 +421,25 @@ $brand-color-background-grey: #d4dddd;
               margin-right: 1rem;
               background-color: $brand-color-tertiary;
               border: 4px solid #000;
+              transition: all 0.3s ease;
+            }
+
+            &:hover {
+              transform: translateX(10px);
+              
+              &::before {
+                background-color: #000;
+                transform: scale(1.3);
+                animation: glow 0.8s ease-in-out;
+              }
+              
+              strong {
+                color: $brand-color-tertiary;
+              }
+            }
+
+            strong {
+              transition: all 0.3s ease;
             }
           }
         }
@@ -204,9 +458,11 @@ $brand-color-background-grey: #d4dddd;
       display: grid;
       grid-template-columns: 35% 65%;
       height: 44.5rem;
+      animation: scaleIn 0.8s ease-out 1.2s both;
 
       .inv-inventory-content-tabs {
         position: relative;
+        animation: fadeInLeft 0.6s ease-out 1.4s both;
 
         ul {
           background: $brand-color-background-grey;
@@ -215,6 +471,18 @@ $brand-color-background-grey: #d4dddd;
           list-style: none;
 
           li {
+            animation: fadeInLeft 0.6s ease-out;
+            
+            // Staggered animation for tabs
+            &:nth-child(1) { animation-delay: 1.5s; }
+            &:nth-child(2) { animation-delay: 1.6s; }
+            &:nth-child(3) { animation-delay: 1.7s; }
+            &:nth-child(4) { animation-delay: 1.8s; }
+            &:nth-child(5) { animation-delay: 1.9s; }
+            &:nth-child(6) { animation-delay: 2.0s; }
+            &:nth-child(7) { animation-delay: 2.1s; }
+            &:nth-child(8) { animation-delay: 2.2s; }
+
             &:first-child .inventory-tab {
               border-top-left-radius: 1rem;
             }
@@ -227,7 +495,7 @@ $brand-color-background-grey: #d4dddd;
         }
       }
 
-    .inventory-tab {
+      .inventory-tab {
         all: unset;
         position: relative;
         display: flex;
@@ -237,23 +505,46 @@ $brand-color-background-grey: #d4dddd;
         margin-bottom: 1rem;
         overflow: hidden;
         cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
         img {
           width: 100%;
           height: 100%;
           object-fit: cover;
           margin-right: 0.25rem;
-          transition: width 0.2s ease;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           filter: none !important;
+        }
+
+        &:hover {
+          transform: translateX(15px) scale(1.02);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          
+          img {
+            transform: scale(1.1);
+            filter: brightness(1.1) saturate(1.2);
+          }
         }
 
         &.active-tab {
           background-color: $brand-color-secondary;
+          transform: translateX(10px);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+          animation: shimmer 2s ease-in-out infinite;
+          background: linear-gradient(90deg, 
+            $brand-color-secondary 0%, 
+            rgba(255, 255, 255, 0.1) 50%, 
+            $brand-color-secondary 100%);
+          background-size: 200% 100%;
 
           img {
-            transform: none;
+            transform: scale(1.05);
             margin-right: 0;
           }
+        }
+
+        &:active {
+          transform: translateX(12px) scale(0.98);
         }
       }
 
@@ -261,6 +552,7 @@ $brand-color-background-grey: #d4dddd;
         padding: 1rem 4rem;
         display: flex;
         align-items: center;
+        animation: fadeInRight 0.8s ease-out 1.6s both;
       }
 
       .inventory-content {
@@ -270,6 +562,7 @@ $brand-color-background-grey: #d4dddd;
 
         &.active-content {
           display: block;
+          animation: fadeInUp 0.6s ease-out;
         }
 
         .inventory-content-headingbar {
@@ -279,6 +572,7 @@ $brand-color-background-grey: #d4dddd;
           align-items: flex-end;
           padding: 1rem 0 0.7rem 0;
           border-bottom: 1px solid rgb(120, 120, 120);
+          animation: fadeInDown 0.6s ease-out 0.2s both;
 
           h2 {
             font-family: "Roboto", sans-serif;
@@ -288,6 +582,12 @@ $brand-color-background-grey: #d4dddd;
             padding: 0;
             position: relative;
             top: 0.6875rem;
+            transition: all 0.3s ease;
+            
+            &:hover {
+              color: $brand-color-tertiary;
+              transform: scale(1.05);
+            }
           }
 
           h4 {
@@ -297,6 +597,12 @@ $brand-color-background-grey: #d4dddd;
             font-size: 1.0rem;
             position: relative;
             top: 0.3125rem;
+            transition: all 0.3s ease;
+            
+            &:hover {
+              color: #666;
+              transform: translateY(-2px);
+            }
           }
         }
 
@@ -306,6 +612,7 @@ $brand-color-background-grey: #d4dddd;
           height: 38.55rem;
           overflow-y: auto;
           scrollbar-width: none;
+          animation: fadeInUp 0.8s ease-out 0.4s both;
         }
 
         .inventory-content-line {
@@ -322,6 +629,7 @@ $brand-color-background-grey: #d4dddd;
             bottom: 0;
             left: 50%;
             border-left: 3px dotted #222;
+            animation: fadeInUp 0.6s ease-out 0.6s both;
           }
         }
 
@@ -330,11 +638,21 @@ $brand-color-background-grey: #d4dddd;
           grid-template-columns: 10% 45% 45%;
           text-align: left;
           margin: 3rem 0;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          animation: fadeInUp 0.6s ease-out;
 
           > div {
             display: flex;
             justify-content: flex-start;
             align-items: center;
+          }
+
+          &:hover {
+            transform: scale(1.03) translateX(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
           }
 
           .inventory-content-col1 {
@@ -348,6 +666,12 @@ $brand-color-background-grey: #d4dddd;
               margin-right: 1rem;
               background-color: $brand-color-tertiary;
               border: 9px solid #000;
+              transition: all 0.3s ease;
+            }
+            
+            &:hover::before {
+              animation: bounce 0.6s ease-in-out;
+              transform: scale(1.2);
             }
           }
 
@@ -355,15 +679,37 @@ $brand-color-background-grey: #d4dddd;
             margin-left: 2rem;
             position: relative;
             top: 0.25rem;
+            transition: all 0.3s ease;
+            
+            &:hover {
+              transform: translateY(-2px);
+            }
           }
 
           .inventory-content-col3 {
             position: relative;
             top: 0.1875rem;
+            transition: all 0.3s ease;
 
             p > strong {
               text-decoration: underline;
               cursor: pointer;
+              transition: all 0.3s ease;
+              position: relative;
+              
+              &:hover {
+                color: $brand-color-tertiary;
+                text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+                transform: scale(1.05);
+              }
+              
+              &:active {
+                transform: scale(0.95);
+              }
+            }
+            
+            &:hover {
+              transform: translateY(-2px);
             }
           }
         }
@@ -373,6 +719,7 @@ $brand-color-background-grey: #d4dddd;
           font-weight: 400;
           font-size: 1.0rem;
           color: #000;
+          transition: all 0.3s ease;
         }
 
         .inventory-time {
@@ -380,8 +727,82 @@ $brand-color-background-grey: #d4dddd;
           font-weight: 400;
           font-size: 0.8125rem;
           color: #000;
+          transition: all 0.3s ease;
         }
       }
     }
   }
+}
+
+// =====================================
+// Loading Animation
+// =====================================
+
+.inventory-content-body p:contains("Loading more...") {
+  animation: pulse 1.5s infinite;
+  text-align: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+// =====================================
+// Scroll Animation Enhancements
+// =====================================
+
+// Enhanced scrollbar styling (for webkit browsers)
+.inventory-content-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.inventory-content-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.inventory-content-body::-webkit-scrollbar-thumb {
+  background: $brand-color-tertiary;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: darken($brand-color-tertiary, 10%);
+  }
+}
+
+// =====================================
+// Responsive Animation Adjustments
+// =====================================
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// =====================================
+// Additional Interactive Elements
+// =====================================
+
+// Add subtle hover effects to all interactive elements
+button, [role="button"], .clickable {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+// Enhance focus states
+*:focus {
+  outline: 2px solid $brand-color-tertiary;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
