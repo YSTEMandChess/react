@@ -42,22 +42,23 @@ const NavBar = () => {
     "eventId",
     "timerStatus",
   ]);
-  const [mobileMenuDropDown, setMobileMenuDropDown] = useState(false); // hamburger
+  const [mobileMenuDropDown, setMobileMenuDropDown] = useState(false);
   const [aboutUsDropDown, setAboutUsDropDown] = useState(false); // about us
-  const aboutUsRef = useRef<any>(null);
-  const mobileMenuRef = useRef<any>(null);
   const [link, setLink] = useState("");
   const [logged, setLogged] = useState(false);
   const [username, setUsername] = useState("");
   const [role, setRole] = useState("");
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const aboutUsRef = useRef<any>(null);
   const profileDropdownRef = useRef<any>(null);
+  const mobileMenuRef = useRef<any>(null);
+  const hamburgerRef = useRef<any>(null);
 
   // toggles dropdown menu
   const toggleMobileMenu = () => {
     setMobileMenuDropDown((prev) => !prev);
   };
-
+  console.log(mobileMenuDropDown);
   const toggleAboutUs = () => {
     setAboutUsDropDown((prev) => !prev);
   };
@@ -75,6 +76,8 @@ const NavBar = () => {
       if (
         mobileMenuRef.current &&
         !mobileMenuRef.current.contains(event.target) &&
+        hamburgerRef.current &&
+        !hamburgerRef.current.contains(event.target) &&
         aboutUsRef.current &&
         !aboutUsRef.current.contains(event.target)
       ) {
@@ -279,55 +282,57 @@ const NavBar = () => {
       )}
 
       {username && (
-        <div ref={profileDropdownRef} className="relative">
-          <button
-            onClick={profileToggleDropdown}
-            className="flex items-center text-gray-700 hover:text-black text-lg px-3 py-1"
-            aria-haspopup="true"
-            aria-expanded={profileDropdown}
-            aria-controls="login-menu"
-          >
-            {username}
-            <FontAwesomeIcon
-              icon={profileDropdown ? faCaretUp : faCaretDown}
-              className="ml-1"
-            />
-          </button>
-
-          {profileDropdown && (
-            <motion.div
-              id="login-menu"
-              className="absolute bg-white shadow-md mt-2 w-48 rounded-md p-3 z-20"
-              initial="parentInitial"
-              animate="parentAnimate"
-              variants={navbarVariants}
+        <div className="w-full lg:w-fit flex justify-center">
+          <div ref={profileDropdownRef} className="relative  w-fit">
+            <button
+              onClick={profileToggleDropdown}
+              className="bg-transparent flex items-center text-gray-700 hover:text-black text-lg px-3 py-1"
+              aria-haspopup="true"
+              aria-expanded={profileDropdown}
+              aria-controls="login-menu"
             >
-              <div className="flex flex-col gap-2">
-                <Link
-                  to={`/${role}-profile`}
-                  onClick={profileToggleDropdown}
-                  className="text-gray-700 hover:text-black text-base"
-                >
-                  Profile
-                </Link>
-                {role === "parent" && (
+              {username}
+              <FontAwesomeIcon
+                icon={profileDropdown ? faCaretUp : faCaretDown}
+                className="ml-1"
+              />
+            </button>
+
+            {profileDropdown && (
+              <motion.div
+                id="login-menu"
+                className="absolute bg-white right-0 shadow-md mt-2 w-48 rounded-md p-3 z-20"
+                initial="parentInitial"
+                animate="parentAnimate"
+                variants={navbarVariants}
+              >
+                <div className="flex flex-col gap-2">
                   <Link
-                    to="/parent-add-student"
+                    to={`/${role}-profile`}
                     onClick={profileToggleDropdown}
                     className="text-gray-700 hover:text-black text-base"
                   >
-                    Add Student
+                    Profile
                   </Link>
-                )}
-                <button
-                  onClick={logout}
-                  className="text-left text-gray-700 hover:text-black text-base"
-                >
-                  Log Out
-                </button>
-              </div>
-            </motion.div>
-          )}
+                  {role === "parent" && (
+                    <Link
+                      to="/parent-add-student"
+                      onClick={profileToggleDropdown}
+                      className="text-gray-700 hover:text-black text-base"
+                    >
+                      Add Student
+                    </Link>
+                  )}
+                  <button
+                    onClick={logout}
+                    className="bg-transparent text-left text-gray-700 hover:text-black text-base"
+                  >
+                    Log Out
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
       )}
     </>
@@ -345,8 +350,9 @@ const NavBar = () => {
           </div>
 
           {/* Hamburger Menu (Mobile) */}
-          <div ref={mobileMenuRef} className="flex md:hidden">
+          <div className="flex md:hidden">
             <button
+              ref={hamburgerRef}
               type="button"
               className="text-gray-700 bg-transparent hover:text-black  focus:outline-none "
               onClick={toggleMobileMenu}
