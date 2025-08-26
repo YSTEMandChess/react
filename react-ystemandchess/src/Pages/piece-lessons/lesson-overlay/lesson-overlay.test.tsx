@@ -196,7 +196,7 @@ test('failed lesson', async () => {
     window.dispatchEvent(
       new MessageEvent('message', {
         origin: environment.urls.chessClientURL,
-        data: "restart",
+        data: "won:black",
       })
     );
   });
@@ -282,7 +282,7 @@ test('reset lesson', async () => {
   await startLesson();
   
   // reset lesson
-  const resetBtn = document.getElementsByClassName("reset-lesson")[0];
+  const resetBtn = screen.getByTestId('reset-button');
   fireEvent.click(resetBtn);
   // check if UI is updated
   const updatedText = screen.getByText(/Make a move to see it here!/i);

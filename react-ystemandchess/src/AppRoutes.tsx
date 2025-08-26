@@ -8,6 +8,7 @@ import ChessBenefitPage from "./Pages/About-Us/Benefit-of-Chess/ChessBenefitPage
 import MathTutBenefitPage from "./Pages/About-Us/Benefit-of-Math-tut/MathTutBenefitPage";
 import MentoringBenefitPage from "./Pages/About-Us/Benefit-of-Mentoring/MentoringBenefitPage";
 import Lessons from "./Pages/Lessons/Lessons";
+import Puzzles from './Pages/Puzzles/Puzzles';
 import Login from "./Pages/Login/Login";
 import SignUp from "./Pages/SignUp/SignUp";
 import Mission from "./Pages/About-Us/Mission/Mission";
@@ -42,6 +43,7 @@ const AppRoutes = () => {
         path="/benefit-of-math-tutoring"
         element={<MathTutBenefitPage />}
       />
+      <Route path='/puzzles' element={<Puzzles />} />
       <Route path="/benefit-of-mentoring" element={<MentoringBenefitPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />

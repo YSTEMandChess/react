@@ -99,6 +99,7 @@ http.createServer((req, res) => {
           move: move,
           piece: result.piece.toUpperCase(),
           color: result.color,
+          from: result.from,
           to: result.to,
         };
         res.end(JSON.stringify(response));
