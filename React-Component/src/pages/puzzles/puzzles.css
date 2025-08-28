@@ -1,0 +1,58 @@
+body {
+    background-color: #E5F3D2;
+    background-image: url("../../../assets/images/homePage/chess_piece.png");
+  }
+  
+  #mainElements {
+    height: 46rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #DEEACE;
+  }
+  
+  #mainElements iframe {
+    min-width: 700px;
+    min-height: 100%;
+    overflow: visible;
+  }
+  
+  #hintMenu {
+    padding: 20px 0;
+    height: 700px;
+    width: 400px;
+    background-color: #BFD99E;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .button-container {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+  }
+  
+  .dialog-container {
+    position: absolute;
+    top: 50%;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .chess {
+    text-align: center;
+  }
+  
+  .hint {
+    padding: 15px;
+    display: none;
+    white-space: pre-wrap;
+  }
+  
