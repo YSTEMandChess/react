@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import "./NewMentorProfile.scss";
 import Images from "../../images/imageImporter";
 import { SetPermissionLevel } from '../../globals'; 
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
-import { StatsChart } from "../NewStudentProfile/StatsChart";
+import StatsChart from "../NewStudentProfile/StatsChart";
 import Lessons from "../Lessons/Lessons";
 import LessonSelection from "../LessonsSelection/LessonsSelection";
 import LessonOverlay from "../piece-lessons/lesson-overlay/lesson-overlay";
@@ -353,6 +353,8 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     }
   };
 
+  const tabContent = useMemo(() => renderTabContent(), [activeTab, events, loading, hasMore]);
+
   return (
     <main id="main-inventory-content">
       <section className="inv-intro">
@@ -420,7 +422,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
             </ul>
           </nav>
 
-          <div className="inv-inventory-content-content">{renderTabContent()}</div>
+          <div className="inv-inventory-content-content">{tabContent}</div>
         </div>
       </section>) : (
       <section className="no-student-message">

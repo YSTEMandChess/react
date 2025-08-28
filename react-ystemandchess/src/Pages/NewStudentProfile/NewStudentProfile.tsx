@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
 import "./NewStudentProfile.scss";
 import Images from "../../images/imageImporter";
 import { SetPermissionLevel } from '../../globals'; 
@@ -6,15 +6,15 @@ import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router";
-import Lessons from "../Lessons/Lessons";
-import LessonSelection from "../LessonsSelection/LessonsSelection";
-import LessonOverlay from "../piece-lessons/lesson-overlay/lesson-overlay";
+import StatsChart from "./StatsChart";
+const Lessons = lazy(() => import("../Lessons/Lessons"));
+const LessonsSelection = lazy(() => import("../LessonsSelection/LessonsSelection"));
+const LessonOverlay = lazy(() => import("../piece-lessons/lesson-overlay/lesson-overlay"));
 import Puzzles from "../Puzzles/Puzzles";
 import StreakModal from "./Modals/StreakModal";
 import ActivitiesModal from "./Modals/ActivitiesModal";
 import BadgesModal from "./Modals/BadgesModal";
 import LeaderboardModal from "./Modals/LeaderboardModal";
-import { StatsChart } from "./StatsChart";
 
 // Toolbar buttons
 import { ReactComponent as StreakIcon } from "../../images/student/streak_button.svg";
@@ -298,22 +298,28 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       case "prodev":
                 return (
           <div id="inventory-content-learning" className="inventory-content active-content">
-            <Lessons styleType={"profile"}/>
+            <Suspense fallback={<h2>Loading learning page...</h2>}>
+              <Lessons styleType={"profile"}/>
+            </Suspense>
           </div>
         );
       case "mathLessons":
                 return (
           <div id="inventory-content-lessons" className="inventory-content active-content">
             {lessonSelected ? (
-              <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum} navigateFunc={() => {
-                setLessonSelected(false);
-              }} styleType="profile"/>
+              <Suspense fallback={<h2>Loading lessons page...</h2>}>
+                <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum} navigateFunc={() => {
+                  setLessonSelected(false);
+                }} styleType="profile"/>
+              </Suspense>
             ) : (
-              <LessonSelection styleType="profile" onGo={(selectedScenario, lessonNum) => { 
-                setLessonSelected(true);
-                setPiece(selectedScenario);
-                setLessonNum(lessonNum);
-              }}/>
+              <Suspense fallback={<h2>Loading lesson slection page...</h2>}>
+                <LessonsSelection styleType="profile" onGo={(selectedScenario, lessonNum) => {
+                  setLessonSelected(true);
+                  setPiece(selectedScenario);
+                  setLessonNum(lessonNum);
+                }}/>
+              </Suspense>
             )}
           </div>
         );
@@ -333,6 +339,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         return <div className="inventory-content active-content"><h2>Select a tab to view its content.</h2></div>;
     }
   };
+
+  const tabContent = useMemo(() => renderTabContent(), [activeTab, lessonSelected, piece, lessonNum, events, loading, hasMore]);
 
   // Final render return block
   return (
@@ -420,9 +428,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             ))}
             </ul>
           </nav>
-          <div className="inv-inventory-content-content">
-            {renderTabContent()}
-          </div>
+          <div className="inv-inventory-content-content">{tabContent}</div>
         </div>
       </section>
       
