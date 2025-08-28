@@ -69,7 +69,21 @@ const StatsChart: React.FC<StatsChartProps> = ({ monthAxis, dataAxis }) => {
     });
   }, [monthAxis, dataAxis]);
 
-  return <Line data={data} />;
+  return <Line
+  data={data}
+  options={{
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          boxWidth: 50,
+          padding: 10,
+        },
+      },
+    },
+  }}
+/>;
 };
 
 export default StatsChart;

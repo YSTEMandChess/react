@@ -39,6 +39,27 @@ const registerSocketHandlers = (socket, io) => {
     });
 
     /**
+     * Handles creating a new puzzle or joining an existing one
+     * Expected payload: { student, mentor, role }
+     */
+    socket.on("newPuzzle", (msg) => {
+        try {
+            const parsed = JSON.parse(msg);
+            // create the new puzzle
+            gameManager.createOrJoinPuzzle({
+                student: parsed.student,
+                mentor: parsed.mentor,
+                role: parsed.role,
+                socketId: socket.id
+            }, io);
+        }
+        catch (err) {
+            socket.emit("gameerror", err.message);
+            console.log(err.message);
+        }
+    });
+
+    /**
      * Handles player move request
      * Expected payload: { from, to }
      */
@@ -50,6 +71,7 @@ const registerSocketHandlers = (socket, io) => {
         }
         catch (err) {
             socket.emit("error", err.message);
+            console.log("move error")
         }
     });
 
@@ -76,8 +98,10 @@ const registerSocketHandlers = (socket, io) => {
             const result = gameManager.endGame(student, mentor);
             io.to(result.studentId).emit("reset");
             io.to(result.mentorId).emit("reset");
+            console.log("game ended successfully")
         } 
         catch (err) {
+            console.log("error", err.message);
             socket.emit("error", err.message);
         }
     });
@@ -98,6 +122,20 @@ const registerSocketHandlers = (socket, io) => {
     });
 
     /**
+     * Allows board state & color override (specifically for puzzles)
+     * Expected payload: { state: fenString, color, hints }
+     */
+    socket.on("setstateColor", (msg) => {
+        try {
+            const { state, color, hints } = JSON.parse(msg);
+            gameManager.setBoardColor(socket.id, state, color, hints, io); // modify the game in the server game manager
+        }
+        catch (err) {
+            socket.emit("error", err.message);
+        }
+    });
+
+    /**
      * Broadcasts the last move made (for highlighting)
      * Expected payload: { from, to }
      */
@@ -111,6 +149,19 @@ const registerSocketHandlers = (socket, io) => {
         }
     });
 
+    /**
+     * Broadcasts any simple string messages
+     * Expected payload: { message }
+     */
+    socket.on("message", (msg) => {
+        try {
+            const { message } = JSON.parse(msg);
+            gameManager.broadcastSimpleMessage(socket.id, message, io);
+        }
+        catch (err) {
+            socket.emit("error", err.message);
+        }
+    });
 
     const relayEvents = [
         "addgrey",
@@ -131,6 +182,21 @@ const registerSocketHandlers = (socket, io) => {
             socket.emit("error", err.message);
         }
         });
+    });
+
+    socket.on("disconnect", () => {
+        const game = gameManager.getGameBySocketId(socket.id);
+        if (!game) {
+            console.log("game not found for this socket")
+            return;
+        }
+
+        const result = gameManager.endGame(game.student.username, game.mentor.username);
+
+        // reset game
+        io.to(result.studentId).emit("reset");
+        io.to(result.mentorId).emit("reset");
+        console.log("game ended successfully")
     });
 }
 

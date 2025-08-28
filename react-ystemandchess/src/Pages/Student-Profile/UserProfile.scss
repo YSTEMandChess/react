@@ -1,72 +1,81 @@
-body {
+  body {
     margin: 0 auto;
     text-align: center;
   }
-  
-  .website-icon::before {
-    position: absolute;
-    left: -16px;
-    top: 4px;
-    content: " ";
-    border: 5px solid #0a0a0a;
-    border-radius: 500%;
-    background: #7fcc26;
-    height: 17px;
-    width: 17px;
-    margin-left: 14px;
+
+  // center the main content and add background color
+  .main-content {
+    width: 70%;
+    margin: 0 auto;
+    padding: 1%;
+    background-color: #d4dddd;
+    border-radius: 0 0 6px 6px;
   }
   
-  .lesson::before {
-    position: absolute;
-    left: -16px;
-    top: 4px;
-    content: " ";
-    border: 5px solid #0a0a0a;
-    border-radius: 500%;
-    background: #C8B4FF;
-    height: 17px;
-    width: 17px;
-    margin-left: 14px;
-  }
+  // .website-icon::before {
+  //   position: absolute;
+  //   left: -16px;
+  //   top: 4px;
+  //   content: " ";
+  //   border: 5px solid #0a0a0a;
+  //   border-radius: 500%;
+  //   background: #7fcc26;
+  //   height: 17px;
+  //   width: 17px;
+  //   margin-left: 14px;
+  // }
   
-  .puzzle::before {
-    position: absolute;
-    left: -16px;
-    top: 4px;
-    content: " ";
-    border: 5px solid #0a0a0a;
-    border-radius: 500%;
-    background: #0FDFF2;
-    height: 17px;
-    width: 17px;
-    margin-left: 14px;
-  }
+  // .lesson::before {
+  //   position: absolute;
+  //   left: -16px;
+  //   top: 4px;
+  //   content: " ";
+  //   border: 5px solid #0a0a0a;
+  //   border-radius: 500%;
+  //   background: #C8B4FF;
+  //   height: 17px;
+  //   width: 17px;
+  //   margin-left: 14px;
+  // }
   
-  .mentoring::before {
-    position: absolute;
-    left: -16px;
-    top: 4px;
-    content: " ";
-    border: 5px solid #0a0a0a;
-    border-radius: 500%;
-    background: #FD8E4F;
-    height: 17px;
-    width: 17px;
-    margin-left: 14px;
-  }
+  // .puzzle::before {
+  //   position: absolute;
+  //   left: -16px;
+  //   top: 4px;
+  //   content: " ";
+  //   border: 5px solid #0a0a0a;
+  //   border-radius: 500%;
+  //   background: #0FDFF2;
+  //   height: 17px;
+  //   width: 17px;
+  //   margin-left: 14px;
+  // }
   
-  .playing::before {
-    position: absolute;
-    left: -16px;
-    top: 4px;
-    content: " ";
-    border: 5px solid #0a0a0a;
-    border-radius: 500%;
-    background: #F24598;
-    height: 17px;
-    width: 17px;
-    margin-left: 14px;
-  }
+  // .mentoring::before {
+  //   position: absolute;
+  //   left: -16px;
+  //   top: 4px;
+  //   content: " ";
+  //   border: 5px solid #0a0a0a;
+  //   border-radius: 500%;
+  //   background: #FD8E4F;
+  //   height: 17px;
+  //   width: 17px;
+  //   margin-left: 14px;
+  // }
+  
+  // .playing::before {
+  //   position: absolute;
+  //   left: -16px;
+  //   top: 4px;
+  //   content: " ";
+  //   border: 5px solid #0a0a0a;
+  //   border-radius: 500%;
+  //   background: #F24598;
+  //   height: 17px;
+  //   width: 17px;
+  //   margin-left: 14px;
+  // }
   
   .signupForm h2 {
     font-family: 'Lato';
@@ -74,7 +83,21 @@ body {
     font-weight: 900;
   }
   
+  .profile-image {
+    width: 150px;
+    height: auto;
+    display: block;
+    margin: 2% auto 0;
+  }
+
+  .myDiv {
+    text-align: center;
+    margin: 0;
+  }
+
   .myDiv h2 {
+    margin-top: 10px;
+    margin-bottom: 2%;
     font-size: 23px;
   }
   
@@ -153,10 +176,6 @@ body {
     border-bottom: 1px solid #a3a0a0;
   }
   
-  .myDiv {
-    margin-left: 60px;
-  }
-  
   .tabView {
     margin-top: 15%;
   }
@@ -164,46 +183,65 @@ body {
   .rightbox {
     height: 100%;
   }
-  
+
+  .topTab {
+    background-color: #F9CE34;
+    height: 50px;
+    width: 70%;
+    margin: 0 auto;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .chartContainer {
+    display: flex;
+    position: relative;
+    width: 80%;
+    margin: 0 auto 2%;
+    justify-content: space-evenly;
+  }
+
+  .tabContainer {
+    display: flex;
+    gap: 2px;
+  }
+
   .tab {
-    float: left;
-    border: 1px solid #ccc;
-    background-color: #f1f1f1;
-    width: 21%;
-    height: 447px;
-    background-color: #E5F3D2;
+    flex:2.3;
+    border: none;
+    height: auto;
+    background-color: transparent;
     border-top-left-radius: 6px;
     border-bottom-left-radius: 6px;
   }
   
   .tabcontent {
-    float: left;
-    padding: 0px 12px;
-    border: 1px solid #ccc;
-    width: 79%;
-    border-left: none;
-    height: 447px;
+    flex:7.7;
+    height: auto;
     overflow-y: auto;
-    background-color: #C8F2AE;
+    background-color: #ece08f;
+    border: none;
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
   }
   
   .tab-image {
-    width: 231px;
-    height: 46px;
     border-top-left-radius: 5px;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
   }
   
   .tab-image2 {
-    width: 231px;
-    height: 46px;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
   }
   
   .tab-image3 {
-    width: 231px;
-    height: 46px;
     border-bottom-left-radius: 5px;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
   }
   
   .tab button.tab1 {
@@ -215,6 +253,7 @@ body {
     border: none;
     outline: none;
     cursor: pointer;
+    background-color: transparent;
   }
   
   .tab button.tab2 {
@@ -226,18 +265,21 @@ body {
     border: none;
     outline: none;
     cursor: pointer;
+    background-color: transparent;
   }
   
   .tab button.tab3 {
     display: block;
     padding-left: 0;
     padding-top: 0;
+    padding-bottom: 0;
     border-bottom-left-radius: 5px;
     margin-top: 10px;
     width: 100%;
     border: none;
     outline: none;
     cursor: pointer;
+    background-color: transparent;
   }
   
   .rb-container {
@@ -295,7 +337,7 @@ body {
   .item-title {
     color: #000;
   }
-  
+
   .tabView .container {
     width: 100%;
     position: relative;

@@ -5,7 +5,7 @@ const Programs = () => {
   return (
     <main role="main">
       <section className="hero-section" role="region">
-        <img src={kidsCoding} alt="kids coding" role="presentaion"/>
+        <img src={kidsCoding} alt="kids coding" role="presentaion" />
         <div className="programs-text">
           <h2 data-testid="programs-title">Our Programs</h2>
           <h4>
@@ -40,7 +40,12 @@ const Programs = () => {
             target="_blank"
             rel="noreferrer"
           >
-            <button data-testid="register-btn" aria-label="Register for Y STEM and Chess">Register Now</button>
+            <button
+              data-testid="register-btn"
+              aria-label="Register for Y STEM and Chess"
+            >
+              Register Now
+            </button>
           </a>
         </div>
       </section>

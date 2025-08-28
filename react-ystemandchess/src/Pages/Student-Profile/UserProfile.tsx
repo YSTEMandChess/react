@@ -3,6 +3,20 @@ import { SetPermissionLevel } from '../../globals';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import './UserProfile.scss';
+import Puzzles from '../Puzzles/Puzzles';
+import { faDisplay } from '@fortawesome/free-solid-svg-icons';
+
+const image_profile = require('../../images/student/profilePic.png');
+const image_chart = require('../../images/student/chart.PNG');
+const image_activity = require('../../images/student/activity_tab.png');
+const image_mento = require('../../images/student/mento_tab.PNG');
+const image_prodev = require('../../images/student/prodev_tab.PNG');
+const image_chess = require('../../images/student/chess_tab.PNG');
+const image_games = require('../../images/student/games_tab.PNG');
+const image_puzzles = require('../../images/student/puzzles_tab.PNG');
+const image_play = require('../../images/student/play_tab.PNG');
+const image_recordings = require('../../images/student/recordings_tab.PNG');
+const image_inventory = require('../../images/student/inventory_tab.png');
 
 type PdfItem = {
   id: string;
@@ -200,147 +214,179 @@ const UserProfile = () => {
 
 
 return (
-    <div className="userProfileDiv">
-      <header>
-        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" />
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" rel="stylesheet" />
-      </header>
+  <div className="userProfileDiv">
+    <header>
+      <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" />
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" rel="stylesheet" />
+    </header>
+
+    <div className="myDiv">
+      <img src={image_profile} className="profile-image" alt="Profile Picture" />
+      <h2><strong>Hello, {firstName} {lastName}!</strong></h2>
+    </div>
+
+    <div className='topTab'></div>
+    <div className='main-content'>
       <div className="container">
-        <div className="myDiv">
-          <h2>{firstName} {lastName}</h2>
-        </div>
-      </div>
-  
-      <div className="container">
-        <div className="row">
+        <div className='chartContainer'>
+          <div className="row">
+            <div className="col-12">
+              <img src={image_chart} alt="Chart" />
+            </div>
+          </div>
           <div className="col-12">
-            <img src="../../../assets/images/student/chart.PNG" alt="Chart" />
-          </div>
-        </div>
-        <div className="col-12">
-          <p style={{ fontSize: '24px', marginBottom: '2px' }}><strong>Time Spent :</strong></p>
-          <div className="row" style={{ marginBottom: '20px' }}>
-            <div className="col-4">
-              <p style={{ marginLeft: '20px' }}> <span className="website-icon"></span>&nbsp; Website: <strong>45 minutes</strong></p>
-            </div>
-            <div className="col-4">
-              <p style={{ marginLeft: '20px' }}><span className="lesson"></span>&nbsp; Lesson: <strong>10 minutes</strong></p>
-            </div>
-            <div className="col-4">
-              <p style={{ marginLeft: '20px' }}><span className="puzzle"></span> &nbsp; Puzzle: <strong>5 minutes</strong></p>
-            </div>
-            <div className="col-4">
-              <p style={{ marginLeft: '20px' }}><span className="playing"></span>&nbsp; Playing: <strong>15 minutes</strong></p>
-            </div>
-            <div className="col-4">
-              <p style={{ marginLeft: '20px' }}><span className="mentoring"></span>&nbsp; Mentoring: <strong>15 minutes</strong></p>
-            </div>
-          </div>
-        </div>
-  
-        <div className="tab">
-          <button className="tablinks tab1" onClick={(e) => openTab(e, 'Activity')} id="defaultOpen">
-            <img src="../../../assets/images/student/activity_tab.png" className="tab-image" alt="Activity Tab" />
-          </button>
-          <button className="tablinks tab2" onClick={(e) => openTab(e, 'Mentor_Session')}>
-            <img src="../../../assets/images/student/mento_tab.PNG" className="tab-image2" alt="Mentor Session Tab" />
-          </button>
-          <button className="tablinks tab2" onClick={(e) => openTab(e, 'Professional_Development')}>
-            <img src="../../../assets/images/student/prodev_tab.PNG" className="tab-image2" alt="Professional Development Tab" />
-          </button>
-          <button className="tablinks tab2" onClick={(e) => openTab(e, 'Chess_Lession')}>
-            <img src="../../../assets/images/student/chess_tab.PNG" className="tab-image2" alt="Chess Lesson Tab" />
-          </button>
-          <button className="tablinks tab2" onClick={(e) => openTab(e, 'Games')}>
-            <img src="../../../assets/images/student/games_tab.PNG" className="tab-image2" alt="Games Tab" />
-          </button>
-          <button className="tablinks tab2" onClick={(e) => openTab(e, 'Puzzles')}>
-            <img src="../../../assets/images/student/puzzles_tab.PNG" className="tab-image2" alt="Puzzles Tab" />
-          </button>
-          <button className="tablinks tab2" onClick={(e) => openTab(e, 'computer')}>
-            <img src="../../../assets/images/student/play_tab.PNG" className="tab-image2" alt="Computer Tab" />
-          </button>
-          <button className="tablinks tab3" onClick={(e) => openTab(e, 'Recordings')}>
-            <img src="../../../assets/images/student/recordings_tab.PNG" className="tab-image3" alt="Recordings Tab" />
-          </button>
-        </div>
-  
-        <div id="Activity" className="tabcontent">
-          <div className="rightbox">
-            <div className="rb-container">
-              <ul className="rb">
-                <li className="rb-item">
-                  <div className="timestamp">23rd July 2022<br />7:00 PM</div>
-                  <div className="item-title">Solved 2 tactical puzzles</div>
+            <p style={{ fontSize: '24px', marginBottom: '2px' }}><strong>Time Spent :</strong></p>
+            {/* <div className="row" style={{ marginBottom: '20px' }}>
+              <div className="col-4">
+                <p style={{ marginLeft: '20px' }}> <span className="website-icon"></span>&nbsp; Website: <strong>45 minutes</strong></p>
+              </div>
+              <div className="col-4">
+                <p style={{ marginLeft: '20px' }}><span className="lesson"></span>&nbsp; Lesson: <strong>10 minutes</strong></p>
+              </div>
+              <div className="col-4">
+                <p style={{ marginLeft: '20px' }}><span className="puzzle"></span> &nbsp; Puzzle: <strong>5 minutes</strong></p>
+              </div>
+              <div className="col-4">
+                <p style={{ marginLeft: '20px' }}><span className="playing"></span>&nbsp; Playing: <strong>15 minutes</strong></p>
+              </div>
+              <div className="col-4">
+                <p style={{ marginLeft: '20px' }}><span className="mentoring"></span>&nbsp; Mentoring: <strong>15 minutes</strong></p>
+              </div>
+            </div> */}
+            <div className='rb-container'>
+              <ul className='rb'>
+                <li className='rb-item' style={{border:"none", paddingBottom:"0"}}>
+                  <p style={{marginLeft:'20px'}}>Website: <strong>45 minutes</strong></p>
                 </li>
-                <li className="rb-item">
-                  <div className="timestamp">19th July 2022<br />3:00 PM</div>
-                  <div className="item-title">Practiced 7 positions on <a href="/learnings">Piece Checkmates I</a></div>
+                <li className='rb-item' style={{border:"none", paddingBottom:"0"}}>
+                  <p style={{marginLeft:'20px'}}>Lesson <strong>10 minutes</strong></p>
                 </li>
-                <li className="rb-item">
-                  <div className="timestamp">17st July 2022<br />7:00 PM</div>
-                  <div className="item-title">Signed up to <a target="_blank" rel="noopener noreferrer" href="http://ystemandchess.com/">ystemandchess.com</a></div>
+                <li className='rb-item' style={{border:"none", paddingBottom:"0"}}>
+                  <p style={{marginLeft:'20px'}}>Puzzle: <strong>5 minutes</strong></p>
+                </li>
+                <li className='rb-item' style={{border:"none", paddingBottom:"0"}}>
+                  <p style={{marginLeft:'20px'}}>Playing: <strong>15 minutes</strong></p>
+                </li>
+                <li className='rb-item' style={{border:"none", paddingBottom:"0"}}>
+                  <p style={{marginLeft:'20px'}}>Mentoring: <strong>15 minutes</strong></p>
                 </li>
               </ul>
             </div>
           </div>
         </div>
-  
-        <div id="Mentor_Session" className="tabcontent">
-          <h3>Mentor Session</h3>
-          <iframe
-            src="http://127.0.0.1:5500/chessClient/parent.html" // URL of chess parent container
-            title="My Iframe"
-            width="600"
-            height="400"
-            frameBorder="0"
-            allowFullScreen
-          ></iframe>
-        </div>
-  
-        <div id="Professional_Development" className="tabcontent">
-          <h3>Professional Development</h3>
-        </div>
-  
-        <div id="Chess_Lession" className="tabcontent">
-          <h3>Chess Lession</h3>
-        </div>
-  
-        <div id="Games" className="tabcontent">
-          <h3>Games</h3>
-        </div>
-  
-        <div id="Puzzles" className="tabcontent">
-          <h3>Puzzles</h3>
-        </div>
-  
-        <div id="computer" className="tabcontent">
-          <h3>Computer</h3>
-        </div>
-  
-        <div id="Recordings" className="tabcontent">
-          <h3>Recording</h3>
-          {recordingList.map((record: Record, index) => (
-            <p key={index}>
-              <img src="https://cdn.iconscout.com/icon/free/png-256/play-circle-round-player-music-30547.png" srcSet="https://cdn.iconscout.com/icon/free/png-512/play-circle-round-player-music-30547.png 2x" alt="Play Icon" width="20" />&nbsp;
-              <strong>
-                <a style={{ color: '#007bff', cursor: 'pointer' }} title="Click to see the recording" target="_blank" rel="noopener noreferrer" onClick={() => getPresignURL(record.sid, record.meetingId)}>
-                  {record.sid}_{record.meetingId}_0.mp4
-                </a>
-              </strong>&nbsp; - {record.meetingStartTime}
-            </p>
-          ))}
+
+        <div className="tabContainer">
+          <div className="tab">
+            <button className="tablinks tab1" onClick={(e) => openTab(e, 'Activity')} id="defaultOpen">
+              <img src={image_activity} className="tab-image" alt="Activity Tab" />
+            </button>
+            <button className="tablinks tab2" onClick={(e) => openTab(e, 'Mentor_Session')}>
+              <img src={image_mento} className="tab-image2" alt="Mentor Session Tab" />
+            </button>
+            <button className="tablinks tab2" onClick={(e) => openTab(e, 'Professional_Development')}>
+              <img src={image_prodev} className="tab-image2" alt="Professional Development Tab" />
+            </button>
+            <button className="tablinks tab2" onClick={(e) => openTab(e, 'Chess_Lession')}>
+              <img src={image_chess} className="tab-image2" alt="Chess Lesson Tab" />
+            </button>
+            <button className="tablinks tab2" onClick={(e) => openTab(e, 'Games')}>
+              <img src={image_games} className="tab-image2" alt="Games Tab" />
+            </button>
+            <button className="tablinks tab2" onClick={(e) => openTab(e, 'Puzzles')}>
+              <img src={image_puzzles} className="tab-image2" alt="Puzzles Tab" />
+            </button>
+            <button className="tablinks tab2" onClick={(e) => openTab(e, 'computer')}>
+              <img src={image_play} className="tab-image2" alt="Computer Tab" />
+            </button>
+            <button className="tablinks tab2" onClick={(e) => openTab(e, 'Recordings')}>
+              <img src={image_recordings} className="tab-image3" alt="Recordings Tab" />
+            </button>
+            <button className="tablinks tab3" onClick={(e) => openTab(e, 'Backpack')}>
+              <img src={image_inventory} className="tab-image3" alt="Backpack Inventory Tab" />
+            </button>
+          </div>
+
+          <div id="Activity" className="tabcontent">
+            <div className="rightbox">
+              <div className="rb-container">
+                <ul className="rb">
+                  <li className="rb-item">
+                    <div className="timestamp">23rd July 2022<br />7:00 PM</div>
+                    <div className="item-title">Solved 2 tactical puzzles</div>
+                  </li>
+                  <li className="rb-item">
+                    <div className="timestamp">19th July 2022<br />3:00 PM</div>
+                    <div className="item-title">Practiced 7 positions on <a href="/learnings">Piece Checkmates I</a></div>
+                  </li>
+                  <li className="rb-item">
+                    <div className="timestamp">17st July 2022<br />7:00 PM</div>
+                    <div className="item-title">Signed up to <a target="_blank" rel="noopener noreferrer" href="http://ystemandchess.com/">ystemandchess.com</a></div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div id="Mentor_Session" className="tabcontent">
+            <h3>Mentor Session</h3>
+            <iframe
+              src="http://127.0.0.1:5500/chessClient/parent.html" // URL of chess parent container
+              title="My Iframe"
+              width="600"
+              height="400"
+              frameBorder="0"
+              allowFullScreen
+            ></iframe>
+          </div>
+
+          <div id="Professional_Development" className="tabcontent">
+            <h3>Professional Development</h3>
+          </div>
+
+          <div id="Chess_Lession" className="tabcontent">
+            <h3>Chess Lession</h3>
+          </div>
+
+          <div id="Games" className="tabcontent">
+            <h3>Games</h3>
+          </div>
+
+          <div id="Puzzles" className="tabcontent">
+            <Puzzles />
+          </div>
+
+          <div id="computer" className="tabcontent">
+            <h3>Computer</h3>
+          </div>
+
+          <div id="Recordings" className="tabcontent">
+            <h3>Recording</h3>
+            {recordingList.map((record: Record, index) => (
+              <p key={index}>
+                <img src="https://cdn.iconscout.com/icon/free/png-256/play-circle-round-player-music-30547.png" srcSet="https://cdn.iconscout.com/icon/free/png-512/play-circle-round-player-music-30547.png 2x" alt="Play Icon" width="20" />&nbsp;
+                <strong>
+                  <a style={{ color: '#007bff', cursor: 'pointer' }} title="Click to see the recording" target="_blank" rel="noopener noreferrer" onClick={() => getPresignURL(record.sid, record.meetingId)}>
+                    {record.sid}_{record.meetingId}_0.mp4
+                  </a>
+                </strong>&nbsp; - {record.meetingStartTime}
+              </p>
+            ))}
+          </div>
+
+          <div id="Backpack" className="tabcontent">
+            <h3>Backpack</h3>
+          </div>
         </div>
       </div>
-  
-      <div className="row" style={{ height: '500px' }}>
-        <div id="pdf-div" className="pdf-view"></div>
-      </div>
-  
-      <footer style={{ marginTop: '16%' }}>
-        {/* <app-footer></app-footer> */}
-      </footer>
     </div>
+
+    {/* <div className="row" style={{ height: '500px' }}>
+      <div id="pdf-div" className="pdf-view"></div>
+    </div>
+    <footer>
+      <app-footer></app-footer>
+    </footer> */}
+  </div>
   )};
   
   export default UserProfile;

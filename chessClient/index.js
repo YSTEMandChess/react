@@ -34,6 +34,12 @@ const mouseImage = 'img/cursor.png';
 var opponentMouseX = 0;
 var opponentMouseY = 0;
 
+var nextPuzzleMove = [];
+var isPuzzle = false;
+
+var highlightFrom = "";
+var highlightTo = "";
+
 // Listen for mouse position change 
 document.addEventListener('mousemove', (event) => {
   myMouseX = event.clientX;
@@ -113,6 +119,33 @@ function sendNewGame()
   socket.emit("newgame", JSON.stringify(data));
 }
 
+// similar to sendNewGame, but for puzzles specifically
+function sendNewPuzzle()
+{
+  console.log("starting new puzzle with server")
+  var data = {"mentor": mentor, "student": student, "role": role};
+  console.log(data);
+  socket.emit("newPuzzle", JSON.stringify(data));
+}
+
+// for chess server to modify the game's board state & player color, (designed just for puzzles for now)
+function sendSetState(fen)
+{
+  console.log("setting a new board state");
+  var data = {"state": fen};
+  console.log(data);
+  socket.emit("setstate", JSON.stringify(data));
+}
+
+// for chess server to modify the game's board state & player color, (designed just for puzzles for now)
+function sendSetStateColor(fen, color, hints)
+{
+  console.log("setting a new board state");
+  var data = {"state": fen, "color": color, "hints": hints};
+  console.log(data);
+  socket.emit("setstateColor", JSON.stringify(data));
+}
+
 function sendMove(from, to)
 {
   console.log("sending move to server");
@@ -181,15 +214,76 @@ function sendPieceDrop()
   socket.emit("piecedrop", JSON.stringify(data)); 
 }
 
+// sending simple string messages
+function sendMessage(message)
+{
+  console.log("sending message:", message);
+  var data = {"message": message};
+  socket.emit("message", JSON.stringify(data)); 
+}
+
+// notify front end that their user has created a new game/puzzle as host
+socket.on('host', () => {
+  parent.postMessage("host", "*");
+  isPuzzle = true;
+})
+
+// notify front end that their user has joined an existing new game/puzzle as guest
+socket.on('guest', () => {
+  parent.postMessage("guest", "*");
+  isPuzzle = true;
+})
+
+socket.on('message', (msg) => {
+  parsedMsg = JSON.parse(msg);
+  parent.postMessage(parsedMsg.message, "*");
+})
 
 // Handle boardstate message from the client
 socket.on('boardstate', (msg) => {
     parsedMsg = JSON.parse(msg);
+
+    // if served as a client for a puzzle host (a guest does not store nextPuzzleMove for simplicity)
+    if (nextPuzzleMove.length == 2) {
+      // for a puzzle host, 'boardstate' message is either initiated by host itself or its guest
+      
+      // if initiated by host itself, ignore the message
+      if (parsedMsg.boardState == currentState.fen()) return;
+      // else 'boardstate' message is initiated by puzzle guest
+
+      // the expected puzzle moves
+      var source = nextPuzzleMove[0];
+      var target = nextPuzzleMove[1];
+      
+      // the expected chess board based on expected moves
+      const testState = new Chess(currentState.fen());
+      testState.move({ from: source, to: target }); 
+
+      // new board state is different from expected board, so client has made an incorrect move
+      if (testState.fen() != parsedMsg.boardState) {
+        // snap back, reset puzzle to current state
+        sendSetState(currentState.fen());
+        highlightMove(highlightFrom, highlightTo, "lastmove");
+      } else {
+      // else client has made the expected move
+        nextPuzzleMove = []; // clear next moves
+        currentState = new Chess(parsedMsg.boardState); // rearrange board according to guest move
+        board.position(currentState.fen());
+        sendToParent( // notify front end that a move has been made
+          JSON.stringify({
+            from: source,
+            to: target,
+          }),
+        );
+      }
+      return;
+    }
     
     // update state of chess board
     console.log(currentState);
     console.log(currentState.fen());
     currentState = new Chess(parsedMsg.boardState);
+    console.log("received board state", parsedMsg);
 
     // setting player color 
     if (parsedMsg.color)
@@ -201,6 +295,7 @@ socket.on('boardstate', (msg) => {
       // setting chess board orientation
       config.orientation = parsedMsg.color;
       board = Chessboard("myBoard", config);
+      parent.postMessage("new game received", "*");
     }
 
     // update visuals of chessboard
@@ -223,6 +318,12 @@ socket.on('piecedrag', (msg) => {
 
 });
 
+socket.on('color', (msg) => {
+  console.log("received color", msg);
+  parsedMsg = JSON.parse(msg);
+  playerColor = parsedMsg.color;
+});
+
 socket.on('piecedrop', () => {
 
   console.log('recieved piece drop');
@@ -237,7 +338,7 @@ socket.on('highlight', (msg) => {
   // Highlight the anticipated space
   console.log("highlight recieved")
   parsedMsg = JSON.parse(msg);
-  highlightMove(parsedMsg.from, parsedMsg.to, 'nextMove');
+  highlightMove(parsedMsg.from, parsedMsg.to, 'lastMove');
 
 });
 
@@ -262,8 +363,13 @@ socket.on('mousexy', (msg)=>{
 
   if (parsedMsg.x && parsedMsg.y)
   {  
-    opponentMouseX = (-1 * parsedMsg.x) + viewportWidth - 28;
-    opponentMouseY = (-1 * parsedMsg.y) + viewportHeight - 28;
+    if (isPuzzle) {
+      opponentMouseX = parsedMsg.x - 28;
+      opponentMouseY = parsedMsg.y - 28;
+    } else {
+      opponentMouseX = (-1 * parsedMsg.x) + viewportWidth - 28;
+      opponentMouseY = (-1 * parsedMsg.y) + viewportHeight - 28;
+    }
     
     updateOpponentMouseXY();
   }
@@ -274,7 +380,7 @@ socket.on('mousexy', (msg)=>{
 socket.on('reset', () => {
   // reload page
   location.reload();
-  deleteAllCookies();
+  // deleteAllCookies();
   console.log("resetting board");
 });
 
@@ -282,6 +388,7 @@ socket.on('reset', () => {
 socket.on('lastmove', (msg) => {
   // Highlight the last moved spaces
   parsedMsg = JSON.parse(msg);
+  if(!parsedMsg.from && !parsedMsg.to && nextPuzzleMove.length > 0) return;
   highlightMove(parsedMsg.from, parsedMsg.to, "lastmove");
 
 });
@@ -301,13 +408,30 @@ function deleteAllCookies() {
 eventer(
   messageEvent,
   (e) => {
-    console.log("client event: ", e); // uncomment for debugging
-    let data = JSON.parse(e.data);
 
+    console.log("client event: ", e); // uncomment for debugging
+    let data;
+try {
+  data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+} catch (err) {
+  console.error("Invalid JSON message from parent:", e.data);
+  return;
+}
+
+      updateStatus();
+      board.position(currentState.fen());
+      sendToParent(currentState.fen());
+    }
+    
     // get command from parent and send to server
     var command = data.command;
-    if (command == "newgame") { sendNewGame(); }
-    else if (command == "endgame") {
+    if (command == "newgame") { // front end wants to create / join game
+      sendNewGame(); 
+    } else if (command == "newPuzzle"){ // front end wants to create / join puzzle
+      sendNewPuzzle();
+    } else if (command == "message"){ // front end wants to broadcast a message
+      sendMessage(data.message);
+    } else if (command == "endgame") { // front end wants to end existing game / puzzle
       // delete game on server
       sendEndGame(); 
     }
@@ -315,8 +439,32 @@ eventer(
       mentor = data.mentor;
       student = data.student;
       role = data.role;
-      console.log(data);
     } else if (command == "undo") { sendUndo(); }
+
+    // check if puzzle
+    if (data.PuzzleId) {
+      console.log("loading puzzle: ", data.PuzzleId);
+      currentState.load(data.FEN);
+      board.position(data.FEN);
+
+      // find the starting color
+      var activeColor = data.FEN.split(" ")[1];
+      // the computer makes the first move
+      // change board orientation accordingly
+      // i.e. if active color is w, then player is black, and vice versa
+      if (activeColor === 'w'){
+        playerColor = "black";
+        board.orientation('black');
+      }
+      else{
+        playerColor = "white";
+        board.orientation('white');
+      }
+
+      sendSetStateColor(currentState.fen(), playerColor, data.Hints);
+      sendToParent(currentState.fen());
+    }
+
     // get and set lessonflag
     lessonFlag = data.lessonFlag;
     if (lessonFlag == true) {
@@ -325,18 +473,18 @@ eventer(
 
     // move a piece if it's a move message
     if ("from" in data && "to" in data) {
-      game.move({ from: data.from, to: data.to });
+      currentState.move({ from: data.from, to: data.to });
 
       // move highlight
       highlightMove(data.from, data.to);
 
       updateStatus();
-      sendToParent(game.fen());
+      sendToParent(currentState.fen());
     }
 
     // highlight message
     if ("highlightFrom" in data && "highlightTo" in data) {
-      highlightMove(data.highlightFrom, data.highlightTo);
+      highlightMove(data.highlightFrom, data.highlightTo, "lastmove");
     }
 
     if ("clearhighlight" in data) {
@@ -398,13 +546,25 @@ eventer(
       board.position(data.boardState);
       updateStatus();
     }
+
+    // highlight message
+    // if ("highlightFrom" in data && "highlightTo" in data) {
+    //   highlightMove(data.highlightFrom, data.highlightTo);
+    // }
+
+    
   },
   false,
 );
 
 function highlightMove(from, to, style) {
+  console.log("hightlight!!!", from, to);
   $board.find("." + squareClass).removeClass(style);
   if (from !== "remove" || to !== "remove") {
+    if (from && to) {
+      highlightFrom = from;
+      highlightTo = to;
+    }
     $board.find(".square-" + from).addClass(style);
     $board.find(".square-" + to).addClass(style);
   }
@@ -474,7 +634,18 @@ function onDrop(source, target, draggedPieceSource) {
   // if we're not in freeplay
   if (!freemoveFlag)
   {
-      
+    
+    // if we're doing a puzzle, check if the move is correct
+    if (nextPuzzleMove.length == 2) {
+      // incorrect move, snapback
+      if (source !== nextPuzzleMove[0] || target !== nextPuzzleMove[1]) {
+        return "snapback";
+      }
+      // correct move, clear the next expected move
+      else
+        nextPuzzleMove = [];
+    }
+
     // see if the move is legal
     var move = currentState.move({
       from: source,

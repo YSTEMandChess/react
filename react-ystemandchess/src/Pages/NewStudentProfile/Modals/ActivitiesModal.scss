@@ -1,0 +1,347 @@
+/* ---------------------------------------------
+  Overlay Wrapper: Fullscreen background + centering
+---------------------------------------------- */
+.activities-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+
+  /* ---------------------------------------------
+    Modal Container
+  ---------------------------------------------- */
+  .modal-content {
+    width: 80vw;
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 12px;
+    padding: 2rem;
+    position: relative;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    animation: slideUp 0.3s ease;
+    background-color: #E5F3D2;
+    background-image: url("../../../images/ActivitiesAssets/vine_background.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+
+    /* Close "X" button */
+    .close-button {
+      position: absolute;
+      top: 1rem;
+      right: -0.2rem;
+      width: 50px;
+      height: 50px;
+      background-color: #fff;
+      color: red;
+      border: 2.5px solid red;
+      border-radius: 50%;
+      font-size: 2.5rem;
+      font-weight: bold;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 1;
+
+      &:hover {
+        background-color: red;
+        color: white;
+      }
+    }
+
+/* ---------------------------------------------
+  Growth Box Section
+---------------------------------------------- */
+.growth-box-container {
+  position: relative;
+  width: 23rem;
+  margin: 75px auto 2rem 75px;
+
+  .middle-vine {
+    position: absolute;
+    bottom: -2.9rem;
+    left: -6.75rem;
+    width: 100%;
+    height: auto;
+  }
+
+  .growth-box {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .button-row {
+    display: flex;
+    position: absolute;
+    bottom: 6.3rem;
+    left: 45%;
+    transform: translateX(-50%);
+  }
+
+  .growth-btn {
+    background: #E29B25;
+    border: none;
+    border-radius: 15px;
+    padding: 0.7rem 1.5rem;
+    font-family: 'Lato', sans-serif;
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: #231F20;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+    &:not(:last-child) {
+      margin-right: -0.75rem;
+    }
+
+    &:hover {
+      background: #f7a835;
+    }
+  }
+
+  .water-meter {
+    position: absolute;
+    bottom: 5.7rem;
+    right: 2.3rem;
+    width: 60px;
+    height: 60px;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+/* ---------------------------------------------
+  Top Vine, Task Banner, and Activity Buttons
+---------------------------------------------- */
+.top-vine-container {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  width: 35rem;
+  max-width: 100%;
+
+  .top-vine-wrapper {
+    position: relative;
+
+    .top-vine {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .hanging-vine {
+      position: absolute;
+      top: 79%;
+      left: 41.5%;
+      width: 4.75rem;
+      height: auto;
+      z-index: 1;
+    }
+
+    /* Task banner button */
+    .task-button {
+      position: absolute;
+      top: 46.8%;
+      left: 17%;
+      z-index: -1;
+      background-color: #F0D9B4;
+      color: #231F20;
+      font-family: 'Lato', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 1.2rem 1.75rem;
+      border: none;
+      border-radius: 1.5rem;
+      box-shadow: -7px 2px 0 #8E6A50;
+      transform: rotate(-15.18deg);
+      max-width: 100%;
+      text-align: center;
+      line-height: 1.3;
+      cursor: pointer;
+    }
+
+    /* Vertical stack of activity buttons */
+    .button-stack {
+      position: absolute;
+      top: 14.5rem;
+      left: 12rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .activity-button {
+      position: relative;
+      background-color: #F0D9B4;
+      border: none;
+      border-radius: 1rem;
+      box-shadow: -7px 2px 0 #8E6A50;
+      cursor: pointer;
+      width: 7rem;
+      min-height: 4rem;
+      font-family: 'Lato', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.8rem 0.5rem 0.5rem;
+      box-sizing: border-box;
+
+      .label {
+        position: absolute;
+        top: 0.35rem;
+        left: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #231F20;
+        text-align: left;
+      }
+
+      .action {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #B58863;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        padding: 0 0.3rem;
+        margin: 0;
+        display: block;
+      }
+    }
+  }
+}
+
+/* ---------------------------------------------
+  Topic Bag Section + Topic Buttons
+---------------------------------------------- */
+.topic-bag-container {
+  width: 38rem;
+  margin-left: 1.5rem;
+  margin-top: -1.5rem;
+  position: relative;
+
+  .bag-image {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .topic-button {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background-color: #1f432f;
+    color: #FFFFFF;
+    font-family: 'Lato', sans-serif;
+    font-weight: bold;
+    font-size: 0.825rem;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    width: 6.25rem;
+    height: 3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background-color: #3c6f4a;
+    }
+  }
+
+  .btn-1 {
+    top: 50%;
+    left: 23.25%;
+  }
+
+  .btn-2 {
+    top: 50%;
+    left: 42.25%;
+  }
+
+  .btn-3 {
+    top: 50%;
+    left: 61.25%;
+  }
+
+  .btn-4 {
+    top: 50%;
+    left: 80.25%;
+  }
+
+  .short-bottom-vine {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 7rem;
+    width: 5%;
+    height: auto;
+    z-index: -1;
+  }
+
+  .bottom-vine {
+    position: absolute;
+    bottom: -1.65rem;
+    left: -3.5rem;
+    width: 95%;
+    height: auto;
+  }
+}
+
+/* ---------------------------------------------
+  Stemmy Decorative Character
+---------------------------------------------- */
+.stemmy-container {
+  position: absolute;
+  top: 41rem;
+  right: 0;
+  width: 15rem;
+
+  .stemmy {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+}
+
+  }
+}
+
+/* ---------------------------------------------
+  Animations
+---------------------------------------------- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
