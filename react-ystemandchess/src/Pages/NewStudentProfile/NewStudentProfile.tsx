@@ -7,9 +7,6 @@ import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router";
 import StatsChart from "./StatsChart";
-const Lessons = lazy(() => import("../Lessons/Lessons"));
-const LessonsSelection = lazy(() => import("../LessonsSelection/LessonsSelection"));
-const LessonOverlay = lazy(() => import("../piece-lessons/lesson-overlay/lesson-overlay"));
 import Puzzles from "../Puzzles/Puzzles";
 import StreakModal from "./Modals/StreakModal";
 import ActivitiesModal from "./Modals/ActivitiesModal";
@@ -31,6 +28,10 @@ import gamesTab from "../../images/student/games_tab.png";
 import puzzlesTab from "../../images/student/puzzles_tab.png";
 import playTab from "../../images/student/play_tab.png";
 import recordingsTab from "../../images/student/recordings_tab.png";
+
+const Lessons = lazy(() => import("../Lessons/Lessons"));
+const LessonsSelection = lazy(() => import("../LessonsSelection/LessonsSelection"));
+const LessonOverlay = lazy(() => import("../piece-lessons/lesson-overlay/lesson-overlay"));
 
 // Main Student Profile Component
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
