@@ -421,7 +421,6 @@ try {
       updateStatus();
       board.position(currentState.fen());
       sendToParent(currentState.fen());
-    }
     
     // get command from parent and send to server
     var command = data.command;
