@@ -7,13 +7,58 @@ sudo: required
 branches:
   only:
   - master
-  - Travis_Fix
+  - ci-test
   
+install:
+  - cd chessClient && npm ci && cd ..
+  - cd chessServer && npm ci && cd ..
+  - cd middlewareNode && npm ci && cd ..
+  - cd react-ystemandchess && npm ci && cd ..
+  - cd stockfishServer && npm ci && cd ..
+
 before_script:
-- bash create_travis_envs.sh
-- cd YStemAndChess
-- npm i
+  # chessClient
+  - cd chessClient && echo "PARENT=${PARENT}" > .env && cd ..
+
+  # chessServer
+  - cd chessServer && echo "PORT=${CHESS_SERVER_PORT}" > .env && cd ..
+
+  # stockfishServer
+  - cd stockfishServer && echo "PORT=${STOCKFISH_PORT}" > .env && cd ..
+
+  # middlewareNode
+  - |
+    cat > middlewareNode/config/default.json << EOF
+    {
+      "mongoURI": "${MONGO_URI}",
+      "corsOptions": {
+        "origin": "${ORIGIN_URL}",
+        "credentials": true
+      },
+      "awsAccessKey": "${AWS_ACCESS_KEY}",
+      "awsSecretKey": "${AWS_SECRET_KEY}"
+    }
+    EOF
+
+  # react-ystemandchess (use Travis vars in environment.js)
+  - mkdir -p react-ystemandchess/src/environments
+  - |
+    cat > react-ystemandchess/src/environments/environment.js << EOF
+    export const environment = {
+      production: true,
+      agora: {appId: "${AGORA_APP_ID}"},
+      urls: {
+        middlewareURL: "${MIDDLEWARE_URL}",
+        chessClientURL: "${CHESS_CLIENT_URL}",
+        stockfishURL: "${STOCKFISH_URL}",
+        chessServerURL: "${CHESS_SERVER_URL}"
+      }
+    };
+    EOF
 
 script:
-- npm run test-headless
-- ng build --prod
+  - cd chessClient && npm run build && cd ..
+  - cd chessServer && npm test && cd ..
+  - cd middlewareNode && npm test && cd ..
+  - cd react-ystemandchess && npm run build && npm test && cd ..
+  - cd stockfishServer && npm test && cd ..
