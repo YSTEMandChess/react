@@ -87,7 +87,7 @@ Running the following script creates all environment files needed for the platfo
 **Linux/macOS or Windows (Git Bash):**
 
 ```bash
-sh create_travis_envs.sh
+sh create_dev_envs.sh
 ```
 
 ---
@@ -99,8 +99,6 @@ Each service runs independently and requires its own terminal window. Start the 
 #### Middleware API (Backend)
 
 Handles user authentication, database operations, and coordinates other services.
-
-**Important:** You'll need a `default.json` configuration file from the team. Place it in `middlewareNode/config/default.json` before starting the server.
 
 
 ```bash
