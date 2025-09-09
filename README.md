@@ -155,14 +155,13 @@ This service usually runs on port 8080.
 
 #### Chess Client (Testing Interface)
 
-Provides different views of the chess board for development:
-
 ```bash
 cd chessClient
 npm install
 ```
 
-You can use the **Live Server extension in VS Code** to open the HTML files:
+Run the http server using on port 80: npx http-server -p 80 to ensure that the chess board frame loads during any session.
+You can use the **Live Server extension in VS Code** to open the HTML files for local testing of the chess board:
 
 * **Board only:** Right-click `index.html` → "Open with Live Server"
 * **Board with controls:** Right-click `parent.html` → "Open with Live Server"
