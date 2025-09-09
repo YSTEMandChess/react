@@ -160,7 +160,7 @@ cd chessClient
 npm install
 ```
 
-Run the http server using on port 80: npx http-server -p 80 to ensure that the chess board frame loads during any session.
+Run the http server on port 80 using: `npx http-server -p 80` to ensure that the chess board frame loads during any session.
 You can use the **Live Server extension in VS Code** to open the HTML files for local testing of the chess board:
 
 * **Board only:** Right-click `index.html` → "Open with Live Server"
