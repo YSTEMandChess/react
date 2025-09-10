@@ -18,7 +18,7 @@
     "express": "^4.17.1",
     "jquery": ">=3.4.1",
     "nodejs": "0.0.0",
-    "nodemon": "^2.0.13",
+    "nodemon": "^3.1.10",
     "socket.io": "^4.2.0",
     "sweetalert2": "^11.22.0",
     "uniq": "^1.0.1"
@@ -37,6 +37,6 @@
     "website": "node scripts/website.js"
   },
   "volta": {
-    "node": "14.21.3"
+    "node": "18.20.8"
   }
 }
