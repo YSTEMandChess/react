@@ -16,20 +16,21 @@ beforeAll((done) => {
 
     socketIo.on('connection', (socket) => {
         socket.on('newgame', (msg) => {
-            // Simulate boardstate event
+            const { role } = JSON.parse(msg);
+            if (!['student', 'mentor'].includes(role)) {
+                socket.emit('error', 'error : invalid value for msg.role. Requires student/mentor');
+                return;
+            }
             socket.emit('boardstate', JSON.stringify({
                 boardState: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
-                color: JSON.parse(msg).role === 'student' ? 'black' : 'white'
+                color: role === 'student' ? 'black' : 'white'
             }));
-            // Error for invalid role
-            if (!['student', 'mentor'].includes(JSON.parse(msg).role)) {
-                socket.emit('error', 'error : invalid value for msg.role. Requires student/mentor');
-            }
         });
         socket.on('move', (msg) => {
             // Simulate boardstate after move
             socket.emit('boardstate', JSON.stringify({
-                boardState: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR'
+                boardState: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR',
+                color: 'black' // Add this line
             }));
         });
         socket.on('endgame', () => {
@@ -37,7 +38,8 @@ beforeAll((done) => {
         });
         socket.on('undo', () => {
             socket.emit('boardstate', JSON.stringify({
-                boardState: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
+                boardState: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
+                color: 'black'
             }));
         });
     });
@@ -46,6 +48,9 @@ beforeAll((done) => {
     socketURL = `http://localhost:${process.env.PORT || 3000}`;
 });
 afterAll((done) => {
+    if (ioClient && ioClient.connected) {
+        ioClient.disconnect();
+    }
     server.close(done);
 });
 
