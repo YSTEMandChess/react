@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./ActivitiesModal.scss";
 import { ReactComponent as GrowthBox } from "../../../images/ActivitiesAssets/growth_box.svg";
 import { ReactComponent as WaterMeter } from "../../../images/ActivitiesAssets/water_meter.svg";
@@ -9,14 +9,45 @@ import { ReactComponent as TopicBag } from "../../../images/ActivitiesAssets/top
 import { ReactComponent as ShortBottomVine} from "../../../images/ActivitiesAssets/short_bottom_vine.svg";
 import { ReactComponent as BottomVine} from "../../../images/ActivitiesAssets/bottom_vine.svg";
 import { ReactComponent as Stemmy} from "../../../images/ActivitiesAssets/stemmy.svg";
+import { environment } from "../../../environments/environment"; 
+import { useCookies } from "react-cookie";
 
-const ActivitiesModal = ({ onClose }: { onClose: () => void }) => {
+const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username: string }) => {
   // Close modal only when clicking the background overlay (not child elements)
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
+    
+  const [cookies] = useCookies(['login']);
+  
+
+  const fetchActivities = async () => {
+    try {
+      const url = `${environment.urls.middlewareURL}/activities/${username}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          'Authorization': `Bearer ${cookies.login}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      const activities = await response.json();
+      console.log(activities);    
+    } catch (err) {
+      console.error("Error fetching activities:", err);
+    }
+    
+  }
+  useEffect(() => {
+    try {
+      fetchActivities();
+    } catch (err) {
+      console.log(err);
+    }
+  }, []);
 
   return (
     <div className="activities-modal-overlay" onClick={handleOverlayClick}>

@@ -435,7 +435,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       
       {/* Render modals conditionally */}
       {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} />}
-      {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} />}
+      {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username}/>}
       {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} />}
       {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
       
