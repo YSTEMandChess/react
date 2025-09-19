@@ -6,11 +6,11 @@ This is an educational platform that combines chess instruction with STEM learni
 
 ## Development Environment Setup
 
-To run the platform, you’ll need **Node.js v14**, **nodemon**, and **Apache** installed.
+To run the platform, you’ll need **Node.js v14.21.3**, **nodemon**, and **Apache** installed.
 
 ### NodeJS
 
-This project requires NodeJS version 14.
+This project requires NodeJS version 14.21.3.
 
 **Linux:**
 
@@ -108,6 +108,16 @@ npm start      # Start the API server
 ```
 
 The server typically runs on port 8000. You should see "MongoDB Connected..." when it starts successfully.
+
+If you wish to log into the user pages with test accounts, you may use the following usernames and passwords:
+
+**Mentor Userpage:**
+
+mentor 123123123
+
+**Student Userpage:**
+
+student 123123123
 
 ---
 
