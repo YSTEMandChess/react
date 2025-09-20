@@ -13,18 +13,24 @@
     body {
       background: radial-gradient(circle, #202020, #292929);
       padding: 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
 
     h1 {
       text-align: center;
       margin-bottom: 30px;
+      color: white;
+      font-size: 2rem;
     }
 
     #chessboard {
       display: block;
-      margin: 0 auto;
+      margin: 0 auto 30px auto;
       border: 2px solid #ffffff;
       border-radius: 10px;
+      max-width: 100%;
+      height: auto;
     }
 
     .form-control {
@@ -34,22 +40,32 @@
       color: #ffffff;
       margin-bottom: 15px;
       padding: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .form-control::placeholder {
+      color: #ccc;
     }
 
     .form-label {
       font-weight: bold;
       color: white;
+      margin-bottom: 8px;
+      display: block;
     }
 
     .btn-custom {
       border: 2px solid #ffffff;
       background-color: transparent;
-      
-      color: #333;
+      color: white;
       border-radius: 10px;
       padding: 10px 20px;
-      margin: 10px;
+      margin: 5px;
       transition: background-color 0.3s, color 0.3s;
+      cursor: pointer;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .btn-custom:hover {
@@ -60,6 +76,84 @@
     .text-center {
       text-align: center;
       color: white;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Mobile responsive styles */
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+      }
+
+      #chessboard {
+        width: 90vw;
+        height: 90vw;
+        max-width: 350px;
+        max-height: 350px;
+        margin-bottom: 20px;
+      }
+
+      .container {
+        padding: 0;
+      }
+
+      .col-md-6 {
+        margin-bottom: 20px;
+      }
+
+      .btn-custom {
+        margin: 5px 0;
+        padding: 12px 15px;
+        font-size: 14px;
+      }
+
+      .form-control {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      body {
+        padding: 5px;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+      }
+
+      #chessboard {
+        width: 95vw;
+        height: 95vw;
+        max-width: 300px;
+        max-height: 300px;
+      }
+
+      .btn-custom {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .form-control {
+        padding: 10px;
+      }
+
+      .row {
+        margin: 0;
+      }
+
+      .col-md-3, .col-md-6 {
+        padding: 5px;
+      }
     }
   </style>
 
