@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "nodemon index.js",
     "test": "jest --detectOpenHandles --forceExit"
   },
   "author": "",
@@ -18,10 +19,11 @@
     "stockfish": "^11.0.0"
   },
   "volta": {
-    "node": "14.21.3"
+    "node": "18.20.8"
   },
   "devDependencies": {
     "jest": "^30.0.4",
+    "nodemon": "^3.1.10",
     "socket.io-client": "^4.8.1"
   }
 }
