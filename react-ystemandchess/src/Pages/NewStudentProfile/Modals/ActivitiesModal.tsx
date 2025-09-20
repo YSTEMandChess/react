@@ -48,11 +48,10 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
     
   }
   useEffect(() => {
-    try {
-      fetchActivities();
-    } catch (err) {
-      console.log(err);
-    }
+      fetchActivities()
+        .catch(err => {
+          console.error(err)
+        });
   }, []);
 
   return ( 
