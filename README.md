@@ -26,6 +26,7 @@ Volta automatically uses the Node version pinned in this project’s `package.js
     ```bash
     curl https://get.volta.sh | bash
     source ~/.bashrc # or ~/.zshrc
+    ```
 - **Windows:**
 Download and run the installer from [volta.sh](https://volta.sh)
 
@@ -57,6 +58,7 @@ If you prefer nvm:
     ```powershell
     nvm install 18.20.8
     nvm use 18.20.8
+    ```
 
 ### Nodemon
 
