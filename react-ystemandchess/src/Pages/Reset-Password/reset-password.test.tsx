@@ -109,27 +109,3 @@ test('successful verification', async () => {
     fireEvent.click(button);
   })
 });
-
-// test('shows error message on invalid username', () => {
-//   render(
-//     <MemoryRouter>
-//       <ResetPassword />
-//     </MemoryRouter>
-//     );
-//   const usernameInput = screen.getByPlaceholderText('UserName');
-//   fireEvent.blur(usernameInput, { target: { value: ' 2a' } });
-//   const errorMessage = screen.getByText('Invalid username');
-//   expect(errorMessage).toBeInTheDocument();
-// });
-
-// test('shows error message on invalid email', () => {
-//   render(
-//     <MemoryRouter>
-//       <ResetPassword />
-//     </MemoryRouter>
-//     );
-//   const emailInput = screen.getByPlaceholderText('Email');
-//   fireEvent.blur(emailInput, { target: { value: 'invalidemail' } });
-//   const errorMessage = screen.getByText('Invalid Email');
-//   expect(errorMessage).toBeInTheDocument();
-// });

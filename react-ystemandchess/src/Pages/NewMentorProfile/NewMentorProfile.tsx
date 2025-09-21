@@ -146,8 +146,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
           setStudentFirstName(data.firstName);
           setStudentLastName(data.lastName);
           setStudentUsername(data.username);
-          setHasStudent(true)
-          console.log(data)
+          setHasStudent(true);
         }
       });
   }

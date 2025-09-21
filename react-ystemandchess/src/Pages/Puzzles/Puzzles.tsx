@@ -88,10 +88,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
     // Helper: Play the next computer move from moveList, update FEN, and highlight
     const playComputerMove = () => {
-      console.log("DEBUG — full moveList at lesson start:", moveList);
       if (moveList.length === 0) return;
       const computerMove = moveList.shift();
-      console.log("DEBUG — full moveList at lesson start:", moveList);
       if (!computerMove) return;
       const moveFrom = computerMove.substring(0, 2);
       const moveTo = computerMove.substring(2, 4);
@@ -135,7 +133,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         const sideToMove = state.FEN.split(" ")[1];
         // Player is the opposite color
         const newPlayerColor = sideToMove === 'w' ? 'b' : 'w';
-        console.log("DEBUG", newPlayerColor);
         setPlayerColor(newPlayerColor);
         
 
