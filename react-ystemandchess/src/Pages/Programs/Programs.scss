@@ -1,22 +1,28 @@
+/* Shared container width so hero + yellow cards line up perfectly */
+:root {
+  --container-max: 1280px;              /* increase for wider card */
+  --container-gutter: 2rem;             /* side padding on small screens */
+}
+
 /* keep sections centered on large screens */
 .hero-section,
 .sub-terms {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: min(var(--container-max), calc(100% - var(--container-gutter) * 2));
+  margin-inline: auto;                   /* perfect horizontal centering */
 }
 
 /* ===== HERO CARD (blue) ===== */
 .hero-section {
-  /* one nice card */
+  /* big, centered card */
+  margin-block: 3rem;                    /* vertical space */
   background-color: #3f8cdf;
-  margin: 4rem 1.5rem;
-  padding: 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+  padding: 2.75rem;                      /* a touch more breathing room */
+  border-radius: 18px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.14);
 
-  /* use grid for tighter control */
+  /* inside layout */
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) 1.2fr;
+  grid-template-columns: minmax(280px, 1.05fr) 1.3fr;  /* more room for text */
   align-items: center;
   gap: 2.25rem;
 
@@ -24,76 +30,75 @@
   img {
     display: block;
     width: 100%;
-    max-width: 520px;
+    max-width: 560px;                    /* a tad larger */
     height: auto;
     object-fit: cover;
-    border-radius: 12px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    margin: 0 auto; /* keeps image centered within its column */
+    border-radius: 14px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+    margin: 0 auto;
   }
 
   /* text column */
   .programs-text {
     color: #fff;
-    max-width: 640px;
-    margin: 0 auto; /* keeps column centered when very wide */
+    max-width: 720px;                    /* wider text block */
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 0.9rem;
-    line-height: 1.65;
+    gap: 1rem;
+    line-height: 1.68;
     text-align: left;
 
     h2 {
-      margin: 0 0 0.35rem 0;
-      font-size: 2.35rem;
+      margin: 0 0 0.4rem 0;
+      font-size: 2.5rem;
       line-height: 1.2;
       letter-spacing: 0.2px;
       text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
     }
 
     h4 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.35rem;
+      margin: 0 0 0.6rem 0;
+      font-size: 1.4rem;
       font-weight: 700;
       opacity: 0.98;
     }
 
     p {
       margin: 0;
-      font-size: 1.06rem;
+      font-size: 1.08rem;
       opacity: 0.96;
     }
 
-    /* nicer bullets, consistent spacing */
     ul {
-      margin: 0.35rem 0 0.35rem 1.25rem;
+      margin: 0.4rem 0 0.4rem 1.25rem;
       padding: 0;
       list-style: disc;
 
       li {
         font-size: 1.06rem;
-        margin: 0.25rem 0;
+        margin: 0.3rem 0;
       }
     }
 
-    /* CTA: supports either <a><button>… or <a class="register-button">… */
+    /* CTA (supports <a><button> or <a.register-button>) */
     a {
-      margin-top: 0.75rem;
+      margin-top: 0.9rem;
       text-decoration: none;
 
       button,
       &.register-button {
         display: inline-block;
         border: none;
-        border-radius: 8px;
-        background-color: #eef36a; /* your yellow */
+        border-radius: 10px;
+        background-color: #eef36a;
         color: #111;
-        min-width: 12rem;
-        padding: 0.85rem 1.25rem;
+        min-width: 14rem;                /* slightly wider button */
+        padding: 0.9rem 1.35rem;
         font-size: 1.1rem;
         font-weight: 800;
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
         cursor: pointer;
       }
 
@@ -120,22 +125,27 @@
 
 /* ===== SUBSCRIPTION CARDS (yellow) ===== */
 .sub-terms {
+  /* same centered container width as hero */
+  margin-block: 3rem;
+
+  /* two equal columns, centered; cards stretch to same height */
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2.5rem;
-  margin: 4rem 1.5rem;
+  align-items: stretch;                  /* equal height cards */
+  gap: 2.25rem;
 
   .sub-terms-left,
   .sub-terms-right {
     background-color: #e2aa03;
     color: #ffffff;
-    border-radius: 16px;
+    border-radius: 18px;
     padding: 2rem;
-    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.14);
     display: flex;
     flex-direction: column;
     gap: 0.9rem;
     text-align: left;
+    min-height: 260px;                   /* helps alignment on uneven content */
 
     h3 {
       margin: 0;
@@ -160,13 +170,19 @@
 }
 
 /* ===== RESPONSIVE ===== */
+@media (max-width: 1100px) {
+  .hero-section {
+    grid-template-columns: 1fr 1.2fr;
+  }
+}
+
 @media (max-width: 992px) {
   .hero-section {
-    grid-template-columns: 1fr; /* stack image and text */
-    gap: 1.75rem;
+    grid-template-columns: 1fr;          /* stack image + text */
+    gap: 1.6rem;
     padding: 2rem;
 
-    .programs-text h2 { font-size: 2rem; }
+    .programs-text h2 { font-size: 2.1rem; }
     .programs-text h4 { font-size: 1.18rem; }
   }
 
@@ -177,17 +193,20 @@
 
 @media (max-width: 768px) {
   .hero-section {
-    margin: 2rem 1rem;
+    width: min(100%, calc(100% - 2rem));
+    margin-block: 2rem;
     padding: 1.5rem;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
 
     img {
-      max-width: 420px;
+      max-width: 440px;
     }
 
     .programs-text {
       padding: 0 0.25rem;
 
-      h2 { font-size: 1.8rem; }
+      h2 { font-size: 1.85rem; }
       h4 { font-size: 1.06rem; }
       p  { font-size: 0.99rem; }
 
@@ -196,13 +215,13 @@
       a button,
       a.register-button {
         width: 100%;
-        max-width: 360px;
+        max-width: 380px;
       }
     }
   }
 
   .sub-terms {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr;          /* stack cards */
     margin: 2rem 1rem;
 
     .sub-terms-left,
@@ -216,7 +235,7 @@
   }
 }
 
-/* motion preference */
+/* respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   .hero-section .programs-text a button,
   .hero-section .programs-text a.register-button {
