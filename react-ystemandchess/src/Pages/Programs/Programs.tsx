@@ -14,9 +14,7 @@ const Programs = () => {
         />
 
         <div className="programs-text">
-          <h2 id="programs-title" data-testid="programs-title">
-            Our Programs
-          </h2>
+          <h2 id="programs-title" data-testid="programs-title">Our Programs</h2>
 
           <h4>
             Become a member today to benefit your child and all other children
@@ -69,8 +67,7 @@ const Programs = () => {
 
         <div data-testid="sub-terms-left" className="sub-terms-left">
           <h3>
-            First Month is Free <br />
-            Cancel anytime
+            First Month is Free <br /> Cancel anytime
           </h3>
           <h5>The cost is just $25 a week after the first month.</h5>
           <p>
@@ -84,8 +81,7 @@ const Programs = () => {
 
         <div data-testid="sub-terms-right" className="sub-terms-right">
           <h3>
-            Can't afford to pay monthly? We'd still love to have your student
-            join!
+            Can't afford to pay monthly? We'd still love to have your student join!
           </h3>
           <p>
             Our program was designed to help the most vulnerable students find
