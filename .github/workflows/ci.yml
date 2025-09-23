@@ -71,18 +71,20 @@ jobs:
       - name: Create environment file
         run: |
           mkdir -p src/environments
-          printf "export const environment = {\n\
-          production: false,\n\
-          agora: {\n\
-          appId: '${{ secrets.APP_ID }}',\n\
-          },\n\
-          urls: {\n\
-          middlewareURL: '${{ secrets.MIDDLEWARE_URL }}',\n\
-          chessClientURL: '${{ secrets.CHESS_CLIENT_URL }}',\n\
-          stockFishURL: '${{ secrets.STOCKFISH_URL }}',\n\
-          chessServer: '${{ secrets.CHESS_SERVER }}',\n\
-          },\n\
-          };" > src/environments/environment.js
+          cat <<EOF > src/environments/environment.js
+          export const environment = {
+            production: false,
+            agora: {
+              appId: '${{ secrets.APP_ID }}',
+            },
+            urls: {
+              middlewareURL: '${{ secrets.MIDDLEWARE_URL }}',
+              chessClientURL: '${{ secrets.CHESS_CLIENT_URL }}',
+              stockFishURL: '${{ secrets.STOCKFISH_URL }}',
+              chessServer: '${{ secrets.CHESS_SERVER }}',
+            },
+          };
+          EOF
         working-directory: ./react-ystemandchess
 
       - name: Build react-ystemandchess
