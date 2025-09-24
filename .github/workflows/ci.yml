@@ -87,6 +87,13 @@ jobs:
           EOF
         working-directory: ./react-ystemandchess
 
+        # debug
+      - name: Upload environment.js artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: environment-js
+          path: src/environments/environment.js
+
       - name: Build react-ystemandchess
         run: CI=false npm run build --if-present
         working-directory: ./react-ystemandchess
