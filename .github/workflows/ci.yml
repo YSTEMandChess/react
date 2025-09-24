@@ -92,7 +92,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: environment-js
-          path: src/environments/environment.js
+          path: react-ystemandchess/src/environments/environment.js
 
       - name: Build react-ystemandchess
         run: CI=false npm run build --if-present
