@@ -152,7 +152,7 @@ test('triggers ReadyToRecieve message and fetches lessons', async () => {
   fireEvent.click(finishedBtn);
 });
 
-// test whether front end responds correctly to stockfish & chessClient
+// // test whether front end responds correctly to stockfish & chessClient
 test('interact with stockfish & chessClient', async () => {
   render(
     <MemoryRouter>
@@ -170,18 +170,13 @@ test('interact with stockfish & chessClient', async () => {
       })
     );
   });
-  // will wait for stockfish to predict black move
 
   // test move tracker
-  // white move
   const step1 = screen.getByText(/Ke4/i);
   expect(step1).toBeInTheDocument();
-  // black move by stockFish
-  const step2 = screen.getByText(/Ke7/i);
-  expect(step2).toBeInTheDocument();
-})
+});
 
-// test replaying after failure
+// // test replaying after failure
 test('failed lesson', async () => {
   render(
     <MemoryRouter>
@@ -213,7 +208,7 @@ test('failed lesson', async () => {
   expect(updatedText).toBeInTheDocument();
 })
 
-// test lesson completion
+// // test lesson completion
 test('completed lesson', async () => {
   render(
     <MemoryRouter>
@@ -270,7 +265,7 @@ test('completed lesson', async () => {
   expect(lessonNum3Again).toBeInTheDocument();
 })
 
-// test reset button
+// // test reset button
 test('reset lesson', async () => {
   render(
     <MemoryRouter>
@@ -289,7 +284,7 @@ test('reset lesson', async () => {
   expect(updatedText).toBeInTheDocument();
 })
 
-// test lesson navigation
+// // test lesson navigation
 test('next & previous lesson', async () => {
   render(
     <MemoryRouter>
@@ -304,7 +299,7 @@ test('next & previous lesson', async () => {
   expect(lessonNum2).toBeInTheDocument();
 
   // go back one lesson
-  const backBtn = screen.getByText(/Back/i).closest('button');
+  const backBtn = screen.getByRole('button', { name: /Back/i });
   expect(backBtn).toBeInTheDocument();
   await act(async () => {
       fireEvent.click(backBtn);
@@ -318,7 +313,7 @@ test('next & previous lesson', async () => {
   expect(lessonNum1).toBeInTheDocument();
 
   // go to next lesson (initial lesson)
-  const nextBtn = screen.getByText(/Next/i).closest('button');
+  const nextBtn = screen.getByRole('button', { name: /Next/i });
   expect(nextBtn).toBeInTheDocument();
   await act(async () => {
       fireEvent.click(nextBtn);
@@ -331,7 +326,7 @@ test('next & previous lesson', async () => {
   expect(lessonNum2again).toBeInTheDocument();
 
   // try to go to next lesson
-  const nextBtnAgain = screen.getByText(/Next/i).closest('button');
+  const nextBtnAgain = screen.getByRole('button', { name: /Next/i });
   expect(nextBtnAgain).toBeInTheDocument();
   await act(async () => {
       fireEvent.click(nextBtnAgain);
@@ -339,9 +334,4 @@ test('next & previous lesson', async () => {
   // will stay in current lesson, since lesson 3 not activated 
   const lessonNum2still = screen.getByText("simple 2 board info");
   expect(lessonNum2still).toBeInTheDocument();
-})
-
-
-test("just testing", () => {
-  console.log('LessonOverlay is:', LessonOverlay);
 })

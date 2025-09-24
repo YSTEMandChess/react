@@ -1,20 +1,68 @@
-import React, { act } from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import NewMentorProfile from './NewMentorProfile';
+import React from 'react';
+import { render, screen, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { SetPermissionLevel } from '../../globals';
+import NewMentorProfile from './NewMentorProfile';
 
+// ------------- MOCKS -------------
 // mock being logged in
 jest.mock('../../globals', () => ({
-  SetPermissionLevel: jest.fn().mockResolvedValue({
-    username: 'username',
-    firstName: 'Mock',
-    lastName: 'Name',
-    error: null
-  }),
+  __esModule: true,
+  SetPermissionLevel: jest.fn(),
 }));
+
+// mock the chart
+jest.mock('react-chartjs-2', () => ({
+  __esModule: true,
+  Line: () => <div data-testid="mock-line-chart" />,
+}));
+
+// ------------- HELPER FUNCTIONS -------------
+
+// helper to for date formatting to match with component
+const formatEventDateTime = (iso: string) => {
+  const dateObj = new Date(iso);
+  return {
+    date: dateObj.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }),
+    time: dateObj.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    }),
+  };
+};
+
+// render helper
+const renderProfile = async () => {
+  await act(async () => 
+    render(
+      <MemoryRouter>
+        <NewMentorProfile 
+          userPortraitSrc={null} 
+          student={{
+            username: 'joeyman43', 
+            firstName: 'Joey',
+            lastName: 'Diaz', 
+          }} // mock student, can be replaced with dynamic data
+        />
+      </MemoryRouter>
+    )
+  );  
+};
 
 // mock usage fetching from database
 beforeEach(() => {
+  // mock SetPermissionLevel return
+  (SetPermissionLevel as jest.Mock).mockResolvedValue({
+    username: 'username',
+    firstName: 'Mock',
+    lastName: 'Name',
+    error: false,
+  });
+
   global.fetch = jest.fn((url) => {
     // mock stats fetching, or time usage for different events
     if (url.includes('statistics')) {
@@ -34,44 +82,57 @@ beforeEach(() => {
         json: () => Promise.resolve([
           { 
             startTime: "2025-06-10T02:44:27.781Z", 
-            eventName: "mock event", 
+            eventName: "mock event one", 
             eventType: "mock type"
           }, 
           { 
             startTime: "2025-06-10T02:54:27.781Z", 
-            eventName: "another mock event", 
+            eventName: "mock event two", 
             eventType: "another mock type"
           }, 
         ]),
       });
+    } else if (url.includes('getMentorship')) {
+      return Promise.resolve({
+        json: () =>
+          Promise.resolve({
+            firstName: 'Mock',
+            lastName: 'lastName',
+            username: 'username',
+          }),
+      });
+    } else if (url.includes('graph-data')) {
+        const graphData: {[key: string]: {monthText: string; timeSpent: number}[]} = {};
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+        const events = ["website", "play", "lesson", "puzzle", "mentor"];
+        events.forEach(event => {
+          graphData[event] = months.map((m, i) => ({ monthText: m, timeSpent: i + 1 }));
+        });
+
+        return Promise.resolve({
+          json: () => Promise.resolve(graphData),
+        });
     }
 
     return Promise.reject(new Error('Unhandled fetch request: ' + url));
   }) as jest.Mock;
 });
 
+// clean up mocks after each test
+afterEach(() => {
+  jest.clearAllMocks();
+});
 
-// unit test on basic rendering
-test('renders the profile page', async () => {
-    render(
-        <MemoryRouter>
-            <NewMentorProfile 
-            userPortraitSrc={null} 
-            student={{username: 'joeyman43', 
-                      firstName: 'Joey',
-                      lastName: 'Diaz', 
-            }} // mock student, can be replaced with dynamic data
-            />
-        </MemoryRouter>
-    );
+describe('NewMentorProfile', () => {
+  // unit test on basic rendering
+  test('renders the profile page', async () => {
+    await renderProfile();
 
     // check if name is rendered correctly
-    const nameText = await screen.findByText(/Hello, Mock Name!/i);
-    expect(nameText).toBeInTheDocument();
+    expect(await screen.findByText(/Hello, Mock Name!/i)).toBeInTheDocument();
 
     // check if time spent is rendered
-    const statsText = await screen.findByText(/Time Spent:/i);
-    expect(statsText).toBeInTheDocument();
+    expect(await screen.findByText(/Time Spent:/i)).toBeInTheDocument();
 
     // check if some of the tabs are rendered
     const learningText = await screen.findByText(/Learning/i);
@@ -80,21 +141,11 @@ test('renders the profile page', async () => {
     expect(gameText).toBeInTheDocument();
     const backpackText = await screen.findByText(/Backpack/i);
     expect(backpackText).toBeInTheDocument();
-});
+  });
 
-// test on rendering stats
-test('renders time stats', async () => {
-    render(
-        <MemoryRouter>
-            <NewMentorProfile 
-            userPortraitSrc={null} 
-            student={{username: 'joeyman43', 
-                      firstName: 'Joey',
-                      lastName: 'Diaz', 
-            }} // mock student, can be replaced with dynamic data
-            />
-        </MemoryRouter>
-    );
+  // test on rendering stats
+  test('renders time stats', async () => {
+    await renderProfile();
 
     // wait for stats to load first
     const _ = await screen.findByText(/10 minutes/i);
@@ -108,33 +159,27 @@ test('renders time stats', async () => {
     const play_li = await screen.findByText(/Playing:/i);
     expect(play_li).toBeInTheDocument();
     expect(play_li.firstElementChild).toHaveTextContent("15 minutes");
-});
+  });
 
-// test if activity is rendered correctly
-test('renders user activity', async () => {
-    render(
-        <MemoryRouter>
-            <NewMentorProfile 
-            userPortraitSrc={null} 
-            student={{username: 'joeyman43', 
-                      firstName: 'Joey',
-                      lastName: 'Diaz', 
-            }} // mock student, can be replaced with dynamic data
-            />
-        </MemoryRouter>
-    );
+  // test if activity is rendered correctly
+  test('renders user activity', async () => {
+    await renderProfile();
 
-    // check if activity dates is rendered
-    // const timeText = await screen.findByText(/Jun 10, 2025 10:44 AM/i);
-    // expect(timeText).toBeInTheDocument();
-    // const timeText2 = await screen.findByText(/Jun 10, 2025 10:54 AM/i);
-    // expect(timeText2).toBeInTheDocument();
+    const latestEvents = await global.fetch('latest').then(res => res.json());
 
-    // Cannot get the time to render correctly, this test is also failing for me in NewStudentProfile.test.tsx
+    for (const event of latestEvents) {
+      const { date, time } = formatEventDateTime(event.startTime);
 
-    // check if activity name is rendered
-    const activityText = await screen.findByText(/Working on another mock type:/i);
-    expect(activityText).toBeInTheDocument();
-    const activityText2 = await screen.findByText(/another mock event/i);
-    expect(activityText2).toBeInTheDocument();
+      // check event name
+      expect(await screen.findByText(new RegExp(event.eventName, 'i'))).toBeInTheDocument();
+
+      // check formatted date and time
+      const dateMatches = await screen.findAllByText(new RegExp(date, 'i'), { exact: false });
+      expect(dateMatches.length).toBeGreaterThan(0);
+
+      // check formatted time
+      const timeMatches = await screen.findAllByText(new RegExp(time, 'i'), { exact: false });
+      expect(timeMatches.length).toBeGreaterThan(0);
+    }
+  });
 });

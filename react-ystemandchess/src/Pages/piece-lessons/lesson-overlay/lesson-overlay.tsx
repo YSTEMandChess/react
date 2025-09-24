@@ -3,7 +3,6 @@ import { useCookies } from 'react-cookie';
 import { environment } from '../../../environments/environment';
 import pageStyles from './lesson-overlay.module.scss';
 import profileStyles from './lesson-overlay-profile.module.scss';
-import { SetPermissionLevel } from "../../../globals"; 
 // @ts-ignore
 import MoveTracker from '../move-tracker/MoveTracker';
 import { Chess } from 'chess.js';
@@ -14,7 +13,6 @@ import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg'
 import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
 import { useNavigate, useLocation } from 'react-router';
 
-import io from 'socket.io-client';
 import PromotionPopup from '../../Lessons/PromotionPopup';
 
 // Custom Hooks
@@ -76,7 +74,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     const [promotionSource, setPromotionSource] = useState("");
     const [promotionTarget, setPromotionTarget] = useState("");
 
-    // callback for the socketChessEngine (possibly add processMove() as a dependency)
+    // callback for the socketChessEngine
     const handleEvaluationComplete = useCallback((data) => {
         const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
         const chessBoard = iframe?.contentWindow;
@@ -194,12 +192,11 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         };
     }, []);
 
-    // react to lessonData changes (add popups ?)
+    // react to lessonData changes
     useEffect(() => {
         if (!lessonData) return;
 
         setShowLPopup(false);
-        //setShowError(false);
         setShowInstruction(true);
 
         // Check if we've reached the end of lessons
