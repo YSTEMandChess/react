@@ -69,7 +69,7 @@
 } */
 
 #tree-group-img {
-  width: 110%;
+    height: 100%;
 }
 
 /* Logo Line Break */
@@ -394,7 +394,6 @@ footer {
   font-size: 1.2rem;
 }
 
-#tree-group-img,
 .logo-break,
 .home-video,
 .home-content3 img {
