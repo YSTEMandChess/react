@@ -1,7 +1,11 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
     <meta content="utf-8" http-equiv="encoding" />
+    <title>Chess Game</title>
     <link rel="stylesheet" type="text/css" href="./css/chessboard-1.0.0.css" />
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
     <script src="js/chessboard-1.0.0.js"></script>
@@ -13,6 +17,25 @@
 
   
   <style type="text/css">
+    /* Base styles */
+    body {
+      margin: 0;
+      padding: 10px;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    #myBoard {
+      max-width: 100%;
+      max-height: 100vh;
+      width: auto;
+      height: auto;
+    }
+
     .lastmove {
       box-shadow: inset 0 0 10px 10px #44b863;
     }
@@ -23,12 +46,49 @@
     }
 
     #cursor {
-            position: fixed;   
-            width: 12vw;       
-            height: 12vh;      
-            pointer-events: none;  
-            opacity: .5;
-        }
+      position: fixed;   
+      width: 12vw;       
+      height: 12vh;      
+      pointer-events: none;  
+      opacity: .5;
+    }
+
+    /* Mobile responsive styles */
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 5px;
+      }
+      
+      #myBoard {
+        width: 95vw;
+        height: 95vw;
+        max-width: 400px;
+        max-height: 400px;
+      }
+      
+      #cursor {
+        width: 15vw;
+        height: 15vw;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      body {
+        padding: 2px;
+      }
+      
+      #myBoard {
+        width: 98vw;
+        height: 98vw;
+        max-width: 350px;
+        max-height: 350px;
+      }
+      
+      #cursor {
+        width: 18vw;
+        height: 18vw;
+      }
+    }
 
   </style>
 

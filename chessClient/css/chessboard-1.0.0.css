@@ -7,6 +7,9 @@
 .board-b72b1 {
   border: 2px solid #404040;
   box-sizing: content-box;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
 }
 
 .square-55d63 {
@@ -20,6 +23,9 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  
+  /* Improve touch targets for mobile */
+  touch-action: manipulation;
 }
 
 .white-1e1d7 {
@@ -57,4 +63,50 @@
 
 .hightlight-red {
   color: red;
+}
+
+/* Mobile responsive enhancements */
+@media screen and (max-width: 768px) {
+  .board-b72b1 {
+    border-width: 1px;
+    max-width: 95vw;
+    width: 95vw;
+    height: 95vw;
+  }
+  
+  .notation-322f9 {
+    font-size: 14px;
+  }
+  
+  .square-55d63 {
+    /* Larger touch targets for mobile */
+    min-width: 11.875vw;
+    min-height: 11.875vw;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .board-b72b1 {
+    max-width: 98vw;
+    width: 98vw;
+    height: 98vw;
+  }
+  
+  .notation-322f9 {
+    font-size: 12px;
+  }
+  
+  .square-55d63 {
+    min-width: 12.25vw;
+    min-height: 12.25vw;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  .board-b72b1 {
+    max-height: 85vh;
+    width: 85vh;
+    height: 85vh;
+  }
 }
