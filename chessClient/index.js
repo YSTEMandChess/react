@@ -953,10 +953,37 @@ var config = {
 }
 
 if (isLesson == false) {
+  // Initialize board with proper sizing
   board = Chessboard('myBoard', config)
+  
+  // Force a resize to ensure proper dimensions
+  setTimeout(function() {
+    if (board) {
+      board.resize()
+    }
+  }, 100)
+  
   // var overlay = new ChessboardArrows('board_wrapper');
 }
 
-$(window).resize(board.resize)
+// Handle window resize with proper board resizing
+let resizeTimer
+$(window).resize(function() {
+  clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(function() {
+    if (board) {
+      board.resize()
+    }
+  }, 250)
+})
+
+// Also handle orientation changes on mobile
+$(window).on('orientationchange', function() {
+  setTimeout(function() {
+    if (board) {
+      board.resize()
+    }
+  }, 500)
+})
 
 updateStatus()
