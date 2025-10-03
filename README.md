@@ -6,31 +6,59 @@ This is an educational platform that combines chess instruction with STEM learni
 
 ## Development Environment Setup
 
-To run the platform, you’ll need **Node.js v14**, **nodemon**, and **Apache** installed.
+To run the platform, you’ll need **Node.js v18**, **nodemon**, and **Apache** installed.
 
 ### NodeJS
 
-This project requires NodeJS version 14.
+This project requires **Node.js v18.20.8**.
 
-**Linux:**
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-
-**macOS:**
-
-```bash
-brew install node@14
-```
-
-Or download from [nodejs.org](https://nodejs.org/)
-
-**Windows:**
-Download and install from [nodejs.org](https://nodejs.org/)
+We recommend using a version manager so everyone runs the same Node.js version consistently.
 
 ---
+
+### Option 1: Using [Volta](https://volta.sh) (recommended)
+
+Volta automatically uses the Node version pinned in this project’s `package.json`.
+
+**Install Volta:**
+
+- **Linux / macOS:**
+    ```bash
+    curl https://get.volta.sh | bash
+    source ~/.bashrc # or ~/.zshrc
+    ```
+- **Windows:**
+Download and run the installer from [volta.sh](https://volta.sh)
+
+Now when you cd into this project, Volta will automatically install and use **Node.js v18.20.8**.
+
+### Option 2: Using [nvm](https://github.com/nvm-sh/nvm)
+
+If you prefer nvm:
+
+- **Linux / macOS:**
+    ```bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    source ~/.nvm/nvm.sh
+    ```
+    Then:
+    ```bash
+    nvm install 18.20.8
+    nvm use 18.20.8
+    ```
+    (Optional) Set it as default:
+    ```bash
+    nvm alias default 18.20.8
+    ```
+- **Windows:**
+    Use [nvm-windows](https://github.com/coreybutler/nvm-windows):
+
+    Download and run the installer from the [releases page](https://github.com/coreybutler/nvm-windows/releases).
+    Then install and use Node:
+    ```powershell
+    nvm install 18.20.8
+    nvm use 18.20.8
+    ```
 
 ### Nodemon
 
@@ -109,6 +137,12 @@ npm start      # Start the API server
 
 The server typically runs on port 8000. You should see "MongoDB Connected..." when it starts successfully.
 
+**If you intend to test the mentor and student login pages, you may use the following usernames and passwords respectively:**
+
+mentor 123123123
+
+student 123123123
+
 ---
 
 #### Main React Application (Frontend)
@@ -155,14 +189,13 @@ This service usually runs on port 8080.
 
 #### Chess Client (Testing Interface)
 
-Provides different views of the chess board for development:
-
 ```bash
 cd chessClient
 npm install
 ```
 
-You can use the **Live Server extension in VS Code** to open the HTML files:
+Run the http server on port 80 using: `npx http-server -p 80` to ensure that the chess board frame loads during any session.
+You can use the **Live Server extension in VS Code** to open the HTML files for local testing of the chess board:
 
 * **Board only:** Right-click `index.html` → "Open with Live Server"
 * **Board with controls:** Right-click `parent.html` → "Open with Live Server"

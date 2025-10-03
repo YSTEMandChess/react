@@ -1,3 +1,4 @@
+import { environment } from "../../../../environments/environment";
 import { useEffect, useRef } from "react";
 import io from "socket.io-client";
 
@@ -5,7 +6,7 @@ export function useSocketChessEngine(onEvaluationComplete: (data: any) => void) 
     const socketRef = useRef<any>(null);
 
     useEffect(() => {
-        const socket = io("http://localhost:8080", { transports: ["websocket"] });
+        const socket = io(environment.urls.stockFishURL, { transports: ["websocket"] });
         socketRef.current = socket;
 
         socket.on("connect", () => {

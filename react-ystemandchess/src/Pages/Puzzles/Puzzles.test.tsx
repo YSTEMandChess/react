@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 import Puzzles from "./Puzzles";
 import { MemoryRouter } from "react-router";
 import Swal from "sweetalert2";
@@ -13,6 +13,18 @@ jest.mock("../../environments/environment", () => ({
     },
   },
 }));
+
+// Silence SweetAlert2
+jest.mock("sweetalert2", () => {
+  return {
+    __esModule: true,
+    default: {
+      fire: jest.fn(() => Promise.resolve({ isConfirmed: true })),
+      close: jest.fn(),
+      showLoading: jest.fn(),
+    },
+  };
+});
 
 // Mock fetch for puzzles
 const mockPuzzles = [
@@ -32,23 +44,17 @@ const mockPuzzles = [
   },
 ];
 
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    ok: true,
-    json: () => Promise.resolve(mockPuzzles),
-  })
-) as jest.Mock;
-
-// Silence SweetAlert2
-jest.mock("sweetalert2", () => ({
-  fire: jest.fn(() => Promise.resolve({ isConfirmed: true })),
-  close: jest.fn(),
-  showLoading: jest.fn(),
-}));
-
-
 describe("Puzzles Component", () => {
   beforeEach(() => {
+    (global.fetch as jest.Mock) = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockPuzzles),
+      })
+    ) as jest.Mock;
+  });
+
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
@@ -60,6 +66,7 @@ describe("Puzzles Component", () => {
         </MemoryRouter>
       );
     });
+    
     expect(screen.getByTitle("board")).toBeInTheDocument();
     expect(screen.getByText("Get New Puzzle")).toBeInTheDocument();
     expect(screen.getByText("Show Hint")).toBeInTheDocument();
@@ -73,6 +80,7 @@ describe("Puzzles Component", () => {
         </MemoryRouter>
       );
     });
+
     const iframe = screen.getByTitle("board");
     expect(iframe).toBeInTheDocument();
     expect(document.getElementById("hint-text")).toBeInTheDocument();
@@ -86,6 +94,7 @@ describe("Puzzles Component", () => {
         </MemoryRouter>
       );
     });
+
     const hintText = document.getElementById("hint-text")!;
     const showHintBtn = screen.getByText("Show Hint");
 
@@ -104,6 +113,7 @@ describe("Puzzles Component", () => {
         </MemoryRouter>
       );
     });
+
     const iframe = screen.getByTitle("board") as HTMLIFrameElement;
     const spy = jest.spyOn(window, "postMessage");
     fireEvent.click(screen.getByText("Get New Puzzle"));
@@ -114,18 +124,31 @@ describe("Puzzles Component", () => {
     await act(async () => {
       render(
         <MemoryRouter>
-          <Puzzles />
+          <Puzzles/>
         </MemoryRouter>
       );
     });
+
+    // send guest join message
     act(() => {
-      window.postMessage("puzzle completed", "*");
+      window.dispatchEvent(new MessageEvent("message", { data: "guest" }));
     });
-    expect(Swal.fire).toHaveBeenCalledWith(
-      "Puzzle completed",
-      "Good Job",
-      "success"
-    );
+
+    (Swal.fire as jest.Mock).mockResolvedValueOnce({ isConfirmed: true });
+
+    // now send puzzle completed message
+    act(() => {
+      window.dispatchEvent(new MessageEvent("message", { data: "puzzle completed" }));
+    });
+
+    // assert puzzle completed Swal
+    await waitFor(() => {
+      expect(Swal.fire).toHaveBeenCalledWith(
+        "Puzzle completed",
+        "Good Job",
+        "success"
+      )
+    });
   });
 
   test("handles 'next puzzle' message", async () => {
@@ -136,10 +159,18 @@ describe("Puzzles Component", () => {
         </MemoryRouter>
       );
     });
+
+    // not mocking puzzle array behvaior so we silence this console error that occurs when getNextPuzzle() is called
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {}); 
+    
     act(() => {
-      window.postMessage("next puzzle", "*");
+      window.dispatchEvent(new MessageEvent("message", { data: "next puzzle" }));
     });
+
     expect(Swal.close).toHaveBeenCalled();
+    expect(consoleSpy).toHaveBeenCalledWith("Puzzle array is empty");
+
+    consoleSpy.mockRestore();
   });
 
   test("handles 'host' and 'guest' status", async () => {
@@ -150,12 +181,15 @@ describe("Puzzles Component", () => {
         </MemoryRouter>
       );
     });
-    act(() => {
-      window.postMessage("host", "*");
+
+    await waitFor(() => {
+      window.dispatchEvent(new MessageEvent("message", { data: "host" }));
     });
-    act(() => {
-      window.postMessage("guest", "*");
+
+    await waitFor(() => {
+      window.dispatchEvent(new MessageEvent("message", { data: "guest" }));
     });
+
     expect(screen.getByTitle("board")).toBeInTheDocument();
   });
 
@@ -167,12 +201,11 @@ describe("Puzzles Component", () => {
         </MemoryRouter>
       );
     });
+
     act(() => {
-      window.postMessage(
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        "*"
-      );
+      window.dispatchEvent(new MessageEvent("message", { data: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }));
     });
+
     // No crash = pass. Could extend with state inspection if needed.
     expect(screen.getByTitle("board")).toBeInTheDocument();
   });
@@ -185,10 +218,17 @@ describe("Puzzles Component", () => {
         </MemoryRouter>
       );
     });
+
+    // send guest join message
+    act(() => {
+      window.dispatchEvent(new MessageEvent("message", { data: "guest" }));
+    });
+
     const hintHTML = `<div><b>Test</b>: Hint content</div>`;
     act(() => {
-      window.postMessage(hintHTML, "*");
-    });
+      window.dispatchEvent(new MessageEvent("message", { data: hintHTML }));
+    })
+
     const hintText = document.getElementById("hint-text")!;
     expect(hintText.innerHTML).toContain("Hint content");
   });
@@ -197,6 +237,7 @@ describe("Puzzles Component", () => {
     (global.fetch as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({ ok: false })
     );
+
     await act(async () => {
       render(
         <MemoryRouter>
@@ -204,6 +245,7 @@ describe("Puzzles Component", () => {
         </MemoryRouter>
       );
     });
+
     expect(screen.getByTitle("board")).toBeInTheDocument();
   });
 });
