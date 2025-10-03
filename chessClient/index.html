@@ -30,10 +30,8 @@
     }
 
     #myBoard {
-      max-width: 100%;
-      max-height: 100vh;
-      width: auto;
-      height: auto;
+      width: min(500px, 90vw);
+      max-width: 90vw;
     }
 
     .lastmove {
@@ -60,10 +58,8 @@
       }
       
       #myBoard {
-        width: 95vw;
-        height: 95vw;
-        max-width: 400px;
-        max-height: 400px;
+        width: min(400px, 85vw);
+        max-width: 85vw;
       }
       
       #cursor {
@@ -78,10 +74,8 @@
       }
       
       #myBoard {
-        width: 98vw;
-        height: 98vw;
-        max-width: 350px;
-        max-height: 350px;
+        width: min(320px, 95vw);
+        max-width: 95vw;
       }
       
       #cursor {
@@ -90,14 +84,30 @@
       }
     }
 
+    @media screen and (max-width: 350px) {
+      body {
+        padding: 1px;
+      }
+      
+      #myBoard {
+        width: 98vw;
+        max-width: 98vw;
+      }
+      
+      #cursor {
+        width: 20vw;
+        height: 20vw;
+      }
+    }
+
   </style>
 
-  <!-- Divider holding the chess.js board-->
-  <div id="myBoard" frameborder="0"></div>
+  <body>
+    <!-- Divider holding the chess.js board-->
+    <div id="myBoard" frameborder="0"></div>
 
-  <img id="cursor" src="img/cursor.png"></div>
-  
-
-
-  <script src="index.js"></script>
+    <img id="cursor" src="img/cursor.png">
+    
+    <script src="index.js"></script>
+  </body>
 </html>
