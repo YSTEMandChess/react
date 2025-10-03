@@ -20,18 +20,20 @@
     /* Base styles */
     body {
       margin: 0;
-      padding: 10px;
-      background-color: #f0f0f0;
+      padding: 0;
+      background-color: transparent;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
     #myBoard {
-      width: min(500px, 90vw);
-      max-width: 90vw;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
     }
 
     .lastmove {
@@ -54,12 +56,12 @@
     /* Mobile responsive styles */
     @media screen and (max-width: 768px) {
       body {
-        padding: 5px;
+        padding: 0;
       }
       
       #myBoard {
-        width: min(400px, 85vw);
-        max-width: 85vw;
+        width: 100%;
+        max-width: 100%;
       }
       
       #cursor {
