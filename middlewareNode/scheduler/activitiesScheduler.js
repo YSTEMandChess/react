@@ -27,8 +27,9 @@ const selectActivities = async () => {
     return newActivities;
 }
 
-const activityScheduler = schedule.scheduleJob('0 0 * * *', async function () {
-    const db = await getDb();
+const activityScheduler = async () => {
+    return schedule.scheduleJob('0 0 * * *', async function () {
+    /*const db = await getDb();
     const activities = db.collection("activities");
     const activitiesArray = await (activities.find({})).toArray();
     for(const userActivity of activitiesArray) {
@@ -38,7 +39,8 @@ const activityScheduler = schedule.scheduleJob('0 0 * * *', async function () {
             { _id: id},
             { $set: { activities: newActivities } }
         )
-    }
-})
+    }*/
+   console.log(`Reset activities at ${new Date().toLocaleString()}`);
+})}
 
-module.exports = {activityScheduler};
+module.exports = { activityScheduler };
