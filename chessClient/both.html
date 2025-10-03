@@ -54,45 +54,56 @@
 
     /* Mobile responsive styles */
     @media screen and (max-width: 768px) {
+      .container-fluid {
+        height: 100vh;
+        overflow-y: auto;
+      }
+
       .row {
         flex-direction: column;
         height: auto;
         min-height: 100vh;
+        margin: 0;
       }
 
       .col-md-6 {
         height: 50vh;
-        min-height: 300px;
-        padding: 3px;
+        min-height: 400px;
+        padding: 2px;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
       }
 
       h3 {
         font-size: 1rem;
-        margin: 5px 0;
+        margin: 0;
         padding: 8px;
+        flex-shrink: 0;
       }
 
       iframe {
-        min-height: 250px;
+        height: calc(50vh - 40px);
+        min-height: 350px;
         border-width: 1px;
+        flex-grow: 1;
       }
     }
 
     @media screen and (max-width: 480px) {
       .col-md-6 {
-        height: 45vh;
-        min-height: 280px;
-        padding: 2px;
+        height: 50vh;
+        padding: 0;
       }
 
       h3 {
         font-size: 0.9rem;
-        margin: 3px 0;
+        margin: 0;
         padding: 6px;
       }
 
       iframe {
-        min-height: 220px;
+        height: calc(50vh - 30px);
       }
     }
 

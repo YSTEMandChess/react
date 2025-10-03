@@ -29,8 +29,9 @@
       margin: 0 auto 30px auto;
       border: 2px solid #ffffff;
       border-radius: 10px;
+      width: 300px;
+      height: 300px;
       max-width: 100%;
-      height: auto;
     }
 
     .form-control {
@@ -83,6 +84,45 @@
       margin: 0 auto;
     }
 
+    /* Iframe-specific styles */
+    .iframe-mode #chessboard {
+      width: 220px;
+      height: 220px;
+      margin-bottom: 15px;
+    }
+
+    .iframe-mode h1 {
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .iframe-mode body {
+      padding: 3px;
+      min-height: auto;
+      overflow: hidden;
+    }
+
+    .iframe-mode .btn-custom {
+      padding: 6px 10px;
+      margin: 2px;
+      font-size: 11px;
+    }
+
+    .iframe-mode .form-control {
+      padding: 6px;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .iframe-mode .container {
+      padding: 0;
+      margin: 0;
+    }
+
+    .iframe-mode .col-md-6 {
+      margin-bottom: 10px;
+    }
+
     /* Mobile responsive styles */
     @media screen and (max-width: 768px) {
       body {
@@ -95,10 +135,8 @@
       }
 
       #chessboard {
-        width: 90vw;
-        height: 90vw;
-        max-width: 350px;
-        max-height: 350px;
+        width: 250px;
+        height: 250px;
         margin-bottom: 20px;
       }
 
@@ -132,10 +170,8 @@
       }
 
       #chessboard {
-        width: 95vw;
-        height: 95vw;
-        max-width: 300px;
-        max-height: 300px;
+        width: 200px;
+        height: 200px;
       }
 
       .btn-custom {
@@ -253,5 +289,11 @@
   </script>
 
 
+  <script>
+    // Detect if page is loaded in iframe and apply appropriate styling
+    if (window.self !== window.top) {
+      document.body.classList.add('iframe-mode');
+    }
+  </script>
 </body>
 </html>
