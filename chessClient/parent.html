@@ -29,9 +29,10 @@
       margin: 0 auto 30px auto;
       border: 2px solid #ffffff;
       border-radius: 10px;
-      width: 300px;
-      height: 300px;
-      max-width: 100%;
+      width: 400px;
+      height: 400px;
+      max-width: 90vw;
+      max-height: 50vh;
     }
 
     .form-control {
@@ -86,9 +87,11 @@
 
     /* Iframe-specific styles */
     .iframe-mode #chessboard {
-      width: 220px;
-      height: 220px;
+      width: 280px;
+      height: 280px;
       margin-bottom: 15px;
+      max-width: 85%;
+      max-height: 45vh;
     }
 
     .iframe-mode h1 {
@@ -123,6 +126,14 @@
       margin-bottom: 10px;
     }
 
+    /* Large desktop screens - bigger chessboard */
+    @media screen and (min-width: 1200px) {
+      #chessboard {
+        width: 450px;
+        height: 450px;
+      }
+    }
+
     /* Mobile responsive styles */
     @media screen and (max-width: 768px) {
       body {
@@ -135,9 +146,11 @@
       }
 
       #chessboard {
-        width: 250px;
-        height: 250px;
+        width: 350px;
+        height: 350px;
         margin-bottom: 20px;
+        max-width: 85vw;
+        max-height: 40vh;
       }
 
       .container {
@@ -170,8 +183,10 @@
       }
 
       #chessboard {
-        width: 200px;
-        height: 200px;
+        width: 280px;
+        height: 280px;
+        max-width: 80vw;
+        max-height: 35vh;
       }
 
       .btn-custom {
