@@ -20,7 +20,7 @@
     /* Base styles */
     body {
       margin: 0;
-      padding: 0;
+      padding: 5px;
       background-color: transparent;
       display: flex;
       justify-content: center;
@@ -31,9 +31,10 @@
     }
 
     #myBoard {
-      width: 100%;
-      max-width: 100%;
-      height: auto;
+      width: min(95vw, 95vh);
+      height: min(95vw, 95vh);
+      max-width: 800px;
+      max-height: 800px;
     }
 
     .lastmove {
@@ -60,8 +61,10 @@
       }
       
       #myBoard {
-        width: 100%;
-        max-width: 100%;
+        width: min(98vw, 98vh);
+        height: min(98vw, 98vh);
+        max-width: 500px;
+        max-height: 500px;
       }
       
       #cursor {
