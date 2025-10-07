@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useCookies } from 'react-cookie';
-import { environment } from '../../../environments/environment';
 import pageStyles from './Lesson-overlay.module.scss';
 import profileStyles from './Lesson-overlay-profile.module.scss';
 // @ts-ignore
@@ -45,8 +44,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
   const navigate = useNavigate();
   const location = useLocation();
-  let passedPieceName = location.state?.piece; // if received from page navigation
-  if (propPieceName) passedPieceName = propPieceName;
   let passedLessonNumber = location.state?.lessonNum; // if received from parent props
   if (propLessonNumber != null) passedLessonNumber = propLessonNumber;
   const [cookies] = useCookies(['login']);
@@ -111,7 +108,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   });
 }
 
-
   const handleEvaluationComplete = useCallback((data) => {
     prevFenRef.current = currentFenRef.current;
     currentFenRef.current = data.newFEN;
@@ -156,72 +152,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     };
     fetchLessonInfo();
   }, [piece, passedLessonNumber]);
-
-  // eventer setup and socket communication
-  useEffect(() => {
-    // configure eventer
-    const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
-    const eventer = window[eventMethod];
-    const messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message';
-
-    const handleMessage = async (e) => {
-      console.log(e);
-      if (e.origin === environment.urls.chessClientURL) {
-        console.log("e.data!!!!", e.data)
-        if (e.data === 'ReadyToRecieve') {
-          isReadyRef.current = true;
-        } else if (e.data === lessonEndFENRef.current) {
-          setShowVPopup(true); // complete lesson
-        } else if (typeof e.data === 'string' && e.data.startsWith("won")) { // for all lesson types, should check if there's checkmate
-          if (e.data.split(":")[1] == turnRef.current) setShowVPopup(true); // checkmated, complete lesson
-          else setShowXPopup(true) // opponent checkmated, restart lesson
-        } else if (typeof e.data === 'string' && e.data.startsWith("draw")) { // for all lesson types, should check if there's a draw
-          if (lessonTypeRef.current == "draw" || lessonTypeRef.current == "equalize") {
-            setShowVPopup(true); // if lesson's goal is to draw or equalize
-          } else {
-            setShowXPopup(true) // if other lesson type, a draw is a failed lesson
-          }
-        } else if (e.data.action == "promote") {
-          if (lessonTypeRef.current == "promote") // if the goal of lesson is just to promote pawn
-          {
-            setShowVPopup(true); // lesson completed
-          } else { // for other lesson types, allow user to choose what the pawn should promote to
-            setIsPromoting(true);
-            setPromotionSource(e.data.from);
-            setPromotionTarget(e.data.to);
-          }
-        } else if (typeof e.data === 'string' && looksLikeFEN(e.data)) { // client sends board fen after user makes a move
-          // update fens
-          prevFenRef.current = currentFenRef.current
-          currentFenRef.current = e.data
-
-          // process the move for tracking
-          processMove()
-
-          socketRef.current.emit("evaluate-fen", {
-            fen: e.data,
-            move: "",
-            level: level
-          });
-
-          console.log("FEN SENT to stockfishServer");
-        }
-      }
-    };
-
-    eventer(messageEvent, handleMessage, false); // fire eventer
-
-    // Check if passedPieceName is available
-    if (passedPieceName != null) setPiece(passedPieceName);
-    // Check if passedLessonNumber is available
-    if (passedLessonNumber != null) setLessonNum(passedLessonNumber);
-
-    return () => {
-      window.removeEventListener('message', handleMessage); // remove event listener
-
-      if (navigateFunc) navigateFunc();
-    };
-  }, []);
 
   // react to lessonData changes
   useEffect(() => {
@@ -331,11 +261,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   // user finished instruction reading
   const handleShowInstruction = () => {
     setShowInstruction(false);
-  }
-
-  // checks if a client message is a fen
-  function looksLikeFEN(str) {
-    return typeof str === 'string' && str.split(' ').length === 6;
   }
 
   function getTurnFromFEN(fen) {
