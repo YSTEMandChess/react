@@ -1,6 +1,6 @@
 import React, { act } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import LessonOverlay from './lesson-overlay';
+import LessonOverlay from './Lesson-overlay';
 import { MemoryRouter } from 'react-router';
 import { environment } from '../../../environments/environment';
 

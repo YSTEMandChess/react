@@ -1,23 +1,55 @@
 .lessonContainer {
-    background-image: url("../../../images/chess_background.png");
-    background-repeat: no-repeat;
-    background-size: cover;
-    align-content: center;
+  background-image: url("../../../images/chess_background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  align-content: center;
+}
+
+.chessboard-container {
+  width: 100%;
+  max-width: 600px;
+  /* large on big screens */
+  margin: 0 auto;
+  position: relative;
 }
 
 .chessBoard {
-  transform: scale(0.9);
-  transform-origin: center;
-  width: 600px;
-  height: 600px;
-  border: none;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  /* keeps it square */
+  display: block;
 }
 
+.shake {
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-10px);
+  }
+
+  50% {
+    transform: translateX(10px);
+  }
+
+  75% {
+    transform: translateX(-10px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
 
 .switchLesson {
   width: 30vw;
   font-size: 28px;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-weight: bold;
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
@@ -31,8 +63,8 @@
 .switchLesson:hover {
   cursor: pointer;
   color: var(--dark-green-color);
-  background-color: rgba(127,204,38,0.18);
-  box-shadow: 0 2px 8px rgba(127,204,38,0.12);
+  background-color: rgba(127, 204, 38, 0.18);
+  box-shadow: 0 2px 8px rgba(127, 204, 38, 0.12);
 }
 
 .container {
@@ -50,7 +82,7 @@
   font-weight: bold;
   text-align: left;
   padding: 2rem 1.5rem 1.5rem 1.5rem;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
 }
@@ -63,7 +95,7 @@
 .lessonHeader {
   display: flex;
   justify-content: space-between;
-  align-items:first baseline;
+  align-items: first baseline;
 }
 
 .description {
@@ -166,6 +198,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 9999;
 }
 
 .popupContent {
@@ -263,10 +296,12 @@
   0% {
     stroke-dashoffset: 339.292;
   }
+
   50% {
     stroke-dashoffset: 84.823;
     transform: rotate(45deg);
   }
+
   100% {
     stroke-dashoffset: 339.292;
     transform: rotate(360deg);
@@ -298,13 +333,13 @@
   margin-bottom: 10px;
 }
 
-.moveItem {     
+.moveItem {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 1rem;           
-  align-items: center; 
-  margin-bottom: 0.5rem; 
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .move {
