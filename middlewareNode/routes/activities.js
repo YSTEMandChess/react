@@ -44,6 +44,32 @@ router.get("/", async (req, res) => {
     }
 })
 
+router.get("/dates", async (req, res) => {
+    try {
+        const db = await getDb(); 
+        const { username } = req.params;
+        if(!username) {
+            return res.status(401).json({error: "User not found"});
+        }
+        const users = db.collection("users");
+        const currentUser = await users.findOne({ 
+            username ,
+        });
+        if(!currentUser) {
+            return res.status(401).json({error: "User not found"});
+        }
+        const userId = currentUser._id;
+        const activities = db.collection("activities");
+        const completedDates = await activities.findOne(
+            { userId }, {projection: {_id: 0, completedDates: 1}}
+        );
+        return res.status(200).json({dates: completedDates});
+    } catch (err) {
+        console.error("Error fetching activity completion dates: ", err);
+        return res.status(500).json({error: 'Server error'});
+    }
+});
+
 
 router.put("/activity/:activityName", async (req, res) => {
     try {
