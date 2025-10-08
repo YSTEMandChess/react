@@ -1,29 +1,32 @@
 .lessonContainer {
-    background-image: url("../../../images/chess_background.png");
-    background-repeat: no-repeat;
-    background-size: cover;
-    align-content: center;
+  align-content: center;
 }
 
 .chessBoard {
-  transform: scale(0.9);
-  transform-origin: center;
+  margin-bottom: 30px;
+  margin-top: -167px;
+  transform: scale(0.7);
+  transform-origin: bottom center;
   width: 600px;
   height: 600px;
   border: none;
 }
 
+.leftRightContainer {
+  padding-top: 0.3rem;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: -1rem;
+}
 
 .switchLesson {
-  width: 30vw;
-  font-size: 28px;
+  font-size: 23px;
   font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-weight: bold;
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
-  margin-left: 13vw;
-  margin-top: 5vh;
   color: var(--green-color);
+  margin-top: 1rem;
   border: 0.1rem solid var(--green-color);
   background-color: rgba(240, 248, 230, 0.5);
 }
@@ -35,27 +38,21 @@
   box-shadow: 0 2px 8px rgba(127,204,38,0.12);
 }
 
-.container {
-  display: flex;
-  flex-direction: row-reverse;
-}
-
 .rightContainer {
-  margin: 20px;
-  margin-right: 60px;
+  margin-top: 20px;
   box-sizing: border-box;
-  width: 40vw;
+  width: 100%;
   display: flex;
   flex-direction: column;
   font-weight: bold;
   text-align: left;
-  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  padding: 1rem 1rem 1rem 2rem;
   background: rgba(255,255,255,0.85);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
 }
 
-.button-container {
+.buttonContainer {
   display: flex;
   justify-content: space-between;
 }
@@ -71,7 +68,7 @@
 }
 
 .subheading {
-  font-size: 24px;
+  font-size: 22px;
   margin: 3px 0;
   text-align: left;
   font-weight: bold;
@@ -79,8 +76,8 @@
 
 .resetLesson {
   background-color: var(--green-color);
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -89,33 +86,32 @@
   padding: 5px;
 }
 
-.reset-lesson:hover {
+.resetLesson:hover {
   background-color: var(--dark-green-color);
 }
 
 .pieceDescription {
   text-align: left;
-  font-size: 30px;
+  font-size: 22px;
 }
 
 .lessonDescription {
-  font-size: 19px;
+  font-size: 18px;
   color: var(--gray-color);
-  max-height: 280px;
+  max-height: 130px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
 }
 
 .prevNextContainer {
   display: flex;
   justify-content: space-between;
-  margin-top: auto;
+  margin-top: 10px;
 }
 
 .prevNextLessonButton {
-  width: 160px;
-  height: 60px;
+  width: 100px;
+  height: 35px;
   border-radius: 5px;
   color: black;
   display: flex;
@@ -124,8 +120,8 @@
 }
 
 .prevNextLessonButtonInactive {
-  width: 160px;
-  height: 60px;
+  width: 100px;
+  height: 35px;
   border-radius: 5px;
   color: rgb(173, 169, 169);
   display: flex;
@@ -134,7 +130,7 @@
 }
 
 .buttonDescription {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
 }
 
@@ -166,6 +162,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 9999;
 }
 
 .popupContent {
@@ -273,9 +270,10 @@
   }
 }
 
+
 // BEGIN MOVE TRACK STYLES
 
-.moveList {
+.move-list {
   border: 2px solid var(--dark-green-color);
   width: min-content;
   min-width: 300px;
@@ -288,7 +286,7 @@
   margin: 20px auto;
 }
 
-.moveTitle {
+.move-title {
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
@@ -298,7 +296,7 @@
   margin-bottom: 10px;
 }
 
-.moveItem {     
+.move-item {     
   display: flex;
   flex-direction: row;
   align-items: center;

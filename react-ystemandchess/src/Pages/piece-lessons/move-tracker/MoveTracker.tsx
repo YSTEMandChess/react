@@ -1,5 +1,5 @@
 import React from "react"
-import pageStyles from '../lesson-overlay/lesson-overlay.module.scss';
+import pageStyles from '../lesson-overlay/Lesson-overlay.module.scss';
 
 export default function MoveTracker({ moves=[] }) {
 

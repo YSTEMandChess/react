@@ -1,32 +1,61 @@
 .lessonContainer {
+  background-image: url("../../../images/chess_background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
   align-content: center;
 }
 
-.chessBoard {
-  margin-bottom: 30px;
-  margin-top: -167px;
-  transform: scale(0.7);
-  transform-origin: bottom center;
-  width: 600px;
-  height: 600px;
-  border: none;
+.chessboard-container {
+  width: 100%;
+  max-width: 600px;
+  /* large on big screens */
+  margin: 0 auto;
+  position: relative;
 }
 
-.leftRightContainer {
-  padding-top: 0.3rem;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: -1rem;
+.chessBoard {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  /* keeps it square */
+  display: block;
+}
+
+.shake {
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-10px);
+  }
+
+  50% {
+    transform: translateX(10px);
+  }
+
+  75% {
+    transform: translateX(-10px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .switchLesson {
-  font-size: 23px;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 30vw;
+  font-size: 28px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-weight: bold;
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
+  margin-left: 13vw;
+  margin-top: 5vh;
   color: var(--green-color);
-  margin-top: 1rem;
   border: 0.1rem solid var(--green-color);
   background-color: rgba(240, 248, 230, 0.5);
 }
@@ -34,25 +63,31 @@
 .switchLesson:hover {
   cursor: pointer;
   color: var(--dark-green-color);
-  background-color: rgba(127,204,38,0.18);
-  box-shadow: 0 2px 8px rgba(127,204,38,0.12);
+  background-color: rgba(127, 204, 38, 0.18);
+  box-shadow: 0 2px 8px rgba(127, 204, 38, 0.12);
+}
+
+.container {
+  display: flex;
+  flex-direction: row-reverse;
 }
 
 .rightContainer {
-  margin-top: 20px;
+  margin: 20px;
+  margin-right: 60px;
   box-sizing: border-box;
-  width: 100%;
+  width: 40vw;
   display: flex;
   flex-direction: column;
   font-weight: bold;
   text-align: left;
-  padding: 1rem 1rem 1rem 2rem;
-  background: rgba(255,255,255,0.85);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  background: rgba(255, 255, 255, 0.85);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
 }
 
-.buttonContainer {
+.button-container {
   display: flex;
   justify-content: space-between;
 }
@@ -60,7 +95,7 @@
 .lessonHeader {
   display: flex;
   justify-content: space-between;
-  align-items:first baseline;
+  align-items: first baseline;
 }
 
 .description {
@@ -68,7 +103,7 @@
 }
 
 .subheading {
-  font-size: 22px;
+  font-size: 24px;
   margin: 3px 0;
   text-align: left;
   font-weight: bold;
@@ -76,8 +111,8 @@
 
 .resetLesson {
   background-color: var(--green-color);
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -86,32 +121,33 @@
   padding: 5px;
 }
 
-.resetLesson:hover {
+.reset-lesson:hover {
   background-color: var(--dark-green-color);
 }
 
 .pieceDescription {
   text-align: left;
-  font-size: 22px;
+  font-size: 30px;
 }
 
 .lessonDescription {
-  font-size: 18px;
+  font-size: 19px;
   color: var(--gray-color);
-  max-height: 130px;
+  max-height: 280px;
   overflow-y: auto;
   scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 }
 
 .prevNextContainer {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
+  margin-top: auto;
 }
 
 .prevNextLessonButton {
-  width: 100px;
-  height: 35px;
+  width: 160px;
+  height: 60px;
   border-radius: 5px;
   color: black;
   display: flex;
@@ -120,8 +156,8 @@
 }
 
 .prevNextLessonButtonInactive {
-  width: 100px;
-  height: 35px;
+  width: 160px;
+  height: 60px;
   border-radius: 5px;
   color: rgb(173, 169, 169);
   display: flex;
@@ -130,7 +166,7 @@
 }
 
 .buttonDescription {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
 }
 
@@ -162,6 +198,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 9999;
 }
 
 .popupContent {
@@ -259,20 +296,21 @@
   0% {
     stroke-dashoffset: 339.292;
   }
+
   50% {
     stroke-dashoffset: 84.823;
     transform: rotate(45deg);
   }
+
   100% {
     stroke-dashoffset: 339.292;
     transform: rotate(360deg);
   }
 }
 
-
 // BEGIN MOVE TRACK STYLES
 
-.move-list {
+.moveList {
   border: 2px solid var(--dark-green-color);
   width: min-content;
   min-width: 300px;
@@ -285,7 +323,7 @@
   margin: 20px auto;
 }
 
-.move-title {
+.moveTitle {
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
@@ -295,13 +333,13 @@
   margin-bottom: 10px;
 }
 
-.move-item {     
+.moveItem {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 1rem;           
-  align-items: center; 
-  margin-bottom: 0.5rem; 
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .move {
