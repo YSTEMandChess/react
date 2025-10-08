@@ -19,4 +19,5 @@ const activityNameMap: Record<string, string> = {
 export const parseActivities = (names: Array<Activity>): Array<string> => {
     const namesArray = names.map((activity) => activityNameMap[activity.name] || activity.name);
     return namesArray;
+    //make api call to send array of activity names, get array back and use map() to convert display names
 }

@@ -1,24 +1,44 @@
-const mongoose = require("mongoose");
-const { Schema, model } = mongoose;
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
+const { Schema, Document, model } = mongoose;
 
-const activitySchema = new mongoose.Schema({
+export interface Activity {
+    name: string;
+    type: string;
+    completed: boolean;
+}
+const ActivitySchema = new Schema<Activity>({
+    name: {
+        type: String,
+        required: true
+    },
+    type: {
+        type: String,
+        required: true,
+    },
+    completed: {
+        type: Boolean,
+        required: true,
+    },
+});
+
+interface ActivitiesDocument extends Document {
+    userId: mongoose.Types.ObjectId;
+    activities: Activity[];
+    completedDates: Date[];
+}
+const ActivitiesSchema = new Schema<ActivitiesDocument>({
     userId: {
-        type: ObjectId,
+        type: Schema.Types.ObjectId,
         required: true,
     },
     activities: {
-        type: Array<Activity>,
+        type: [ActivitySchema],
         required: true,
     },
     completedDates: {
-        type: Array<Date>,
+        type: [Date],
         required: true
     }
 })
 
-type Activity = {
-    name: string,
-    type: string,
-    completed: boolean
-}
+module.exports = model<ActivitiesDocument>("activities", ActivitiesSchema);

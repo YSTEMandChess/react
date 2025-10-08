@@ -11,7 +11,7 @@ const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
 const { MongoClient } = require('mongodb');
 const config = require("config");
-
+const activities = require("../models/activities");
 let cachedClient = null; // cache db client to prevent repeated connections
 
 // get db client
@@ -117,7 +117,10 @@ router.post(
                 accountCreatedAt: currDate.toLocaleString(),
                 timePlayed: 0,
               });
-              await newStudent.save();
+              await newStudent.save(function (err, user) {
+                console.log(user.id);
+                // Create activity document for new user
+              });
             }),
           );
         }
