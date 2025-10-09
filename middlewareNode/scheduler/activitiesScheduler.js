@@ -1,6 +1,7 @@
 const schedule = require("node-schedule");
 const config = require("config");
 const { MongoClient } = require('mongodb');
+const { selectActivities } = require("../utils/activities");
 require('dotenv').config();
 
 let cachedClient = null; // cache db client to prevent repeated connections
@@ -12,19 +13,6 @@ async function getDb() {
     await cachedClient.connect();
   }
   return cachedClient.db("ystem"); // returned cached client
-}
-
-const selectActivities = async () => {
-    const db = await getDb();
-    const activityList = await (db.collection("activityTypes").find({})).toArray();
-    const newActivities = [];
-    while (newActivities.length < 4) {
-        const selectedActivity = activityList[Math.floor(Math.random() * activityList.length)];
-        if(!newActivities.includes(selectedActivity._id)) {
-            newActivities.push(selectedActivity._id);
-        }
-    }
-    return newActivities;
 }
 
 const activityScheduler = async () => {
@@ -40,7 +28,7 @@ const activityScheduler = async () => {
             { $set: { activities: newActivities } }
         )
     }*/
-   console.log(`Reset activities at ${new Date().toLocaleString()}`);
+   console.log(`Resetting activities (${new Date().toLocaleString()})`);
 })}
 
 module.exports = { activityScheduler };
