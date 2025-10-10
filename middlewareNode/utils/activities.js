@@ -26,4 +26,4 @@ const selectActivities = async () => {
     return newActivities;
 }
 
-module.exports = selectActivities;
+module.exports = { selectActivities };
