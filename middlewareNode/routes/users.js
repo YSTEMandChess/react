@@ -4,7 +4,7 @@ const router = express.Router();
 const crypto = require("crypto");
 const { check, validationResult } = require("express-validator");
 const users = require("../models/users");
-const activities = require("../models/activities");
+const Activities = require("../models/activities");
 const { selectActivities } = require("../utils/activities");
 const {
   ChangePasswordTemplateForUser,
@@ -123,9 +123,9 @@ router.post(
                   console.error('Error saving student: ', err);
                 }
                 else {
-                  console.log(user.id);
+                  console.log(user._id);
                   const newActivities = await selectActivities();
-                  const activitiesEntry = new activities({
+                  const activitiesEntry = new Activities({
                     userId: user.id,
                     activities: newActivities,
                     completedDates: [],
