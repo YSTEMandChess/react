@@ -4,6 +4,8 @@ const router = express.Router();
 const crypto = require("crypto");
 const { check, validationResult } = require("express-validator");
 const users = require("../models/users");
+const activities = require("../models/activities");
+const { selectActivities } = require("../utils/activities");
 const {
   ChangePasswordTemplateForUser,
 } = require("../template/changePasswordTemplate");
@@ -11,7 +13,6 @@ const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
 const { MongoClient } = require('mongodb');
 const config = require("config");
-
 let cachedClient = null; // cache db client to prevent repeated connections
 
 // get db client
@@ -117,7 +118,21 @@ router.post(
                 accountCreatedAt: currDate.toLocaleString(),
                 timePlayed: 0,
               });
-              await newStudent.save();
+              await newStudent.save(async function (err, user) {
+                if(err) {
+                  console.error('Error saving student: ', err);
+                }
+                else {
+                  console.log(user.id);
+                  const newActivities = await selectActivities();
+                  const activitiesEntry = new activities({
+                    userId: user.id,
+                    activities: newActivities,
+                    completedDates: [],
+                  });
+                  await activitiesEntry.save();
+                }
+              });
             }),
           );
         }

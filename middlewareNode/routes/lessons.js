@@ -885,3 +885,5 @@ list = [
 
     }
 ]
+
+module.exports = router;

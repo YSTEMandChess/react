@@ -28,5 +28,8 @@
   "license": "ISC",
   "volta": {
     "node": "18.20.8"
+  },
+  "devDependencies": {
+    "node-schedule": "^2.1.1"
   }
 }
