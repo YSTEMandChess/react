@@ -130,7 +130,9 @@ router.post(
                     activities: newActivities,
                     completedDates: [],
                   });
-                  await activitiesEntry.save();
+                  await activitiesEntry.save(function (err, activity) {
+                    console.error('Error creating activities for student: ', err);
+                  });
                 }
               });
             }),
