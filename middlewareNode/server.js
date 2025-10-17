@@ -6,6 +6,7 @@ require("./config/passport.js");
 const app = express();
 const cors = require("cors");
 const config = require("config");
+const streakRoutes = require('./routes/streak');
 
 // Enable Cors
 app.use(cors(config.get("corsOptions")));
@@ -39,6 +40,7 @@ app.use("/timeTracking", require("./routes/timeTracking"));
 app.use("/puzzles", require("./routes/puzzles"));
 app.use("/lessons", require("./routes/lessons"));
 app.use("/activities/:username", require("./routes/activities"));
+app.use('/streak', streakRoutes);
 
 const PORT = process.env.PORT || 8000;
 
