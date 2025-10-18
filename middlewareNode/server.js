@@ -8,6 +8,9 @@ const cors = require("cors");
 const config = require("config");
 const streakRoutes = require('./routes/streak');
 
+// Enable scheduler
+require("./scheduler/activitiesScheduler.js");
+
 // Enable Cors
 app.use(cors(config.get("corsOptions")));
 

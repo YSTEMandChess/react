@@ -29,4 +29,4 @@ const ActivitiesSchema = new Schema({
     }
 })
 
-module.exports = activities = model("activities", ActivitiesSchema);
+module.exports = Activities = model("activities", ActivitiesSchema);

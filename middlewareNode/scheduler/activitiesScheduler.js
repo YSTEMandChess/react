@@ -15,9 +15,9 @@ async function getDb() {
   return cachedClient.db("ystem"); // returned cached client
 }
 
-const activityScheduler = async () => {
-    return schedule.scheduleJob('0 0 * * *', async function () {
-    /*const db = await getDb();
+const activityScheduler = schedule.scheduleJob('0 0 * * *', 
+  async function () {
+    const db = await getDb();
     const activities = db.collection("activities");
     const activitiesArray = await (activities.find({})).toArray();
     for(const userActivity of activitiesArray) {
@@ -27,8 +27,6 @@ const activityScheduler = async () => {
             { _id: id},
             { $set: { activities: newActivities } }
         )
-    }*/
+    }
    console.log(`Resetting activities (${new Date().toLocaleString()})`);
-})}
-
-module.exports = { activityScheduler };
+})
