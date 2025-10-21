@@ -44,15 +44,14 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
   const navigate = useNavigate();
   const location = useLocation();
-  let passedLessonNumber = location.state?.lessonNum; // if received from parent props
-  if (propLessonNumber != null) passedLessonNumber = propLessonNumber;
   const [cookies] = useCookies(['login']);
 
   const chessBoardRef = useRef<any>(null);
   const isReadyRef = useRef(false);
 
   // Information for lesson
-  const [piece, setPiece] = useState("Checkmate Pattern 1 Recognize the patterns"); // which category of lessons
+  const [piece, setPiece] = useState(propPieceName || location.state?.piece || "");
+  const [initialLessonNum] = useState(propLessonNumber ?? location.state?.lessonNum ?? 0);
   const lessonStartFENRef = useRef("");
   const lessonEndFENRef = useRef("");
   const lessonTypeRef = useRef("default");
@@ -75,38 +74,51 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   const [promotionTarget, setPromotionTarget] = useState("");
 
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
-  const [currentFEN, setCurrentFEN] = useState(lessonStartFENRef.current);
+  const [currentFEN, setCurrentFEN] = useState<string>("");
 
 
-  const handleChessMove = (fen: string) => {
-    currentFenRef.current = fen;
-    processMove();
-    socketRef.current.emit("evaluate-fen", { fen, move: "", level });
-  };
+  useEffect(() => {
+    if (propPieceName) setPiece(propPieceName);
+  }, [propPieceName]);
 
   function handleMove(fen: string) {
-    setMoveHistory(prev => [...prev, currentFEN]);
+    // store current FEN (before the new move) into history
+    setMoveHistory(prev => [...prev, currentFenRef.current || ""]);
 
+    // update refs/state to the new FEN
+    currentFenRef.current = fen;
     setCurrentFEN(fen);
 
-    handleChessMove(fen);
+    // process local move logic
+    processMove();
+
+    // send to engine (guard socket)
+    if (socketRef?.current) {
+      socketRef.current.emit("evaluate-fen", { fen, move: "", level });
+    }
+
+    // notify parent if UI ready
+    if (isReadyRef.current && typeof onChessMove === 'function') {
+      onChessMove(fen);
+    }
   }
 
   function undoMove() {
-  if (!chessBoardRef.current) return;
+    if (!chessBoardRef.current) return;
 
-  setMoveHistory(prev => {
-    if (prev.length === 0) return prev;
-    const lastFEN = prev[prev.length - 1];
+    setMoveHistory(prev => {
+      if (prev.length === 0) return prev;
+      const lastFEN = prev[prev.length - 1];
 
-    // Undo on ChessBoard
-    chessBoardRef.current.undo(); 
+      // Undo on ChessBoard
+      chessBoardRef.current?.undo();
 
-    setCurrentFEN(lastFEN);
+      currentFenRef.current = lastFEN;
+      setCurrentFEN(lastFEN);
 
-    return prev.slice(0, -1);
-  });
-}
+      return prev.slice(0, -1);
+    });
+  }
 
   const handleEvaluationComplete = useCallback((data) => {
     prevFenRef.current = currentFenRef.current;
@@ -127,12 +139,13 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     lessonNum,
     completedNum,
     totalLessons,
-    getLessonsCompletedRef,
-    getTotalLessonsRef,
-    getCurrentLessonsRef,
-    updateCompletionRef,
+    refreshProgress,
+    goToLesson,
+    nextLesson: managerNextLesson,
+    prevLesson: managerPrevLesson,
+    updateCompletion,
     setLessonNum,
-  } = useLessonManager(piece, cookies, passedLessonNumber);
+  } = useLessonManager(piece, cookies, initialLessonNum);
 
   const {
     moves,
@@ -146,16 +159,16 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
 
   useEffect(() => {
-    const fetchLessonInfo = async () => {
-      await getTotalLessonsRef.current();
-      await getLessonsCompletedRef.current();
-    };
-    fetchLessonInfo();
-  }, [piece, passedLessonNumber]);
+    // initialize (totals, completed and current lesson) via manager
+    setShowLPopup(true);
+    refreshProgress(initialLessonNum).finally(() => {
+      setShowLPopup(false);
+    });
+  }, [piece, initialLessonNum, refreshProgress]);
 
   // react to lessonData changes
   useEffect(() => {
-    if (!lessonData) return;
+    if (!lessonData || !lessonData.startFen) return;
 
     setShowLPopup(false);
     setShowInstruction(true);
@@ -170,63 +183,64 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     lessonStartFENRef.current = lessonData.startFen
     lessonEndFENRef.current = lessonData.endFen
     currentFenRef.current = lessonData.startFen
-    turnRef.current = getTurnFromFEN(lessonData.startFen)
-    setInfo(lessonData.info)
-    setName(lessonData.name)
+    setCurrentFEN(lessonData.startFen);
 
-    // update lesson type for completion checking
-    if (lessonData.info.includes("Checkmate the opponent") || lessonData.name.includes("= Win")) {
+    try {
+      turnRef.current = getTurnFromFEN(lessonData.startFen);
+    } catch (err) {
+      console.warn("Failed to parse turn from FEN", err);
+      turnRef.current = "white";
+    }
+
+    setInfo(lessonData.info || "")
+    setName(lessonData.name || "")
+
+    // update lesson type for completion checking (case-insensitive)
+    const infoLower = (lessonData.info || "").toLowerCase();
+    const nameLower = (lessonData.name || "").toLowerCase();
+    if (infoLower.includes("checkmate the opponent") || nameLower.includes("= win")) {
       lessonTypeRef.current = "checkmate";
-    } else if (lessonData.info.includes("Get a winning position")) {
+    } else if (infoLower.includes("get a winning position")) {
       lessonTypeRef.current = "position";
-    } else if (lessonData.info.includes("Equalize in")) {
+    } else if (infoLower.includes("equalize in")) {
       lessonTypeRef.current = "equalize";
-    } else if (lessonData.info.includes("promote your pawn")) {
+    } else if (infoLower.includes("promote your pawn")) {
       lessonTypeRef.current = "promote";
-    } else if (lessonData.info.includes("Hold the draw") || lessonData.name.includes("Draw")) {
+    } else if (infoLower.includes("hold the draw") || nameLower.includes("draw")) {
       lessonTypeRef.current = "draw";
     } else {
       lessonTypeRef.current = "default";
     }
 
-    // Update the session's fen
-    socketRef.current.emit("update-fen", { fen: lessonData.startFen });
+    // Update the session's fen only if socket is ready
+    if (socketRef?.current?.connected) {
+      socketRef.current.emit("update-fen", { fen: lessonData.startFen });
+    }
 
     sendLessonToChessBoard();
 
-  }, [lessonData]);
+  }, [lessonData, socketRef]);
+
 
   // send lesson to chess client to update UI
   const sendLessonToChessBoard = () => {
-    if (!lessonData || !onChessMove) return;
-
-    // Reset chessboard to lesson start
-    onChessMove(lessonStartFENRef.current);
-
+    if (!lessonData) return;
+    if (typeof onChessMove === 'function') {
+      onChessMove(lessonStartFENRef.current);
+    }
   };
 
   // Navigate to previous lesson
-  const previousLesson = () => {
-    if (lessonNum > 0) { // if there is a previous lesson
-      // update and fetch previous lesson
-      setLessonNum(prevNum => prevNum - 1);
-      getCurrentLessonsRef.current(lessonNum - 1);
-
-      // clear move tracker
-      resetLesson(null);
-    }
-  };
+  const previousLesson = async () => {
+    await managerPrevLesson();
+    resetLesson(null);
+  }
 
   // Navigate to next lesson
-  const nextLesson = () => {
-    if (lessonNum < completedNum && lessonNum < totalLessons - 1) { // no navigation beyond first uncompleted lesson or last lesson
-      // update and fetch next lesson
-      setLessonNum(prevNum => prevNum + 1);
-      getCurrentLessonsRef.current(lessonNum + 1);
-
-      // clear move tracker
-      resetLesson(null);
-    }
+  const nextLesson = async () => {
+    await managerNextLesson();
+    // clear move tracker
+    resetLesson(null);
   };
 
   // reset board to play again
@@ -236,17 +250,21 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
       onChessReset(lessonStartFENRef.current);  // reset ChessClient FEN
     }
 
-    // Clean move tracker
+    // reset move tracker and clear local history
     resetLesson(lessonStartFENRef.current);
+    setMoveHistory([]);
+    // also reset current fen ref/state to lesson start
+    currentFenRef.current = lessonStartFENRef.current;
+    setCurrentFEN(lessonStartFENRef.current);
   }
 
 
   // user agrees to complete lesson
-  const handleVPopup = () => {
+  const handleVPopup = async() => {
     setShowVPopup(false); // disable popup
     setShowXPopup(false);
-    if (lessonNum < totalLessons - 1) setShowLPopup(true) // load next lesson
-    updateCompletionRef.current(); // update # of lessons completed
+    
+    await updateCompletion();
 
     // clean move tracker
     resetLesson(lessonStartFENRef.current)

@@ -32,7 +32,7 @@ it("fetches and sets lesson data", async () => {
   	);
 
   	await act(async () => {
-		await result.current.getCurrentLessonsRef.current(0);
+		await result.current.goToLesson(0);
   	});
 
   	expect(result.current.lessonData.name).toBe("Test Lesson");
