@@ -27,7 +27,7 @@ type StatsChartProps = {
   dataAxis: { [event: string]: number[] }; // multiple event data series
 };
 
-export const StatsChart: React.FC<StatsChartProps> = ({ monthAxis, dataAxis }) => {
+const StatsChart: React.FC<StatsChartProps> = ({ monthAxis, dataAxis }) => {
   const [data, setData] = useState({
     labels: monthAxis,
     datasets: [] as {
@@ -69,5 +69,21 @@ export const StatsChart: React.FC<StatsChartProps> = ({ monthAxis, dataAxis }) =
     });
   }, [monthAxis, dataAxis]);
 
-  return <Line data={data} />;
+  return <Line
+  data={data}
+  options={{
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          boxWidth: 50,
+          padding: 10,
+        },
+      },
+    },
+  }}
+/>;
 };
+
+export default StatsChart;

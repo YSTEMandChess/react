@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../../environments/environment';
 import pageStyles from './lesson-overlay.module.scss';
@@ -13,7 +13,15 @@ import { ReactComponent as BackIconInactive} from '../../../images/icons/icon_ba
 import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg';
 import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
 import { useNavigate, useLocation } from 'react-router';
+
+import io from 'socket.io-client';
 import PromotionPopup from '../../Lessons/PromotionPopup';
+
+// Custom Hooks
+import { useChessGameLogic } from './hooks/useChessGameLogic';
+import { useLessonManager } from './hooks/useLessonManager';
+import { useSocketChessEngine } from './hooks/useSocketChessEngine';
+import { useTimeTracking } from './hooks/useTimeTracking';
 
 // types for the component props
 type LessonOverlayProps = {
@@ -39,11 +47,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     let passedLessonNumber = location.state?.lessonNum; // if received from parent props
     if(propLessonNumber != null) passedLessonNumber = propLessonNumber;
     const [cookies] = useCookies(['login']);
-    const [username, setUsername] = useState(null);
-
-    // info needed for time tracking
-    const [eventID, setEventID] = useState(null);
-    const [startTime, setStartTime] = useState(null);
 
     let isReady = false; // if chess client is ready to receive
     let lessonStarted = false; // if lesson has started
@@ -53,19 +56,13 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     const lessonStartFENRef = useRef("");
     const lessonEndFENRef = useRef("");
     const lessonTypeRef = useRef("default");
-    const [lessonNum, setLessonNum] = useState(0); // current lesson number, 0-indexed
-    const [completedNum, setCompletedNum] = useState(0); // # of lessons completed
-    const [totalLessons, setTotalLessons] = useState(0); // # of lessons in the category
-    const [endSquare, setEndSquare] = useState('');
-    const [previousEndSquare, setPreviousEndSquare] = useState('');
+    const [endSquare, setEndSquare] = useState("");
+    const [previousEndSquare, setPreviousEndSquare] = useState("");
     const turnRef = useRef("white");
     const [name, setName] = useState(""); // name of lesson
     const [info, setInfo] = useState(""); // description of lesson
 
     // Information needed for move tracker
-    const prevFenRef = useRef(null)
-    const currentFenRef = useRef(null);
-    const [moves, setMoves] = useState([])
     const [level, setLevel] = useState(20);
 
     // Controlling popups
@@ -79,23 +76,60 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     const [promotionSource, setPromotionSource] = useState("");
     const [promotionTarget, setPromotionTarget] = useState("");
 
-    // Use Refs, so functions in event handler can access latest updated variable values
-    const getLessonsCompletedRef = useRef(() => {});
-    const updateCompletionRef = useRef(() => {});
-    const getTotalLessonsRef = useRef(() => {});
-    const getCurrentLessonsRef = useRef<(input: number) => void>(() => {});
-    const handleUnloadRef = useRef(() => {});
+    // callback for the socketChessEngine (possibly add processMove() as a dependency)
+    const handleEvaluationComplete = useCallback((data) => {
+        const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
+        const chessBoard = iframe?.contentWindow;
 
+        const message = JSON.stringify({
+            boardState: data.newFEN || "", // fallback if only engineOutput sent
+            color: turnRef.current,
+            lessonFlag: false,
+        });
+
+        prevFenRef.current = currentFenRef.current;
+        currentFenRef.current = data.newFEN;
+        processMove();
+
+        if (isReady && chessBoard) {
+            chessBoard.postMessage(message, environment.urls.chessClientURL);
+        }
+    }, []);
+
+    // FROM CUSTOM HOOKS
+    const socketRef = useSocketChessEngine(handleEvaluationComplete);
+    
+    const {
+        lessonData,
+        lessonNum,
+        completedNum,
+        totalLessons,
+        getLessonsCompletedRef,
+        getTotalLessonsRef,
+        getCurrentLessonsRef,
+        updateCompletionRef,
+        setLessonNum,
+    } = useLessonManager(piece, cookies, passedLessonNumber);
+
+    const { 
+        moves, 
+        processMove, 
+        resetLesson, 
+        currentFenRef, 
+        prevFenRef 
+    } = useChessGameLogic();
+
+    useTimeTracking(piece, cookies);
+
+    // eventer setup and socket communication
     useEffect(() => {
-        startRecording(); // start recording
-        window.addEventListener('beforeunload', handleUnloadRef.current); // when unloaded, end recording
-
         // configure eventer
         const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
         const eventer = window[eventMethod];
         const messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message';
 
         const handleMessage = async (e) => {
+            console.log(e);
             if (e.origin === environment.urls.chessClientURL) {
                 console.log("e.data!!!!", e.data)
                 // if client is ready to receive
@@ -133,28 +167,15 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                     currentFenRef.current = e.data
 
                     // process the move for tracking
-                    processMove()
+                    processMove() 
 
-                    const iframe = document.getElementById('chessBd') as HTMLIFrameElement | null;
-                    const chessBoard = iframe?.contentWindow;
+                    socketRef.current.emit("evaluate-fen", {
+                        fen: e.data,
+                        move: "",
+                        level: level
+                    });
 
-                    httpGetAsync( // get the next opponent move from stockfish
-                        `${environment.urls.stockFishURL}/?level=${level}&fen=${e.data}`,
-                        (response) => {
-                            const data = JSON.parse(response)
-                            const message = JSON.stringify({ boardState: data.fen, highlightFrom: data.from, highlightTo: data.to, color: turnRef.current, lessonFlag: false});
-                            // update fens
-                            prevFenRef.current = currentFenRef.current
-                            currentFenRef.current = data.fen
-
-                            // process the move for tracking
-                            processMove()
-
-                            if (isReady) { // sends opponent moved board to client to update UI
-                                chessBoard.postMessage(message, environment.urls.chessClientURL);
-                            }
-                        }
-                    );
+                    console.log("FEN SENT to stockfishServer");
                 }
             }
         };
@@ -168,147 +189,54 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
         return () => {
             window.removeEventListener('message', handleMessage); // remove event listener
-            window.removeEventListener('beforeunload', handleUnloadRef.current); // remove listener when unloading
-            handleUnloadRef.current(); // when navigating away, stop recording time spent
+
             if(navigateFunc) navigateFunc();
         };
     }, []);
 
-    // get # of completed lessons for this category
-    getLessonsCompletedRef.current = async () => {
-        try {
-            // update # of completed lessons
-            const response = await fetch(
-            `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${piece}`, 
-            {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${cookies.login}` }
-            }
-            );
-            const completedCount = await response.json();
-            setCompletedNum(completedCount);
+    // react to lessonData changes (add popups ?)
+    useEffect(() => {
+        if (!lessonData) return;
 
-            if (passedLessonNumber != null) {
-                // if navigated from menu, with specified lesson number
-                getCurrentLessonsRef.current(passedLessonNumber);
-            } else {
-                // if directly navigated, current lesson is the next not completed lesson
-                setLessonNum(completedCount);
-                getCurrentLessonsRef.current(completedCount);
-            }
-        } catch (error) {
-            console.error('Error fetching completed lessons:', error);
-            setShowError(true)
+        setShowLPopup(false);
+        //setShowError(false);
+        setShowInstruction(true);
+
+        // Check if we've reached the end of lessons
+        if (!lessonData.lessonNum) {
+            alert('Congratulations! You have completed all lessons for this piece.');
+            return
         }
-    };
 
-    // get the lesson content for a specific number
-    getCurrentLessonsRef.current = async (lessonNumber) => {
-        try {
-            // fetch lesson content
-            setShowLPopup(true) // loading popup to wait for response
-            let timeoutId = setTimeout(() => { // set time out to prevent fetching from taking too long
-                setShowError(true);
-            }, 10000);
+        // Update lesson data & info
+        lessonStartFENRef.current = lessonData.startFen
+        lessonEndFENRef.current = lessonData.endFen
+        currentFenRef.current = lessonData.startFen
+        turnRef.current = getTurnFromFEN(lessonData.startFen)
+        setInfo(lessonData.info)
+        setName(lessonData.name)
 
-            const response = await fetch(
-            `${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber + 1}`,
-            {
-                method: 'GET', 
-                headers: { 'Authorization': `Bearer ${cookies.login}` }
-            }
-            );
-            const lessonData = await response.json();
-            setShowLPopup(false); // disable loading
-            clearTimeout(timeoutId); // clear the timeout if fetch succeeded
-            setShowInstruction(true); // make sure user reads instruction first
-
-            // Update lesson data & info
-            lessonStartFENRef.current = lessonData.startFen
-            lessonEndFENRef.current = lessonData.endFen
-            currentFenRef.current = lessonData.startFen
-            turnRef.current = getTurnFromFEN(lessonData.startFen)
-            setInfo(lessonData.info)
-            setName(lessonData.name)
-
-            // update lesson type for completion checking
-            if(lessonData.info.includes("Checkmate the opponent") || lessonData.name.includes("= Win")){
-                lessonTypeRef.current = "checkmate";
-            } else if (lessonData.info.includes("Get a winning position")) {
-                lessonTypeRef.current = "position";
-            }  else if (lessonData.info.includes("Equalize in")) {
-                lessonTypeRef.current = "equalize";
-            } else if (lessonData.info.includes("promote your pawn")) {
-                lessonTypeRef.current = "promote";
-            } else if (lessonData.info.includes("Hold the draw") || lessonData.name.includes("Draw")) {
-                lessonTypeRef.current = "draw";
-            } else {
-                lessonTypeRef.current = "default";
-            }
-            
-            // Check if we've reached the end of lessons
-            if (!lessonData || lessonData.lessonNum === undefined) {
-                alert('Congratulations! You have completed all lessons for this piece.');
-                return
-            }
-            // if not, let client update board UI 
-            sendLessonToChessBoard();
-
-        } catch (error) {
-            console.error('Error fetching lesson:', error);
+        // update lesson type for completion checking
+        if(lessonData.info.includes("Checkmate the opponent") || lessonData.name.includes("= Win")){
+            lessonTypeRef.current = "checkmate";
+        } else if (lessonData.info.includes("Get a winning position")) {
+            lessonTypeRef.current = "position";
+        }  else if (lessonData.info.includes("Equalize in")) {
+            lessonTypeRef.current = "equalize";
+        } else if (lessonData.info.includes("promote your pawn")) {
+            lessonTypeRef.current = "promote";
+        } else if (lessonData.info.includes("Hold the draw") || lessonData.name.includes("Draw")) {
+            lessonTypeRef.current = "draw";
+        } else {
+            lessonTypeRef.current = "default";
         }
-    };
 
-    // get total # of lessons for category
-    getTotalLessonsRef.current = async () => {
-        try {
-            // fetch
-            const response = await fetch(
-            `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=${piece}`,
-            {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${cookies.login}` }
-            }
-            );
-            const total = await response.json();
-            setTotalLessons(total); // update in UI
-        } catch (error) {
-            console.error('Error fetching total lessons:', error);
-        }
-    };
+        // Update the session's fen
+        socketRef.current.emit("update-fen", { fen: lessonData.startFen });
 
-    // Update the user's lesson progress in this category
-    updateCompletionRef.current = async () => {
-        try {      
-            if (lessonNum === completedNum) { // allow back end update only for the first unfinished lesson
-                setCompletedNum(prevNum => prevNum + 1);
-                await fetch(
-                `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=${piece}&lessonNum=${lessonNum}`,
-                {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${cookies.login}` }
-                })
-            };
+        sendLessonToChessBoard();
 
-            if (lessonNum < totalLessons - 1) {
-                // Move to next lesson if there are any
-                setLessonNum(prevNum => prevNum + 1);
-                getCurrentLessonsRef.current(lessonNum + 1);
-            }
-        } catch (error) {
-            console.error('Error updating lesson completion:', error);
-        }
-    };
-
-    // send data to stock fish
-    const httpGetAsync = (theUrl, callback) => {
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState === 4 && xmlHttp.status === 200) callback(xmlHttp.responseText);
-        };
-        xmlHttp.open('POST', theUrl, true);
-        xmlHttp.send(null);
-    };
+    }, [lessonData]);
 
     // send lesson to chess client to update UI
     const sendLessonToChessBoard = () => {
@@ -338,8 +266,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
             getCurrentLessonsRef.current(lessonNum - 1);
 
             // clear move tracker
-            setMoves([])
-            currentFenRef.current = null;
+            resetLesson(null);
         }
     };
     
@@ -351,8 +278,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
             getCurrentLessonsRef.current(lessonNum + 1);
 
             // clear move tracker
-            setMoves([])
-            currentFenRef.current = null;
+            resetLesson(null);
         }
     };
 
@@ -367,8 +293,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         chessBoard.postMessage(message, environment.urls.chessClientURL);
 
         // clean move tracker
-        setMoves([])
-        currentFenRef.current = lessonStartFENRef.current
+        resetLesson(lessonStartFENRef.current)
     }
 
     // user agrees to complete lesson
@@ -379,8 +304,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         updateCompletionRef.current(); // update # of lessons completed
 
         // clean move tracker
-        setMoves([])
-        currentFenRef.current = lessonStartFENRef.current
+        resetLesson(lessonStartFENRef.current)
     }
 
     // user agrees to restart lesson after failure
@@ -399,7 +323,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         return typeof str === 'string' && str.split(' ').length === 6;
     }
 
-    // calculate which turn is playing , black or white
     function getTurnFromFEN(fen) {
         if (!fen || typeof fen !== 'string') {
             throw new Error('Invalid FEN string');
@@ -413,90 +336,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
         throw new Error('Could not determine turn from FEN');
     }
-
-    // update the moves for tracking
-    function processMove() {
-        // if previous fen is not set (ie the first move has not been made), do nothing
-        if (prevFenRef.current) {
-            const move = getMoveFromFens(prevFenRef.current, currentFenRef.current)
-            // if the move is not null, update the moves (the move will be null only when the computer makes no move ie checkmate or statemate)
-            if (move) {
-                setMoves(prev => [...prev, move]) // update moves
-            }
-            
-        }
-    }
-
-    // Calculate what move is made by board fen before & after the move
-    function getMoveFromFens(prevFEN, currFEN) {
-        const chess = new Chess(prevFEN)
-        const moves = chess.moves({verbose: true})
-
-        for (let i = 0; i < moves.length; i++) {
-            const possibleChess = new Chess(prevFEN)
-            possibleChess.move(moves[i])
-            
-            if (getPositionKey(possibleChess.fen()) === getPositionKey(currFEN)) {
-                return moves[i].san
-            }
-        }
-
-        // move not found
-        return null
-    }
-
-    function getPositionKey(fen) {
-        // only compare the first 4 parts of the FEN (board, active color, castling, en passant)
-        if(!fen) return;
-        return fen.split(" ").slice(0, 3).join(" ")
-    }
-
-    // start recording when users started browsing website
-    async function startRecording() {
-        const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
-
-        // do nothing if the user is not logged in
-        if(uInfo.error) return;
-        setUsername(uInfo.username); // else record username
-
-        // start recording user's time spent browsing the website
-        const response = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/start?username=${uInfo.username}&eventType=lesson&eventName=${piece}`, 
-        {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${cookies.login}` }
-        }
-        );
-        if(response.status != 200) console.log(response) // error handling
-
-        // if data is fetched, record for later updates
-        const data = await response.json();
-        setEventID(data.eventId);
-        setStartTime(data.startTime);
-    }
-
-    // handler called when user exist the website, complete recording time
-    handleUnloadRef.current = async () => {
-        try {
-            const startDate = new Date(startTime)
-            const endDate = new Date();
-            const diffInMs = endDate.getTime() - startDate.getTime(); // time elapsed in milliseconds
-            const diffInSeconds = Math.floor(diffInMs / 1000); // time elapsed in seconds
-
-            // update the time users spent browsing website
-            const response = await fetch(
-                `${environment.urls.middlewareURL}/timeTracking/update?username=${username}&eventType=lesson&eventId=${eventID}&totalTime=${diffInSeconds}&eventName=${piece}`, 
-                {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${cookies.login}` }
-                }
-            );
-            console.log("i put in eventname", piece)
-            if(response.status != 200) console.log(response) // error handling
-        } catch (err) {
-            console.log(err)
-        }
-    };
 
     function promotePawn(position, piece) {
         setIsPromoting(false);
@@ -521,7 +360,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                     {/* Lesson info */}
                     <div className={styles.lessonHeader}>
                     <h1 className={styles.pieceDescription}>{piece}</h1>
-                    <button className={styles.resetLesson} onClick={handleReset}>
+                    <button className={styles.resetLesson} data-testid="reset-button" onClick={handleReset}>
                         <RedoIcon/>
                     </button>
                     </div>
@@ -560,7 +399,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                         )
                     }
                     </div>
-                    {/* <MoveTracker moves={moves} /> */}
+                    { styleType != 'profile' && (<MoveTracker moves={moves} />) }
                 </div>
                 <iframe src={environment.urls.chessClientURL} className={styles.chessBoard} id="chessBd" title="Chess Lesson Board"/>
             </div>

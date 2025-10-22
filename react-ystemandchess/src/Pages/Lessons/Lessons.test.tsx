@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, within, fireEvent } from "@testing-library/react";
 import Lessons from "./Lessons";
 import { MemoryRouter } from "react-router"; 
 import { mock } from "node:test";
@@ -58,7 +58,7 @@ test("simulates peice move and checks reset button", () => {
   expect(mockSetDragImage).toHaveBeenCalled();
 
   // Check if the piece image is present in the target square after drop
-  expect(target.querySelector(".piece-image")).toBeTruthy();
+  expect(within(target).getByTestId('piece-wP')).toBeInTheDocument();
 
   // Find and click the reset button
   const resetButton = screen.getByTestId("reset-lesson");
@@ -66,7 +66,7 @@ test("simulates peice move and checks reset button", () => {
   fireEvent.click(resetButton);
 
   // After reset, check if the piece is back to its original square
-  expect(screen.getByTestId("square-3-0").querySelector(".piece-image")).toBeTruthy();
+  expect(within(screen.getByTestId("square-3-0")).getByTestId('piece-wP')).toBeInTheDocument();
 });
 
 test("does not move when dragging a piece to an invalid square", () => {
@@ -98,7 +98,7 @@ test("does not move when dragging a piece to an invalid square", () => {
   expect(mockSetDragImage).toHaveBeenCalled();
 
   // Check if the piece image is still in its original square after attempting to drop on an invalid square
-  expect(screen.getByTestId("square-3-0").querySelector(".piece-image")).toBeTruthy();
+  expect(within(screen.getByTestId("square-3-0")).getByTestId("piece-wP")).toBeInTheDocument();
 });
 
 test("next button updates board and scenario title", () => {
@@ -121,7 +121,7 @@ test("next button updates board and scenario title", () => {
   expect(scenarioTitle.textContent).toBe("Bishop - It moves diagonally "); // Ensure the text content is not empty
 
   // Check if the chessboard has been updated by verifying the presence of the bishop in the 6 6 position
-  expect(screen.getByTestId("square-6-6").querySelector(".piece-image")).toBeTruthy();
+  expect(within(screen.getByTestId("square-6-6")).getByTestId("piece-wB")).toBeInTheDocument();
 });
 
 test("back button reverts the next button action", () => {
@@ -150,7 +150,7 @@ test("back button reverts the next button action", () => {
   expect(scenarioTitle.textContent).toBe("Pawn - It moves forward only");
 
   // Check if the chessboard has reverted by verifying the presence of the pawn in the original position
-  expect(screen.getByTestId("square-3-0").querySelector(".piece-image")).toBeTruthy();
+  expect(within(screen.getByTestId("square-3-0")).getByTestId("piece-wP")).toBeInTheDocument();
 });
 
 test("renders and reacts to lesson button clicks", () => {

@@ -1,85 +1,201 @@
-# Y STEM and Chess
-Welcome to the Y STEM and Chess project! This document will guide you through setting up your development environment.
+# Welcome to the Y STEM and Chess Project
+
+This is an educational platform that combines chess instruction with STEM learning, aimed at supporting socially and economically underserved students. The platform helps students who benefit from alternative learning approaches by providing chess tutoring alongside mathematics, computer science, and mentoring.
+
+---
 
 ## Development Environment Setup
 
-### Prerequisites
+To run the platform, you’ll need **Node.js v14**, **nodemon**, and **Apache** installed.
 
-#### NodeJS
-This project uses NodeJS version 14
+### NodeJS
 
-For Linux: `sudo apt install nodejs`
+This project requires NodeJS version 14.
 
-For Windows: https://www.geeksforgeeks.org/installation-of-node-js-on-windows/
+**Linux:**
 
-#### Nodemon
-Nodemon is a utility that will monitor for any changes in your source and automatically restart your server. 
+```bash
+curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
 
-For Linux: `sudo npm install -g nodemon`
+**macOS:**
 
-For Windows:`npm install -g nodemon`
+```bash
+brew install node@14
+```
 
-#### Apache
-Apache is a widely used web server software
+Or download from [nodejs.org](https://nodejs.org/)
 
-For Linux: sudo apt update && sudo apt install apache2
+**Windows:**
+Download and install from [nodejs.org](https://nodejs.org/)
 
-For Windows: https://httpd.apache.org/docs/2.4/platform/windows.html
+---
 
-#### Environment Variables
-You should have been given access to a script named `create_dev_envs.sh`
-1. Paste this file into the root of the react repository
-2. Run it in the terminal by running `sh create_dev_envs.sh`
-3. If you are on Windows, you will have to run the script in Git Bash
+### Nodemon
 
-### Setting Up Individual Services
+Nodemon automatically restarts your server whenever code changes are detected.
 
-This project consists of several services. Here's how to set each one up:
+**Linux/macOS:**
 
-#### React Frontend (`react-ystemandchess`)
+```bash
+sudo npm install -g nodemon
+```
 
-1. Navigate to the `react-ystemandchess` directory inside the `react` folder.
-2. Run `npm install` to install the necessary dependencies.
-3. run `npm start` to start the React development environment.
+**Windows:**
 
-#### Middleware Node (`middlewareNode`)
+```bash
+npm install -g nodemon
+```
 
-1. Navigate to the `middlewareNode` directory inside the `react` folder.
-2. Run `npm install` to install the necessary dependencies.
-3. Run `nodemon index.js` to start the server.
+---
 
-#### Stockfish Server (`stockfishServer`)
+### Apache
 
-1. Navigate to the `stockfishServer` directory inside the `react` folder.
-2. Run `npm install` and `npm i dotenv` to install the necessary dependencies.
-3. Run `nodemon index.js` to start the server.
+Apache is used as a web server to serve the chess client interface.
 
-#### Chess Server (`chessServer`)
+**Linux:**
 
-1. Navigate to the `chessServer` directory inside the `react` folder.
-2. Run `npm install` and `npm i dotenv` to install the necessary dependencies.
-3. Run `nodemon index.js` to start the server.
+```bash
+sudo apt update && sudo apt install apache2
+```
 
-#### Chess Client (`chessClient`)
+**macOS:**
 
-The purpose of the chess Client is to 
+```bash
+brew install httpd
+```
 
-1. Navigate to the `chessClient` directory inside the `react` folder.
-2. Run `npm i dotenv` to install the necessary dependencies.
-3. Install live server visual studio extension.
-4. To see the chessBoard only, click on index.html and select "run with live server".
-5. To see the chessBoard with parentWindow, right click on parent.html and select "run with live server"
-6. To see how both mentor and student interact, right click on both.html and select "run with live server"
+**Windows:**
+[Apache Installation Guide](https://httpd.apache.org/docs/2.4/platform/windows.html)
 
-### Chess Client React Refactor
+---
 
-The purpose of the chessClient React Refactor folder is to hold the chess game react component that will be imported into react-ystemandchess that interfaces with the ChessClient. To start this individually, do the following : 
+## Getting Started
 
-1. Navigate to the 'chess-client-react-refactor'
-2. Run 'npm i dotenv' to install necessary dependencies.
-3. Open src/app.js and make sure that debug mode is set to true
-4. Open a new terminal window (in same folder) and start the react app by running 'npm start' (for student)
-4. Open a new terminal window (in same folder) and start the react app by running 'npm start' (for mentor)
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/YSTEMandChess/react.git
+cd react
+```
+
+### 2. Environment Setup
+
+Running the following script creates all environment files needed for the platform services:
+
+**Linux/macOS or Windows (Git Bash):**
+
+```bash
+sh create_dev_envs.sh
+```
+
+---
+
+## Setting Up Each Service
+
+Each service runs independently and requires its own terminal window. Start the Middleware API first, then the other services in any order.
+
+#### Middleware API (Backend)
+
+Handles user authentication, database operations, and coordinates other services.
 
 
-That's it! You've set up your development environment for the Y STEM and Chess project.
+```bash
+cd middlewareNode
+npm install    # Install backend dependencies  
+npm start      # Start the API server
+```
+
+The server typically runs on port 8000. You should see "MongoDB Connected..." when it starts successfully.
+
+---
+
+#### Main React Application (Frontend)
+
+Primary interface for students and mentors:
+
+```bash
+cd react-ystemandchess
+npm install
+npm start
+```
+
+The frontend runs on `http://localhost:3000` (or the next available port if 3000 is occupied).
+
+---
+
+#### Chess Game Server
+
+Manages chess game logic, validates moves, and handles real-time gameplay:
+
+```bash
+cd chessServer
+npm install
+npm start
+```
+
+Defaults to port 3000 (or the next available port if taken).
+
+---
+
+#### Chess Engine Server
+
+Integrates Stockfish for AI opponents and move analysis:
+
+```bash
+cd stockfishServer
+npm install
+npm start
+```
+
+This service usually runs on port 8080.
+
+---
+
+#### Chess Client (Testing Interface)
+
+Provides different views of the chess board for development:
+
+```bash
+cd chessClient
+npm install
+```
+
+You can use the **Live Server extension in VS Code** to open the HTML files:
+
+* **Board only:** Right-click `index.html` → "Open with Live Server"
+* **Board with controls:** Right-click `parent.html` → "Open with Live Server"
+* **Mentor/Student interaction:** Right-click `both.html` → "Open with Live Server"
+
+---
+
+#### React Chess Component (Optional)
+
+Modern React-based chess component for development/testing:
+
+```bash
+cd chess-client-react-refactor
+npm install 
+npm start 
+```
+
+Open `src/app.js` to ensure debug mode is set to `true`.
+
+---
+
+## Contributing
+
+1. Create a new branch with a descriptive name:
+
+```bash
+git checkout -b my-branch-name
+```
+
+2. Test thoroughly to ensure all services work together.
+3. Commit changes with clear messages.
+4. Push and create a Pull Request for review.
+
+---
+
+You’re all set! Happy coding and thank you for contributing to educational equity! 🎯♟️
