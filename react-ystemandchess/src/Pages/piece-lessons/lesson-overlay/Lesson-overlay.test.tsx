@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import LessonOverlay from './Lesson-overlay';
 import { MemoryRouter } from 'react-router';
 
-test('stub test to pass CI', () => {
+test("stub test to pass CI", () => {
   render(
     <MemoryRouter>
       <LessonOverlay />
