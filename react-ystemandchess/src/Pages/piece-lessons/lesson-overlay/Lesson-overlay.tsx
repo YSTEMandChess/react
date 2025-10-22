@@ -52,7 +52,8 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   // Information for lesson
   const [piece, setPiece] = useState(propPieceName || location.state?.piece || "");
   const [initialLessonNum] = useState(propLessonNumber ?? location.state?.lessonNum ?? 0);
-  const lessonStartFENRef = useRef("");
+  const lessonStartFENRef = useRef("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  const [currentFEN, setCurrentFEN] = useState<string>(lessonStartFENRef.current);
   const lessonEndFENRef = useRef("");
   const lessonTypeRef = useRef("default");
   const turnRef = useRef("white");
@@ -74,7 +75,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   const [promotionTarget, setPromotionTarget] = useState("");
 
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
-  const [currentFEN, setCurrentFEN] = useState<string>("");
 
 
   useEffect(() => {
@@ -89,6 +89,11 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     currentFenRef.current = fen;
     setCurrentFEN(fen);
 
+    // notify parent if UI ready
+    if (typeof onChessMove === 'function') {
+      onChessMove(fen);
+    }
+
     // process local move logic
     processMove();
 
@@ -96,33 +101,23 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     if (socketRef?.current) {
       socketRef.current.emit("evaluate-fen", { fen, move: "", level });
     }
-
-    // notify parent if UI ready
-    if (isReadyRef.current && typeof onChessMove === 'function') {
-      onChessMove(fen);
-    }
   }
 
   function undoMove() {
     if (!chessBoardRef.current) return;
 
-    setMoveHistory(prev => {
-      if (prev.length === 0) return prev;
-      const lastFEN = prev[prev.length - 1];
+    chessBoardRef.current.undo();
+  const engineFEN = chessBoardRef.current.getFen();
+  setCurrentFEN(engineFEN);
+  currentFenRef.current = engineFEN;
 
-      // Undo on ChessBoard
-      chessBoardRef.current?.undo();
-
-      currentFenRef.current = lastFEN;
-      setCurrentFEN(lastFEN);
-
-      return prev.slice(0, -1);
-    });
+  setMoveHistory(prev => prev.slice(0, -1));
   }
 
   const handleEvaluationComplete = useCallback((data) => {
     prevFenRef.current = currentFenRef.current;
     currentFenRef.current = data.newFEN;
+    setCurrentFEN(data.newFEN)
     processMove();
 
     if (isReadyRef.current && typeof onChessMove === 'function') {
@@ -182,8 +177,13 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     // Update lesson data & info
     lessonStartFENRef.current = lessonData.startFen
     lessonEndFENRef.current = lessonData.endFen
-    currentFenRef.current = lessonData.startFen
-    setCurrentFEN(lessonData.startFen);
+
+
+    // Only initialize current FEN if it hasn't been set yet
+    if (!currentFenRef.current || currentFenRef.current === "") {
+      currentFenRef.current = lessonData.startFen
+      setCurrentFEN(lessonData.startFen)
+    }
 
     try {
       turnRef.current = getTurnFromFEN(lessonData.startFen);
@@ -226,7 +226,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   const sendLessonToChessBoard = () => {
     if (!lessonData) return;
     if (typeof onChessMove === 'function') {
-      onChessMove(lessonStartFENRef.current);
+      onChessMove(currentFenRef.current || lessonStartFENRef.current);
     }
   };
 
@@ -260,10 +260,10 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
 
   // user agrees to complete lesson
-  const handleVPopup = async() => {
+  const handleVPopup = async () => {
     setShowVPopup(false); // disable popup
     setShowXPopup(false);
-    
+
     await updateCompletion();
 
     // clean move tracker
@@ -364,11 +364,12 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         <div className="chessBoardContainer">
           <ChessBoard
             ref={chessBoardRef}
-            initialFEN={currentFEN}
+            fen={currentFEN}
             lessonMoves={lessonData?.moves || []}
             onMove={handleMove}
             onReset={onChessReset}
             onPromote={promotePawn}
+            onLessonComplete={updateCompletion}
           />
         </div>
       </div>
