@@ -31,7 +31,11 @@ import recordingsTab from "../../images/student/recordings_tab.png";
 
 const Lessons = lazy(() => import("../Lessons/Lessons"));
 const LessonsSelection = lazy(() => import("../LessonsSelection/LessonsSelection"));
+<<<<<<< HEAD
 const LessonOverlay = lazy(() => import("../piece-lessons/lesson-overlay/Lesson-overlay"));
+=======
+const LessonOverlay = lazy(() => import("../piece-lessons/lesson-overlay/lesson-overlay"));
+>>>>>>> d7ded9d (Resolved merge conflicts from origin/main for lockfiles and stockfishServer)
 
 // Main Student Profile Component
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
@@ -435,7 +439,11 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       
       {/* Render modals conditionally */}
       {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} />}
+<<<<<<< HEAD
       {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username}/>}
+=======
+      {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} />}
+>>>>>>> d7ded9d (Resolved merge conflicts from origin/main for lockfiles and stockfishServer)
       {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} />}
       {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
       
