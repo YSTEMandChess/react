@@ -110,32 +110,4 @@ router.put("/activity/check", async (req, res) => {
     }
 })
 
-router.post("/activity/complete", async (req, res) => {
-    try {
-        const db = await getDb();
-        const { username } = req.params;
-        if(!username) {
-            return res.status(401).json({error:'Authentication required'});
-        }
-        const users = db.collection("users");
-        const currentUser = await users.findOne(
-            { username }, 
-        );
-        if(!currentUser) {
-            return res.status(404).json({error:"User not found!"});
-        }
-        const userId = currentUser._id;
-        const activities = db.collection("activities");
-        await activities.updateOne(
-            { userId },
-            { $push: { lastCompleted: new Date() } }
-        );
-        return res.status(200);
-    } catch (err) {
-        console.error('Error updating activity completion: ', err);
-        res.status(500).json({error: 'Server error'});
-    }
-})
-
-
 module.exports = router;
