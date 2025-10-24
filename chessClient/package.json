@@ -28,12 +28,12 @@
     "fs-plus": "3.1.1",
     "kidif": "1.1.0",
     "mustache": "2.3.0",
-    "standard": "10.0.2",
+    "standard": "^10.0.2",
     "uglify-js": "3.6.0"
   },
   "scripts": {
-    "build": "standard lib/chessboard.js && node scripts/build.js",
-    "standard": "standard --fix lib/*.js website/js/*.js",
+    "lint": "standard js/chessboard-1.0.0.js",
+    "standard": "standard --fix js/*.js ./*.js",
     "website": "node scripts/website.js"
   },
   "volta": {

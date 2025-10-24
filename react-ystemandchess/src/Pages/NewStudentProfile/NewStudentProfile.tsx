@@ -31,7 +31,7 @@ import recordingsTab from "../../images/student/recordings_tab.png";
 
 const Lessons = lazy(() => import("../Lessons/Lessons"));
 const LessonsSelection = lazy(() => import("../LessonsSelection/LessonsSelection"));
-const LessonOverlay = lazy(() => import("../piece-lessons/lesson-overlay/lesson-overlay"));
+const LessonOverlay = lazy(() => import("../piece-lessons/lesson-overlay/Lesson-overlay"));
 
 // Main Student Profile Component
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
@@ -435,7 +435,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       
       {/* Render modals conditionally */}
       {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} />}
-      {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} />}
+      {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username}/>}
       {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} />}
       {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
       

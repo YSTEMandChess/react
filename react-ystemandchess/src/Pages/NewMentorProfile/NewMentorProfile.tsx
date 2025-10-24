@@ -8,7 +8,7 @@ import { useNavigate } from "react-router";
 import StatsChart from "../NewStudentProfile/StatsChart";
 import Lessons from "../Lessons/Lessons";
 import LessonSelection from "../LessonsSelection/LessonsSelection";
-import LessonOverlay from "../piece-lessons/lesson-overlay/lesson-overlay";
+import LessonOverlay from "../piece-lessons/lesson-overlay/Lesson-overlay";
 import Puzzles from "../Puzzles/Puzzles";
 
 interface NewMentorProfileProps {
@@ -146,8 +146,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
           setStudentFirstName(data.firstName);
           setStudentLastName(data.lastName);
           setStudentUsername(data.username);
-          setHasStudent(true)
-          console.log(data)
+          setHasStudent(true);
         }
       });
   }
