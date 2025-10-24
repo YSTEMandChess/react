@@ -17,6 +17,18 @@ async function getDb() {
   return cachedClient.db("ystem"); // returned cached client
 }
 
+async function getUserId(db, username) {
+    const users = db.collection("users");
+    const currentUser = await users.findOne(
+        { username },
+    );
+    if(!currentUser) {
+            return res.status(404).json({error: "User not found!"});
+        }
+    const userId = currentUser._id;
+    return userId;
+}
+
 router.get("/", async (req, res) => {
     try {
         const db = await getDb();
@@ -24,14 +36,7 @@ router.get("/", async (req, res) => {
         if(!username) {
             return res.status(401).json({error:'Authentication required'});
         }
-        const users = db.collection("users");
-        const currentUser = await users.findOne(
-            { username },
-        );
-        if(!currentUser) {
-            return res.status(404).json({error: "User not found!"});
-        }
-        const userId = currentUser._id;
+        const userId = getUserId(db, username);
         const activities = db.collection("activities");
         const userActivities = await activities.findOne(
             { userId }, { projection: {activities: 1, _id: 0}}
@@ -51,14 +56,7 @@ router.get("/dates", async (req, res) => {
         if(!username) {
             return res.status(401).json({error: "User not found"});
         }
-        const users = db.collection("users");
-        const currentUser = await users.findOne({ 
-            username ,
-        });
-        if(!currentUser) {
-            return res.status(401).json({error: "User not found"});
-        }
-        const userId = currentUser._id;
+        const userId = getUserId(db, username);
         const activities = db.collection("activities");
         const completedDates = await activities.findOne(
             { userId }, {projection: {_id: 0, completedDates: 1}}
@@ -78,14 +76,7 @@ router.put("/activity/:activityName", async (req, res) => {
         if(!username) {
             return res.status(401).json({error:'Authentication required'});
         }
-        const users = db.collection("users");
-        const currentUser = await users.findOne(
-            { username }, 
-        );
-        if(!currentUser) {
-            return res.status(404).json({error:"User not found!"});
-        }
-        const userId = currentUser._id;
+        const userId = getUserId(db, username);
         const activities = db.collection("activities");
         await activities.updateOne(
             { userId, "activities.name": activityName },
@@ -95,6 +86,27 @@ router.put("/activity/:activityName", async (req, res) => {
     } catch (err) {
         console.error('Error updating activities: ', err);
         return res.status(500).json({error: 'Server error'});
+    }
+})
+
+router.put("/activity/check", async (req, res) => {
+    try {
+        const db = await getDb();
+        const { username } = req.params;
+        const { moveData } = req.body;
+        if(!username) {
+            return res.status(401).json({error:'Authentication required'});
+        }
+        const userId = getUserId(db, username);
+        const activities = db.collection("activities");
+        const userActivities = await activities.findOne(
+            { userId }, { projection: {activities: 1, _id: 0}}
+        );
+        //compare move data with activities
+    }
+    catch (err) {
+        console.error('Error checking move: ', err);
+        res.status(500).json({error: 'Server error'});
     }
 })
 
