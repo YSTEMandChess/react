@@ -273,7 +273,7 @@
 
 // BEGIN MOVE TRACK STYLES
 
-.moveList {
+.move-list {
   border: 2px solid var(--dark-green-color);
   width: min-content;
   min-width: 300px;
@@ -286,7 +286,7 @@
   margin: 20px auto;
 }
 
-.moveTitle {
+.move-title {
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
@@ -296,7 +296,7 @@
   margin-bottom: 10px;
 }
 
-.moveItem {     
+.move-item {     
   display: flex;
   flex-direction: row;
   align-items: center;
