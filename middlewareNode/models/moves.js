@@ -21,4 +21,4 @@ const movesSchema = new mongoose.Schema(
   { versionKey: false },
 );
 
-module.exports = gameMoves = model("gameMoves", movesSchema, "gameMoves");
+module.exports = model("gameMoves", movesSchema, "gameMoves");

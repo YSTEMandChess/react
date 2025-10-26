@@ -1,18 +1,17 @@
 const express = require("express");
 const passport = require("passport");
-const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const AWS = require("aws-sdk");
-const axios = require("axios");
 const config = require("config");
 const requestIp = require("request-ip");
 const { v4: uuidv4 } = require("uuid");
 const router = express.Router();
-const { check, validationResult, query } = require("express-validator");
+const { check, validationResult } = require("express-validator");
 const { waitingStudents, waitingMentors } = require("../models/waiting");
 const meetings = require("../models/meetings");
 const movesList = require("../models/moves");
 const undoPermission = require("../models/undoPermission");
+const users = require("../models/users");
 const { startRecording, stopRecording } = require("../utils/recordings");
 
 var isBusy = false; //State variable to see if a query is already running.
@@ -240,8 +239,9 @@ router.post("/pairUp", passport.authenticate("jwt"), async (req, res) => {
     let mentorInfo = {};
 
     //Get a first person in queue from either waitingMentors or waitingStudents collection
+    let waitingQueue;
     if (role === "student") {
-      waitingQueue = await waitingMentors.findOne(
+      Justueue = await waitingMentors.findOne(
         {},
         {},
         { sort: { created_at: 1 } },
