@@ -14,8 +14,8 @@ interface ChessBoardProps {
   onMove?: (fen: string) => void;
   onPromote?: (position: string, piece: string) => void;
   onReset?: (fen: string) => void;
-  initialFEN?: string;
   fen?: string;
+  onLessonComplete?: () => void;
 }
 
 export interface ChessBoardRef {
@@ -24,12 +24,12 @@ export interface ChessBoardRef {
   getFen: () => string;
   setOrientation: (color: "white" | "black") => void;
   flip: () => void;
+  undo: () => void;
 }
 
 const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
-  ({ lessonMoves = [], onMove, onPromote, onReset, initialFEN = "start" }, ref) => {
-    const normalizedFEN = !initialFEN || initialFEN === "start" ? "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" : initialFEN;
-    const gameRef = useRef<Chess>(new Chess(normalizedFEN));
+  ({ lessonMoves = [], onMove, onPromote, onReset, fen: controlledFEN, onLessonComplete }, ref) => {
+    const gameRef = useRef<Chess>(new Chess());
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [fen, setFen] = useState(gameRef.current.fen());
     const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
@@ -37,17 +37,21 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     const [isShaking, setIsShaking] = useState<boolean>(false);
     const [orientation, setOrientationState] = useState<"white" | "black">("white");
 
-
+    // Sync controlled FEN to engine whenever it changes
     useEffect(() => {
-      if (initialFEN && initialFEN !== gameRef.current.fen()) {
-        gameRef.current.load(initialFEN);
-        setFen(initialFEN);
+      if (!controlledFEN) return;
+      if (controlledFEN !== gameRef.current.fen()) {
+        try {
+      gameRef.current.load(controlledFEN);
+    } catch (err) {
+      console.warn("Invalid FEN passed to ChessBoard:", controlledFEN, err);
+    }
+        setFen(gameRef.current.fen());
         setHighlightSquares([]);
       }
-    }, [initialFEN]);
+    }, [controlledFEN]);
 
-
-    // Expose methods to parent via ref
+    // Expose methods to parent
     useImperativeHandle(ref, () => ({
       handlePromotion: (from: string, to: string, piece: string) => {
         const move = gameRef.current.move({ from: from as Square, to: to as Square, promotion: piece });
@@ -66,20 +70,17 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         if (onReset) onReset(gameRef.current.fen());
       },
       getFen: () => gameRef.current.fen(),
-      setOrientation: (color: "white" | "black") => {
-        setOrientationState(color);
-      },
-      flip: () => {
-        setOrientationState((o) => (o === "white" ? "black" : "white"));
-      },
+      setOrientation: (color: "white" | "black") => setOrientationState(color),
+      flip: () => setOrientationState((o) => (o === "white" ? "black" : "white")),
       undo: () => {
         const move = gameRef.current.undo();
         if (move) {
           setFen(gameRef.current.fen());
           setHighlightSquares([]);
           setLessonIndex((prev) => (prev > 0 ? prev - 1 : 0));
+          if (onMove) onMove(gameRef.current.fen());
         }
-      }
+      },
     }));
 
     const onDrop = ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string }) => {
@@ -102,7 +103,6 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         setFen(gameRef.current.fen());
         setHighlightSquares([sourceSquare, targetSquare]);
 
-        // Lesson move logic
         if (lessonMoves.length > 0 && lessonIndex < lessonMoves.length) {
           const expected = lessonMoves[lessonIndex];
           if (move.from === expected.from && move.to === expected.to) {
@@ -126,25 +126,12 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       const g = gameRef.current;
       if (!g) return;
 
-      const isCheckmate = g.isCheckmate;
-      const isDraw = g.isDraw;
-      const isCheck = g.isCheck;
-
-      if (isCheckmate && isCheckmate.call(g)) {
+      if (g.isCheckmate()) {
         alert("Checkmate! Game over.");
-      } else if (isDraw && isDraw.call(g)) {
+        if (onLessonComplete) onLessonComplete();
+      } else if (g.isDraw()) {
         alert("Draw! Game over.");
-      } else if (isCheck && isCheck.call(g)) {
-        try {
-          const board = g.board();
-          const flatBoard = board.flat();
-          const kingSquare = flatBoard.find(
-            (sq) => sq && sq.type === "k" && sq.color === g.turn()
-          );
-          if (kingSquare) setHighlightSquares([kingSquare.square]);
-        } catch (err) {
-          console.warn("Unable to highlight king", err);
-        }
+        if (onLessonComplete) onLessonComplete();
       }
     };
 
