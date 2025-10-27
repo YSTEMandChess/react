@@ -364,6 +364,16 @@ socket.on('lastmove', (msg) => {
   highlightMove(parsedMsg.from, parsedMsg.to, 'lastmove')
 })
 
+socket.on("activityCompleted", async (msg) => {
+  try {
+    const { activities, lastMove } = JSON.parse(msg);
+    console.log("Activity completed event received:", activities, lastMove);
+    
+  } catch (e) {
+    console.error("Failed to forward activity completion:", e);
+  }
+});
+
 // Deletes all cookies on iframe
 function deleteAllCookies () {
   const cookies = document.cookie.split(';')

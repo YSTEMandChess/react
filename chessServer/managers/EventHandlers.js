@@ -66,8 +66,22 @@ const registerSocketHandlers = (socket, io) => {
     socket.on("move", (msg) => {
         try {
             const { from, to } = JSON.parse(msg);
-            const result = gameManager.makeMove(socket.id, from, to);
-            gameManager.broadcastBoardState(result, io);
+            const res = gameManager.makeMove(socket.id, from, to);
+            gameManager.broadcastBoardState(res.result, io);
+
+            const activityEvents = res.activityEvents;
+
+            if (activityEvents && activityEvents.length > 0) {
+                const studentSocketId = result.studentId;
+                const payload = {
+                    activities: activityEvents, 
+                    lastMove: { from, to, san: result.move?.san }
+                };
+                const studentSocket = io.sockets.sockets.get(studentSocketId);
+                if (studentSocket) {
+                    studentSocket.emit("activityCompleted", JSON.stringify(payload));
+                }
+            }
         }
         catch (err) {
             socket.emit("error", err.message);
