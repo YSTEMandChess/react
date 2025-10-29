@@ -135,3 +135,73 @@
 .errorBox button {
     background-color: green;
 }
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+    .wholePage {
+        width: 100vw;
+        padding: 1rem;
+    }
+
+    .title {
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    .selector {
+        width: 90vw;
+        height: auto;
+        min-height: 8vh;
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .container {
+        width: 90vw;
+        max-height: 40vh;
+    }
+
+    .enterInfo {
+        width: 30vw;
+        height: 8vh;
+        font-size: 1.2rem;
+        margin-top: 2rem;
+    }
+
+    .errorBox {
+        width: 80vw;
+        height: auto;
+        padding: 2rem 1rem;
+        min-height: 25vh;
+    }
+
+    .errorText {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    .itemTemplate {
+        font-size: 0.9rem;
+        padding: 1rem 0.5rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .selector {
+        font-size: 0.9rem;
+        padding: 0.8rem;
+    }
+
+    .enterInfo {
+        width: 40vw;
+        font-size: 1rem;
+    }
+
+    .errorBox {
+        width: 90vw;
+    }
+}
