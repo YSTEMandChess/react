@@ -59,19 +59,14 @@
   color: red;
 }
 
-/* Mobile responsive enhancements */
-@media screen and (max-width: 768px) {
-  .board-b72b1 {
-    border-width: 1px;
-  }
-  
-  .notation-322f9 {
-    font-size: 14px;
-  }
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  50% { transform: translateX(10px); }
+  75% { transform: translateX(-10px); }
+  100% { transform: translateX(0); }
 }
 
-@media screen and (max-width: 480px) {
-  .notation-322f9 {
-    font-size: 12px;
-  }
+.shake {
+  animation: shake 0.4s ease;
 }

@@ -1,11 +1,11 @@
 import { render } from "@testing-library/react";
-import Lessons from "./Lessons";
+import LessonOverlay from "./Lesson-overlay";
 import { MemoryRouter } from "react-router";
 
-test("stub: renders Lessons component without crashing", () => {
+test("stub: renders LessonOverlay without crashing", () => {
   render(
     <MemoryRouter>
-      <Lessons />
+      <LessonOverlay />
     </MemoryRouter>
   );
   expect(true).toBe(true); // Always passes

@@ -130,7 +130,6 @@ $brand-color-background-grey: #d4dddd;
     width: clamp(1100px, 80%, 1200px);
     margin: auto;
     border-radius: 0.8rem;
-    overflow: hidden;
 
     .inv-inventory-topbar {
       background: $brand-color-tertiary;
@@ -198,12 +197,12 @@ $brand-color-background-grey: #d4dddd;
 
     .inv-inventory-content-section {
       background: $brand-color-secondary;
-      width: 95%;
+      width: 100%;
+      height: 100%;
       margin: 2rem auto;
       border-radius: 1rem;
       display: grid;
       grid-template-columns: 35% 65%;
-      height: 44.5rem;
 
       .inv-inventory-content-tabs {
         position: relative;
@@ -267,6 +266,7 @@ $brand-color-background-grey: #d4dddd;
         position: relative;
         display: none;
         height: 100%;
+        width: 100%;
 
         &.active-content {
           display: block;

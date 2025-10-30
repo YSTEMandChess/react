@@ -25,7 +25,7 @@ import NewMentorProfile from "./Pages/NewMentorProfile/NewMentorProfile";
 import NewStudentProfile from "./Pages/NewStudentProfile/NewStudentProfile";
 import AboutUs from "./Pages/About-Us/AboutUs/AboutUs";
 import LessonSelection from "./Pages/LessonsSelection/LessonsSelection";
-import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
+import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/Lesson-overlay";
 
 // Variables and Mutable Data
 import userPortraitImg from "./images/user-portrait-placeholder.svg";
