@@ -1,158 +1,203 @@
+
+:root {
+  --container-max: 100rem; // 1600px = 100rem (assuming 1rem = 16px)
+  // Responsive gutter: min 0.75rem for small screens, scales with viewport (2vw), max 1.25rem for large screens
+  --container-gutter: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.hero-section,
+.sub-terms {
+  width: min(var(--container-max), calc(100% - var(--container-gutter) * 2));
+  margin-inline: auto;
+}
+
+
+//hero section (blue)
 .hero-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8rem;
-  margin: 5rem 7rem;
-  border-radius: 1rem;
+  margin-block: 2.5rem;
   background-color: #3f8cdf;
-  padding: 2rem;
+  padding: clamp(2.0rem, 3vw + 2rem, 4rem);
+  border-radius: 18px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+
+  width: min(var(--container-max), calc(100% - var(--container-gutter) * 1.2));
+  margin-inline: auto;
+
+  display: grid;
+  grid-template-columns: minmax(300px, 1.1fr) 1.4fr;
+  align-items: center;
+  gap: clamp(1.25rem, 1.2vw + 0.5rem, 2.5rem);
 
   img {
-    object-fit: contain;
-    border-radius: 1rem;
-    box-shadow: 0.1rem 0.1rem 0.1rem black;
+    display: block;
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+    margin: 0;
   }
 
   .programs-text {
-    text-align: left;
-    color: rgb(255, 250, 250);
-    max-width: 65%;
+    color: #fff;
+    max-width: 800px;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 1rem;
+    line-height: 1.68;
+    text-align: left;
+
+    h2 {
+      margin: 0 0 0.4rem 0;
+      font-size: clamp(2rem, 1.2vw + 1.6rem, 2.6rem);
+      line-height: 1.2;
+      letter-spacing: 0.2px;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+    }
+
+    h4 {
+      margin: 0 0 0.6rem 0;
+      font-size: clamp(1.1rem, 0.6vw + 0.8rem, 1.45rem);
+      font-weight: 700;
+      opacity: 0.98;
+    }
 
     p {
-      font-size: 1.2rem;
-    }
-    ul {
       margin: 0;
+      font-size: clamp(1rem, 0.3vw + 0.9rem, 1.1rem);
+      opacity: 0.96;
+    }
+
+    ul {
+      margin: 0.4rem 0 0.4rem 1.25rem;
+      padding: 0;
+      list-style: disc;
+
       li {
-        font-size: 1.2rem;
+        font-size: clamp(1rem, 0.3vw + 0.9rem, 1.08rem);
+        margin: 0.3rem 0;
       }
     }
 
-    h2 {
-      font-size: 2.5rem;
-      margin: 0;
-    }
-    h4 {
-      margin: 0;
-      font-size: 1.5rem;
-    }
-  }
-
-  a {
-    margin-top: 0.4rem;
-    button {
+    a.register-button,
+    a > button {
+      display: inline-block;
       border: none;
-      border-radius: 0.5rem;
-      background: transparent;
-      width: 12rem;
-      height: 3rem;
-      cursor: pointer;
-      font-size: 1.2rem;
+      border-radius: 10px;
       background-color: #eef36a;
+      color: #111;
+      min-width: 14rem;
+      padding: 0.9rem 1.35rem;
+      font-size: 1.1rem;
+      font-weight: 800;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+      transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+      cursor: pointer;
+      text-decoration: none;
+      margin-top: 0.9rem;
     }
-    button:hover {
-      transition: 0.3s;
-      transform: scale(1.1);
+
+    a.register-button:hover,
+    a > button:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
+      background-color: #f3f67d;
+    }
+
+    a.register-button:active,
+    a > button:active {
+      transform: translateY(0);
+    }
+
+    a.register-button:focus-visible,
+    a > button:focus-visible {
+      outline: 3px solid #fff;
+      outline-offset: 2px;
     }
   }
 }
 
+//subscription cards(yellow)
 .sub-terms {
-  display: flex;
-  margin: 5rem 7rem;
-  gap: 10rem;
+  margin-block: 2.5rem;
 
-  .sub-terms-left {
-    height: 80%;
-  }
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: clamp(1.25rem, 1.2vw + 0.5rem, 2.25rem);
 
   .sub-terms-left,
   .sub-terms-right {
-    text-align: left;
     background-color: #e2aa03;
-    border-radius: 1rem;
-    padding: 2rem;
-    font-size: 1.4rem;
-    flex: 1;
-    color: white;
+    color: #ffffff;
+    border-radius: 18px;
+    padding: clamp(1.25rem, 1.2vw + 0.5rem, 2rem);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.14);
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 0.9rem;
+    text-align: left;
+    min-height: 260px;
+
+    h3 {
+      margin: 0;
+      font-size: clamp(1.5rem, 0.9vw + 1rem, 2rem);
+      line-height: 1.3;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.16);
+    }
+
+    h5 {
+      margin: 0;
+      font-size: clamp(1rem, 0.4vw + 0.85rem, 1.2rem);
+      font-weight: 600;
+      opacity: 0.95;
+    }
 
     p {
       margin: 0;
+      font-size: clamp(0.98rem, 0.3vw + 0.85rem, 1.06rem);
+      line-height: 1.7;
     }
-  }
-
-  h3 {
-    font-size: 2.4rem;
-    margin: 0;
-  }
-  h5 {
-    font-size: 1.7rem;
-    margin: 0;
   }
 }
 
-/* ----------- Responsive styles ----------- */
+@media (max-width: 1100px) {
+  .hero-section { grid-template-columns: 1fr 1.2fr; }
+}
+
+@media (max-width: 992px) {
+  .hero-section {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .hero-section {
-    flex-direction: column;
-    margin: 2rem 1rem;
-    gap: 2rem;
-    padding: 1.5rem;
+    width: min(100%, calc(100% - 1.5rem));
+    margin-block: 2rem;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
 
-    img {
+    img { max-width: 460px; }
+
+    .programs-text a.register-button,
+    .programs-text a > button {
       width: 100%;
-      height: auto;
-    }
-
-    .programs-text {
-      max-width: 100%;
-      text-align: center;
-
-      h2 {
-        font-size: 2rem;
-      }
-      h4 {
-        font-size: 1.2rem;
-      }
-      p {
-        font-size: 1rem;
-      }
-
-      ul li {
-        font-size: 1rem;
-        text-align: left;
-      }
-
-      a button {
-        width: 100%;
-      }
+      max-width: 380px;
     }
   }
 
   .sub-terms {
-    flex-direction: column;
-    margin: 2rem 1rem;
-    gap: 2rem;
-
-    .sub-terms-left,
-    .sub-terms-right {
-      font-size: 1.1rem;
-      padding: 1.5rem;
-    }
-
-    h3 {
-      font-size: 1.8rem;
-    }
-
-    h5 {
-      font-size: 1.3rem;
-    }
+    grid-template-columns: 1fr;
+    width: min(var(--container-max), calc(100% - 1.5rem));
+    margin-inline: auto;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-section .programs-text a.register-button,
+  .hero-section .programs-text a > button { transition: none; }
 }
