@@ -16,14 +16,20 @@ async function getDb() {
 const selectActivities = async () => {
     const db = await getDb();
     const activityList = await (db.collection("activityTypes").find({})).toArray();
+    const chosenActivites = [];
     const newActivities = [];
     while (newActivities.length < 4) {
+        const activity = {};
         const selectedActivity = activityList[Math.floor(Math.random() * activityList.length)];
-        if(!newActivities.includes(selectedActivity._id)) {
-            newActivities.push(selectedActivity._id);
+        if(!chosenActivites.includes(selectedActivity._id)) {
+          chosenActivites.push(selectedActivity._id);
+          activity.name = selectedActivity._id;
+          activity.type = selectedActivity.type;
+          activity.completed = false;
+          newActivities.push(activity);
         }
     }
     return newActivities;
 }
 
-module.exports = selectActivities;
+module.exports = { selectActivities };
