@@ -1,8 +1,6 @@
 const config = require("config");
 const express = require('express');
-const passport = require("passport");
 const router = express.Router({mergeParams: true});
-const jwt = require('jsonwebtoken');
 const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 

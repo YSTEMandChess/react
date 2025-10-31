@@ -41,4 +41,4 @@ const puzzleSchema = new mongoose.Schema(
   { versionKey: false },
 );
 
-module.exports = puzzles = model("puzzles", puzzleSchema);
+module.exports = model("puzzles", puzzleSchema);

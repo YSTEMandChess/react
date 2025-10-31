@@ -66,4 +66,4 @@ const meetingsSchema = new mongoose.Schema(
   { versionKey: false },
 );
 
-module.exports = meetings = model("meetings", meetingsSchema, "meetings");
+module.exports = model("meetings", meetingsSchema, "meetings");

@@ -14,16 +14,20 @@ async function getDb() {
 }
 
 const selectActivities = async () => {
-    const db = await getDb();
-    const activityList = await (db.collection("activityTypes").find({})).toArray();
-    const newActivities = [];
-    while (newActivities.length < 4) {
-        const selectedActivity = activityList[Math.floor(Math.random() * activityList.length)];
-        if(!newActivities.includes(selectedActivity._id)) {
-            newActivities.push(selectedActivity._id);
-        }
-    }
-    return newActivities;
-}
+  const db = await getDb();
+  const activityList = await (db.collection("activityTypes").find({})).toArray();
+
+  if (!Array.isArray(activityList) || activityList.length === 0) return [];
+
+  // choose up to 4 unique activities
+  const needed = Math.min(4, activityList.length);
+  const idMap = new Map();
+  while (idMap.size < needed) {
+    const selectedActivity = activityList[Math.floor(Math.random() * activityList.length)];
+    if (!selectedActivity || !selectedActivity._id) continue;
+    idMap.set(selectedActivity._id.toString(), selectedActivity._id);
+  }
+  return Array.from(idMap.values());
+};
 
 module.exports = selectActivities;
