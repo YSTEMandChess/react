@@ -44,6 +44,8 @@ app.use("/puzzles", require("./routes/puzzles"));
 app.use("/lessons", require("./routes/lessons"));
 app.use("/activities/:username", require("./routes/activities"));
 app.use('/streak', streakRoutes);
+app.use("/badges", require("./routes/badges"));
+
 
 const PORT = process.env.PORT || 8000;
 
