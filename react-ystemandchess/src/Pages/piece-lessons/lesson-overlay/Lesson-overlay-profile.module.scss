@@ -54,7 +54,37 @@
 
 .buttonContainer {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.controlButton {
+  background-color: var(--green-color);
+  color: black;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.controlButton:hover {
+  background-color: var(--dark-green-color);
+}
+
+.chessboardContainer {
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  
+  /* Ensure chessboard is properly constrained */
+  & > div {
+    max-width: 100%;
+  }
 }
 
 .lessonHeader {
@@ -117,6 +147,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 8px;
+  position: relative;
+  
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    z-index: 1;
+  }
 }
 
 .prevNextLessonButtonInactive {
@@ -127,11 +166,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 8px;
+  position: relative;
+  
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    z-index: 1;
+  }
 }
 
 .buttonDescription {
   font-size: 18px;
   font-weight: bold;
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
 }
 
 .next {
@@ -313,3 +365,252 @@
 }
 
 // END MOVE TRACK STYLES
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 1024px) {
+  .chessBoard {
+    width: 80vw;
+    height: 80vw;
+    max-width: 450px;
+    max-height: 450px;
+    margin-top: -80px;
+    transform: scale(0.85);
+  }
+
+  .chessboardContainer {
+    width: 50vw;
+    max-width: 450px;
+    margin: 1rem auto;
+  }
+
+  .rightContainer {
+    width: 85vw;
+    margin: 1rem auto;
+    padding: 1rem;
+  }
+
+  .switchLesson {
+    font-size: 18px;
+    padding: 0.4rem 0.8rem;
+    margin-top: 0.5rem;
+    width: 85vw;
+  }
+
+  .buttonContainer {
+    flex-direction: row;
+    gap: 10px;
+    margin: 1rem auto;
+    width: 85vw;
+  }
+
+  .controlButton {
+    font-size: 14px;
+    padding: 8px 16px;
+    flex: 1;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .chessBoard {
+    width: 90vw;
+    height: 90vw;
+    max-width: 400px;
+    max-height: 400px;
+    margin-top: -100px;
+    transform: scale(0.9);
+  }
+
+  .chessboardContainer {
+    width: 55vw;
+    max-width: 400px;
+  }
+
+  .switchLesson {
+    font-size: 18px;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .lessonHeader {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .pieceDescription {
+    font-size: 18px;
+  }
+
+  .subheading {
+    font-size: 18px;
+  }
+
+  .lessonDescription {
+    font-size: 16px;
+    max-height: 110px;
+  }
+
+  .resetLesson {
+    width: 40px;
+    height: 40px;
+    font-size: 36px;
+  }
+
+  .prevNextContainer {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 1rem;
+  }
+
+  .prevNextLessonButton,
+  .prevNextLessonButtonInactive {
+    width: calc(100% - 1rem);
+    height: 40px;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .buttonDescription {
+    font-size: 15px;
+  }
+
+  .popupContent {
+    width: 90%;
+    max-width: 350px;
+    padding: 1.5rem;
+  }
+
+  .popupHeader {
+    font-size: 24px;
+  }
+
+  .popupSubheading {
+    font-size: 18px;
+    max-height: 200px;
+  }
+
+  .move-list {
+    width: 90%;
+    min-width: 250px;
+    max-height: 100px;
+    margin: 15px auto;
+  }
+
+  .move-title {
+    font-size: 16px;
+  }
+
+  .move-item {
+    gap: 0.5rem;
+    font-size: 13px;
+  }
+
+  .move {
+    padding: 0.4rem 0.7rem;
+    font-size: 13px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .chessBoard {
+    width: 95vw;
+    height: 95vw;
+    max-width: 350px;
+    max-height: 350px;
+    margin-top: -80px;
+    transform: scale(0.85);
+  }
+
+  .chessboardContainer {
+    width: 60vw;
+    max-width: 350px;
+  }
+
+  .rightContainer {
+    padding: 0.8rem;
+  }
+
+  .switchLesson {
+    font-size: 16px;
+    padding: 0.3rem 0.7rem;
+  }
+
+  .buttonContainer {
+    gap: 8px;
+  }
+
+  .controlButton {
+    font-size: 13px;
+    padding: 7px 14px;
+  }
+
+  .pieceDescription {
+    font-size: 16px;
+  }
+
+  .subheading {
+    font-size: 16px;
+  }
+
+  .lessonDescription {
+    font-size: 14px;
+    max-height: 100px;
+  }
+
+  .resetLesson {
+    width: 35px;
+    height: 35px;
+    font-size: 32px;
+  }
+
+  .prevNextLessonButton,
+  .prevNextLessonButtonInactive {
+    width: calc(100% - 0.8rem);
+    height: 38px;
+    margin-left: 0.4rem;
+    margin-right: 0.4rem;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  .buttonDescription {
+    font-size: 14px;
+  }
+
+  .popupContent {
+    width: 95%;
+  }
+
+  .popupHeader {
+    font-size: 20px;
+  }
+
+  .popupSubheading {
+    font-size: 16px;
+  }
+
+  .move-list {
+    min-width: 200px;
+    max-height: 90px;
+  }
+
+  .move-title {
+    font-size: 14px;
+  }
+
+  .move-item {
+    font-size: 12px;
+  }
+
+  .move {
+    padding: 0.3rem 0.5rem;
+    font-size: 12px;
+  }
+}

@@ -70,3 +70,79 @@
 .shake {
   animation: shake 0.4s ease;
 }
+
+/* Responsive Chessboard Container */
+.chessboard-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+}
+
+.chessboard-container > div {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Tablet/Large Mobile Responsive */
+@media screen and (max-width: 1024px) {
+  .chessboard-container {
+    max-width: 50vw;
+    width: 50vw !important;
+    max-height: 50vw !important;
+    height: auto !important;
+    padding: 0;
+    margin: 0 auto;
+  }
+
+  .board-b72b1 {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    border-width: 1px !important;
+  }
+
+  .notation-322f9 {
+    font-size: 10px;
+  }
+
+  .square-55d63 {
+    box-sizing: border-box;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .chessboard-container {
+    max-width: 55vw;
+    width: 55vw !important;
+    max-height: 55vw !important;
+  }
+
+  .notation-322f9 {
+    font-size: 9px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .chessboard-container {
+    max-width: 60vw;
+    width: 60vw !important;
+    max-height: 60vw !important;
+  }
+
+  .notation-322f9 {
+    font-size: 8px;
+  }
+  
+  .alpha-d2270 {
+    right: 1px;
+    bottom: 0px;
+  }
+  
+  .numeric-fc462 {
+    left: 1px;
+    top: 1px;
+  }
+}

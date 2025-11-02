@@ -313,8 +313,10 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         if (navigateFunc) navigateFunc();
         else navigate("/lessons-selection");
       }}>Switch Lesson</div>
-      <button onClick={() => chessBoardRef.current?.flip()}>Flip board</button>
-      <button onClick={undoMove}>Undo</button>
+      <div className={styles.buttonContainer}>
+        <button className={styles.controlButton} onClick={() => chessBoardRef.current?.flip()}>Flip board</button>
+        <button className={styles.controlButton} onClick={undoMove}>Undo</button>
+      </div>
       <div className={styles.container}>
         <div className={styles.rightContainer}>
           {/* Lesson info */}
@@ -361,7 +363,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
           </div>
           {styleType != 'profile' && (<MoveTracker moves={moves} />)}
         </div>
-        <div className="chessBoardContainer">
+        <div className={styles.chessboardContainer}>
           <ChessBoard
             ref={chessBoardRef}
             fen={currentFEN}
