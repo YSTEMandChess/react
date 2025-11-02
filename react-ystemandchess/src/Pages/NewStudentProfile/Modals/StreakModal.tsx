@@ -1,3 +1,17 @@
+/**
+ * Streak Modal Component
+ * 
+ * Displays a modal showing the user's daily activity streak progress.
+ * Features animated characters (Stemette and Stemmy) with encouraging messages,
+ * a visual streak tracker with clock icon, and a weekly calendar view.
+ * 
+ * Features:
+ * - Animated character mascots with speech bubbles
+ * - Visual streak progress indicator
+ * - Weekly calendar tracking (placeholder for now)
+ * - Click outside to close functionality
+ */
+
 import React from "react";
 import "./StreakModal.scss";
 import { ReactComponent as Polygon } from "../../../images/StreakProgressAssets/polygon.svg";
@@ -9,7 +23,10 @@ import { ReactComponent as Stemmy } from "../../../images/StreakProgressAssets/s
 // Calendar placeholder. Delete once an actual calendar is implemented
 import calendarIcon from "../../../images/StreakProgressAssets/Calendar.png";
 
-// Displays the modal with streak information, visual characters, and daily progress
+/**
+ * StreakModal component - displays user's streak progress
+ * @param {Function} onClose - Callback to close the modal
+ */
 const StreakModal = ({ onClose }: { onClose: () => void }) => {
   // Overlay click handler - closes modal only if clicking outside modal content
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {

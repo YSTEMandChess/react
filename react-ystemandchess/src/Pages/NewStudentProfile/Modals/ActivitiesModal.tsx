@@ -1,3 +1,19 @@
+/**
+ * Activities Modal Component
+ * 
+ * Displays a modal showing the user's daily activities in a garden-themed interface.
+ * Each completed activity is represented by a watered plant growing on vines.
+ * The modal fetches activities from the backend and visualizes progress.
+ * 
+ * Features:
+ * - Fetches daily activities from API
+ * - Garden/plant theme with animated vines and growth
+ * - Water meter visualization for progress
+ * - Interactive activity checkboxes
+ * - Stemmy character mascot
+ * - Click outside to close functionality
+ */
+
 import React, { useEffect, useState } from "react";
 import "./ActivitiesModal.scss";
 import { ReactComponent as GrowthBox } from "../../../images/ActivitiesAssets/growth_box.svg";
@@ -13,6 +29,11 @@ import { environment } from "../../../environments/environment";
 import { useCookies } from "react-cookie";
 import { parseActivities } from "../../../utils/activityNames";
 
+/**
+ * ActivitiesModal component - displays daily activities in garden theme
+ * @param {Function} onClose - Callback to close the modal
+ * @param {string} username - Username to fetch activities for
+ */
 const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username: string }) => {
   // Close modal only when clicking the background overlay (not child elements)
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
