@@ -8,6 +8,9 @@ const cors = require("cors");
 const config = require("config");
 const streakRoutes = require('./routes/streak');
 
+// Enable scheduler
+require("./scheduler/activitiesScheduler.js");
+
 // Enable Cors
 app.use(cors(config.get("corsOptions")));
 
@@ -41,6 +44,8 @@ app.use("/puzzles", require("./routes/puzzles"));
 app.use("/lessons", require("./routes/lessons"));
 app.use("/activities/:username", require("./routes/activities"));
 app.use('/streak', streakRoutes);
+app.use("/badges", require("./routes/badges"));
+
 
 const PORT = process.env.PORT || 8000;
 
