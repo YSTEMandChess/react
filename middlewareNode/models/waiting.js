@@ -1,3 +1,13 @@
+/**
+ * Waiting Queue Schema
+ * 
+ * Manages waiting queues for mentor-student pairing.
+ * Separate collections for students and mentors waiting to be matched.
+ * 
+ * Used by the matchmaking system to pair mentors with students
+ * for video conference sessions based on availability.
+ */
+
 const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 

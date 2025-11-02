@@ -1,8 +1,27 @@
+/**
+ * Puzzles Routes
+ * 
+ * API endpoints for retrieving chess puzzles from the database.
+ * Puzzles are sourced from Lichess and stored in MongoDB.
+ * 
+ * Features:
+ * - Get all puzzles
+ * - Get random selection of puzzles
+ * - Filter puzzles by difficulty and themes
+ */
+
 const express = require("express");
 const router = express.Router();
 const puzzles = require("../models/puzzles");
 
-// Get all puzzles
+/**
+ * GET /puzzles/list
+ * 
+ * Retrieves all chess puzzles from the database.
+ * Returns array of puzzle objects without MongoDB _id field.
+ * 
+ * @returns {Array} Array of all puzzles
+ */
 router.get("/list", async (req, res) => {
   try {
     const puzzlesArray = await puzzles.find({}, { _id: 0 });
@@ -13,7 +32,17 @@ router.get("/list", async (req, res) => {
   }
 });
 
-// Get N random puzzles
+/**
+ * GET /puzzles/random
+ * 
+ * Retrieves a random selection of chess puzzles.
+ * Useful for providing variety in puzzle practice sessions.
+ * 
+ * Query Parameters:
+ * - limit: Number of random puzzles to return (default: 20)
+ * 
+ * @returns {Array} Array of randomly selected puzzles
+ */
 router.get("/random", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 20;

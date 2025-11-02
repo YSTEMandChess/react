@@ -1,6 +1,17 @@
 const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
+/**
+ * Time Tracking Schema
+ * 
+ * Tracks user activity duration for analytics and engagement metrics.
+ * Records how long users spend on different activities:
+ * - mentor: Time spent in mentor sessions
+ * - lesson: Time in chess lessons
+ * - play: Time playing chess
+ * - puzzle: Time solving puzzles
+ * - website: General browsing time
+ */
 const timeTrackingSchema = new Schema(
   {
     username: {

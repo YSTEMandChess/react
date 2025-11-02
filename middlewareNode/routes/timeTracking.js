@@ -1,3 +1,16 @@
+/**
+ * Time Tracking Routes
+ * 
+ * API endpoints for tracking user activity duration and engagement.
+ * Records start/end times and calculates total time for various activities.
+ * 
+ * Features:
+ * - Start tracking new events (lessons, puzzles, mentoring, etc.)
+ * - Update events with end time and total duration
+ * - Retrieve user activity history
+ * - Support for multiple concurrent events per user
+ */
+
 const express = require("express");
 const passport = require("passport");
 const router = express.Router();
@@ -5,9 +18,19 @@ const jwt = require("jsonwebtoken");
 const timeTracking = require("../models/timeTracking");
 const { v4: uuidv4 } = require("uuid");
 
-// @route   POST /timeTracking/start
-// @desc    POST a user's event for time tracking
-// @access  Public with jwt Authentication
+/**
+ * POST /timeTracking/start
+ * 
+ * Starts a new time tracking event for a user.
+ * Creates a database entry with start time and unique event ID.
+ * 
+ * Query Parameters:
+ * - username: User's username
+ * - eventType: Type of event (mentor/lesson/play/puzzle/website)
+ * - eventName: Optional name/description for the event
+ * 
+ * @access JWT authentication required
+ */
 router.post("/start", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { username, eventType, eventName } = req.query;
@@ -41,9 +64,21 @@ router.post("/start", passport.authenticate("jwt"), async (req, res) => {
   }
 });
 
-// @route   PUT /timeTracking/update
-// @desc    PUT a update for totalTime and endTime to an user's event
-// @access  Public with jwt Authentication
+/**
+ * PUT /timeTracking/update
+ * 
+ * Updates an existing time tracking event with end time and total duration.
+ * Typically called when user completes an activity or leaves the page.
+ * 
+ * Query Parameters:
+ * - username: User's username
+ * - eventType: Type of event
+ * - eventId: Unique event identifier from start call
+ * - totalTime: Total duration in seconds
+ * - eventName: Optional event name
+ * 
+ * @access JWT authentication required
+ */
 router.put("/update", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { username, eventType, eventId, totalTime, eventName } = req.query;

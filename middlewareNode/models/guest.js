@@ -1,4 +1,16 @@
-const mongoose = require("mongoose");
+/**
+ * Guest User Schema
+ * 
+ * Stores lesson progress for non-authenticated users (guests).
+ * Uses IP address as identifier to track progress across sessions.
+ * 
+ * Features:
+ * - Tracks lesson completion by IP address
+ * - Automatically expires after 24 hours (TTL index)
+ * - Initializes with default lesson progress for all chess pieces
+ * - Allows guests to try the platform without creating an account
+ */
+
 const mongoose = require("mongoose");
 
 const guestSchema = new mongoose.Schema({

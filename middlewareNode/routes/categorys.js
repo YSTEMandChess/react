@@ -1,15 +1,31 @@
+/**
+ * Categories Routes
+ * 
+ * API endpoints for managing chess lesson categories.
+ * Categories organize lessons into groups for better navigation.
+ * 
+ * Features:
+ * - Retrieve all available lesson categories
+ * - Category information includes name and ID
+ */
+
 const express = require("express");
 const router = express.Router();
 const crypto = require("crypto");
 const { check, validationResult } = require("express-validator");
 const categorys = require("../models/categorys");
 
-// @route   GET /user/children
-// @desc    GET the parent user's children username and their timePlayed fields
-// @access  Public with jwt Authentication
+/**
+ * GET /category/list
+ * 
+ * Retrieves all lesson categories from the database.
+ * Used to populate category selection menus in the UI.
+ * 
+ * @returns {Array} Array of all category objects
+ */
 router.get("/list", async (req, res) => {
   try {
-    //Find all category for the parent user and retrieve only the name and CatId field
+    // Find all categories in the database
     const categoryArray = await categorys.find({});
     res.status(200).json(categoryArray);
   } catch (error) {

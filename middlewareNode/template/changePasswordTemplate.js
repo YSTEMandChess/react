@@ -1,13 +1,36 @@
+/**
+ * Change Password Email Template
+ * 
+ * Generates a professional HTML email template for password reset requests.
+ * Creates a JWT token for secure password reset and embeds it in the email link.
+ */
+
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
+/**
+ * Generates a password reset email with embedded secure token
+ * 
+ * Creates a formatted HTML email with:
+ * - YStemAndChess branding
+ * - Reset password button with secure token
+ * - Alternative copy-paste link
+ * - Professional styling with responsive design
+ * 
+ * @param {string} username - Username requesting password reset
+ * @param {string} email - Email address to send reset link to
+ * @returns {Object} Email object with recipient, subject, and HTML content
+ */
 const ChangePasswordTemplateForUser = (username, email) => {
+  // Create JWT token with username and email
   const payload = { username: username, email: email };
   const jwtKey = config.get("indexKey");
   const accessToken = jwt.sign(payload, jwtKey, {
-    expiresIn: 36000,
+    expiresIn: 36000, // Token expires in 10 hours
   });
   const basePath = config.get("basepath");
+  
+  // HTML email template with styling
   const ChangePasswordMsg = `<html>
   <head>
     <title></title>
