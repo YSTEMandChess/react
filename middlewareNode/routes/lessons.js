@@ -967,3 +967,5 @@ list = [
 
     }
 ]
+
+module.exports = router;

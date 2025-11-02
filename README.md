@@ -137,6 +137,12 @@ npm start      # Start the API server
 
 The server typically runs on port 8000. You should see "MongoDB Connected..." when it starts successfully.
 
+**If you intend to test the mentor and student login pages, you may use the following usernames and passwords respectively:**
+
+mentor 123123123
+
+student 123123123
+
 ---
 
 #### Main React Application (Frontend)

@@ -43,7 +43,11 @@ const timeTrackingSchema = new Schema(
       type: Number, // Seconds
     },
   },
-  { versionKey: false },
+  { versionKey: false ,
+    collection: "timeTrackings"
+  }
 );
 
-module.exports = timeTracking = model("timeTracking", timeTrackingSchema);
+module.exports =
+  mongoose.models.timeTracking ||
+  model("timeTracking", timeTrackingSchema);

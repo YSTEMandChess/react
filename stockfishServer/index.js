@@ -92,7 +92,7 @@ app.get("/", (req, res) => {
 
 
 // Start the server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`Stockfish server running on port ${PORT}`);
 });

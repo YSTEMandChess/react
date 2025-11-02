@@ -36,7 +36,7 @@ import AboutUs from "./Pages/About-Us/AboutUs/AboutUs";
 import Lessons from "./Pages/Lessons/Lessons";
 import Puzzles from './Pages/Puzzles/Puzzles';
 import LessonSelection from "./Pages/LessonsSelection/LessonsSelection";
-import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/lesson-overlay";
+import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/Lesson-overlay";
 
 // Authentication and user management pages
 import Login from "./Pages/Login/Login";

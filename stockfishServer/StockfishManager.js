@@ -7,13 +7,13 @@ let enginePath;
 
 switch (process.platform) {
     case 'win32':
-      enginePath = "./bin/stockfish.exe";
+      enginePath = "./bin/stockfish_11_win.exe";
       break;
     case 'darwin':
-      enginePath = "./bin/stockfish-macos";
+      enginePath = "./bin/stockfish_11_mac";
       break;
     case 'linux':
-      enginePath = "./bin/stockfish-ubuntu";
+      enginePath = "./bin/stockfish_11_linux";
       break;
     default:
       throw new Error(`Unsupported platform: ${process.platform}`);

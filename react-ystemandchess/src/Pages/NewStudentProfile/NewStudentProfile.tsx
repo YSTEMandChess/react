@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
 import "./NewStudentProfile.scss";
 import Images from "../../images/imageImporter";
-import { SetPermissionLevel } from '../../globals'; 
+import { SetPermissionLevel } from '../../globals';
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
@@ -23,6 +23,7 @@ import { ReactComponent as LeaderboardIcon } from "../../images/student/leaderbo
 import activityTab from "../../images/student/activity_tab.png";
 import mentorTab from "../../images/student/mento_tab.png";
 import prodevTab from "../../images/student/prodev_tab.png";
+import chessTab from "../../images/student/chess_tab.png";
 import mathTab from "../../images/student/math_tab.png";
 import gamesTab from "../../images/student/games_tab.png";
 import puzzlesTab from "../../images/student/puzzles_tab.png";
@@ -31,7 +32,7 @@ import recordingsTab from "../../images/student/recordings_tab.png";
 
 const Lessons = lazy(() => import("../Lessons/Lessons"));
 const LessonsSelection = lazy(() => import("../LessonsSelection/LessonsSelection"));
-const LessonOverlay = lazy(() => import("../piece-lessons/lesson-overlay/lesson-overlay"));
+const LessonOverlay = lazy(() => import("../piece-lessons/lesson-overlay/Lesson-overlay"));
 
 // Main Student Profile Component
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
@@ -66,7 +67,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [displayMonths, setDisplayMonths] = useState(6); // display data from 6 many months back 
   const [displayEvents, setDisplayEvents] = useState(["website", "play", "lesson", "puzzle", "mentor"])
   const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May"]); // display the time as X-axis
-  const [dataAxis, setDataAxis] = useState<{[key: string]: number[]}>({website: [0, 0, 0, 0, 0],}); // time spent on events each month
+  const [dataAxis, setDataAxis] = useState<{ [key: string]: number[] }>({ website: [0, 0, 0, 0, 0], }); // time spent on events each month
 
   // Event tracking for pagination
   const [events, setEvents] = useState([]);
@@ -75,11 +76,12 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
-   // Mapping of tab keys to custom image imports
+  // Mapping of tab keys to custom image imports
   const tabImages: Record<string, string> = {
     activity: activityTab,
     mentor: mentorTab,
     prodev: prodevTab,
+    chessLessons: chessTab,
     mathLessons: mathTab,
     games: gamesTab,
     puzzles: puzzlesTab,
@@ -200,17 +202,16 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     try {
       // Fetch time spent on the website in the past few months
       const response = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&events=${displayEvents.join(",")}&months=${displayMonths}`, 
+        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&events=${displayEvents.join(",")}&months=${displayMonths}`,
         {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${cookies.login}` }
         }
       );
-      const data = await response.json(); 
+      const data = await response.json();
 
-      const newDataAxis = {} as {[key: string]: number[]};
-      for(let i = 0; i < displayEvents.length; i++)
-      {
+      const newDataAxis = {} as { [key: string]: number[] };
+      for(let i = 0; i < displayEvents.length; i++) {
         // get time spent for each event for plotting
         let event = displayEvents[i];
         let value = data[event];
@@ -222,7 +223,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       }
 
       // update for graph plotting
-      setDataAxis(newDataAxis); 
+      setDataAxis(newDataAxis);
     } catch (err) {
       console.error("Failed to fetch events", err);
     }
@@ -237,7 +238,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const handleNavigateEvent = (type: string, name: string) => {
     if (type == "lesson") {
       navigate("/lessons", { state: { piece: name } });
-    } else if (type =="puzzle") {
+    } else if (type == "puzzle") {
       navigate("/puzzles");
     }
   }
@@ -297,33 +298,35 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       case "mentor":
         return <div id="inventory-content-mentor" className="inventory-content active-content"><h2>Mentor</h2><p>This is the content for the Mentor tab.</p></div>;
       case "prodev":
-                return (
+        return (
           <div id="inventory-content-learning" className="inventory-content active-content">
             <Suspense fallback={<h2>Loading learning page...</h2>}>
-              <Lessons styleType={"profile"}/>
+              <Lessons styleType={"profile"} />
             </Suspense>
           </div>
         );
-      case "mathLessons":
-                return (
+      case "chessLessons":
+        return (
           <div id="inventory-content-lessons" className="inventory-content active-content">
             {lessonSelected ? (
               <Suspense fallback={<h2>Loading lessons page...</h2>}>
                 <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum} navigateFunc={() => {
                   setLessonSelected(false);
-                }} styleType="profile"/>
+                }} styleType="profile" />
               </Suspense>
             ) : (
-              <Suspense fallback={<h2>Loading lesson slection page...</h2>}>
+              <Suspense fallback={<h2>Loading lesson selection page...</h2>}>
                 <LessonsSelection styleType="profile" onGo={(selectedScenario, lessonNum) => {
                   setLessonSelected(true);
                   setPiece(selectedScenario);
                   setLessonNum(lessonNum);
-                }}/>
+                }} />
               </Suspense>
             )}
           </div>
         );
+      case "mathLessons":
+        return <div id="inventory-content-games" className="inventory-content active-content"><h2>Math lessons</h2><p>This is the content for the Math lessons tab.</p></div>;
       case "games":
         return <div id="inventory-content-games" className="inventory-content active-content"><h2>Games</h2><p>This is the content for the Games tab.</p></div>;
       case "puzzles":
@@ -398,7 +401,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         </div>
         <div className="inv-inventory-analytics">
           <div className="inv-inventory-analytics-graph">
-            <StatsChart key={monthAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
+            <StatsChart key={monthAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis} />
           </div>
           <div className="inv-inventory-analytics-metrics">
             <h3>Time Spent:</h3>
@@ -416,29 +419,29 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         <div className="inv-inventory-content-section">
           <nav className="inv-inventory-content-tabs">
             <ul>
-            {Object.keys(tabImages).map((tab) => (
-              <li key={tab}>
-                <button
-                  className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
-                  onClick={() => handleTabClick(tab)}
-                  aria-label={tab}
-                >
-                  <img src={tabImages[tab]} alt={`${tab} icon`} />
-              </button>
-            </li>
-            ))}
+              {Object.keys(tabImages).map((tab) => (
+                <li key={tab}>
+                  <button
+                    className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
+                    onClick={() => handleTabClick(tab)}
+                    aria-label={tab}
+                  >
+                    <img src={tabImages[tab]} alt={`${tab} icon`} />
+                  </button>
+                </li>
+              ))}
             </ul>
           </nav>
           <div className="inv-inventory-content-content">{tabContent}</div>
         </div>
       </section>
-      
+
       {/* Render modals conditionally */}
       {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} />}
-      {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} />}
+      {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username} />}
       {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} />}
       {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
-      
+
     </main>
   );
 };

@@ -19,6 +19,8 @@ const router = express.Router();
 const crypto = require("crypto");
 const { check, validationResult } = require("express-validator");
 const users = require("../models/users");
+const Activities = require("../models/activities");
+const { selectActivities } = require("../utils/activities");
 const {
   ChangePasswordTemplateForUser,
 } = require("../template/changePasswordTemplate");
@@ -141,7 +143,23 @@ router.post(
                 accountCreatedAt: currDate.toLocaleString(),
                 timePlayed: 0,
               });
-              await newStudent.save();
+              await newStudent.save(async function (err, user) {
+                if(err) {
+                  console.error('Error saving student: ', err);
+                }
+                else {
+                  console.log(user._id);
+                  const newActivities = await selectActivities();
+                  const activitiesEntry = new Activities({
+                    userId: user.id,
+                    activities: newActivities,
+                    completedDates: [],
+                  });
+                  await activitiesEntry.save(function (err, activity) {
+                    console.error('Error creating activities for student: ', err);
+                  });
+                }
+              });
             }),
           );
         }

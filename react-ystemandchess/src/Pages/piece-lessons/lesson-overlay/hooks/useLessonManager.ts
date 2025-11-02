@@ -1,102 +1,149 @@
-import { useState, useRef} from "react";
+import { useState, useCallback } from "react";
 import { environment } from "../../../../environments/environment";
 
-export function useLessonManager(piece: string, cookies: any, passedLessonNumber?: number) {
-	const [lessonNum, setLessonNum] = useState(0);
-  	const [completedNum, setCompletedNum] = useState(0);
- 	const [totalLessons, setTotalLessons] = useState(0);
- 	const [lessonData, setLessonData] = useState<any>(null);
+export function useLessonManager(piece: string, cookies: any, initialLessonNum?: number) {
+  const [lessonNum, setLessonNum] = useState<number>(initialLessonNum ?? 0);
+  const [completedNum, setCompletedNum] = useState<number>(0);
+  const [totalLessons, setTotalLessons] = useState<number>(0);
+  const [lessonData, setLessonData] = useState<any>(null);
 
-	const getLessonsCompletedRef = useRef<() => Promise<void>>(async () => {});
-  	const getCurrentLessonsRef = useRef<(num: number) => Promise<void>>(async () => {});
-  	const updateCompletionRef = useRef<() => Promise<void>>(async () => {});
-  	const getTotalLessonsRef = useRef<() => Promise<void>>(async () => {});
+  // Fetch helpers
+  const fetchCompletedCount = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${encodeURIComponent(piece)}`,
+        { method: 'GET', headers: { 'Authorization': `Bearer ${cookies?.login}` } }
+      );
+      if (!response.ok) {
+        console.warn('getCompletedLessonCount failed', response.status);
+        return 0;
+      }
+      const n = await response.json();
+      return Number(n) || 0;
+    } catch (err) {
+      console.error('Error fetching completed count', err);
+      return 0;
+    }
+  }, [piece, cookies]);
 
+  const fetchTotalLessons = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=${encodeURIComponent(piece)}`,
+        { method: 'GET', headers: { 'Authorization': `Bearer ${cookies?.login}` } }
+      );
+      if (!response.ok) {
+        console.warn('getTotalPieceLesson failed', response.status);
+        return 0;
+      }
+      const n = await response.json();
+      return Number(n) || 0;
+    } catch (err) {
+      console.error('Error fetching total lessons', err);
+      return 0;
+    }
+  }, [piece, cookies]);
 
-	// get # of completed lessons for this category
-	getLessonsCompletedRef.current = async () => {
-		// update # of completed lessons
-		const response = await fetch(
-			`${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${piece}`, 
-			{
-				method: 'GET',
-				headers: { 'Authorization': `Bearer ${cookies.login}` }
-			}
-		);
-		const completedCount = await response.json();
-		setCompletedNum(completedCount);
+  const fetchLessonByNumber = useCallback(async (num: number) => {
+    try {
+      const response = await fetch(
+        `${environment.urls.middlewareURL}/lessons/getLesson?piece=${encodeURIComponent(piece)}&lessonNum=${encodeURIComponent(num + 1)}`,
+        { method: 'GET', headers: { 'Authorization': `Bearer ${cookies?.login}` } }
+      );
+      if (!response.ok) {
+        console.warn('getLesson failed', response.status);
+        return null;
+      }
+      return await response.json();
+    } catch (err) {
+      console.error('Error fetching lesson', err);
+      return null;
+    }
+  }, [piece, cookies]);
 
-		console.log("LESSONS COMPLETED #:");
-		console.log(completedCount);
+  // Public imperative methods
 
-		if (passedLessonNumber != null) {
-			// if navigated from menu, with specified lesson number
-			getCurrentLessonsRef.current(passedLessonNumber);
-		} else {
-			// if directly navigated, current lesson is the next not completed lesson
-			setLessonNum(completedCount);
-			getCurrentLessonsRef.current(completedCount);
-		}
-	};
+  // Refresh totals and completed, then load current lesson (initialization)
+  const refreshProgress = useCallback(async (targetLessonNum?: number) => {
+    const total = await fetchTotalLessons();
+    setTotalLessons(total);
 
-	// get the lesson content for a specific number
-	getCurrentLessonsRef.current = async (lessonNumber: number) => {
-		const response = await fetch(
-			`${environment.urls.middlewareURL}/lessons/getLesson?piece=${piece}&lessonNum=${lessonNumber + 1}`,
-			{
-				method: 'GET', 
-				headers: { 'Authorization': `Bearer ${cookies.login}` }
-			}
-		);
-		const lesson = await response.json();
-		setLessonData(lesson);
-	};
+    const completed = await fetchCompletedCount();
+    setCompletedNum(completed);
 
-	// get total # of lessons for category
-	getTotalLessonsRef.current = async () => {
-		console.log("INSIDE TOTAL LESSON REF");
-		const response = await fetch(
-			`${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=${piece}`,
-			{
-				method: 'GET',
-				headers: { 'Authorization': `Bearer ${cookies.login}` }
-			}
-		);
-		const total = await response.json();
-		setTotalLessons(total); // update in UI
-		console.log("TOTAL LESSONS FETCHED");
-		console.log(total);
-	};
+    // decide which lesson to open: explicit targetLessonNum -> that, otherwise
+    // if initialLessonNum provided then respect it (if in range), else open next uncompleted
+    let toOpen = typeof targetLessonNum === 'number' ? targetLessonNum
+      : (initialLessonNum != null ? initialLessonNum : completed);
 
-	// Update the user's lesson progress in this category
-	updateCompletionRef.current = async () => {	
-		if (lessonNum === completedNum) { // allow back end update only for the first unfinished lesson
-			setCompletedNum(prevNum => prevNum + 1);
-			await fetch(
-				`${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=${piece}&lessonNum=${lessonNum}`,
-				{
-					method: 'GET',
-					headers: { 'Authorization': `Bearer ${cookies.login}` }
-				}
-			);
-		}
+    if (toOpen < 0) toOpen = 0;
+    if (total > 0 && toOpen >= total) toOpen = total - 1;
 
-		if (lessonNum < totalLessons - 1) {
-			// Move to next lesson if there are any
-			setLessonNum(prevNum => prevNum + 1);
-			getCurrentLessonsRef.current(lessonNum + 1);
-		}
-	};
+    setLessonNum(toOpen);
+    const lesson = await fetchLessonByNumber(toOpen);
+    setLessonData(lesson);
+  }, [fetchTotalLessons, fetchCompletedCount, fetchLessonByNumber, initialLessonNum]);
 
-	return {
-		lessonData,
-		lessonNum,
-		completedNum,
-		totalLessons,
-    	getLessonsCompletedRef,
-    	getCurrentLessonsRef,
-    	getTotalLessonsRef,
-    	updateCompletionRef,
-    	setLessonNum,
-  	};
+  // Go to a specific lesson number (0-based)
+  const goToLesson = useCallback(async (num: number) => {
+    if (num < 0) return;
+    const total = totalLessons;
+    if (total > 0 && num >= total) {
+      console.warn('goToLesson out of bounds', num, total);
+      return;
+    }
+    setLessonNum(num);
+    const lesson = await fetchLessonByNumber(num);
+    if (lesson) setLessonData(lesson);
+  }, [totalLessons, fetchLessonByNumber]);
+
+  // Next and previous navigators
+  const nextLesson = useCallback(async () => {
+    // do not advance beyond first uncompleted or last lesson
+    const limit = Math.min(completedNum, Math.max(0, totalLessons - 1));
+    if (lessonNum >= limit) return;
+    const next = lessonNum + 1;
+    setLessonNum(next);
+    const lesson = await fetchLessonByNumber(next);
+    if (lesson) setLessonData(lesson);
+  }, [lessonNum, completedNum, totalLessons, fetchLessonByNumber]);
+
+  const prevLesson = useCallback(async () => {
+    if (lessonNum <= 0) return;
+    const prev = lessonNum - 1;
+    setLessonNum(prev);
+    const lesson = await fetchLessonByNumber(prev);
+    if (lesson) setLessonData(lesson);
+  }, [lessonNum, fetchLessonByNumber]);
+
+  // Update completion: mark current as completed and advance if possible
+  const updateCompletion = useCallback(async () => {
+    // only update backend when the user is at the first unfinished lesson
+    if (lessonNum !== completedNum) {
+      return;
+    }
+    try {
+      await fetch(
+        `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=${encodeURIComponent(piece)}&lessonNum=${encodeURIComponent(lessonNum)}`,
+        { method: 'GET', headers: { 'Authorization': `Bearer ${cookies?.login}` } }
+      );
+      // Refresh local progress after backend update
+      await refreshProgress(lessonNum + 1);
+    } catch (err) {
+      console.error('Error updating completion', err);
+    }
+  }, [lessonNum, completedNum, piece, cookies, refreshProgress]);
+
+  return {
+    lessonData,
+    lessonNum,
+    completedNum,
+    totalLessons,
+    refreshProgress,
+    goToLesson,
+    nextLesson,
+    prevLesson,
+    updateCompletion,
+    setLessonNum 
+  };
 }

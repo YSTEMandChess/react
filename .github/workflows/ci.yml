@@ -75,13 +75,13 @@ jobs:
           export const environment = {
             production: false,
             agora: {
-              appId: ${{ secrets.APP_ID }},
+              appId: '${{ secrets.APP_ID }}',
             },
             urls: {
-              middlewareURL: ${{ secrets.MIDDLEWARE_URL }},
-              chessClientURL: ${{ secrets.CHESS_CLIENT_URL }},
-              stockFishURL: ${{ secrets.STOCKFISH_URL }},
-              chessServer: ${{ secrets.CHESS_SERVER }},
+              middlewareURL: '${{ secrets.MIDDLEWARE_URL }}',
+              chessClientURL: '${{ secrets.CHESS_CLIENT_URL }}',
+              stockFishURL: '${{ secrets.STOCKFISH_URL }}',
+              chessServer: '${{ secrets.CHESS_SERVER }}',
             },
           };
           EOF
