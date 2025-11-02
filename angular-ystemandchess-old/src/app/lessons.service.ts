@@ -1,9 +1,37 @@
+/**
+ * Lessons Service (Angular)
+ * 
+ * Contains all chess lesson data and configurations for the Angular application.
+ * Defines lesson structures, FEN positions, training exercises, and instructional content.
+ * 
+ * @deprecated This is part of the old Angular application. The project is migrating
+ * to React (see react-ystemandchess directory).
+ * 
+ * This service contains 2200+ lines of lesson data organized by chess pieces:
+ * - Pawn lessons (movement, capture, promotion)
+ * - Bishop lessons (diagonal movement)
+ * - Knight lessons (L-shaped movement)
+ * - Rook lessons (straight line movement)
+ * - Queen lessons (combined bishop + rook)
+ * - King lessons (basic movement, checkmate patterns)
+ * - Tactical lessons (pins, forks, skewers, discovered attacks, etc.)
+ * - Endgame lessons (pawn endgames, rook endgames, etc.)
+ * 
+ * Each lesson includes:
+ * - name: Lesson title
+ * - subSections: Array of training exercises
+ *   - name: Exercise name
+ *   - fen: Starting position in FEN notation
+ *   - info: Instructions for the student
+ */
+
 import { Injectable } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LessonsService {
+  // Comprehensive array of all chess lessons with FEN positions and instructions
   learningsArray = [
     {
       name: 'Pawn-It moves forward only',

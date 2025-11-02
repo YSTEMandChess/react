@@ -1,17 +1,35 @@
-import { Request, Response } from 'express';  // Import express types
-// import { UserModel } from '../models/User';    // Assuming UserModel has been defined with types
-import crypto from 'crypto';                   // Import crypto with type support
-import jwt from 'jsonwebtoken';                // Import jwt with type support
-import config from 'config';                   // Assuming config is correctly typed
+/**
+ * Login Controller
+ * 
+ * Handles user login requests, validates credentials, and generates JWT tokens.
+ * Part of the authentication system for the React application.
+ */
+
+import { Request, Response } from 'express';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+import config from 'config';
 
 let UserModel: any;
 
-// Type for the query object in the request
+/**
+ * Type definition for login query parameters
+ */
 interface LoginQuery {
   username?: string;
   password?: string;
 }
 
+/**
+ * Handles user login requests
+ * 
+ * Validates username/password, hashes the password, checks against database,
+ * and generates a JWT token for authenticated users.
+ * 
+ * @param req - Express request with username and password in query
+ * @param res - Express response
+ * @returns JSON response with JWT token or error message
+ */
 const login = async (req: Request<{}, {}, {}, LoginQuery>, res: Response): Promise<Response> => {
   const { username, password } = req.query;
 
