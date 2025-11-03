@@ -1,3 +1,23 @@
+.loadingBarContainer {
+  width: 100%;
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.loadingBar {
+  height: 100%;
+  background-color: var(--green-color);
+  transition: width 0.1s linear;
+}
+
+.fadeOut {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
 .lessonContainer {
   background-image: url("../../../images/chess_background.png");
   background-repeat: no-repeat;
@@ -247,6 +267,7 @@
   justify-content: center;
   align-items: center;
   z-index: 9999;
+  transition: opacity 0.7s ease;
 }
 
 .popupContent {
@@ -304,7 +325,7 @@
 }
 
 .popupHeader {
-  color: rgb(108, 107, 107);
+  color: black;
   font-size: 30px;
   font-weight: bold;
   margin-bottom: 3px;

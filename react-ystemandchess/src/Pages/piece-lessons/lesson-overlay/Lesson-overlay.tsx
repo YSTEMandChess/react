@@ -59,6 +59,8 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   const turnRef = useRef("white");
   const [name, setName] = useState(""); // name of lesson
   const [info, setInfo] = useState(""); // description of lesson
+  const [progress, setProgress] = useState(0); // for time tracking progress bar
+  const [isFading, setIsFading] = useState(false); // for instructions fade-out effect
 
   // Information needed for move tracker
   const [level, setLevel] = useState(20);
@@ -107,11 +109,11 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     if (!chessBoardRef.current) return;
 
     chessBoardRef.current.undo();
-  const engineFEN = chessBoardRef.current.getFen();
-  setCurrentFEN(engineFEN);
-  currentFenRef.current = engineFEN;
+    const engineFEN = chessBoardRef.current.getFen();
+    setCurrentFEN(engineFEN);
+    currentFenRef.current = engineFEN;
 
-  setMoveHistory(prev => prev.slice(0, -1));
+    setMoveHistory(prev => prev.slice(0, -1));
   }
 
   const handleEvaluationComplete = useCallback((data) => {
@@ -220,6 +222,30 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     sendLessonToChessBoard();
 
   }, [lessonData, socketRef]);
+
+  // Handle instruction popup with dynamic loading bar and fade-out
+  useEffect(() => {
+    if (!showInstruction) return;
+
+    // Calculate time dynamically based on instruction length
+    const wordCount = info ? info.split(/\s+/).length : 0;
+    const totalTime = Math.min(20000, 3000 + wordCount * 300); // cap at 20s max
+
+    let startTime = Date.now();
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min((elapsed / totalTime) * 100, 100);
+      setProgress(pct);
+      if (pct >= 100) {
+  clearInterval(interval);
+  setIsFading(true); // trigger fade-out
+  setTimeout(() => setShowInstruction(false), 500); // match CSS duration
+}
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [showInstruction, info]);
 
 
   // send lesson to chess client to update UI
@@ -479,7 +505,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                   cy="60"
                   r="54"
                   fill="none"
-                  stroke="#a3d0ff"
+                  stroke="#7fcc26"
                   strokeWidth="6"
                 ></circle>
               </svg>
@@ -492,11 +518,17 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
       {/* have users read instructions first */}
       {showInstruction && (
-        <div className={styles.popup}>
+        <div className={`${styles.popup} ${isFading ? styles.fadeOut : ''}`}>
           <div className={styles.popupContent}>
-            <p className={styles.popupHeader}>Read this instruction:</p>
+            <p className={styles.popupHeader}>Lesson Instructions</p>
             <p className={styles.popupSubheading}>{info}</p>
-            <button className={styles.popupButton} onClick={handleShowInstruction}>Finished reading!</button>
+            {/* Loading bar at the bottom */}
+            <div className={styles.loadingBarContainer}>
+              <div
+                className={styles.loadingBar}
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
           </div>
         </div>
       )}
