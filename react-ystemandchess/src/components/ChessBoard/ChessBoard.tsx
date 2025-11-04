@@ -36,6 +36,31 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     const [lessonIndex, setLessonIndex] = useState<number>(0);
     const [isShaking, setIsShaking] = useState<boolean>(false);
     const [orientation, setOrientationState] = useState<"white" | "black">("white");
+    const [boardWidth, setBoardWidth] = useState<number>(600);
+
+    // Calculate board width based on viewport
+    const calcWidth = () => {
+      if (typeof window !== 'undefined') {
+        const width = window.innerWidth;
+        // Use smaller widths to ensure entire 8x8 board fits with all rows visible
+        if (width <= 480) return Math.floor(width * 0.60);  // 60% for small phones
+        if (width <= 768) return Math.floor(width * 0.55);  // 55% for tablets
+        if (width <= 1024) return Math.floor(width * 0.50); // 50% for medium tablets
+        return 600;
+      }
+      return 600;
+    };
+
+    // Update board width on mount and window resize
+    useEffect(() => {
+      const updateWidth = () => {
+        setBoardWidth(calcWidth());
+      };
+      
+      updateWidth(); // Set initial width
+      window.addEventListener('resize', updateWidth);
+      return () => window.removeEventListener('resize', updateWidth);
+    }, []);
 
     // Sync controlled FEN to engine whenever it changes
     useEffect(() => {
@@ -138,6 +163,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     return (
       <div className={`chessboard-container ${isShaking ? "shake" : ""}`}>
         <Chessboard
+          width={boardWidth}
           position={fen}
           onDrop={onDrop}
           orientation={orientation}
@@ -145,7 +171,6 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
             acc[sq] = { backgroundColor: "yellow" };
             return acc;
           }, {} as Record<string, React.CSSProperties>)}
-          style={{ width: "100%", height: "100%" }}
         />
         <canvas
           ref={canvasRef}
