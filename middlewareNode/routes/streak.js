@@ -1,14 +1,43 @@
+/**
+ * Streak Routes
+ * 
+ * API endpoints for tracking user activity streaks.
+ * Calculates current streak, longest streak, and streak continuity
+ * based on daily completion of required activities (lessons and puzzles).
+ * 
+ * A day is considered "completed" when user finishes both:
+ * - At least one lesson
+ * - At least one puzzle
+ */
+
 const express = require('express');
 const router = express.Router();
 const TimeTracking = require('../models/timeTracking'); 
 
-// check if all required events exist for a day
+/**
+ * Checks if a day's activities meet completion requirements
+ * 
+ * @param {Array} events - Array of event types completed on a day
+ * @returns {boolean} True if both 'lesson' and 'puzzle' are present
+ */
 function dayCompleted(events) {
   const required = ['lesson', 'puzzle'];
   return required.every((r) => events.includes(r));
 }
  
-// GET /streak
+/**
+ * GET /streak
+ * 
+ * Calculates and returns streak statistics for a user.
+ * 
+ * Query Parameters:
+ * - username: Required - Username to calculate streak for
+ * 
+ * Returns:
+ * - currentStreak: Consecutive days up to today
+ * - longestStreak: Best streak ever achieved
+ * - lastCompletedDate: Most recent day with completed activities
+ */
 router.get('/', async (req, res) => {
   try {
     const username = req.query.username;

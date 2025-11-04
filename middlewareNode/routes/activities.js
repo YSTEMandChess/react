@@ -1,3 +1,15 @@
+/**
+ * Activities Routes
+ * 
+ * API endpoints for managing daily student activities.
+ * Handles retrieval and completion status of activities.
+ * 
+ * Features:
+ * - Get user's daily activities
+ * - Mark activities as completed
+ * - Track activity completion for streaks and badges
+ */
+
 const config = require("config");
 const express = require('express');
 const passport = require("passport");
@@ -6,17 +18,27 @@ const jwt = require('jsonwebtoken');
 const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 
-let cachedClient = null; // cache db client to prevent repeated connections
+// Cache database client to prevent repeated connections
+let cachedClient = null;
 
-// get db client
+/**
+ * Gets database client, creating connection if needed
+ * @returns {MongoDB.Db} Database instance
+ */
 async function getDb() {
-  if (!cachedClient) { // if not cached, connect
+  if (!cachedClient) {
     cachedClient = new MongoClient(config.get("mongoURI"));
     await cachedClient.connect();
   }
-  return cachedClient.db("ystem"); // returned cached client
+  return cachedClient.db("ystem");
 }
 
+/**
+ * Helper function to get user ID from username
+ * @param {MongoDB.Db} db - Database instance
+ * @param {string} username - Username to lookup
+ * @returns {ObjectId} User's MongoDB _id
+ */
 async function getUserId(db, username) {
     const users = db.collection("users");
     const currentUser = await users.findOne(
@@ -29,6 +51,10 @@ async function getUserId(db, username) {
     return userId;
 }
 
+/**
+ * GET /activities
+ * Retrieves all daily activities for a user
+ */
 router.get("/", async (req, res) => {
     try {
         const db = await getDb();

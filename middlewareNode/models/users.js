@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
+/**
+ * User schema defining the structure of user documents in MongoDB
+ * Includes fields for authentication, profile info, lessons, and relationships
+ */
 const usersSchema = new mongoose.Schema(
   {
     username: {

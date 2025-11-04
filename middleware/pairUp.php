@@ -1,4 +1,24 @@
 <?php
+/**
+ * Pair Up Endpoint
+ * 
+ * Automatically pairs waiting mentors with waiting students for video meetings.
+ * Uses FIFO (First In First Out) matching based on request timestamps.
+ * Creates meeting records and starts Agora cloud recordings for each pair.
+ * 
+ * @deprecated This is the old PHP middleware. The project is migrating
+ * to Node.js middleware (see middlewareNode directory).
+ * 
+ * Process:
+ * 1. Fetch all waiting mentors and students
+ * 2. Sort by request time (earliest first)
+ * 3. Match pairs and create meeting records
+ * 4. Start cloud recording for each meeting
+ * 5. Remove paired users from waiting queues
+ * 
+ * @returns Array of created meeting IDs
+ */
+
 // Allow Cross Origin Requests (other ips can request data)
 header("Access-Control-Allow-Origin: *");
 
@@ -6,14 +26,15 @@ require_once __DIR__ . '/vendor/autoload.php';
 use \Firebase\JWT\JWT;
 require_once 'environment.php';
 
+// Connect to MongoDB
 $client = new MongoDB\Client($_ENV["mongoCredentials"]);
 
-// To pair up, continue making matches until there is no longer any people to match left
+// Access waiting queues and meetings collection
 $waitingMentorCollection = $client->ystem->waitingMentors;
 $waitingStudentsCollection = $client->ystem->waitingStudents;
 $meetingCollection = $client->ystem->meetings;
 
-// Get the mentors in sorted order, then get the students in sorted order.
+// Get mentors and students sorted by request time (FIFO matching)
 $sortedMentorsCursor = $waitingMentorCollection->find([],[$sort => ["requestedGameAt" => 1]]);
 $sortedStudentsCursor = $waitingStudentsCollection->find([],[$sort => ["requestedGameAt" => 1]]);
 // Get first doc of both

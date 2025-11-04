@@ -1,3 +1,4 @@
+// Load environment variables from .env file
 require("dotenv").config();
 
 const express = require("express");
@@ -27,8 +28,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Main API route
+/**
+ * Main API route - evaluates chess positions using Stockfish engine
+ * Accepts FEN string, optional move, difficulty level, and info flag
+ */
 app.get("/", (req, res) => {
+  // Parse query parameters from the URL
   const params = querystring.parse(url.parse(req.url, true).search?.substring(1));
   const { fen, move = "", level = 10, info = false } = params;
 
@@ -37,14 +42,18 @@ app.get("/", (req, res) => {
     return res.status(400).json({ error: "Missing or invalid parameters!" });
   }
 
+  // Set maximum depth level and create engine instance
   const maxLevel = 30;
   var lines = [];
   var depth = Math.min(parseInt(level), maxLevel);
   const engine = Stockfish();
 
+  // Create a new chess game from the provided FEN position
   const game = new Chess(fen);
 
+  // Handle messages from the Stockfish engine
   engine.onmessage = (line) => {
+    // If info mode is requested, collect all engine output lines
     if (info) {
 
       lines.push(line);
@@ -52,6 +61,7 @@ app.get("/", (req, res) => {
         res.json({ output: lines });
       }
     }
+    // Otherwise, return only the best move with details
     else if (line.startsWith("bestmove")) {
       const moveResult = game.move(line.split(" ")[1], { sloppy: true });
 

@@ -1,5 +1,6 @@
+// Main server configuration for the Node.js middleware API
 const express = require("express");
-const session = require("express-session"); // Import express-session
+const session = require("express-session");
 const connectDB = require("./config/db");
 const passport = require("passport");
 require("./config/passport.js");
@@ -11,16 +12,16 @@ const streakRoutes = require('./routes/streak');
 // Enable scheduler
 require("./scheduler/activitiesScheduler.js");
 
-// Enable Cors
+// Enable CORS for cross-origin requests
 app.use(cors(config.get("corsOptions")));
 
-// Connect Database
+// Connect to MongoDB database
 connectDB();
 
-// Init Middleware
+// Initialize JSON middleware for parsing request bodies
 app.use(express.json({ extended: false }));
 
-// Configure express-session
+// Configure session middleware
 app.use(
   session({
     secret: 'your_secret_key_here', // Use a long and random string for better security
@@ -29,11 +30,11 @@ app.use(
   })
 );
 
-// Passport middleware
+// Initialize Passport authentication middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Define Routes
+// Define API routes
 app.get("/", (req, res) => res.send("API Running"));
 app.use("/user", require("./routes/users"));
 app.use("/category", require("./routes/categorys"));
@@ -47,6 +48,7 @@ app.use('/streak', streakRoutes);
 app.use("/badges", require("./routes/badges"));
 
 
+// Start server on specified port
 const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

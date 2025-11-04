@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
+/**
+ * Meetings schema for storing video meeting session data
+ * Tracks participants, recording info, and chess moves during meetings
+ */
 const meetingsSchema = new mongoose.Schema(
   {
     meetingId: {

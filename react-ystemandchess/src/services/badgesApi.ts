@@ -1,6 +1,22 @@
+/**
+ * Badges API Service
+ * 
+ * Provides functions to interact with the badges API endpoints.
+ * Handles fetching badge catalog and user's earned badges.
+ * 
+ * Functions:
+ * - getBadgeCatalog: Fetches all available badges
+ * - getUserBadges: Fetches badges earned by a specific user
+ */
+
 import { environment } from "../environments/environment";
 
-// fetch all available badges
+/**
+ * Fetches the complete catalog of all available badges
+ * 
+ * @returns {Promise<Array>} Array of badge objects with id, name, description, icon, criteria
+ * @throws {Error} If the API request fails
+ */
 export async function getBadgeCatalog() {
   const res = await fetch(`${environment.urls.middlewareURL}/badges/catalog`, {
     credentials: "include",
@@ -9,7 +25,13 @@ export async function getBadgeCatalog() {
   return (await res.json()).badges;
 }
 
-// fetch earned badges for a user
+/**
+ * Fetches all badges earned by a specific user
+ * 
+ * @param {string} userId - User's unique identifier
+ * @returns {Promise<Array>} Array of earned badge objects with badgeId, earnedAt, meta
+ * @throws {Error} If the API request fails
+ */
 export async function getUserBadges(userId: string) {
   const res = await fetch(`${environment.urls.middlewareURL}/badges/${userId}`, {
     credentials: "include",

@@ -1,3 +1,16 @@
+/**
+ * Authentication Routes
+ * 
+ * Handles user authentication operations including login and JWT validation.
+ * Uses JWT tokens for stateless authentication and Passport.js for middleware.
+ * 
+ * Features:
+ * - User login with username/password
+ * - JWT token generation
+ * - Token validation for protected routes
+ * - Password hashing with SHA-384
+ */
+
 const express = require("express");
 const crypto = require("crypto");
 const passport = require("passport");
@@ -8,9 +21,14 @@ const jwt = require("jsonwebtoken");
 const config = require("config");
 const sha384 = crypto.createHash("sha384");
 
-// @route   POST /auth/validate
-// @desc    POST validate the legitimacy of the jwt provided
-// @access  Public with jwt Authentication
+/**
+ * POST /auth/validate
+ * 
+ * Validates the legitimacy of a provided JWT token.
+ * Used to check if a user's session is still valid.
+ * 
+ * @access JWT authentication required
+ */
 router.post("/validate", passport.authenticate("jwt"), async (req, res) => {
   if (req.user) {
     res.sendStatus(200);

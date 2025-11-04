@@ -1,3 +1,16 @@
+/**
+ * Footer Component
+ * 
+ * This component displays the website footer with contact information,
+ * social media links, sponsors, and partners.
+ * 
+ * Features:
+ * - Contact information (email and phone)
+ * - Social media icon links
+ * - Sponsor logos and links
+ * - Partner organization logos
+ */
+
 import React from "react";
 import "./Footer.css";
 import TwitterIcon from "../images/twitterIcon.svg";
@@ -14,6 +27,10 @@ import BoysAndGirls from "../images/partners/boysAndGirls.png";
 import Possible from "../images/partners/possible.png";
 import Rotary from "../images/partners/Rotary.png";
 
+/**
+ * Footer component - displays contact info, social links, sponsors, and partners
+ * @returns JSX element containing the footer section
+ */
 const Footer = () => {
   return (
     <footer>

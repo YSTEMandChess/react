@@ -1,3 +1,16 @@
+/**
+ * Badge Catalog
+ * 
+ * Defines all available badges/achievements in the platform.
+ * Each badge has criteria that users must meet to earn it.
+ * 
+ * Badge Types:
+ * - lesson_completed: Based on number of lessons finished
+ * - streak: Based on consecutive days of activity
+ * - activities_days: Based on total days with activities completed
+ * 
+ * Used by the badge service to check eligibility and award badges to users.
+ */
 
 const BADGE_CATALOG = [
   {

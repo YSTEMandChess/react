@@ -1,9 +1,37 @@
+/**
+ * Home Page Component
+ * 
+ * This is the main landing page component for the Y STEM and Chess application.
+ * It serves as the entry point for visitors and provides an overview of the
+ * organization's mission, featured content, and calls-to-action.
+ * 
+ * Features:
+ * - Hero section with organization branding
+ * - Featured books and publications
+ * - Donation and purchase functionality
+ * - Navigation to other sections of the site
+ * - Responsive design for all device types
+ */
+
 import React from "react";
 import "./Home.css";
 import Images from "../../images/imageImporter";
 import { ButtonsCard } from "../../components/ui/tailwindcss-buttons";
 import { useNavigate } from "react-router";
 
+/**
+ * Static data for featured books displayed on the home page
+ * 
+ * This array contains information about the organization's published books,
+ * including cover images, titles, subtitles, and descriptions. The data
+ * is used to render book cards with purchase functionality.
+ * 
+ * Each book object contains:
+ * - image: Reference to the book cover image
+ * - title: Main book title
+ * - subtitle: Descriptive subtitle
+ * - description: Detailed book description for marketing
+ */
 const books = [
   {
     image: Images.Book1,
@@ -22,29 +50,61 @@ const books = [
   },
 ];
 
+/**
+ * Main Home page component
+ * 
+ * This component renders the landing page with featured content, donation
+ * options, and book purchases. It serves as the main entry point for
+ * visitors to learn about the organization and take action.
+ * 
+ * @returns JSX element representing the complete home page
+ */
 const Home = () => {
+  // Hook for programmatic navigation between pages
   const navigate = useNavigate();
-  // Sends the user to donat
-  // e page, when donate button is clicked
+
+  /**
+   * Handles donation button click events
+   * 
+   * This function redirects users to the external donation platform
+   * (DonorBox) where they can make contributions to support the
+   * organization's mission and programs.
+   * 
+   * Uses window.location.href for external navigation to ensure
+   * proper handling of the third-party donation platform.
+   */
   const handleDonateButton = () => {
     window.location.href =
       "https://donorbox.org/y-stem-and-chess-inc-learning-platform";
   };
 
+  /**
+   * Handles book purchase button click events
+   * 
+   * This function opens the appropriate Amazon product page in a new tab
+   * based on the book title provided. It supports multiple books and
+   * can be easily extended for additional publications.
+   * 
+   * @param title - The title of the book to purchase (optional)
+   * 
+   * Supported books:
+   * - "How to Start a Tech-Based Nonprofit"
+   * - "The Zero Dollar Workforce"
+   */
   const handleBuyNow = (title = "") => {
-    // Handle the Buy Now button click event
-    // alert("Buy Now button clicked!");
+    // Handle purchase for "How to Start a Tech-Based Nonprofit"
     if (title === "How to Start a Tech-Based Nonprofit") {
       window.open(
         "https://www.amazon.com/How-Start-Tech-based-Nonprofit-Opportunity/dp/B0C4MML5WG",
-        "_blank"
+        "_blank"  // Open in new tab to preserve user's current session
       );
     }
 
+    // Handle purchase for "The Zero Dollar Workforce"
     if (title === "The Zero Dollar Workforce") {
       window.open(
         "https://www.amazon.com/Zero-Dollar-Workforce-Company-Spend/dp/B09NGVLQSS",
-        "_blank"
+        "_blank"  // Open in new tab to preserve user's current session
       );
     }
   };
