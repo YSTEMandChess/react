@@ -25,6 +25,13 @@ services:
       - middlewareNode
       - chessServer
       - stockfishServer
+      - react_ystemandchess
+
+  react_ystemandchess:
+    build: ./react-ystemandchess
+    container_name: react_ystemandchess
+    expose:
+      - "80"
 
   chessClient:
     build: ./chessClient
