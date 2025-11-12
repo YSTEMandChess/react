@@ -1,7 +1,19 @@
 const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
-// Schema with the attributes matching data provided by the lichess puzzles API
+/**
+ * Puzzles Schema
+ * 
+ * Defines the MongoDB structure for chess puzzles from Lichess API.
+ * Puzzles are chess positions where the player must find the best move(s).
+ * 
+ * Data is sourced from Lichess puzzle database and includes:
+ * - Position (FEN notation)
+ * - Solution moves
+ * - Difficulty rating
+ * - Themes (tactical patterns)
+ * - Popularity metrics
+ */
 const puzzleSchema = new mongoose.Schema(
   {
     puzzleId: {

@@ -1,3 +1,16 @@
+/**
+ * Lessons Routes
+ * 
+ * API endpoints for managing chess lesson progress and content.
+ * Handles both authenticated users and guests (tracked by IP).
+ * 
+ * Main Features:
+ * - Get lesson completion counts by piece
+ * - Retrieve lesson content
+ * - Update user progress
+ * - Support for guest users (non-logged-in visitors)
+ */
+
 const config = require("config");
 const express = require('express');
 const passport = require("passport");
@@ -6,17 +19,25 @@ const jwt = require('jsonwebtoken');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
-let cachedClient = null; // cache db client to prevent repeated connections
+// Cache database client to prevent repeated connections
+let cachedClient = null;
 
-// get db client
+/**
+ * Gets database client, creating connection if needed
+ * @returns {MongoDB.Db} Database instance
+ */
 async function getDb() {
-  if (!cachedClient) { // if not cached, connect
+  if (!cachedClient) {
     cachedClient = new MongoClient(config.get("mongoURI"));
     await cachedClient.connect();
   }
-  return cachedClient.db("ystem"); // returned cached client
+  return cachedClient.db("ystem");
 }
 
+/**
+ * Development/testing endpoint for database operations
+ * Currently used for manual data verification
+ */
 router.get(
   "/stick",
   async(req, res) => {
@@ -53,8 +74,17 @@ router.get(
   }
 )
 
-// Get the number of lessons completed for a chess piece for a specific user
-// example: `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=pawn`
+/**
+ * GET /lessons/getCompletedLessonCount
+ * 
+ * Returns the number of lessons completed for a specific chess piece.
+ * Works for both authenticated users and guests (tracked by IP).
+ * 
+ * Query Parameters:
+ * - piece: Chess piece name (e.g., 'pawn', 'The Pin Pin it to win it')
+ * 
+ * Example: `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=pawn`
+ */
 router.get(
   "/getCompletedLessonCount",
   async (req, res, next) => {
@@ -212,8 +242,17 @@ router.get(
   }
 );
 
-// Get how many lessons there are for a specific piece
-// example: `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=pawn`
+/**
+ * GET /lessons/getTotalPieceLesson
+ * 
+ * Returns the total number of lessons available for a chess piece.
+ * Used to determine progress percentage (completed / total).
+ * 
+ * Query Parameters:
+ * - piece: Chess piece name
+ * 
+ * Example: `${environment.urls.middlewareURL}/lessons/getTotalPieceLesson?piece=pawn`
+ */
 router.get(
   "/getTotalPieceLesson",
   async (req, res, next) => {
@@ -241,8 +280,18 @@ router.get(
   }
 );
 
-// Get the lesson content for a piece, lessonNum is 1-indexed
-// example: `${environment.urls.middlewareURL}/lessons/getLesson?piece=pawn&lessonNum=1`
+/**
+ * GET /lessons/getLesson
+ * 
+ * Retrieves the content for a specific lesson.
+ * Lesson numbers are 1-indexed (first lesson is lessonNum=1).
+ * 
+ * Query Parameters:
+ * - piece: Chess piece name
+ * - lessonNum: Lesson number (1-indexed)
+ * 
+ * Example: `${environment.urls.middlewareURL}/lessons/getLesson?piece=pawn&lessonNum=1`
+ */
 router.get(
   "/getLesson",
   async (req, res, next) => {
@@ -277,9 +326,21 @@ router.get(
   }
 );
 
-// Update a user's progress in lessons for a chess piece
-// Note that lessonNum is current progress, passing lessonNum=0 will update progress to 1
-// example: `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=pawn&lessonNum=0`
+/**
+ * GET /lessons/updateLessonCompletion
+ * 
+ * Updates user's lesson progress for a chess piece.
+ * Only increments if new lesson number is higher than current progress.
+ * 
+ * Note: lessonNum represents CURRENT progress.
+ * Passing lessonNum=0 updates progress to 1 (first lesson completed).
+ * 
+ * Query Parameters:
+ * - piece: Chess piece name
+ * - lessonNum: Current lesson number (will be incremented by 1)
+ * 
+ * Example: `${environment.urls.middlewareURL}/lessons/updateLessonCompletion?piece=pawn&lessonNum=0`
+ */
 router.get(
   "/updateLessonCompletion",
   async (req, res, next) => {
@@ -488,8 +549,17 @@ router.get(
   }
 );
 
-// Get a map of key-value pairs for the completed number of lessons for all pieces
-// example: `${environment.urls.middlewareURL}/lessons/getAllLessonsProgress`
+/**
+ * GET /lessons/getAllLessonsProgress
+ * 
+ * Returns a complete map of lesson progress for all chess pieces.
+ * Useful for displaying overall progress dashboard.
+ * 
+ * Returns: Object with piece names as keys and lesson counts as values
+ * Example response: { "pawn": 3, "rook": 0, "The Pin Pin it to win it": 5 }
+ * 
+ * Example: `${environment.urls.middlewareURL}/lessons/getAllLessonsProgress`
+ */
 router.get(
   "/getAllLessonsProgress",
   async (req, res, next) => {
@@ -634,12 +704,24 @@ router.get(
   }
 );
 
+/**
+ * Helper function to extract client IP address
+ * Handles proxied requests by checking X-Forwarded-For header
+ * 
+ * @param {Request} req - Express request object
+ * @returns {string} Client IP address
+ */
 function getClientIp(req) {
   return req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 }
 
 module.exports = router;
 
+/**
+ * Legacy data structure containing end FEN positions for lessons
+ * Used for data migration and testing purposes
+ * Contains lesson completion states for various chess tactics and pieces
+ */
 list = [
     {
         name: "Piece Checkmate 1 Basic checkmates",

@@ -1,9 +1,14 @@
 const axios = require("axios");
 const config = require("config");
 
+/**
+ * Starts an Agora cloud recording session for a meeting
+ * @param {string} meetingID - The meeting/channel ID to record
+ * @returns {Object} Object containing sid and resourceId for the recording session
+ */
 const startRecording = async (meetingID) => {
   try {
-    //Set the body and query url to create a recording session
+    // Set the body and query url to create a recording session
     const appId = config.get("appID");
     const uid = config.get("uid");
     const auth = {
@@ -17,7 +22,7 @@ const startRecording = async (meetingID) => {
     };
     let newQueryURL = `https://api.agora.io/v1/apps/${appId}/cloud_recording/acquire`;
 
-    //POST request to obtain an agora recording session
+    // POST request to obtain an agora recording session
     const { data } = await axios.post(newQueryURL, body, {
       headers: {
         "Content-type": "application/json;charset=utf-8",
@@ -28,7 +33,7 @@ const startRecording = async (meetingID) => {
       return "Could not start recording. Server Error";
     }
 
-    //Set the new body and query url to start the recording session
+    // Set the new body and query url to start the recording session
     newQueryURL = `https://api.agora.io/v1/apps/${appId}/cloud_recording/resourceid/${data?.resourceId}/mode/mix/start`;
     body = {
       uid,
@@ -87,7 +92,7 @@ const startRecording = async (meetingID) => {
       },
     };
 
-    //POST request to start the agora recording session we obtained from above
+    // POST request to start the agora recording session we obtained from above
     const secondResponse = await axios.post(newQueryURL, body, {
       headers: {
         "Content-type": "application/json;charset=utf-8",
@@ -98,7 +103,7 @@ const startRecording = async (meetingID) => {
       return "Could not start recording. Server error.";
     }
 
-    //Return the resourceId and sid used to identify the recording session
+    // Return the resourceId and sid used to identify the recording session
     return {
       sid: secondResponse.data.sid,
       resourceId: data.resourceId,
@@ -109,10 +114,16 @@ const startRecording = async (meetingID) => {
   }
 };
 
-//Async function to stop the agora recording session
+/**
+ * Stops an Agora cloud recording session
+ * @param {string} meetingID - The meeting/channel ID
+ * @param {string} resourceId - Resource ID from the recording session
+ * @param {string} sid - Session ID from the recording session
+ * @returns {Object} Server response from Agora
+ */
 const stopRecording = async (meetingID, resourceId, sid) => {
-  //Set the body and query url to stop an agora recording session
   try {
+    // Set the body and query url to stop an agora recording session
     const auth = {
       username: config.get("customerId") || "",
       password: config.get("customerCertificate") || "",
@@ -124,7 +135,7 @@ const stopRecording = async (meetingID, resourceId, sid) => {
       clientRequest: {},
     };
 
-    //POST request to stop the recording and return the response from agora
+    // POST request to stop the recording and return the response from agora
     let response = await axios.post(newQueryURL, body, {
       headers: {
         "Content-type": "application/json;charset=utf-8",

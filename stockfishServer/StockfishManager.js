@@ -2,6 +2,7 @@ const { spawn } = require('child_process');
 const crypto = require("crypto");
 const { Chess } = require("chess.js");
 
+// Determine the correct Stockfish binary path based on platform
 let enginePath;
 
 switch (process.platform) {
@@ -18,12 +19,19 @@ switch (process.platform) {
       throw new Error(`Unsupported platform: ${process.platform}`);
 }
 
+/**
+ * Manages Stockfish engine sessions for multiple clients
+ */
 class StockfishManager {
   constructor() {
     // Session types: lessons, player vs computer, miscellaneous
     this.sessions = new Map();
   }
 
+  /**
+   * Configures engine event listeners for a session
+   * @param {string} socketId - Socket ID of the client session
+   */
   _configureEngine(socketId) {
     const session = this.sessions.get(socketId);
     const engine = session.stockfishEngine;
@@ -37,6 +45,7 @@ class StockfishManager {
     engine.stdout.on("data", (data) => {
       const lines = data.toString().trim().split("\n");
 
+      // Process each line of output from Stockfish
       for (const line of lines) {
         let cleanLine = line.trim();
 
@@ -45,6 +54,7 @@ class StockfishManager {
 
         const isInfoMode = session.infoMode;
 
+        // In info mode, collect all engine analysis output
         if (isInfoMode) {
         session.outputBuffer.push(cleanLine);
 
@@ -57,9 +67,11 @@ class StockfishManager {
           session.awaitingResponse = false;
           session.outputBuffer = [];
         }
+      // In move mode, extract and execute the best move
       } else if (cleanLine.startsWith("bestmove")) {
         const moveStr = cleanLine.split(" ")[1];
 
+        // Attempt to execute the move on the game instance
         let moveResult = null;
         try {
           moveResult = session.gameInstance.move(moveStr, { sloppy: true });
@@ -71,6 +83,7 @@ class StockfishManager {
 
         const newFEN = session.gameInstance.fen();
 
+        // Send the move result back to the client
         session.socket.emit("evaluation-complete", {
           mode: 'move',
           move: moveStr,
@@ -91,18 +104,28 @@ class StockfishManager {
     
   }
 
+  /**
+   * Registers a new Stockfish session for a client
+   * @param {Socket} socket - Socket.IO socket instance
+   * @param {string} sessionType - Type of session (e.g., 'lesson', 'pvp')
+   * @param {string} fen - Optional FEN string for initial board position
+   * @param {boolean} infoMode - Whether to return detailed analysis
+   */
   registerSession(socket, sessionType, fen = null, infoMode = false) {
     const socketId = socket.id;
 
+    // Ensure session doesn't already exist
     if (this.sessions.has(socketId)) {
       throw new Error("Session already exists!");
     }
 
+    // Initialize a new chess game with the provided FEN or default position
     const game = new Chess(fen || undefined);
 
     const sessionId = crypto.randomUUID();
     const engine = spawn(enginePath);
 
+    // Create and store the session data
     this.sessions.set(socketId, {
       id: sessionId,
       sessionType,
@@ -119,6 +142,11 @@ class StockfishManager {
     this._configureEngine(socketId);
   }
 
+  /**
+   * Updates the FEN position for an existing session
+   * @param {string} socketId - Socket ID of the client session
+   * @param {string} fen - New FEN string to set
+   */
   updateFen(socketId, fen) {
     const session = this.sessions.get(socketId);
 
@@ -126,14 +154,23 @@ class StockfishManager {
       throw new Error("Session not found!");
     }
 
+    // Validate FEN string
     if (fen === "" || null) {
       throw new Error("Invalid FEN");
     }
 
+    // Update the game position
     session.gameFen = fen;
     session.gameInstance = new Chess(fen);
   }
 
+  /**
+   * Requests Stockfish to evaluate a position and return the best move
+   * @param {string} socketId - Socket ID of the client session
+   * @param {string} fen - FEN string to evaluate
+   * @param {string} move - Optional move to append
+   * @param {number} level - Search depth (1-30)
+   */
   evaluateFen(socketId, fen, move = "", level = 10) {
     const session = this.sessions.get(socketId);
 
@@ -147,9 +184,11 @@ class StockfishManager {
     session.gameInstance.load(fen);
     session.gameFen = fen;
 
+    // Limit search depth to maximum of 30
     const maxLevel = 30;
     const minDepth = Math.min(parseInt(level), maxLevel);
 
+    // Send position to engine with optional move sequence
     if (move.length) {
       engine.stdin.write(`position fen ${fen} moves ${move}\n`);
     }
@@ -157,9 +196,14 @@ class StockfishManager {
       engine.stdin.write(`position fen ${fen}\n`);
     }
     
+    // Request engine to search to specified depth
     engine.stdin.write(`go depth ${minDepth}\n`);
   }
 
+  /**
+   * Deletes a session and terminates the Stockfish process
+   * @param {string} socketId - Socket ID of the client session
+   */
   deleteSession(socketId) {
     const session = this.sessions.get(socketId);
 

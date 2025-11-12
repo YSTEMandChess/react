@@ -2,12 +2,12 @@ import pageStyles from "./Lessons.module.scss";
 import profileStyles from "./Lessons-profile.module.scss";
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ReactComponent as RedoIcon } from './icon_redo.svg';
-import { ReactComponent as BackIcon} from './icon_back.svg';
-import { ReactComponent as BackIconInactive} from './icon_back_inactive.svg';
+import { ReactComponent as BackIcon } from './icon_back.svg';
+import { ReactComponent as BackIconInactive } from './icon_back_inactive.svg';
 import { ReactComponent as NextIcon } from './icon_next.svg';
 import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
-import { getScenario, getScenarioLength } from "./Scenarios";
-import { Navigate, useNavigate, useLocation } from "react-router";
+import { getScenario, getScenarioByName } from "./Scenarios";
+import { useLocation } from "react-router";
 // @ts-ignore
 import PromotionPopup from "./PromotionPopup";
 
@@ -23,7 +23,6 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
   // Use memoization to maintain referential equality and avoid unnecessary re-renders
   const styles = useMemo(() => styleType === 'profile' ? profileStyles : pageStyles, [styleType]);
 
-  const navigate = useNavigate();
   const [board, setBoard] = useState(getScenario(0).subSections[0].board); // Initialize the board with chess pieces
   const [highlightedSquares, setHighlightedSquares] = useState([]);
   const [draggingPiece, setDraggingPiece] = useState(null); // Track which piece is being dragged
@@ -39,8 +38,8 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
   const counterRef = useRef(0); // Current counter that indexes current scenario in scenariosArray
 
   const location = useLocation();
-  const passedScenarioName = location.state?.scenario;
-  const passedLessonName = location.state?.lesson;
+  const passedScenarioName = location.state?.piece;
+  const passedLessonNum = location.state?.lessonNum;
 
   const [isPromoting, setIsPromoting] = useState(false); // State to track if a pawn is being promoted
   const [promotionPosition, setPromotionPosition] = useState(null); // Position of the pawn being promoted
@@ -105,64 +104,39 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
   }, [testOverrides]);
 
   useEffect(() => {
-    const initializeLesson = async () => {
-      // Make async to use await (if needed later)
-      if (passedScenarioName && passedLessonName) {
-        try {
-          // 1. Find the scenario (using a more robust approach)
-          let foundScenarioIndex = -1;
-          for (let i = 0; i < getScenarioLength(); i++) {
-            if (getScenario(i).name.includes(passedScenarioName)) {
-              foundScenarioIndex = i;
-              break;
-            }
+    const initializeLesson = () => {
+      let scenarioObj;
+      if (passedScenarioName && passedLessonNum !== undefined) {
+        scenarioObj = getScenarioByName(passedScenarioName);
+        if (scenarioObj) {
+          const lessonObj = scenarioObj.subSections[passedLessonNum];
+          if (lessonObj) {
+            setScenario(scenarioObj);
+            setLesson(lessonObj);
+            setBoard(JSON.parse(JSON.stringify(lessonObj.board)));
+            setLeftEnded(lessonObj.left_ended);
+            setRightEnded(lessonObj.right_ended);
+            return;
           }
-
-          if (foundScenarioIndex !== -1) {
-            const foundScenario = getScenario(foundScenarioIndex);
-
-            // 2. Find the lesson within the scenario
-            const foundLesson = foundScenario.subSections.find(
-              (l) => l.name === passedLessonName
-            );
-
-            if (foundLesson) {
-              // 3. Set state
-              setScenario(foundScenario);
-              setLesson(foundLesson);
-              setBoard(JSON.parse(JSON.stringify(foundLesson.board)));
-              counterRef.current = foundScenarioIndex;
-              setLeftEnded(foundScenario.subSections[0].left_ended);
-              setRightEnded(foundScenario.subSections[0].right_ended);
-            } else {
-              console.error(
-                `Lesson "${passedLessonName}" not found in scenario "${passedScenarioName}"`
-              );
-              // Handle error (e.g., redirect)
-            }
-          } else {
-            console.error(`Scenario "${passedScenarioName}" not found`);
-            // Handle error
-          }
-        } catch (error) {
-          console.error("Error initializing lesson:", error);
-          // Handle error (e.g., redirect)
+          console.error(`Lesson ${passedLessonNum} not found in scenario "${passedScenarioName}".`);
+        } else {
+          console.error(`Scenario "${passedScenarioName}" not found.`);
         }
-      } else {
-        // Default initialization
-        const defaultScenario = getScenario(0);
-        setScenario(defaultScenario);
-        setLesson(defaultScenario.subSections[0]);
-        setBoard(
-          JSON.parse(JSON.stringify(defaultScenario.subSections[0].board))
-        );
-        setLeftEnded(defaultScenario.subSections[0].left_ended);
-        setRightEnded(defaultScenario.subSections[0].right_ended);
       }
+
+      // fallback to default
+      const defaultScenario = getScenario(0);
+      const defaultLesson = defaultScenario.subSections[0];
+      setScenario(defaultScenario);
+      setLesson(defaultLesson);
+      setBoard(JSON.parse(JSON.stringify(defaultLesson.board)));
+      setLeftEnded(defaultLesson.left_ended);
+      setRightEnded(defaultLesson.right_ended);
     };
 
     initializeLesson();
-  }, [location]);
+  }, [location, passedScenarioName, passedLessonNum]);
+
 
   // Switching to previous / next scenario, x: -1 or 1
   const setupScenario = (x) => {

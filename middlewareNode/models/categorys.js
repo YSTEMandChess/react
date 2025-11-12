@@ -1,3 +1,11 @@
+/**
+ * Categories Schema
+ * 
+ * Defines the MongoDB structure for lesson categories.
+ * Categories help organize chess lessons into logical groups
+ * for easier navigation and content management.
+ */
+
 const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 

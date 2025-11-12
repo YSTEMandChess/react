@@ -340,40 +340,56 @@
 }
 
 @media screen and (max-width: 768px) {
+  .lessonsPage {
+    padding: 1rem 0;
+  }
+
   .leftRightContainer {
     flex-direction: column;
     align-items: center;
   }
 
-  .leftContainer,
+  .leftContainer {
+    margin: 1rem auto;
+    order: 1;
+  }
+
   .rightContainer {
     margin: 1rem;
+    padding: 1.5rem 1rem;
+    order: 2;
   }
 
   .lessonButtonsContainer {
     margin: 1rem;
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .lessonButtons {
-    width: 100%;
-    min-width: unset;
+    width: auto;
+    min-width: 90px;
+    padding: 0 15px;
   }
 
   .popupContent {
     width: 90%;
+    max-width: 350px;
     height: auto;
+    padding: 1.5rem;
   }
 
   .chessboardContainer {
     width: 90vw;
-    margin: 1rem auto;
+    max-width: 90vw;
+    margin: 0 auto;
   }
 
   .chessboard {
-    grid-template-columns: repeat(8, 10vw);
-    grid-template-rows: repeat(8, 10vw);
+    grid-template-columns: repeat(8, 10.5vw);
+    grid-template-rows: repeat(8, 10.5vw);
   }
 
   .pieceDescription {
@@ -382,7 +398,7 @@
 
   .lessonDescription {
     font-size: 18px;
-    max-height: 300px;
+    max-height: 250px;
   }
 
   .subheading {
@@ -403,15 +419,23 @@
     font-size: 36px;
   }
 
+  .prevNextContainer {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 1.5rem;
+  }
+
   .prevNextLessonButton,
   .prevNextLessonButtonInactive {
     width: 100%;
     height: 50px;
-    margin-top: 10px;
+    justify-content: center;
+    padding: 0 1rem;
   }
 
   .buttonDescription {
     font-size: 16px;
+    margin: 0 8px;
   }
 
   .promotionOptions {
@@ -424,5 +448,77 @@
     width: 100%;
     padding: 10px;
     text-align: center;
+  }
+
+  .lessonHeader {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .rankLabel,
+  .fileLabel {
+    font-size: 0.7rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .lessonsPage {
+    padding: 0.5rem 0;
+  }
+
+  .rightContainer {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+
+  .pieceDescription {
+    font-size: 20px;
+  }
+
+  .subheading {
+    font-size: 18px;
+  }
+
+  .lessonDescription {
+    font-size: 16px;
+    max-height: 200px;
+  }
+
+  .resetLesson {
+    width: 45px;
+    height: 45px;
+  }
+
+  .chessboard {
+    grid-template-columns: repeat(8, 11vw);
+    grid-template-rows: repeat(8, 11vw);
+  }
+
+  .lessonButtons {
+    min-width: 80px;
+    font-size: 0.9rem;
+    height: 38px;
+  }
+
+  .lessonButtonsContainer {
+    margin: 0.5rem;
+  }
+
+  .prevNextLessonButton,
+  .prevNextLessonButtonInactive {
+    height: 45px;
+  }
+
+  .buttonDescription {
+    font-size: 14px;
+  }
+
+  .popupContent {
+    width: 95%;
+  }
+
+  .rankLabel,
+  .fileLabel {
+    font-size: 0.6rem;
   }
 }

@@ -1,10 +1,25 @@
+/**
+ * User Routes
+ * 
+ * API endpoints for user management and account operations.
+ * Handles user registration, profile updates, password management,
+ * and parent-child relationships.
+ * 
+ * Main Features:
+ * - User registration with email validation
+ * - Parent account management
+ * - Password reset functionality
+ * - Profile information retrieval and updates
+ * - Student progress tracking
+ */
+
 const express = require("express");
 const passport = require("passport");
 const router = express.Router();
 const crypto = require("crypto");
 const { check, validationResult } = require("express-validator");
 const users = require("../models/users");
-const activities = require("../models/activities");
+const Activities = require("../models/activities");
 const { selectActivities } = require("../utils/activities");
 const {
   ChangePasswordTemplateForUser,
@@ -13,20 +28,30 @@ const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
 const { MongoClient } = require('mongodb');
 const config = require("config");
-let cachedClient = null; // cache db client to prevent repeated connections
 
-// get db client
+// Cache database client to prevent repeated connections
+let cachedClient = null;
+
+/**
+ * Gets database client, creating connection if needed
+ * @returns {MongoDB.Db} Database instance
+ */
 async function getDb() {
-  if (!cachedClient) { // if not cached, connect
+  if (!cachedClient) {
     cachedClient = new MongoClient(config.get("mongoURI"));
     await cachedClient.connect();
   }
-  return cachedClient.db("ystem"); // returned cached client
+  return cachedClient.db("ystem");
 }
 
-// @route   GET /user/children
-// @desc    GET the parent user's children username and their timePlayed fields
-// @access  Public with jwt Authentication
+/**
+ * GET /user/children
+ * 
+ * Retrieves all children accounts associated with a parent user.
+ * Returns username and time played for each child.
+ * 
+ * @access JWT authenticated parents only
+ */
 router.get("/children", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { role, username } = req.user;
@@ -123,14 +148,16 @@ router.post(
                   console.error('Error saving student: ', err);
                 }
                 else {
-                  console.log(user.id);
+                  console.log(user._id);
                   const newActivities = await selectActivities();
-                  const activitiesEntry = new activities({
+                  const activitiesEntry = new Activities({
                     userId: user.id,
                     activities: newActivities,
                     completedDates: [],
                   });
-                  await activitiesEntry.save();
+                  await activitiesEntry.save(function (err, activity) {
+                    console.error('Error creating activities for student: ', err);
+                  });
                 }
               });
             }),

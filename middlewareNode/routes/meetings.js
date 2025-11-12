@@ -1,3 +1,18 @@
+/**
+ * Meetings Routes
+ * 
+ * API endpoints for managing video meeting sessions between mentors and students.
+ * Handles meeting creation, pairing, recording management, and chess move tracking.
+ * 
+ * Features:
+ * - Automatic mentor-student pairing (matchmaking)
+ * - Video meeting room management with Agora
+ * - Cloud recording start/stop via Agora API
+ * - Chess move storage during meetings
+ * - AWS S3 integration for recording retrieval
+ * - Undo permission management for chess moves
+ */
+
 const express = require("express");
 const passport = require("passport");
 const crypto = require("crypto");
@@ -15,11 +30,20 @@ const movesList = require("../models/moves");
 const undoPermission = require("../models/undoPermission");
 const { startRecording, stopRecording } = require("../utils/recordings");
 
-var isBusy = false; //State variable to see if a query is already running.
+// State variable to prevent concurrent pairing operations
+var isBusy = false;
 
-// @route   GET /meetings/singleRecording
-// @desc    GET a presigned URL from AWS S3
-// @access  Public with jwt Authentication
+/**
+ * GET /meetings/singleRecording
+ * 
+ * Generates a presigned URL for accessing a meeting recording from AWS S3.
+ * URL expires after 7 days for security.
+ * 
+ * Query Parameters:
+ * - filename: Name of the recording file in S3
+ * 
+ * @access JWT authentication required
+ */
 router.get(
   "/singleRecording",
   [check("filename", "The filename is required").not().isEmpty()],
