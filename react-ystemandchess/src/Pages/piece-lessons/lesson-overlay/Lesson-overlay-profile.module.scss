@@ -13,49 +13,26 @@
   transition: width 0.1s linear;
 }
 
+.fadeOut {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;    
+  padding: 0 40px;  
+  justify-content: center; 
+  align-items: stretch;      
+}
 
 .lessonContainer {
   align-content: center;
 }
 
-.chessBoard {
-  margin-bottom: 30px;
-  margin-top: -167px;
-  transform: scale(0.7);
-  transform-origin: bottom center;
-  width: 600px;
-  height: 600px;
-  border: none;
-}
-
-.leftRightContainer {
-  padding-top: 0.3rem;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: -1rem;
-}
-
-.switchLesson {
-  font-size: 23px;
-  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: bold;
-  border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
-  color: var(--green-color);
-  margin-top: 1rem;
-  border: 0.1rem solid var(--green-color);
-  background-color: rgba(240, 248, 230, 0.5);
-}
-
-.switchLesson:hover {
-  cursor: pointer;
-  color: var(--dark-green-color);
-  background-color: rgba(127,204,38,0.18);
-  box-shadow: 0 2px 8px rgba(127,204,38,0.12);
-}
-
 .rightContainer {
-  margin-top: 20px;
+  margin-top: 1rem;
   box-sizing: border-box;
   width: 100%;
   display: flex;
@@ -71,17 +48,47 @@
 .buttonContainer {
   display: flex;
   justify-content: center;
-  gap: 15px;
-  margin: 15px 0;
+  align-items: center;
+  padding: 0 3rem;
+  margin: 0.5rem;
+}
+
+.switchLesson {
+  width: 40vw;
+  height: 3.5rem;
+  font-size: 1.5rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: bold;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.5rem;
+  margin-left: 5vw;
+  color: var(--green-color);
+  border: 0.1rem solid var(--green-color);
+  background-color: rgba(240, 248, 230, 0.5);
+}
+
+.switchLesson:hover {
+  cursor: pointer;
+  color: var(--dark-green-color);
+  background-color: rgba(127, 204, 38, 0.18);
+  box-shadow: 0 2px 8px rgba(127, 204, 38, 0.12);
+}
+
+.controlButtonsWrapper {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
 }
 
 .controlButton {
+  height: 3.5rem;
   background-color: var(--green-color);
-  color: black;
-  font-size: 16px;
+  color: #333;
+  font-size: 1.2rem;
   font-weight: bold;
-  padding: 10px 20px;
-  border-radius: 8px;
+  min-width: 9rem;
+  border-radius: 0.5rem;
   border: none;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -94,12 +101,20 @@
 .chessboardContainer {
   width: 100%;
   margin: 0 auto;
-  position: relative;
-  overflow: hidden;
-  
-  /* Ensure chessboard is properly constrained */
-  & > div {
-    max-width: 100%;
+  max-width: 700px;
+  display: flex;             
+  justify-content: center; 
+  align-items: flex-start;
+
+  svg * { 
+    opacity: 1; 
+    transition: opacity 0.9s ease;
+  }
+
+  &.hidePieces {
+    svg * {
+      opacity: 0;
+    }
   }
 }
 

@@ -74,6 +74,7 @@
 
 .enterInfo {
   margin-top: 1rem;
+  padding: 0.5rem 1rem;
   width: 10vw;
   height: 10vh;
   border-radius: 1rem;
@@ -103,7 +104,7 @@
   max-height: 12vh;
   row-gap: 1rem;
   border-radius: 1rem;
-  border: 0.3rem solid black;
+  border: 0.3rem solid #333;
   background-color: #FAF9F6;
   padding: 0.8rem 1.2rem;
   font-size: clamp(0.5rem, 3vw, 2rem);

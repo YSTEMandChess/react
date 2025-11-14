@@ -78,6 +78,8 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
 
+  const [hidePieces, setHidePieces] = useState(true);
+
 
   useEffect(() => {
     if (propPieceName) setPiece(propPieceName);
@@ -167,6 +169,8 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   useEffect(() => {
     if (!lessonData || !lessonData.startFen) return;
 
+    setHidePieces(false); // show pieces once lesson data is ready
+
     setShowLPopup(false);
     setShowInstruction(true);
 
@@ -238,10 +242,10 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
       const pct = Math.min((elapsed / totalTime) * 100, 100);
       setProgress(pct);
       if (pct >= 100) {
-  clearInterval(interval);
-  setIsFading(true); // trigger fade-out
-  setTimeout(() => setShowInstruction(false), 500); // match CSS duration
-}
+        clearInterval(interval);
+        setIsFading(true); // trigger fade-out
+        setTimeout(() => setShowInstruction(false), 500); // match CSS duration
+      }
     }, 100);
 
     return () => clearInterval(interval);
@@ -302,11 +306,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     handleReset()
   }
 
-  // user finished instruction reading
-  const handleShowInstruction = () => {
-    setShowInstruction(false);
-  }
-
   function getTurnFromFEN(fen) {
     if (!fen || typeof fen !== 'string') {
       throw new Error('Invalid FEN string');
@@ -331,17 +330,18 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     processMove(); // keep move tracking logic
   }
 
-
-
   return (
     <div className={styles.lessonContainer}>
-      <div className={styles.switchLesson} onClick={() => {
-        if (navigateFunc) navigateFunc();
-        else navigate("/lessons-selection");
-      }}>Switch Lesson</div>
       <div className={styles.buttonContainer}>
-        <button className={styles.controlButton} onClick={() => chessBoardRef.current?.flip()}>Flip board</button>
-        <button className={styles.controlButton} onClick={undoMove}>Undo</button>
+        <div className={styles.controlButtonsWrapper}>
+          <button className={styles.controlButton} onClick={() => chessBoardRef.current?.flip()}>Flip board</button>
+          <button className={styles.controlButton} onClick={undoMove}>Undo</button>
+        </div>
+        <div className={styles.switchLesson} onClick={() => {
+          if (navigateFunc) navigateFunc();
+          else navigate("/lessons-selection");
+        }}>Switch Lesson
+        </div>
       </div>
       <div className={styles.container}>
         <div className={styles.rightContainer}>
@@ -387,9 +387,9 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
             )
             }
           </div>
-          {styleType != 'profile' && (<MoveTracker moves={moves} />)}
+          {styleType !== 'profile' && (<MoveTracker moves={moves} />)}
         </div>
-        <div className={styles.chessboardContainer}>
+        <div className={`${styles.chessboardContainer} ${hidePieces ? styles.hidePieces : ""}`}>
           <ChessBoard
             ref={chessBoardRef}
             fen={currentFEN}

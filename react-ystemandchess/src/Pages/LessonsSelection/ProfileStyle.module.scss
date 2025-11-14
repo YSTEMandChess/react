@@ -1,5 +1,5 @@
 .wholePage {
-    margin-top: 200px;
+    margin-top: 20%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -7,13 +7,14 @@
 }
 
 .title {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: 1000;
+    margin-bottom: 2rem;
 }
 
 .header {
-    font-size: 2.3rem;
+    font-size: 2rem;
 }
 
 .list {
@@ -29,26 +30,24 @@
 .itemTemplate {
     display: flex;
     background-color: whitesmoke;
-    color: black;
+    color: #333;
     width: 100%;
     height: 5vh;
     text-align: left;
-    padding-left: 0.1rem;
+    padding: 1.5rem 1.5rem;
     align-items: center;
     justify-content: left;
-    padding-top: 1.3rem;
-    padding-bottom: 1.3rem;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: 900;
 }
 
 .itemTemplate:not(:last-child) {
-    border-bottom: 0.1rem solid black;
+    border-bottom: 0.1rem solid #333;
 }
 
 .itemTemplate:hover {
     cursor: pointer;
-    background-color: lightgray;
+    background-color: #dbdbdb;
 }
 
 .subsections-list {
@@ -60,7 +59,7 @@
 .subsection-item {
     display: flex;
     width: 0vw;
-    height: 5vh;
+    height: 8vh;
 }
 
 .container {
@@ -72,70 +71,98 @@
 }
 
 .enterInfo {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
     width: 7vw;
     height: 7vh;
     border-radius: 1rem;
-    font-size: 2vw;
+    font-size: clamp(0.5rem, 2vw, 2rem);
     background-color: green;
+}
+
+.selectorWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 50vw;
+  box-sizing: border-box;
+  margin: 0 auto 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .selector {
-    display: flex;
-    height: fit-content;
-    width: 40vw;
-    row-gap: 1rem;
-    border-radius: 1rem;
-    border: 0.3rem solid black;
-    background-color: #FAF9F6;
-    align-items: center;
-    padding-left: 0.3rem;
-    font-size: 2vw;
-    justify-content: space-between;
-    margin-top: 1rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  box-sizing: border-box;
+  width: 80%;
+  min-height: 2.5vh;                          
+  max-height: 9vh;
+  row-gap: 1rem;
+  border-radius: 1rem;
+  border: 0.3rem solid #333;
+  background-color: #FAF9F6;
+  padding: 0.8rem 1.2rem;
+  font-size: clamp(0.5rem, 3vw, 2rem);
+  margin-top: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 900;
 }
 
-.selector:hover {
-    cursor: pointer;
+.selector:hover,
+.selector:focus {
+  cursor: pointer;
+  border-color: #888;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
-.errorBackground {
-    position: fixed;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    top: 0;
-    left: 0;
-    z-index: 999;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0,0,0,0.7);
+.dropdownContainer {
+  position: absolute;
+  top: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  box-sizing: border-box;
+  max-height: 45vh;
+  overflow-y: auto;
+  border: 0.1rem solid #ddd;
+  border-radius: 0.8rem;
+  background-color: #FAF9F6;
+  margin-top: 0.3rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
 }
 
-.errorBox {
-    display: flex;
-    position: fixed;
-    flex-direction: column;
-    row-gap: 0.3rem;
-    justify-content: center;
-    align-items: center;
-    height: 30vh;
-    width: 30vw;
-    background-color: white;
-    opacity: 1;
-    border-radius: 1rem;
+.inlineMessageWrapper {
+  width: 80%;
+  max-width: 70vw;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
 }
 
-.errorText {
-    display: flex;
-    font-size: clamp(0.8rem, 10vw, 1.5rem);
+.inlineMessage {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 70vw;
+  font-size: 1rem;
+  color: #c62828;
+  background-color: #fff5f5;
+  border-left: 3px solid #c62828;
+  padding: 0.5rem 0.5rem;
+  border-radius: 0.3rem;
+  animation: fadeOut 0.4s ease 2.1s forwards;
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
-.errorBox button {
-    background-color: green;
+/* only apply opacity when error exists */
+.inlineMessageWrapper > .inlineMessage {
+  opacity: 1;
 }
+
 
 /* Mobile Responsive Styles */
 @media screen and (max-width: 768px) {
