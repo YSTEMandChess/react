@@ -4,7 +4,7 @@ import pageStyles from './Lesson-overlay.module.scss';
 import profileStyles from './Lesson-overlay-profile.module.scss';
 // @ts-ignore
 import MoveTracker from '../move-tracker/MoveTracker';
-import ChessBoard from '../../../../components/chessboard/ChessBoard';
+import ChessBoard from '../../../../components/ChessBoard/ChessBoard';
 import { ReactComponent as RedoIcon } from "../../../../assets/images/icons/icon_redo.svg";
 import { ReactComponent as BackIcon } from "../../../../assets/images/icons/icon_back.svg";
 import { ReactComponent as BackIconInactive } from "../../../../assets/images/icons/icon_back_inactive.svg";
