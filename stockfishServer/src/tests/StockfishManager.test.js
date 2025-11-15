@@ -6,7 +6,7 @@ jest.mock("child_process", () => ({
   })),
 }));
 
-const StockfishManager = require("../StockfishManager");
+const StockfishManager = require("../managers/StockfishManager");
 const { spawn } = require("child_process");
 
 const newSocket = () => ({

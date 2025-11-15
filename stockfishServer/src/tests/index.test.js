@@ -1,7 +1,7 @@
 const ioClient = require("socket.io-client");
 const http = require("http");
 const express = require("express");
-const socketHandler = require("../socket");
+const socketHandler = require("../managers/socket");
 
 describe("Server and socket", () => {
   let server, ioServer, clientSocket;
