@@ -70,8 +70,8 @@ jobs:
 
       - name: Create environment file
         run: |
-          mkdir -p src/environments
-          cat <<EOF > src/environments/environment.js
+          mkdir -p src/core/environments
+          cat <<EOF > src/core/environments/environment.ts
           export const environment = {
             production: false,
             agora: {

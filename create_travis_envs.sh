@@ -4,8 +4,8 @@ printf "Creating environment files and variables\n\n"
 
 #Creating environment files and variables for react-ystemandchess
 printf "Creating environment files for react-ystemandchess\n"
-cd react-ystemandchess/src && mkdir environments
-cd environments
+cd react-ystemandchess/src && mkdir -p core/environments
+cd core/environments
 
 #Creating and adding environment.js file and variables
 touch environment.js
