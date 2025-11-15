@@ -5,7 +5,7 @@ import { MemoryRouter } from "react-router";
 import Swal from "sweetalert2";
 
 // Mock environment and chessClientURL for iframe src
-jest.mock("../../environments/environment", () => ({
+jest.mock("../../../core/environments/environment", () => ({
   environment: {
     urls: {
       chessClientURL: "http://localhost:3000",

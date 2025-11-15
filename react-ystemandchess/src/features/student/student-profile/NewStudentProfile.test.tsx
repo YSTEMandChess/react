@@ -13,7 +13,7 @@ jest.mock('react-cookie', () => ({
 }));
 
 // mock globals (SetPermissionLevel)
-jest.mock('../../globals', () => ({
+jest.mock('../../../globals', () => ({
   __esModule: true,
   SetPermissionLevel: jest.fn(),
 }));
