@@ -77,6 +77,10 @@ jobs:
             agora: {
               appId: '${{ secrets.APP_ID }}',
             },
+            email: {
+              user: '${{ secrets.EMAIL_USER || '' }}',
+              pass: '${{ secrets.EMAIL_PASS || '' }}'
+            },
             urls: {
               middlewareURL: '${{ secrets.MIDDLEWARE_URL }}',
               chessClientURL: '${{ secrets.CHESS_CLIENT_URL }}',

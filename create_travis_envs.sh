@@ -14,6 +14,10 @@ printf "    production: false,\n" >> environment.js
 printf "      agora: {\n" >> environment.js
 printf "     appId: ' ',\n" >> environment.js
 printf "    },\n" >> environment.js
+printf "    email: {\n" >> environment.js
+printf "      user: '',\n" >> environment.js
+printf "      pass: ''\n" >> environment.js
+printf "    },\n" >> environment.js
 printf "    urls: {\n" >> environment.js
 printf "      middlewareURL: 'http://127.0.0.1:8000',\n" >> environment.js
 printf "      chessClientURL: 'http://localhost',\n" >> environment.js
@@ -28,6 +32,10 @@ printf "export const environment = {\n" >> environment.prod.js
 printf "    production: false,\n" >> environment.prod.js
 printf "      agora: {\n" >> environment.prod.js
 printf "     appId: ' ',\n" >> environment.prod.js
+printf "    },\n" >> environment.prod.js
+printf "    email: {\n" >> environment.prod.js
+printf "      user: '',\n" >> environment.prod.js
+printf "      pass: ''\n" >> environment.prod.js
 printf "    },\n" >> environment.prod.js
 printf "    urls: {\n" >> environment.prod.js
 printf "      middlewareURL: 'http://127.0.0.1:8000',\n" >> environment.prod.js
