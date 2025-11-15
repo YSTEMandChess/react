@@ -1,7 +1,7 @@
 import React, { useState, useRef, useImperativeHandle, useEffect, forwardRef } from "react";
 import Chessboard from "chessboardjsx";
 import { Chess, Square } from "chess.js";
-import "./ChessBoard.css";
+import "./chessboard.css";
 
 interface Move {
   from: string;
