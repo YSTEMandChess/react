@@ -1,16 +1,21 @@
-.lessonContainer {
-  background-image: url("../../../images/chess_background.png");
-  background-repeat: no-repeat;
-  background-size: cover;
-  align-content: center;
+.loadingBarContainer {
+  width: 100%;
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 1rem;
 }
 
+.loadingBar {
+  height: 100%;
+  background-color: var(--green-color);
+  transition: width 0.1s linear;
+}
 
-.chessBoard {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  /* keeps it square */
-  display: block;
+.fadeOut {
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
 .shake {
@@ -39,37 +44,20 @@
   }
 }
 
-.switchLesson {
-  width: 30vw;
-  font-size: 28px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: bold;
-  border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
-  margin-left: 13vw;
-  margin-top: 5vh;
-  color: var(--green-color);
-  border: 0.1rem solid var(--green-color);
-  background-color: rgba(240, 248, 230, 0.5);
-}
-
-.switchLesson:hover {
-  cursor: pointer;
-  color: var(--dark-green-color);
-  background-color: rgba(127, 204, 38, 0.18);
-  box-shadow: 0 2px 8px rgba(127, 204, 38, 0.12);
-}
-
 .container {
   display: flex;
   flex-direction: row-reverse;
+  gap: 1rem;    
+  padding: 0 40px;  
+  justify-content: space-evenly; 
+  align-items: stretch;      
 }
 
 .rightContainer {
-  margin: 20px;
-  margin-right: 60px;
+  margin: 10px;
   box-sizing: border-box;
-  width: 40vw;
+  min-width: 300px;           
+  max-width: 70ch;
   display: flex;
   flex-direction: column;
   font-weight: bold;
@@ -82,18 +70,48 @@
 
 .buttonContainer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 15px;
-  margin: 20px 0;
+  align-items: center;
+  margin: 3vw 11vw;
+}
+
+.switchLesson {
+  width: 30vw;
+  font-size: 1.5rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: bold;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.5rem;
+  margin-left: 19vw;
+  color: var(--green-color);
+  border: 0.1rem solid var(--green-color);
+  background-color: rgba(240, 248, 230, 0.5);
+}
+
+.switchLesson:hover {
+  cursor: pointer;
+  color: var(--dark-green-color);
+  background-color: rgba(127, 204, 38, 0.18);
+  box-shadow: 0 2px 8px rgba(127, 204, 38, 0.12);
+}
+
+.controlButtonsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
 }
 
 .controlButton {
   background-color: var(--green-color);
-  color: black;
-  font-size: 18px;
+  color: #333;
+  font-size: 1.2rem;
   font-weight: bold;
-  padding: 12px 24px;
-  border-radius: 8px;
+  min-width: 10rem;
+  padding: 0.5rem 0.5rem;
+  border-radius: 0.5rem;
   border: none;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -105,14 +123,20 @@
 
 .chessboardContainer {
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  position: relative;
-  overflow: hidden;
-  
-  /* Ensure chessboard is properly constrained */
-  & > div {
-    max-width: 100%;
+  max-width: 700px;
+  display: flex;             
+  justify-content: center; 
+  align-items: flex-start;
+
+  svg * { 
+    opacity: 1; 
+    transition: opacity 0.9s ease;
+  }
+
+  &.hidePieces {
+    svg * {
+      opacity: 0;
+    }
   }
 }
 
@@ -173,18 +197,12 @@
   width: 160px;
   height: 60px;
   border-radius: 5px;
-  color: black;
+  color: #333;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   position: relative;
-  
-  svg {
-    width: 24px;
-    height: 24px;
-    position: absolute;
-  }
 }
 
 .prevNextLessonButtonInactive {
@@ -197,20 +215,21 @@
   justify-content: center;
   padding: 0;
   position: relative;
-  
-  svg {
-    width: 24px;
-    height: 24px;
-    position: absolute;
-  }
+}
+
+.prevNextLessonButton svg,
+.prevNextLessonButtonInactive svg {
+  width: 22px;
+  height: 22px;
+  position: absolute;
 }
 
 .prev svg {
-  left: 12px;
+  left: 16px;
 }
 
 .next svg {
-  right: 12px;
+  right: 16px;
 }
 
 .buttonDescription {
@@ -220,6 +239,7 @@
 
 .next {
   background-color: var(--green-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .next:hover {
@@ -247,6 +267,7 @@
   justify-content: center;
   align-items: center;
   z-index: 9999;
+  transition: opacity 0.7s ease;
 }
 
 .popupContent {
@@ -260,7 +281,7 @@
 
 .popupButton {
   background-color: var(--green-color);
-  color: black;
+  color: #333;
   font-weight: bold;
 }
 
@@ -304,7 +325,7 @@
 }
 
 .popupHeader {
-  color: rgb(108, 107, 107);
+  color: #333;
   font-size: 30px;
   font-weight: bold;
   margin-bottom: 3px;
@@ -400,20 +421,13 @@
 // END MOVE TRACK STYLES
 
 /* Mobile Responsive Styles */
-@media screen and (max-width: 1024px) {
-  .lessonContainer {
-    padding: 1rem 0;
-  }
-
+@media screen and (max-width: 1550px) {
   .container {
     flex-direction: column;
     align-items: center;
   }
 
   .chessboardContainer {
-    max-width: 50vw;
-    width: 50vw;
-    margin: 1rem auto;
     order: 1;
   }
 
@@ -425,22 +439,23 @@
   }
 
   .switchLesson {
-    width: 85vw;
-    font-size: 20px;
+    min-width: 40vw;
+    font-size: 1.2rem;
     margin: 1.5rem auto 0.5rem;
     text-align: center;
+    order: -1;
   }
 
   .buttonContainer {
-    flex-direction: row;
-    gap: 10px;
+    flex-direction: column;
+    gap: 1rem;
     margin: 1rem auto;
     justify-content: center;
     width: 85vw;
   }
 
   .controlButton {
-    font-size: 16px;
+    font-size: 1rem;
     padding: 10px 20px;
     flex: 1;
     max-width: 45%;
@@ -448,11 +463,6 @@
 }
 
 @media screen and (max-width: 768px) {
-  .chessboardContainer {
-    max-width: 55vw;
-    width: 55vw;
-  }
-
   .pieceDescription {
     font-size: 24px;
   }
@@ -484,7 +494,7 @@
     height: 50px;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
-    
+
     svg {
       width: 20px;
       height: 20px;
@@ -538,16 +548,6 @@
 }
 
 @media screen and (max-width: 480px) {
-  .chessboardContainer {
-    max-width: 60vw;
-    width: 60vw;
-  }
-
-  .rightContainer {
-    margin: 0.5rem auto;
-    padding: 1rem;
-  }
-
   .switchLesson {
     font-size: 18px;
     padding: 0.4rem 0.8rem;
@@ -587,7 +587,7 @@
     height: 45px;
     margin-left: 0.4rem;
     margin-right: 0.4rem;
-    
+
     svg {
       width: 18px;
       height: 18px;
