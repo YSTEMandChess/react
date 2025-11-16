@@ -1,7 +1,7 @@
 import profileStyles from "./ProfileStyle.module.scss";
 import pageStyles from "./LessonsStyle.module.scss";
 import { useNavigate } from "react-router";
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { environment } from "../../environments/environment";
 import { getAllScenarios } from "../Lessons/Scenarios";
 import { useCookies } from "react-cookie";
@@ -21,11 +21,11 @@ export default function LessonSelection({ onGo, styleType = "page" }) { // what 
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [isLessonsLoading, setLoadingLessons] = useState(false);
   const [unlockedLessonCount, setUnlockedLessonCount] = useState(0); // Renamed for clarity
+
+  const [error, setError] = useState(null); // Combine error states
+
   const [scenarios, setScenarios] = useState([]);
   const [lessons, setLessons] = useState([]);
-  const scenarioRef = useRef(null);
-  const lessonRef = useRef(null);
-  const [error, setError] = useState("");
 
   // Effect to fetch the list of scenarios when the component mounts.
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function LessonSelection({ onGo, styleType = "page" }) { // what 
   // Handles the submission (click on the "Go!" button) to navigate to the selected lesson.
   const handleSubmit = async () => {
     if (!selectedLesson || !selectedScenario) {
-      setError("Please select a scenario and a lesson.");
+      setError("Select a scenario & lesson.");
       return;
     }
 
@@ -129,29 +129,6 @@ export default function LessonSelection({ onGo, styleType = "page" }) { // what 
     fetchLessonsForScenario();
   }, [selectedScenario, cookies.login, scenarios]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        scenarioRef.current &&
-        !scenarioRef.current.contains(event.target)
-      ) {
-        setShowScenarios(false);
-      }
-
-      if (
-        lessonRef.current &&
-        !lessonRef.current.contains(event.target)
-      ) {
-        setShowLessons(false);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
-
 
   const renderedScenarios = useMemo(() => {
     return scenarios.map((scenarioItem) => (
@@ -177,66 +154,53 @@ export default function LessonSelection({ onGo, styleType = "page" }) { // what 
 
   return (
     <div className={styles.wholePage}>
+      {/* Conditional rendering of the error message popup. */}
+      {error && (
+        <div className={styles.errorBackground}>
+          <div className={styles.errorBox}>
+            <div className={styles.errorText}>{error}</div>
+            <button onClick={() => setError(null)}>OK</button>
+          </div>
+        </div>
+      )}
       <div className={styles.title} data-testid="title">
         Lesson Selection
       </div>
       {/* Dropdown-like selector for choosing a scenario. */}
-      <div className={styles.selectorWrapper}>
-        <div ref={scenarioRef} className={styles.selector} data-testid="scenario-selector" onClick={() => setShowScenarios(!showScenarios)}>
-          <div>
-            {selectedScenario || "Select a scenario"}
-          </div>
-          <div style={{ marginRight: "1rem" }}>
-            {showScenarios ? "▼" : "▲"}
-          </div>
+      <div className={styles.selector} data-testid="scenario-selector" onClick={() => setShowScenarios(!showScenarios)}>
+        <div>
+          {selectedScenario || "Select a scenario."}
         </div>
-
-        {/* Conditional rendering of the scenarios list. */}
-        {showScenarios && (
-          <div className={styles.dropdownContainer}>
-            {renderedScenarios}
-          </div>
-        )}
+        <div style={{ marginRight: "1rem" }}>
+          {showScenarios ? "▼" : "▲"}
+        </div>
       </div>
+
+      {/* Conditional rendering of the scenarios list. */}
+      {showScenarios && (
+        <div className={styles.container}>
+          {renderedScenarios}
+        </div>
+      )}
 
       {/* Dropdown-like selector for choosing a lesson within the selected scenario. */}
-      <div className={styles.selectorWrapper}>
-        <div ref={lessonRef} className={styles.selector} data-testid="lesson-selector"
-          onClick={() => {
-            if (!selectedScenario) {
-              setError("Please select a scenario first.");
-              setTimeout(() => setError(""), 2500); // auto-clear after 2.5s
-              return;
-            }
-            setShowLessons(!showLessons);
-          }}>
-          <div>
-            {selectedLesson || "Select a lesson"}
-          </div>
-          <div style={{ marginRight: "1rem" }}>
-            {showLessons ? "▼" : "▲"}
-          </div>
+      <div className={styles.selector} data-testid="lesson-selector" onClick={() => setShowLessons(!showLessons)}>
+        <div>
+          {selectedLesson || "Select a lesson."}
         </div>
-
-        {/* Conditional rendering of the lessons list for the selected scenario. */}
-        {showLessons && (
-          <div className={styles.dropdownContainer}>
-            {isLessonsLoading ? (
-              <div className={styles.itemTemplate}>Loading...</div>
-            ) : (renderedLessons)
-            }
-          </div>
-        )}
+        <div style={{ marginRight: "1rem" }}>
+          {showLessons ? "▼" : "▲"}
+        </div>
       </div>
-
-      <div className={styles.inlineMessageWrapper}>
-        {error && (
-          <div className={styles.inlineMessage}>
-            {error}
-          </div>
-        )}
-      </div>
-
+      {/* Conditional rendering of the lessons list for the selected scenario. */}
+      {showLessons && (
+        <div className={styles.container}>
+          {isLessonsLoading ? (
+            <div className={styles.itemTemplate}>Loading...</div>
+          ) : (renderedLessons)
+          }
+        </div>
+      )}
 
       {/* Button to submit the selection and navigate to the lesson. */}
       <button className={styles.enterInfo} data-testid="enterInfo" onClick={handleSubmit}>
