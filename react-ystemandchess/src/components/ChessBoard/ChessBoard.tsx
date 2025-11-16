@@ -30,36 +30,26 @@ export interface ChessBoardRef {
 const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
   ({ lessonMoves = [], onMove, onPromote, onReset, fen: controlledFEN, onLessonComplete }, ref) => {
     const gameRef = useRef<Chess>(new Chess());
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [fen, setFen] = useState(gameRef.current.fen());
     const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
     const [lessonIndex, setLessonIndex] = useState<number>(0);
     const [isShaking, setIsShaking] = useState<boolean>(false);
     const [orientation, setOrientationState] = useState<"white" | "black">("white");
-    const [boardWidth, setBoardWidth] = useState<number>(600);
+    const [boardWidth, setBoardWidth] = useState(0);
+    const boardRef = useRef<HTMLDivElement | null>(null);
 
-    // Calculate board width based on viewport
-    const calcWidth = () => {
-      if (typeof window !== 'undefined') {
-        const width = window.innerWidth;
-        // Use smaller widths to ensure entire 8x8 board fits with all rows visible
-        if (width <= 480) return Math.floor(width * 0.60);  // 60% for small phones
-        if (width <= 768) return Math.floor(width * 0.55);  // 55% for tablets
-        if (width <= 1024) return Math.floor(width * 0.50); // 50% for medium tablets
-        return 600;
-      }
-      return 600;
-    };
-
-    // Update board width on mount and window resize
+    // Update width based on parent size
     useEffect(() => {
-      const updateWidth = () => {
-        setBoardWidth(calcWidth());
+      const handleResize = () => {
+        if (boardRef.current) {
+          const containerWidth = boardRef.current.offsetWidth;
+          setBoardWidth(containerWidth);
+        }
       };
-      
-      updateWidth(); // Set initial width
-      window.addEventListener('resize', updateWidth);
-      return () => window.removeEventListener('resize', updateWidth);
+
+      handleResize(); // initial
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
     }, []);
 
     // Sync controlled FEN to engine whenever it changes
@@ -67,10 +57,10 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       if (!controlledFEN) return;
       if (controlledFEN !== gameRef.current.fen()) {
         try {
-      gameRef.current.load(controlledFEN);
-    } catch (err) {
-      console.warn("Invalid FEN passed to ChessBoard:", controlledFEN, err);
-    }
+          gameRef.current.load(controlledFEN);
+        } catch (err) {
+          console.warn("Invalid FEN passed to ChessBoard:", controlledFEN, err);
+        }
         setFen(gameRef.current.fen());
         setHighlightSquares([]);
       }
@@ -161,7 +151,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     };
 
     return (
-      <div className={`chessboard-container ${isShaking ? "shake" : ""}`}>
+      <div ref={boardRef} className={`chessboard-wrapper ${isShaking ? "shake" : ""}`}>
         <Chessboard
           width={boardWidth}
           position={fen}
@@ -171,17 +161,6 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
             acc[sq] = { backgroundColor: "yellow" };
             return acc;
           }, {} as Record<string, React.CSSProperties>)}
-        />
-        <canvas
-          ref={canvasRef}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            pointerEvents: "none",
-          }}
         />
       </div>
     );
