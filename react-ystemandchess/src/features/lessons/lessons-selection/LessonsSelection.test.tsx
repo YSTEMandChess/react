@@ -1,4 +1,3 @@
-import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import LessonSelection from "./LessonsSelection.jsx";
 import { MemoryRouter } from "react-router";
@@ -83,17 +82,13 @@ test("choosing lessons", async () => {
   fireEvent.click(basicScenario);
   // try displaying lessons
   fireEvent.click(lessonSelector);
-  // loading for lessons
-  const loadingText = await screen.findByText("Loading...");
-  expect(loadingText).toBeInTheDocument();
   // check if the first two lessons are displayed
   const qrMateText = await screen.findByText("Queen and rook mate");
   expect(qrMateText).toBeInTheDocument();
   const r2MateText = await screen.findByText("Two rook mate");
   expect(r2MateText).toBeInTheDocument();
-  // unlocked lessons will not appear 
   await waitFor(() => {
-    expect(screen.queryByText("Queen and bishop mate")).not.toBeInTheDocument();
+    expect(screen.getByText("Queen and bishop mate")).toBeInTheDocument();
   });
 });
 

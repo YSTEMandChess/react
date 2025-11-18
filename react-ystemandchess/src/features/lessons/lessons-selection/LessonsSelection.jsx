@@ -86,31 +86,39 @@ export default function LessonSelection({ onGo, styleType = "page" }) { // what 
         return;
       }
 
-      let unlocked = 0;
-      try {
-        const response = await fetch(
-          `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${selectedScenario}`,
-          {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${cookies.login}` }
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        unlocked = await response.json();
-      } catch (error) {
-        console.error('Error fetching unlocked lesson count:', error);
-        // Optionally set an error state here if needed for display
-        unlocked = 0; // Default to 0 unlocked lessons on error
-      }
-
       const currentScenario = scenarios.find(s => s.name === selectedScenario);
       if (!currentScenario) {
         setLessons([]);
         setLoadingLessons(false);
         return;
+      }
+
+      setLoadingLessons(true);
+
+      let unlocked = 0;
+      if (!cookies.login) {
+        // Non-logged users: expose all lessons
+        unlocked = currentScenario.subSections.length;
+        console.log("No login cookie detected. Granting full access. unlocked:", unlocked);
+      } else {
+        // Logged users: ask backend for how many lessons they have completed
+        try {
+          const response = await fetch(
+            `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${selectedScenario}`,
+            {
+              method: 'GET',
+              headers: { 'Authorization': `Bearer ${cookies.login}` }
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          unlocked = await response.json();
+        } catch (error) {
+          console.error('Error fetching unlocked lesson count:', error);
+          unlocked = 0; // Default to 0 unlocked lessons on error
+        }
       }
 
       // Determine available lessons
