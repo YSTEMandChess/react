@@ -71,6 +71,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   const [ShowError, setShowError] = useState(false);
   const [showLPopup, setShowLPopup] = useState(true);
   const [showInstruction, setShowInstruction] = useState(false);
+  const [allLessonsDone, setAllLessonsDone] = useState(false);
 
   const [isPromoting, setIsPromoting] = useState(false);
   const [promotionSource, setPromotionSource] = useState("");
@@ -176,7 +177,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
     // Check if we've reached the end of lessons
     if (!lessonData.lessonNum) {
-      alert('Congratulations! You have completed all lessons for this piece.');
+      setAllLessonsDone(true);
       return
     }
 
@@ -532,7 +533,19 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
           </div>
         </div>
       )}
-      {/* <button onClick={handleVPopup}>mock complete</button> */}
+      {allLessonsDone && (
+        <div className={styles.popup}>
+          <div className={styles.popupContent}>
+            <p className={styles.popupHeader}>🎉 Congratulations!</p>
+            <p className={styles.popupSubheading}>
+              You have completed all lessons for this scenario.
+            </p>
+            <button className={styles.popupButton} onClick={() => setAllLessonsDone(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {isPromoting ? <PromotionPopup position={promotionSource} promoteToPiece={promotePawn} /> : null /* Show promotion popup if needed */}
     </div>
