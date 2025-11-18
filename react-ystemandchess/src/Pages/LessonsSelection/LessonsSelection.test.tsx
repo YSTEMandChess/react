@@ -87,9 +87,8 @@ test("choosing lessons", async () => {
   expect(qrMateText).toBeInTheDocument();
   const r2MateText = await screen.findByText("Two rook mate");
   expect(r2MateText).toBeInTheDocument();
-  // unlocked lessons will not appear 
   await waitFor(() => {
-    expect(screen.queryByText("Queen and bishop mate")).not.toBeInTheDocument();
+    expect(screen.getByText("Queen and bishop mate")).toBeInTheDocument();
   });
 });
 
