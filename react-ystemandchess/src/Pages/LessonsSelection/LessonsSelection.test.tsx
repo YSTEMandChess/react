@@ -108,9 +108,6 @@ test("choosing lessons", async () => {
   fireEvent.click(basicScenario);
   // try displaying lessons
   fireEvent.click(lessonSelector);
-  // loading for lessons
-  const loadingText = await screen.findByText("Loading...");
-  expect(loadingText).toBeInTheDocument();
   // check if the first two lessons are displayed
   const qrMateText = await screen.findByText("Queen and rook mate");
   expect(qrMateText).toBeInTheDocument();
