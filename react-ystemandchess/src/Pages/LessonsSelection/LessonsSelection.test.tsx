@@ -1,8 +1,12 @@
-import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import LessonSelection from "./LessonsSelection.jsx";
 import { MemoryRouter } from "react-router";
 import { useNavigate } from 'react-router';
+
+// Prevent SweetAlert2 from executing browser code in Jest
+jest.mock('sweetalert2', () => ({
+  fire: jest.fn(),
+}));
 
 // mock navigating to lessons
 jest.mock('react-router', () => ({
@@ -13,15 +17,36 @@ jest.mock('react-router', () => ({
 // mock fetching from database
 beforeEach(() => {
   global.fetch = jest.fn((url) => {
-    // fetching number of lessons completed for each scenario
+    // fetch for scenario list
+    if (url.includes('/api/scenarios') || url.includes('/scenarios')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([
+          { id: 'Piece Checkmate 1 Basic checkmates', title: 'Piece Checkmate 1 Basic checkmates' },
+          { id: 'Piece checkmates 2 Challenging checkmates', title: 'Piece checkmates 2 Challenging checkmates' },
+          { id: 'Zugzwang Being forced to move', title: 'Zugzwang Being forced to move' },
+        ]),
+      });
+    }
+
+    // original mock for lessons-completed
     if (url.includes('Piece Checkmate 1 Basic checkmates')) {
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve(1), // completed just one lesson
+        json: () => Promise.resolve(1),
       });
     }
-    return Promise.reject(new Error('Unhandled fetch request: ' + url));
+
+    // fallback to safe empty response for other endpoints
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({}),
+    });
   }) as jest.Mock;
+});
+
+afterEach(() => {
+  jest.resetAllMocks();
 });
 
 test("renders lesson selection page", () => {
