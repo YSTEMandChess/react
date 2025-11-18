@@ -175,9 +175,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     setShowLPopup(false);
     setShowInstruction(true);
 
-    // TEMPORARY for testing
-    lessonData.lessonNum = 0;
-
     // Check if we've reached the end of lessons
     if (!lessonData.lessonNum) {
       setAllLessonsDone(true);

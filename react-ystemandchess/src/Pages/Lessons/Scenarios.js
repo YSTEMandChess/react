@@ -82,7 +82,7 @@ export const scenariosArray = [
       },
       {
         name: 'Training 1',
-        fen: 'k6p/5p2/8/6p1/3p4/2p2p2/4p3/KN6 w - - 0 1',
+        fen: 'k7/5p2/8/6p1/3p4/2p2p2/4p3/KN6 w - - 0 1',
         info: `Grab all the pawns!`,
       },
       {
