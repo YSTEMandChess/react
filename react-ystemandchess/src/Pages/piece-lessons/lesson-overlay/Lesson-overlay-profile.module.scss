@@ -250,11 +250,17 @@
 
 .popupContent {
   width: 450px;
-  height: fit-content;
+  height: 250px;
   background-color: white;
-  padding: 20px;
+  padding: 30px;
   border-radius: 10px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px;
+  gap: 10px;
 }
 
 .popupButton {
