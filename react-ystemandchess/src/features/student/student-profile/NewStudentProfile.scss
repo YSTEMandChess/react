@@ -384,4 +384,54 @@ $brand-color-background-grey: #d4dddd;
       }
     }
   }
+
+  // ===========================
+  // Animation States
+  // ===========================
+
+  // Celebration pulse animation
+  .inv-inventory.celebrate {
+    animation: celebrate-pulse 1s ease-in-out;
+  }
+
+  @keyframes celebrate-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+    }
+  }
+
+  // Portrait click animation
+  .inv-intro-portrait {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // Enhanced loading spinner
+  .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(127, 204, 38, 0.3);
+    border-radius: 50%;
+    border-top-color: $brand-color-tertiary;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 }
