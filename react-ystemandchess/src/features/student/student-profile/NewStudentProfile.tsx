@@ -12,6 +12,7 @@ import StreakModal from "./Modals/StreakModal";
 import ActivitiesModal from "./Modals/ActivitiesModal";
 import BadgesModal from "./Modals/BadgesModal";
 import LeaderboardModal from "./Modals/LeaderboardModal";
+import Confetti from "../../../components/animations/Confetti/Confetti";
 
 // Toolbar buttons
 import { ReactComponent as StreakIcon } from "../../../assets/images/student/streak_button.svg";
@@ -75,6 +76,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Animation states
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [celebrateAction, setCelebrateAction] = useState(false);
 
   // Mapping of tab keys to custom image imports
   const tabImages: Record<string, string> = {
@@ -232,6 +237,11 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   // Handle tab switch
   const handleTabClick = (tab: any) => {
     setActiveTab(tab);
+    // Add celebration animation for learning tabs
+    if (tab === "prodev" || tab === "chessLessons") {
+      setCelebrateAction(true);
+      setTimeout(() => setCelebrateAction(false), 1000);
+    }
   };
 
   // Redirect user when clicking on an activity item (e.g., lesson)
@@ -242,6 +252,12 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       navigate("/puzzles");
     }
   }
+
+  // Fun click handler for portrait
+  const handlePortraitClick = () => {
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 2000);
+  };
 
   // Render content based on active tab
   const renderTabContent = () => {
@@ -290,8 +306,17 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                   </article>
                 );
               })}
-              {loading && <p>Loading more...</p>}
-              {!hasMore && <p>No more activity left!</p>}
+              {loading && (
+                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                  <div className="loading-spinner"></div>
+                  <p>Loading more activities...</p>
+                </div>
+              )}
+              {!hasMore && events.length > 0 && (
+                <p style={{ textAlign: 'center', padding: '1rem', color: '#666' }}>
+                  🎉 You've seen all your activities!
+                </p>
+              )}
             </div>
           </div>
         );
@@ -383,9 +408,12 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         </div>
       </section>
 
+      {/* Confetti effect */}
+      <Confetti show={showConfetti} />
+
       {/* Welcome section with portrait */}
       <section className="inv-intro">
-        <div className="inv-intro-portrait">
+        <div className="inv-intro-portrait" onClick={handlePortraitClick}>
           <img className="inv-intro-portrait-face" src={userPortraitSrc} alt="user portrait" />
           <img className="inv-intro-portrait-camera" src={Images.userPortraitCamera} alt="user portrait camera icon" />
         </div>
@@ -395,7 +423,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       </section>
 
       {/* Analytics section: graph and metrics */}
-      <section className="inv-inventory">
+      <section className={`inv-inventory ${celebrateAction ? 'celebrate' : ''}`}>
         <div className="inv-inventory-topbar">
           <h2 className="progress-heading">Your Progress</h2>
         </div>
