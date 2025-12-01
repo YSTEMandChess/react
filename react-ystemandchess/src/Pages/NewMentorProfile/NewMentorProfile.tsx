@@ -202,8 +202,68 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
             </div>
           </div>
         );
+      case "mentor":
+        return (
+          <div id="inventory-content-mentor" className="inventory-content active-content">
+            <h2>Mentor</h2>
+            <p>This is the content for the Mentor tab.</p>
+          </div>
+        );
+      case "learning":
+        return (
+          <div id="inventory-content-learning" className="inventory-content active-content">
+            <h2>Learning</h2>
+            <p>This is the content for the Learning tab.</p>
+          </div>
+        );
+      case "chessLessons":
+        return (
+          <div id="inventory-content-lessons" className="inventory-content active-content">
+            <h2>Chess Lessons</h2>
+            <p>This is the content for the Chess Lessons tab.</p>
+          </div>
+        );
+      case "games":
+        return (
+          <div id="inventory-content-games" className="inventory-content active-content">
+            <h2>Games</h2>
+            <p>This is the content for the Games tab.</p>
+          </div>
+        );
+      case "puzzles":
+        return (
+          <div id="inventory-content-puzzles" className="inventory-content active-content">
+            <h2>Puzzles</h2>
+            <p>This is the content for the Puzzles tab.</p>
+          </div>
+        );
+      case "playComputer":
+        return (
+          <div id="inventory-content-computer" className="inventory-content active-content">
+            <h2>Play with Computer</h2>
+            <p>This is the content for the Play with Computer tab.</p>
+          </div>
+        );
+      case "recordings":
+        return (
+          <div id="inventory-content-recordings" className="inventory-content active-content">
+            <h2>Recordings</h2>
+            <p>This is the content for the Recordings tab.</p>
+          </div>
+        );
+      case "backpack":
+        return (
+          <div id="inventory-content-backpack" className="inventory-content active-content">
+            <h2>Backpack</h2>
+            <p>This is the content for the Backpack tab.</p>
+          </div>
+        );
       default:
-        return <div className="inventory-content active-content"><h2>Select a tab</h2></div>;
+        return (
+          <div className="inventory-content active-content">
+            <h2>Select a tab to view its content.</h2>
+          </div>
+        );
     }
   };
 
@@ -231,27 +291,38 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
             <div className="inv-inventory-analytics-metrics">
               <h3>Time Spent:</h3>
               <ul>
-                <li>Website: <strong>{webTime} mins</strong></li>
-                <li>Playing: <strong>{playTime} mins</strong></li>
-                <li>Lessons: <strong>{lessonTime} mins</strong></li>
-                <li>Puzzle: <strong>{puzzleTime} mins</strong></li>
-                <li>Mentoring: <strong>{mentorTime} mins</strong></li>
+                <li>Website: <strong>{webTime} minutes</strong></li>
+                <li>Playing: <strong>{playTime} minutes</strong></li>
+                <li>Lessons: <strong>{lessonTime} minutes</strong></li>
+                <li>Puzzle: <strong>{puzzleTime} minutes</strong></li>
+                <li>Mentoring: <strong>{mentorTime} minutes</strong></li>
               </ul>
             </div>
           </div>
           <div className="inv-inventory-content-section">
             <nav className="inv-inventory-content-tabs">
               <ul>
-                {["activity"].map((tab) => (
-                  <div
-                    key={tab}
-                    className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
-                    onClick={() => handleTabClick(tab)}
-                  >
-                    <img src={Images[`${tab}Icon` as keyof typeof Images]} alt={`${tab} icon`} />
-                    <li>{tab.charAt(0).toUpperCase() + tab.slice(1)}</li>
-                  </div>
-                ))}
+                {["activity", "mentor", "learning",
+                  "chessLessons", "games", "puzzles",
+                  "playComputer", "recordings", "backpack"].map((tab) => {
+                      const displayName =
+                      tab === "chessLessons"
+                        ? "Chess Lessons"
+                        : tab === "playComputer"
+                          ? "Play with Computer"
+                          : tab.charAt(0).toUpperCase() + tab.slice(1);
+
+                    return (
+                      <div
+                        key={tab}
+                        className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
+                        onClick={() => handleTabClick(tab)}
+                      >
+                        <img src={Images[`${tab}Icon` as keyof typeof Images]} alt={`${tab} icon`} />
+                        <li>{displayName}</li>
+                      </div>
+                    );
+                  })}
               </ul>
             </nav>
             <div className="inv-inventory-content-content">{renderTabContent()}</div>

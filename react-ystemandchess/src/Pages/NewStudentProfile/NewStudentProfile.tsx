@@ -39,29 +39,11 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     })
   );
 
-  const devMode = true;
-
   useEffect(() => {
-    if (devMode) {
-      setUsername("spoorti123");
-      setFirstName("Spoorti");
-      setLastName("Patil");
-      setWebTime(120);
-      setPlayTime(45);
-      setLessonTime(90);
-      setPuzzleTime(30);
-      setMentorTime(60);
-      setMonthAxis(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
-      setDataAxis([10, 20, 30, 40, 50, 60]);
-      setEvents([
-        {
-          startTime: new Date().toISOString(),
-          eventType: "lesson",
-          eventName: "Sample Lesson"
-        }
-      ]);
-    } else {
+    try {
       fetchUserData();
+    } catch (err) {
+      console.log(err);
     }
   }, []);
 
@@ -206,8 +188,68 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             </div>
           </div>
         );
+      case "mentor":
+        return (
+          <div id="inventory-content-mentor" className="inventory-content active-content">
+            <h2>Mentor</h2>
+            <p>This is the content for the Mentor tab.</p>
+          </div>
+        );
+      case "learning":
+        return (
+          <div id="inventory-content-learning" className="inventory-content active-content">
+            <h2>Learning</h2>
+            <p>This is the content for the Learning tab.</p>
+          </div>
+        );
+      case "chessLessons":
+        return (
+          <div id="inventory-content-lessons" className="inventory-content active-content">
+            <h2>Chess Lessons</h2>
+            <p>This is the content for the Chess Lessons tab.</p>
+          </div>
+        );
+      case "games":
+        return (
+          <div id="inventory-content-games" className="inventory-content active-content">
+            <h2>Games</h2>
+            <p>This is the content for the Games tab.</p>
+          </div>
+        );
+      case "puzzles":
+        return (
+          <div id="inventory-content-puzzles" className="inventory-content active-content">
+            <h2>Puzzles</h2>
+            <p>This is the content for the Puzzles tab.</p>
+          </div>
+        );
+      case "playComputer":
+        return (
+          <div id="inventory-content-computer" className="inventory-content active-content">
+            <h2>Play with Computer</h2>
+            <p>This is the content for the Play with Computer tab.</p>
+          </div>
+        );
+      case "recordings":
+        return (
+          <div id="inventory-content-recordings" className="inventory-content active-content">
+            <h2>Recordings</h2>
+            <p>This is the content for the Recordings tab.</p>
+          </div>
+        );
+      case "backpack":
+        return (
+          <div id="inventory-content-backpack" className="inventory-content active-content">
+            <h2>Backpack</h2>
+            <p>This is the content for the Backpack tab.</p>
+          </div>
+        );
       default:
-        return <div className="inventory-content active-content"><h2>Select a tab to view its content.</h2></div>;
+        return (
+          <div className="inventory-content active-content">
+            <h2>Select a tab to view its content.</h2>
+          </div>
+        );
     }
   };
 
@@ -243,19 +285,27 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         <div className="inv-inventory-content-section">
           <nav className="inv-inventory-content-tabs">
             <ul>
-              {["activity"].map((tab) => {
-                const displayName = tab.charAt(0).toUpperCase() + tab.slice(1);
-                return (
-                  <div
-                    key={tab}
-                    className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
-                    onClick={() => handleTabClick(tab)}
-                  >
-                    <img src={Images[`${tab}Icon` as keyof typeof Images]} alt={`${tab} icon`} />
-                    <li>{displayName}</li>
-                  </div>
-                );
-              })}
+              {["activity", "mentor", "learning",
+                "chessLessons", "games", "puzzles",
+                "playComputer", "recordings", "backpack"].map((tab) => {
+                    const displayName =
+                    tab === "chessLessons"
+                      ? "Chess Lessons"
+                      : tab === "playComputer"
+                        ? "Play with Computer"
+                        : tab.charAt(0).toUpperCase() + tab.slice(1);
+
+                  return (
+                    <div
+                      key={tab}
+                      className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
+                      onClick={() => handleTabClick(tab)}
+                    >
+                      <img src={Images[`${tab}Icon` as keyof typeof Images]} alt={`${tab} icon`} />
+                      <li>{displayName}</li>
+                    </div>
+                  );
+                })}
             </ul>
           </nav>
           <div className="inv-inventory-content-content">{renderTabContent()}</div>
