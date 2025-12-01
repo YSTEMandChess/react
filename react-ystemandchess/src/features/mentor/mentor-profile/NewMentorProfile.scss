@@ -1,0 +1,29 @@
+.topbar-greeting {
+    color: black;
+    font-size: 20px;
+}
+
+.no-student-message {
+    color: black;
+    font-size: 20px;
+    margin-top: 20px;
+    border: 1px solid rgb(209, 86, 86);
+    width: 60%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: rgba(248, 46, 46, 0.2);
+    border-radius: 20px;
+}
+
+.inventory-tab-img {
+  max-width: 50px;
+  height: auto;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.no-student-message h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}

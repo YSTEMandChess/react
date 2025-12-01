@@ -58,3 +58,20 @@
 .hightlight-red {
   color: red;
 }
+
+/* Mobile responsive enhancements */
+@media screen and (max-width: 768px) {
+  .board-b72b1 {
+    border-width: 1px;
+  }
+  
+  .notation-322f9 {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .notation-322f9 {
+    font-size: 12px;
+  }
+}

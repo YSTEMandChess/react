@@ -56,7 +56,5 @@ testem.log
 /deleteMeetings.php
 
 # System Files
-.DS_Store
+.DS_Store*
 Thumbs.db
-middlewareNode/package-lock.json
-middlewareNode/package.json
