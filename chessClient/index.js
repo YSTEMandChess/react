@@ -122,6 +122,13 @@ function sendNewPuzzle () {
   socket.emit('newPuzzle', JSON.stringify(data))
 }
 
+function sendNewLesson () {
+  console.log('starting new lesson with server')
+  var data = {'mentor': mentor, 'student': student, 'role': role}
+  console.log(data)
+  socket.emit('newLesson', JSON.stringify(data))
+}
+
 // for chess server to modify the game's board state & player color, (designed just for puzzles for now)
 function sendSetState (fen) {
   console.log('setting a new board state')
@@ -364,6 +371,16 @@ socket.on('lastmove', (msg) => {
   highlightMove(parsedMsg.from, parsedMsg.to, 'lastmove')
 })
 
+socket.on("activityCompleted", async (msg) => {
+  try {
+    const { activities, lastMove } = JSON.parse(msg);
+    console.log("Activity completed event received:", activities, lastMove);
+    
+  } catch (e) {
+    console.error("Failed to forward activity completion:", e);
+  }
+});
+
 // Deletes all cookies on iframe
 function deleteAllCookies () {
   const cookies = document.cookie.split(';')
@@ -397,6 +414,8 @@ eventer(
       sendNewGame()
     } else if (command == 'newPuzzle') { // front end wants to create / join puzzle
       sendNewPuzzle()
+    } else if (command == 'newLesson') {
+      sendNewLesson()
     } else if (command == 'message') { // front end wants to broadcast a message
       sendMessage(data.message)
     } else if (command == 'endgame') { // front end wants to end existing game / puzzle
@@ -440,12 +459,15 @@ eventer(
     // move a piece if it's a move message
     if ('from' in data && 'to' in data) {
       currentState.move({ from: data.from, to: data.to })
+      console.log('move made', data.fen)
 
       // move highlight
       highlightMove(data.from, data.to)
 
       updateStatus()
       sendToParent(currentState.fen())
+      socket.emit("move",JSON.stringify({from:data.from, to:data.to}));
+
     }
 
     // highlight message

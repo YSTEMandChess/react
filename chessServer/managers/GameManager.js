@@ -170,8 +170,12 @@ class GameManager {
         }
 
         const board = game.boardState;
-
-        const moveResult = board.move({ from: moveFrom, to: moveTo });
+        console.log('making move', moveFrom, moveTo);
+        console.log('types', typeof(moveFrom));
+        const move = {from: moveFrom, to: moveTo};
+        console.log(move, typeof(move), typeof(move)==='object');
+        const moveResult = board.move(move);
+        console.log(moveResult);
 
         if (!moveResult) {
             throw new Error("Invalid move!");
@@ -180,11 +184,53 @@ class GameManager {
         // Save board state
         game.pastStates.push(board.fen())
 
-        return {
-            boardState: board.fen(),
-            move: moveResult,
-            studentId: game.student.id,
-            mentorId: game.mentor.id
+        const flags = moveResult.flags || ""; // e.g., 'c' capture, 'k'/'q' castle, 'e' en passant, 'p' promotion
+        const activityEvents = [];
+
+        const captureMap = {
+            q: "captureQueen",
+            r: "captureRook",
+            n: "captureKnight",
+            b: "captureBishop",
+            p: "capturePawn"
+        };
+
+        // Capture (including en passant)
+        if (flags.includes("c") || flags.includes("e")) {
+            const capLetter = moveResult.captured; // 'q','r','n','b','p'
+            const name = capLetter ? captureMap[capLetter] : null;
+            if (name) {
+            activityEvents.push({
+                name,
+                meta: {
+                from: moveResult.from,
+                to: moveResult.to,
+                san: moveResult.san
+                },
+                at: Date.now()
+            });
+            }
+        }
+
+        // Castling
+        if (flags.includes("k") || flags.includes("q")) {
+            activityEvents.push({
+            name: "performCastle",
+            meta: { san: moveResult.san },
+            at: Date.now()
+            });
+        }
+
+        const moverIsStudent = socketId === game.student.id;
+        console.log(activityEvents);
+        return { 
+                result: {
+                            boardState: board.fen(),
+                            move: moveResult,
+                            studentId: game.student.id,
+                            mentorId: game.mentor.id,
+                        },
+                activityEvents: moverIsStudent ? activityEvents : []
         };
     }
 

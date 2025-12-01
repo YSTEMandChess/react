@@ -107,7 +107,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
                 return;
             }
 
-
               chessBoard.contentWindow.postMessage(
                   JSON.stringify({
                       from: moveFrom,
@@ -116,6 +115,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
                           expectedMove.substring(0, 2),
                           expectedMove.substring(2, 4),
                       ],
+                      computerMove: true,
                   }),
                   chessClientURL
               );
@@ -403,6 +403,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     
         const messageHandler = (e: MessageEvent) => {
             let info = e.data;
+            console.log('info', info);
             if (typeof info === 'string' && info[0] === "{") {
                 try {
                     let jsonInfo = JSON.parse(info);
@@ -452,6 +453,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
                 }
             } else if (info && typeof info === 'string' && isFEN(info)) {
                 // FEN update from iframe (after a move)
+                console.log('handling computer move', info);
                 setCurrentFen(info); // Update current FEN based on board's state
                 // Highlighting logic for computer's response (if prevMove is set)
                 if (prevMove[0] && prevMove[1]) {
