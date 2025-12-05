@@ -2,29 +2,69 @@ import React from "react";
 import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 import Puzzles from "./Puzzles";
 import { MemoryRouter } from "react-router";
-import Swal from "sweetalert2";
 
-// Mock environment and chessClientURL for iframe src
-jest.mock("../../../core/environments/environment", () => ({
+// Mock environment
+jest.mock("../../../environments/environment", () => ({
   environment: {
     urls: {
-      chessClientURL: "http://localhost:3000",
-      middlewareURL: "http://localhost:4000",
+      middlewareURL: "http://localhost:8000",
+      chessServerURL: "http://localhost:3001",
     },
   },
 }));
 
-// Silence SweetAlert2
-jest.mock("sweetalert2", () => {
+// Mock ChessBoard component
+jest.mock("../../../components/ChessBoard/ChessBoard", () => {
+  const React = require("react");
   return {
     __esModule: true,
-    default: {
-      fire: jest.fn(() => Promise.resolve({ isConfirmed: true })),
-      close: jest.fn(),
-      showLoading: jest.fn(),
-    },
+    default: React.forwardRef((props: any, ref: any) => {
+      React.useImperativeHandle(ref, () => ({
+        highlightMove: jest.fn(),
+        reset: jest.fn(),
+        loadPosition: jest.fn(),
+        getFen: jest.fn(() => "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+      }));
+      return (
+        <div
+          data-testid="chessboard"
+          onClick={() => props.onMove?.({ from: "e2", to: "e4" })}
+        >
+          ChessBoard Mock
+        </div>
+      );
+    }),
+    ChessBoardRef: {},
   };
 });
+
+// Mock useChessSocket hook
+jest.mock("../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket", () => ({
+  useChessSocket: jest.fn(() => ({
+    connected: true,
+    sendMove: jest.fn(),
+    sendLastMove: jest.fn(),
+    sendMessage: jest.fn(),
+    startNewPuzzle: jest.fn(),
+    setGameStateWithColor: jest.fn(),
+    setPuzzleMoves: jest.fn(),
+  })),
+}));
+
+// Mock globals module
+jest.mock("../../../globals", () => ({
+  SetPermissionLevel: jest.fn(() => Promise.resolve({ error: false, username: "test-user" })),
+}));
+
+// Silence SweetAlert2
+jest.mock("sweetalert2", () => ({
+  __esModule: true,
+  default: {
+    fire: jest.fn(() => Promise.resolve({ isConfirmed: true })),
+    close: jest.fn(),
+    showLoading: jest.fn(),
+  },
+}));
 
 // Mock fetch for puzzles
 const mockPuzzles = [
@@ -40,7 +80,7 @@ const mockPuzzles = [
     FEN: "8/8/8/8/8/8/8/8 w - - 0 1",
     Moves: "a2a4 a7a5",
     Rating: 800,
-    Themes: "empty",
+    Themes: "endgame",
   },
 ];
 
@@ -50,6 +90,7 @@ describe("Puzzles Component", () => {
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve(mockPuzzles),
+        status: 200,
       })
     ) as jest.Mock;
   });
@@ -58,7 +99,7 @@ describe("Puzzles Component", () => {
     jest.clearAllMocks();
   });
 
-  test("renders iframe and puzzle buttons", async () => {
+  test("renders ChessBoard and puzzle buttons", async () => {
     await act(async () => {
       render(
         <MemoryRouter>
@@ -66,8 +107,8 @@ describe("Puzzles Component", () => {
         </MemoryRouter>
       );
     });
-    
-    expect(screen.getByTitle("board")).toBeInTheDocument();
+
+    expect(screen.getByTestId("chessboard")).toBeInTheDocument();
     expect(screen.getByText("Get New Puzzle")).toBeInTheDocument();
     expect(screen.getByText("Show Hint")).toBeInTheDocument();
   });
@@ -81,8 +122,13 @@ describe("Puzzles Component", () => {
       );
     });
 
-    const iframe = screen.getByTitle("board");
-    expect(iframe).toBeInTheDocument();
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/puzzles/random?limit=20")
+      );
+    });
+
+    expect(screen.getByTestId("chessboard")).toBeInTheDocument();
     expect(document.getElementById("hint-text")).toBeInTheDocument();
   });
 
@@ -99,13 +145,28 @@ describe("Puzzles Component", () => {
     const showHintBtn = screen.getByText("Show Hint");
 
     expect(hintText).toHaveStyle("display: none");
+
     fireEvent.click(showHintBtn);
     expect(hintText).toHaveStyle("display: block");
+
     fireEvent.click(showHintBtn);
     expect(hintText).toHaveStyle("display: none");
   });
 
-  test("clicking get new puzzle triggers postMessage", async () => {
+  test("clicking get new puzzle sends message", async () => {
+    const mockSendMessage = jest.fn();
+    const { useChessSocket } = require("../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket");
+
+    useChessSocket.mockReturnValue({
+      connected: true,
+      sendMessage: mockSendMessage,
+      sendMove: jest.fn(),
+      sendLastMove: jest.fn(),
+      startNewPuzzle: jest.fn(),
+      setGameStateWithColor: jest.fn(),
+      setPuzzleMoves: jest.fn(),
+    });
+
     await act(async () => {
       render(
         <MemoryRouter>
@@ -114,44 +175,24 @@ describe("Puzzles Component", () => {
       );
     });
 
-    const iframe = screen.getByTitle("board") as HTMLIFrameElement;
-    const spy = jest.spyOn(window, "postMessage");
     fireEvent.click(screen.getByText("Get New Puzzle"));
-    expect(iframe).toBeInTheDocument();
+
+    expect(mockSendMessage).toHaveBeenCalledWith("next puzzle");
   });
 
-  test("handles 'puzzle completed' message", async () => {
-    await act(async () => {
-      render(
-        <MemoryRouter>
-          <Puzzles/>
-        </MemoryRouter>
-      );
+  test("shows disconnected indicator when not connected", async () => {
+    const { useChessSocket } = require("../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket");
+
+    useChessSocket.mockReturnValue({
+      connected: false,
+      sendMessage: jest.fn(),
+      sendMove: jest.fn(),
+      sendLastMove: jest.fn(),
+      startNewPuzzle: jest.fn(),
+      setGameStateWithColor: jest.fn(),
+      setPuzzleMoves: jest.fn(),
     });
 
-    // send guest join message
-    act(() => {
-      window.dispatchEvent(new MessageEvent("message", { data: "guest" }));
-    });
-
-    (Swal.fire as jest.Mock).mockResolvedValueOnce({ isConfirmed: true });
-
-    // now send puzzle completed message
-    act(() => {
-      window.dispatchEvent(new MessageEvent("message", { data: "puzzle completed" }));
-    });
-
-    // assert puzzle completed Swal
-    await waitFor(() => {
-      expect(Swal.fire).toHaveBeenCalledWith(
-        "Puzzle completed",
-        "Good Job",
-        "success"
-      )
-    });
-  });
-
-  test("handles 'next puzzle' message", async () => {
     await act(async () => {
       render(
         <MemoryRouter>
@@ -160,83 +201,15 @@ describe("Puzzles Component", () => {
       );
     });
 
-    // not mocking puzzle array behvaior so we silence this console error that occurs when getNextPuzzle() is called
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {}); 
-    
-    act(() => {
-      window.dispatchEvent(new MessageEvent("message", { data: "next puzzle" }));
-    });
-
-    expect(Swal.close).toHaveBeenCalled();
-    expect(consoleSpy).toHaveBeenCalledWith("Puzzle array is empty");
-
-    consoleSpy.mockRestore();
-  });
-
-  test("handles 'host' and 'guest' status", async () => {
-    await act(async () => {
-      render(
-        <MemoryRouter>
-          <Puzzles role="student" styleType="profile" />
-        </MemoryRouter>
-      );
-    });
-
-    await waitFor(() => {
-      window.dispatchEvent(new MessageEvent("message", { data: "host" }));
-    });
-
-    await waitFor(() => {
-      window.dispatchEvent(new MessageEvent("message", { data: "guest" }));
-    });
-
-    expect(screen.getByTitle("board")).toBeInTheDocument();
-  });
-
-  test("handles FEN update message", async () => {
-    await act(async () => {
-      render(
-        <MemoryRouter>
-          <Puzzles />
-        </MemoryRouter>
-      );
-    });
-
-    act(() => {
-      window.dispatchEvent(new MessageEvent("message", { data: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" }));
-    });
-
-    // No crash = pass. Could extend with state inspection if needed.
-    expect(screen.getByTitle("board")).toBeInTheDocument();
-  });
-
-  test("handles HTML hint message", async () => {
-    await act(async () => {
-      render(
-        <MemoryRouter>
-          <Puzzles />
-        </MemoryRouter>
-      );
-    });
-
-    // send guest join message
-    act(() => {
-      window.dispatchEvent(new MessageEvent("message", { data: "guest" }));
-    });
-
-    const hintHTML = `<div><b>Test</b>: Hint content</div>`;
-    act(() => {
-      window.dispatchEvent(new MessageEvent("message", { data: hintHTML }));
-    })
-
-    const hintText = document.getElementById("hint-text")!;
-    expect(hintText.innerHTML).toContain("Hint content");
+    expect(screen.getByText("Disconnected")).toBeInTheDocument();
   });
 
   test("handles fetch failure gracefully", async () => {
     (global.fetch as jest.Mock).mockImplementationOnce(() =>
-      Promise.resolve({ ok: false })
+      Promise.resolve({ ok: false, status: 500 })
     );
+
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
     await act(async () => {
       render(
@@ -246,6 +219,41 @@ describe("Puzzles Component", () => {
       );
     });
 
-    expect(screen.getByTitle("board")).toBeInTheDocument();
+    expect(screen.getByTestId("chessboard")).toBeInTheDocument();
+
+    consoleSpy.mockRestore();
+  });
+
+  test("player move triggers socket sendMove and sendLastMove", async () => {
+    const mockSendMove = jest.fn();
+    const mockSendLastMove = jest.fn();
+    const { useChessSocket } = require("../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket");
+
+    useChessSocket.mockReturnValue({
+      connected: true,
+      sendMessage: jest.fn(),
+      sendMove: mockSendMove,
+      sendLastMove: mockSendLastMove,
+      startNewPuzzle: jest.fn(),
+      setGameStateWithColor: jest.fn(),
+      setPuzzleMoves: jest.fn(),
+    });
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <Puzzles />
+        </MemoryRouter>
+      );
+    });
+
+    const chessboard = screen.getByTestId("chessboard");
+
+    // Clicking triggers the mocked onMove
+    fireEvent.click(chessboard);
+
+    // The move should send via socket
+    expect(mockSendMove).toHaveBeenCalled();
+    expect(mockSendLastMove).toHaveBeenCalled();
   });
 });

@@ -1,32 +1,111 @@
-import React, {useState} from "react";
+import React, { useState, useRef } from "react";
 import "./Student.scss";
-import {environment} from "../../../core/environments/environment";
+import ChessBoard, { ChessBoardRef } from "../../../components/ChessBoard/ChessBoard";
+import { useChessSocket } from "../../lessons/piece-lessons/lesson-overlay/hooks/useChessSocket";
+import { environment } from "../../../environments/environment";
+import { Move } from "../../../core/types/chess";
+import { v4 as uuidv4 } from "uuid";
 
 const Student = () => {
-    const chessSrc = environment.urls.chessClientURL;
-    const [movesAhead, setMovesAhead] = useState(5);
+  const chessBoardRef = useRef<ChessBoardRef>(null);
+  const [movesAhead, setMovesAhead] = useState(5);
+  const [currentFEN, setCurrentFEN] = useState<string>(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+  );
+  const [studentId] = useState(uuidv4());
+  const [mentorId] = useState("computer");
 
-    return (
-        <div className="chess-body">
-            <br />
-            <br />
-            <br />
-            <iframe src={chessSrc} title="Chessboard" height="500" width="500"/>
-            <br />
-            <br />
-            <br />
-            <button>New Game</button>
-            <button>Play with a computer</button>
-            <button>Undo</button>
-            <br />
-            <p>
-                The computer will think
-                <input type="number" min="1" step="1" max="30" value={movesAhead}/>
-                moves ahead of you
-            </p>
-            <br />
-        </div>
-    )
-}
+  // Socket connection for multiplayer
+  const socket = useChessSocket({
+    student: studentId,
+    mentor: mentorId,
+    role: "student",
+    serverUrl: environment.urls.chessServerURL,
+    mode: "regular",
+
+    onBoardStateChange: (newFEN) => {
+      setCurrentFEN(newFEN);
+    },
+
+    onLastMove: (from, to) => {
+      if (chessBoardRef.current) {
+        chessBoardRef.current.highlightMove(from, to);
+      }
+    },
+
+    onError: (msg) => {
+      console.error("Chess error:", msg);
+      alert(`Error: ${msg}`);
+    },
+  });
+
+  const handleMove = (move: Move) => {
+    console.log("Move made:", move);
+    socket.sendMove(move);
+    socket.sendLastMove(move.from, move.to);
+  };
+
+  const handleNewGame = () => {
+    socket.startNewGame();
+    if (chessBoardRef.current) {
+      chessBoardRef.current.reset();
+    }
+    setCurrentFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  };
+
+  const handlePlayComputer = () => {
+    // TODO: Integrate with Stockfish server
+    alert(`Computer mode with ${movesAhead} moves ahead - Coming soon!`);
+  };
+
+  const handleUndo = () => {
+    socket.undo();
+    if (chessBoardRef.current) {
+      chessBoardRef.current.undo();
+    }
+  };
+
+  return (
+    <div className="chess-body">
+      <br />
+      <br />
+      <br />
+
+      <ChessBoard
+        ref={chessBoardRef}
+        fen={currentFEN}
+        onMove={handleMove}
+        disabled={!socket.connected}
+      />
+
+      <br />
+      <br />
+      <br />
+
+      <button onClick={handleNewGame}>New Game</button>
+      <button onClick={handlePlayComputer}>Play with a computer</button>
+      <button onClick={handleUndo}>Undo</button>
+
+      <br />
+      <p>
+        The computer will think
+        <input
+          type="number"
+          min="1"
+          step="1"
+          max="30"
+          value={movesAhead}
+          onChange={(e) => setMovesAhead(parseInt(e.target.value) || 5)}
+        />
+        moves ahead of you
+      </p>
+      <br />
+
+      {!socket.connected && (
+        <p style={{ color: "red" }}>Disconnected from server</p>
+      )}
+    </div>
+  );
+};
 
 export default Student;
