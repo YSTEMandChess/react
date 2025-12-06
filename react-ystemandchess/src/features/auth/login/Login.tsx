@@ -109,12 +109,12 @@ const Login = () => {
   };
 
   return (
-    <main role="main" aria-labelledby='login-h1'>
-      <h1 id='login-h1'>Login</h1>
-      {loginError && <h3 id='loginError-h3' role="alert">{loginError}</h3>}
+    <div className='login-page'>
+      <h1 className='login-title'>Login</h1>
+      {loginError && <div className='login-error' role="alert">{loginError}</div>}
 
-      <form className='login-input-container' aria-label="Login Form" aria-busy={isLoading} onSubmit={submitLogin}>
-        <div className='login-input-field'>
+      <form className='login-form' aria-label="Login Form" aria-busy={isLoading} onSubmit={submitLogin}>
+        <div className='input-wrapper'>
           <label htmlFor='username' id="username-label">Username</label>
           <input
             type='text'
@@ -131,7 +131,7 @@ const Login = () => {
             required
           />
         </div>
-        <div className='login-input-field'>
+        <div className='input-wrapper'>
           <label htmlFor='password' id="password-label">Password</label>
           <input
             type='password'
@@ -148,20 +148,22 @@ const Login = () => {
             required
           />
         </div>
-        <button id='button-login' type='submit' aria-label='Login Button' disabled={isLoading}>
+        <div className='button-wrapper'>
+          <button type='submit' aria-label='Login Button' disabled={isLoading}>
           Enter
         </button>
+        </div>
       </form>
 
-      <nav className='additional-options' aria-label="Account Options">
-        <a href='/signup' className='option'>
+      <nav className='login-links' aria-label="Account Options">
+        <a href='/signup'>
           Create a new account
         </a>
-        <a href='/reset-password' className='option'>
+        <a href='/reset-password'>
           Forgot password?
         </a>
       </nav>
-    </main>
+    </div>
   );
 };
 
