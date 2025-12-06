@@ -1,4 +1,5 @@
 const { spawn } = require('child_process');
+const path = require('path');
 const crypto = require("crypto");
 const { Chess } = require("chess.js");
 
@@ -7,13 +8,13 @@ let enginePath;
 
 switch (process.platform) {
     case 'win32':
-      enginePath = "./bin/stockfish_11_win.exe";
+      enginePath = path.join(__dirname, "../bin/stockfish_11_win.exe");
       break;
     case 'darwin':
-      enginePath = "./bin/stockfish_11_mac";
+      enginePath = path.join(__dirname, "../bin/stockfish_11_mac");
       break;
     case 'linux':
-      enginePath = "./bin/stockfish_11_linux";
+      enginePath = path.join(__dirname, "../bin/stockfish_11_linux");
       break;
     default:
       throw new Error(`Unsupported platform: ${process.platform}`);
@@ -41,6 +42,9 @@ class StockfishManager {
       throw new Error("Stockfish instance not set up for this session");
     }
 
+    // Initialize UCI protocol
+    engine.stdin.write("uci\n");
+
     // Attach an event listener to listen for output from the engine
     engine.stdout.on("data", (data) => {
       const lines = data.toString().trim().split("\n");
@@ -49,59 +53,90 @@ class StockfishManager {
       for (const line of lines) {
         let cleanLine = line.trim();
 
-        if (!cleanLine) return;
-        if (!session.awaitingResponse) return;
+        if (!cleanLine) continue;
+
+        // Handle UCI protocol responses
+        if (cleanLine === "uciok") {
+          session.engineReady = true;
+          session.socket.emit("engine-ready", { ready: true });
+          continue;
+        }
+
+        // Handle isready response
+        if (cleanLine === "readyok") {
+          if (session.pendingCommand === "isready") {
+            session.socket.emit("isready-response", { ready: true });
+            session.pendingCommand = null;
+            session.awaitingResponse = false;
+          }
+          continue;
+        }
+
+        // Only process other responses if we're awaiting a response
+        if (!session.awaitingResponse) continue;
 
         const isInfoMode = session.infoMode;
 
         // In info mode, collect all engine analysis output
         if (isInfoMode) {
-        session.outputBuffer.push(cleanLine);
+          session.outputBuffer.push(cleanLine);
 
-        if (cleanLine.startsWith("bestmove")) {
+          if (cleanLine.startsWith("bestmove")) {
+            session.socket.emit("evaluation-complete", {
+              mode: 'info',
+              output: session.outputBuffer,
+            });
+
+            session.awaitingResponse = false;
+            session.outputBuffer = [];
+          }
+        // In move mode, extract and execute the best move
+        } else if (cleanLine.startsWith("bestmove")) {
+          const moveStr = cleanLine.split(" ")[1];
+
+          // Attempt to execute the move on the game instance
+          let moveResult = null;
+          try {
+            moveResult = session.gameInstance.move(moveStr, { sloppy: true });
+          } catch (e) {
+            return session.socket.emit("evaluation-error", {
+              error: "Invalid move from engine",
+            });
+          }
+
+          const newFEN = session.gameInstance.fen();
+
+          // Send the move result back to the client
           session.socket.emit("evaluation-complete", {
-            mode: 'info',
-            output: session.outputBuffer,
+            mode: 'move',
+            move: moveStr,
+            moveDetails: moveResult,
+            newFEN,
           });
 
           session.awaitingResponse = false;
           session.outputBuffer = [];
         }
-      // In move mode, extract and execute the best move
-      } else if (cleanLine.startsWith("bestmove")) {
-        const moveStr = cleanLine.split(" ")[1];
+      }
+    });
 
-        // Attempt to execute the move on the game instance
-        let moveResult = null;
-        try {
-          moveResult = session.gameInstance.move(moveStr, { sloppy: true });
-        } catch (e) {
-          return session.socket.emit("evaluation-error", {
-            error: "Invalid move from engine",
-          });
-        }
+    // Handle engine errors
+    engine.stderr.on("data", (data) => {
+      console.error(`Stockfish engine error for ${socketId}:`, data.toString());
+      session.socket.emit("engine-error", {
+        error: data.toString(),
+      });
+    });
 
-        const newFEN = session.gameInstance.fen();
-
-        // Send the move result back to the client
-        session.socket.emit("evaluation-complete", {
-          mode: 'move',
-          move: moveStr,
-          moveDetails: moveResult,
-          newFEN,
+    // Handle engine process exit
+    engine.on("exit", (code) => {
+      console.log(`Stockfish engine exited for ${socketId} with code ${code}`);
+      if (code !== 0) {
+        session.socket.emit("engine-error", {
+          error: `Engine process exited with code ${code}`,
         });
-
-        session.awaitingResponse = false;
-        session.outputBuffer = [];
       }
-      }
-
-      
-
-    })
-
-
-    
+    });
   }
 
   /**
@@ -129,13 +164,14 @@ class StockfishManager {
     this.sessions.set(socketId, {
       id: sessionId,
       sessionType,
-      gameFen: fen,
+      gameFen: fen || game.fen(),
       infoMode,
       stockfishEngine: engine,
       gameInstance: game,
       outputBuffer: [],
       engineReady: false,
       awaitingResponse: false,
+      pendingCommand: null,
       socket,
     });
 
@@ -198,6 +234,96 @@ class StockfishManager {
     
     // Request engine to search to specified depth
     engine.stdin.write(`go depth ${minDepth}\n`);
+  }
+
+  /**
+   * Checks if the Stockfish engine is ready (UCI isready command)
+   * @param {string} socketId - Socket ID of the client session
+   */
+  isReady(socketId) {
+    const session = this.sessions.get(socketId);
+
+    if (!session) {
+      throw new Error("Session not found!");
+    }
+
+    const engine = session.stockfishEngine;
+    session.awaitingResponse = true;
+    session.pendingCommand = "isready";
+    
+    // Send UCI isready command
+    engine.stdin.write("isready\n");
+  }
+
+  /**
+   * Starts a new game (UCI newgame command)
+   * Resets the board to the starting position
+   * @param {string} socketId - Socket ID of the client session
+   * @param {string} fen - Optional FEN string for initial position (defaults to starting position)
+   */
+  newGame(socketId, fen = null) {
+    const session = this.sessions.get(socketId);
+
+    if (!session) {
+      throw new Error("Session not found!");
+    }
+
+    // Reset the game instance to starting position or provided FEN
+    const startingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    const newFen = fen || startingFen;
+    
+    try {
+      session.gameInstance = new Chess(newFen);
+      session.gameFen = newFen;
+      
+      // Send UCI newgame command (ucinewgame)
+      const engine = session.stockfishEngine;
+      engine.stdin.write("ucinewgame\n");
+      
+      // Set the position in the engine
+      engine.stdin.write(`position fen ${newFen}\n`);
+      
+      session.socket.emit("newgame-complete", {
+        fen: newFen,
+        success: true,
+      });
+    } catch (error) {
+      throw new Error(`Invalid FEN for new game: ${error.message}`);
+    }
+  }
+
+  /**
+   * Gets the current position of the board
+   * @param {string} socketId - Socket ID of the client session
+   */
+  getCurrentPosition(socketId) {
+    const session = this.sessions.get(socketId);
+
+    if (!session) {
+      throw new Error("Session not found!");
+    }
+
+    const currentFen = session.gameInstance.fen();
+    const history = session.gameInstance.history();
+    const turn = session.gameInstance.turn();
+    const isCheck = session.gameInstance.inCheck();
+    const isCheckmate = session.gameInstance.isCheckmate();
+    const isStalemate = session.gameInstance.isStalemate();
+    const isDraw = session.gameInstance.isDraw();
+    const isGameOver = session.gameInstance.isGameOver();
+
+    return {
+      fen: currentFen,
+      pgn: session.gameInstance.pgn(),
+      history: history,
+      turn: turn, // 'w' or 'b'
+      isCheck,
+      isCheckmate,
+      isStalemate,
+      isDraw,
+      isGameOver,
+      moveNumber: session.gameInstance.moveNumber(),
+    };
   }
 
   /**

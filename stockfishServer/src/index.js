@@ -1,13 +1,15 @@
 // Load environment variables from .env file
 require("dotenv").config();
 
+const http = require("http");
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 const { Chess } = require("chess.js");
 const Stockfish = require("stockfish");
 const querystring = require("querystring");
 const url = require("url");
-const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require("constants");
+const { Server } = require("socket.io");
+const initializeSocket = require("./managers/socket");
 
 const app = express();
 
@@ -91,8 +93,27 @@ app.get("/", (req, res) => {
 });
 
 
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.IO server
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+// Handle Socket.IO connections
+io.on("connection", (socket) => {
+  console.log(`Client connected: ${socket.id}`);
+  initializeSocket(io, socket);
+});
+
 // Start the server
 const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Stockfish server running on port ${PORT}`);
+  console.log(`REST API available at http://localhost:${PORT}/`);
+  console.log(`Socket.IO server ready for connections`);
 });

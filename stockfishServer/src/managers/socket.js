@@ -35,6 +35,34 @@ const initializeSocket = (io, socket) => {
     }
   });
 
+  // Check if Stockfish engine is ready (UCI isready command)
+  socket.on("isready", () => {
+    try {
+      stockfishManager.isReady(socket.id);
+    } catch (err) {
+      socket.emit("isready-error", { error: err.message });
+    }
+  });
+
+  // Start a new game (UCI newgame command)
+  socket.on("newgame", ({ fen }) => {
+    try {
+      stockfishManager.newGame(socket.id, fen);
+    } catch (err) {
+      socket.emit("newgame-error", { error: err.message });
+    }
+  });
+
+  // Get the current position of the board
+  socket.on("get-current-position", () => {
+    try {
+      const position = stockfishManager.getCurrentPosition(socket.id);
+      socket.emit("current-position", position);
+    } catch (err) {
+      socket.emit("position-error", { error: err.message });
+    }
+  });
+
   // Clean up session when client disconnects
   socket.on("disconnect", () => {
     stockfishManager.deleteSession(socket.id);
