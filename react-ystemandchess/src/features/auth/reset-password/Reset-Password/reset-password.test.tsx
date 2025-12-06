@@ -35,10 +35,10 @@ test('failed verification', async () => {
   }) as jest.Mock
 
   // input username & email
-  const usernameInput = screen.getByPlaceholderText('UserName');
-  const emailInput = screen.getByPlaceholderText('Email');
-  fireEvent.blur(usernameInput, { target: { value: 'validusername' } });
-  fireEvent.blur(emailInput, { target: { value: 'validemail@example.com' } });
+  const usernameInput = screen.getByPlaceholderText('Enter your username');
+  const emailInput = screen.getByPlaceholderText('Enter your email');
+  fireEvent.change(usernameInput, { target: { value: 'validusername' } });
+  fireEvent.change(emailInput, { target: { value: 'validemail@example.com' } });
 
   // submit credentials
   const button = screen.getByTestId('reset-submit');
@@ -65,10 +65,10 @@ test('network error', async () => {
   }) as jest.Mock
 
   // input username & email
-  const usernameInput = screen.getByPlaceholderText('UserName');
-  const emailInput = screen.getByPlaceholderText('Email');
-  fireEvent.blur(usernameInput, { target: { value: 'validusername' } });
-  fireEvent.blur(emailInput, { target: { value: 'validemail@example.com' } });
+  const usernameInput = screen.getByPlaceholderText('Enter your username');
+  const emailInput = screen.getByPlaceholderText('Enter your email');
+  fireEvent.change(usernameInput, { target: { value: 'validusername' } });
+  fireEvent.change(emailInput, { target: { value: 'validemail@example.com' } });
 
   // submit credentials
   const button = screen.getByTestId('reset-submit');
@@ -98,10 +98,10 @@ test('successful verification', async () => {
   }) as jest.Mock
 
   // input username & email
-  const usernameInput = screen.getByPlaceholderText('UserName');
-  const emailInput = screen.getByPlaceholderText('Email');
-  fireEvent.blur(usernameInput, { target: { value: 'validusername' } });
-  fireEvent.blur(emailInput, { target: { value: 'validemail@example.com' } });
+  const usernameInput = screen.getByPlaceholderText('Enter your username');
+  const emailInput = screen.getByPlaceholderText('Enter your email');
+  fireEvent.change(usernameInput, { target: { value: 'validusername' } });
+  fireEvent.change(emailInput, { target: { value: 'validemail@example.com' } });
 
   // submit credentials
   const button = screen.getByTestId('reset-submit');
