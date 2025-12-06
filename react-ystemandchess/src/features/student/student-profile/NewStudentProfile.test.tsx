@@ -18,10 +18,45 @@ jest.mock('../../../globals', () => ({
   SetPermissionLevel: jest.fn(),
 }));
 
+// mock SweetAlert2 to avoid CSS parsing errors in jsdom
+jest.mock('sweetalert2', () => {
+  const mockSwal = {
+    fire: jest.fn(() => Promise.resolve({ isConfirmed: true, isDenied: false, isDismissed: false })),
+    mixin: jest.fn(),
+    bindClickHandler: jest.fn(),
+    stopTimer: jest.fn(),
+    resumeTimer: jest.fn(),
+    toggleTimer: jest.fn(),
+    isTimerRunning: jest.fn(),
+    incrementTimer: jest.fn(),
+    showLoading: jest.fn(),
+    hideLoading: jest.fn(),
+    clickConfirm: jest.fn(),
+    clickCancel: jest.fn(),
+    clickDeny: jest.fn(),
+    close: jest.fn(),
+    enableButtons: jest.fn(),
+    disableButtons: jest.fn(),
+    showValidationMessage: jest.fn(),
+    resetValidationMessage: jest.fn(),
+    getInput: jest.fn(),
+  };
+  return {
+    __esModule: true,
+    default: mockSwal,
+  };
+});
+
 // mock the chart
 jest.mock('react-chartjs-2', () => ({
   __esModule: true,
   Line: () => <div data-testid="mock-line-chart" />,
+}));
+
+// mock Puzzles component to avoid SweetAlert2 CSS parsing issues
+jest.mock('../../puzzles/puzzles-page/Puzzles', () => ({
+  __esModule: true,
+  default: () => <div data-testid="mock-puzzles" />,
 }));
 
 // ------------- HELPER FUNCTIONS -------------
