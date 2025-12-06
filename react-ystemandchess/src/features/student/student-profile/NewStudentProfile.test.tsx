@@ -176,9 +176,9 @@ describe('NewStudentProfile', () => {
     expect(await screen.findByText(/Time Spent:/i)).toBeInTheDocument();
 
     // check if some of the tabs (by aria-label) are rendered
-    expect(await screen.findByRole('button', { name: /activity/i })).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: /games/i })).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: /mentor/i })).toBeInTheDocument();
+    expect(await screen.findByLabelText(/activity/i)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/games/i)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/mentor/i)).toBeInTheDocument();
   });
 
   test('renders time stats', async () => {

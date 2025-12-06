@@ -2,7 +2,6 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
-import { useNavigate } from 'react-router';
 import SignUp from './SignUp'
 
 // mock fetching from database
@@ -40,7 +39,8 @@ test("renders sign up page", () => {
   expect(screen.getByPlaceholderText("Choose a username")).toBeInTheDocument();
   expect(screen.getByPlaceholderText("Create a password")).toBeInTheDocument();
   expect(screen.getByPlaceholderText("Re-type your password")).toBeInTheDocument();
-  expect(screen.getByLabelText("Account Type")).toBeInTheDocument();
+  expect(screen.getByText("Account Type")).toBeInTheDocument();
+  expect(screen.getByRole("combobox")).toBeInTheDocument();
   expect(screen.getByLabelText(/I accept the terms and conditions/)).toBeInTheDocument();
 
   // Check if submission button is present
@@ -137,7 +137,7 @@ test("adding children", async () => {
   );
 
   // select the parent account
-  const selector = screen.getByLabelText("Account Type");
+  const selector = screen.getByRole("combobox");
   fireEvent.change(selector, { target: { value: 'parent' } });
 
   // create new student
