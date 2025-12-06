@@ -63,25 +63,36 @@ const registerSocketHandlers = (socket, io) => {
      * Handles player move request
      * Expected payload: { from, to }
      */
-    socket.on("move", (msg) => {
+    socket.on("move", async (msg) => {
         try {
-            const { from, to } = JSON.parse(msg);
-            const res = gameManager.makeMove(socket.id, from, to);
+            const { from, to, computerMove } = JSON.parse(msg);
+            const res = await gameManager.makeMove(socket.id, from, to, computerMove);
             gameManager.broadcastBoardState(res.result, io);
-            /*
-            const activityEvents = res.activityEvents;
+            console.log('move result ', res);
+            if(!computerMove) {
+                const activityEvents = res.activityEvents;   
 
-            if (activityEvents && activityEvents.length > 0) {
-                const studentSocketId = result.studentId;
-                const payload = {
-                    activities: activityEvents, 
-                    lastMove: { from, to, san: result.move?.san }
-                };
-                const studentSocket = io.sockets.sockets.get(studentSocketId);
-                if (studentSocket) {
-                    studentSocket.emit("activityCompleted", JSON.stringify(payload));
+                 
+                if (activityEvents && activityEvents.length > 0) {
+                    const studentSocketId = res.result.studentId;
+                    console.log('student id', studentSocketId)
+                    /*const payload = {
+                        activities: activityEvents, 
+                        lastMove: { from, to, san: result.move?.san }
+                    };
+                    console.log('payload', payload);
+                    const studentSocket = io.sockets.sockets.get(studentSocketId);
+                    console.log('student socket', studentSocket);
+                    if (studentSocket) {
+                        studentSocket.emit("activityCompleted", JSON.stringify(payload));
+                    }*/
                 }
-            }*/
+
+            }
+
+            /*
+
+            */
         }
         catch (err) {
             socket.emit("error", err.message);
