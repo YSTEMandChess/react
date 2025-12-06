@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
+import './reset-password.component.scss';
 
 const ResetPassword = () => {
   const [username, setUsername] = useState('');
@@ -42,64 +43,58 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className='max-w-md mx-auto p-6' role="main">
-      <h2 className='text-2xl font-bold mb-6'>Reset Password</h2>
+    <div className="reset-page">
+      <h1 className="reset-title">Reset Password</h1>
 
-      {error != '' && (
-        <div
-          className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'
-          role="alert"
-          aria-live="assertive"
-        >
+      {error && (
+        <div className="reset-error" role="alert" aria-live="assertive">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleResetRequest} className='space-y-4'>
-        <div>
-          <label htmlFor='username' className='block text-sm font-medium mb-1'>
-            Username
-          </label>
+      <form onSubmit={handleResetRequest} className="reset-form">
+        <div className="input-wrapper">
+          <label htmlFor="username">Username</label>
           <input
-            id='username'
-            type='text'
+            id="username"
+            type="text"
             value={username}
-            placeholder='UserName'
+            placeholder="Enter your username"
             onChange={(e) => setUsername(e.target.value)}
-            className='w-full p-2 border rounded'
+            className="reset-input"
             required
             disabled={isLoading}
           />
         </div>
 
-        <div>
-          <label htmlFor='email' className='block text-sm font-medium mb-1'>
-            Email
-          </label>
+        <div className="input-wrapper">
+          <label htmlFor="email">Email</label>
           <input
-            id='email'
-            type='email'
-            placeholder='Email'
+            id="email"
+            type="email"
+            placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className='w-full p-2 border rounded'
+            className="reset-input"
             required
             disabled={isLoading}
           />
         </div>
 
         <button
-          type='submit'
+          type="submit"
           disabled={isLoading}
+          className="reset-button"
           data-testid="reset-submit"
-          className={`w-full bg-blue-500 text-white p-2 rounded ${
-            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
-          }`}
           aria-busy={isLoading}
         >
           {isLoading ? 'Sending...' : 'Reset Password'}
         </button>
       </form>
+
+      <div className="reset-links">
+        <a href="/login">Back to Login</a>
+      </div>
     </div>
   );
 };

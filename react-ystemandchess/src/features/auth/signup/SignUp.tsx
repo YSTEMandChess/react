@@ -1,37 +1,35 @@
-import React, { useState } from 'react';
-// import { Cookie } from 'react-router'; // 'react-router' does not export 'Cookie'. This line should probably be removed or corrected.
-import './SignUp.scss'; // Imports the stylesheet for this component.
-import { environment } from "../../../core/environments/environment"; // Imports environment variables, likely containing API URLs.
-// import StudentProfile from '../StudentProfile/Student-Profile'; // Only import if actively used in this component
+import React, { useState, useEffect, useRef } from 'react';
+import './SignUp.scss';
+import { environment } from '../../../core/environments/environment';
 
 // Define the interface for the props of the StudentTemplate component
 interface StudentTemplateProps {
-    studentUsername: string; // The student prop is a string (username)
-    onClick: (username: string) => void; // onClick takes the username as an argument
+    studentUsername: string;
+    onClick: (username: string) => void;
 }
 
-// Renamed to start with a capital letter and typed its props
+// Component for displaying student search results
 const StudentTemplate: React.FC<StudentTemplateProps> = ({ studentUsername, onClick }) => {
     return (
-        <div className="item-template" onClick={() => onClick(studentUsername)} role="option">
+        <div className="item-template" onClick={() => onClick(studentUsername)}>
             <div>{studentUsername}</div>
         </div>
     );
 };
 
 const Signup = () => {
-    // State to manage the form data for the user.
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        username: '',
-        password: '',
-        retypedPassword: '',
-        accountType: 'mentor', // Default account type is set to 'mentor'.
-    });
+    // State to manage the form data for the user
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    username: '',
+    password: '',
+    retypedPassword: '',
+    accountType: 'mentor',
+  });
 
-    // State flags to track the validity of individual input fields.
+    // State flags to track the validity of individual input fields
     const [firstNameFlag, setFirstNameFlag] = useState(false);
     const [lastNameFlag, setLastNameFlag] = useState(false);
     const [emailFlag, setEmailFlag] = useState(false);
@@ -41,13 +39,13 @@ const Signup = () => {
     const [termsFlag, setTermsFlag] = useState(false);
 
     // States for the student search dropdown
-    const [matchingStudents, setMatchingStudents] = useState<string[]>([]); // Array of strings (usernames)
-    const [usernameToSearch, setUserToSearch] = useState(''); // Text in the "Find a student" input
-    const [activeDropdown, setActiveDropdown] = useState(false); // Controls dropdown visibility
-    const [dropdownLoading, setDropdownLoading] = useState(false); // Loading state for dropdown search
+    const [matchingStudents, setMatchingStudents] = useState<string[]>([]);
+    const [usernameToSearch, setUserToSearch] = useState('');
+    const [activeDropdown, setActiveDropdown] = useState(false);
+    const [dropdownLoading, setDropdownLoading] = useState(false);
 
-    // State to store any validation errors for the form fields.
-    const [errors, setErrors] = useState({
+    // State to store any validation errors for the form fields
+  const [errors, setErrors] = useState({
         firstName: '',
         lastName: '',
         email: '',
@@ -55,25 +53,46 @@ const Signup = () => {
         password: '',
         retypePassword: '',
         terms: '',
-        general: '', // Added for general signup errors
-    });
+    general: '',
+  });
 
-    // State to manage the parent account specific UI and data.
-    const [parentAccountFlag, setParentAccountFlag] = useState(false); // Flag to indicate if the selected account type is 'parent'.
-    const [showStudentForm, setShowStudentForm] = useState(false); // Flag to control the visibility of the student creation form.
-    const [students, setStudents] = useState<any>([]); // State to store data for student accounts under a parent.
-    const [assignedMenteeUsername, setAssignedMenteeUsername] = useState<string | null>(null); // To store the selected mentee's username
+    // State to manage the parent account specific UI and data
+    const [parentAccountFlag, setParentAccountFlag] = useState(false);
+    const [showStudentForm, setShowStudentForm] = useState(false);
+    const [students, setStudents] = useState<any>([]);
+    const [assignedMenteeUsername, setAssignedMenteeUsername] = useState<string | null>(null);
 
-    // Handles changes to input fields in the main form.
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        // Updates the formData state with the new value for the changed field.
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+    // Handle click outside dropdown to close it
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-        // Performs specific validation based on the input field that changed.
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node) &&
+                inputRef.current &&
+                !inputRef.current.contains(event.target as Node)
+            ) {
+                setActiveDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    // Handles changes to input fields in the main form
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+        // Performs specific validation based on the input field that changed
         switch (name) {
             case 'firstName':
                 firstNameVerification(value);
@@ -98,7 +117,7 @@ const Signup = () => {
         }
     };
 
-    // Verifies the format of the first name.
+    // Verifies the format of the first name
     const firstNameVerification = (firstName: string) => {
         const isValid = /^[A-Za-z ]{2,15}$/.test(firstName);
         setFirstNameFlag(isValid);
@@ -109,7 +128,7 @@ const Signup = () => {
         return isValid;
     };
 
-    // Verifies the format of the last name.
+    // Verifies the format of the last name
     const lastNameVerification = (lastName: string) => {
         const isValid = /^[A-Za-z]{2,15}$/.test(lastName);
         setLastNameFlag(isValid);
@@ -120,7 +139,7 @@ const Signup = () => {
         return isValid;
     };
 
-    // Verifies the format of the email address.
+    // Verifies the format of the email address
     const emailVerification = (email: string) => {
         const isValid = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}/.test(email);
         setEmailFlag(isValid);
@@ -131,7 +150,7 @@ const Signup = () => {
         return isValid;
     };
 
-    // Verifies the format of the username.
+    // Verifies the format of the username
     const usernameVerification = (username: string) => {
         const isValid = /^[a-zA-Z](\S){1,14}$/.test(username);
         setUserNameFlag(isValid);
@@ -142,7 +161,7 @@ const Signup = () => {
         return isValid;
     };
 
-    // Verifies the length of the password.
+    // Verifies the length of the password
     const passwordVerification = (password: string) => {
         const isValid = password.length >= 8;
         setPasswordFlag(isValid);
@@ -153,7 +172,7 @@ const Signup = () => {
         return isValid;
     };
 
-    // Verifies if the retyped password matches the original password.
+    // Verifies if the retyped password matches the original password
     const retypePasswordVerification = (retypedPassword: string, password: string) => {
         const isValid = retypedPassword === password;
         setRetypeFlag(isValid);
@@ -164,16 +183,15 @@ const Signup = () => {
         return isValid;
     };
 
-    // Verifies if the retyped password matches the original password.
+    // Handles terms checkbox change
     const termsCheckChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setTermsFlag(e.target.checked)
+        setTermsFlag(e.target.checked);
     };
 
-    // Handles changes to the account type dropdown.
+    // Handles changes to the account type dropdown
     const handleAccountTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const isParent = e.target.value === 'parent';
         setParentAccountFlag(isParent);
-        // Updates the accountType in the form data.
         setFormData((prev) => ({
             ...prev,
             accountType: e.target.value,
@@ -185,8 +203,7 @@ const Signup = () => {
         setMatchingStudents([]);
     };
 
-
-    // Adds a new student form to the UI for parent accounts.
+    // Adds a new student form to the UI for parent accounts
     const handleAddStudent = () => {
         const newStudent = {
             id: Date.now(),
@@ -199,12 +216,11 @@ const Signup = () => {
             errors: {},
         };
         setStudents((prev: any) => [...prev, newStudent]);
-        setShowStudentForm(true); // Makes the student form visible.
+        setShowStudentForm(true);
     };
 
-    // Handles changes to input fields within a student's form.
+    // Handles changes to input fields within a student's form
     const handleStudentInputChange = (studentId: any, field: string, value: string) => {
-        // Performs specific validation based on the input field that changed.
         switch (field) {
             case 'firstName':
                 firstNameVerification(value);
@@ -222,15 +238,14 @@ const Signup = () => {
                 passwordVerification(value);
                 break;
             case 'retypedPassword':
-                const student = students.find((s) => s.id === studentId); // ge the student from id
-                const password = student?.password; // get its password
-                retypePasswordVerification(value, password); // verify if the retype is the same
+                const student = students.find((s) => s.id === studentId);
+                const password = student?.password;
+                retypePasswordVerification(value, password);
                 break;
             default:
                 break;
         }
 
-        // Updates the specific student's data in the students array.
         setStudents((prev: any) =>
             prev.map((student: any) =>
                 student.id === studentId ? { ...student, [field]: value } : student
@@ -238,20 +253,18 @@ const Signup = () => {
         );
     };
 
-    // Removes a student form from the UI.
+    // Removes a student form from the UI
     const handleRemoveStudent = (studentId: any) => {
-        // Filters out the student with the given ID.
         setStudents((prev: any) => prev.filter((student: any) => student.id !== studentId));
-        // Hides the student form if no students are present.
-        if (students.length === 1) { // If only one student left, and it's removed, hide the form
+        if (students.length === 1) {
             setShowStudentForm(false);
         }
     };
 
     // Handles changes in the "Find a student" input and triggers API call
     const handleMenteeSearchChange = async (searchText: string) => {
-        setUserToSearch(searchText); // Update the controlled input's value
-        setAssignedMenteeUsername(null); // Clear any previously assigned mentee
+        setUserToSearch(searchText);
+        setAssignedMenteeUsername(null);
 
         if (searchText.trim() === "") {
             setActiveDropdown(false);
@@ -263,7 +276,6 @@ const Signup = () => {
         setActiveDropdown(true);
         setDropdownLoading(true);
         try {
-            // Using query parameter for keyword
             const response = await fetch(
                 `${environment.urls.middlewareURL}/user/mentorless?keyword=${searchText}`,
                 {
@@ -275,16 +287,13 @@ const Signup = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const usernames = await response.json();
-
-            // Slice the array to limit results to top 10
             const top10Usernames = usernames.slice(0, 10);
             setMatchingStudents(top10Usernames);
-
             setDropdownLoading(false);
         } catch (error) {
             console.error('Error fetching mentorless students:', error);
             setDropdownLoading(false);
-            setMatchingStudents([]); // Clear matches on error
+            setMatchingStudents([]);
             setErrors((prev) => ({
                 ...prev,
                 general: 'Failed to fetch student list.',
@@ -295,23 +304,23 @@ const Signup = () => {
     // Handles selecting a mentee from the dropdown
     const handleSelectMentee = (selectedUsername: string) => {
         setAssignedMenteeUsername(selectedUsername);
-        setUserToSearch(selectedUsername); // Set the input field to the selected username
-        setActiveDropdown(false); // Hide the dropdown
-        setMatchingStudents([]); // Clear the matching students
+        setUserToSearch(selectedUsername);
+        setActiveDropdown(false);
+        setMatchingStudents([]);
     };
 
-
-    // Handles the submission of the signup form.
-    const handleSubmit = async () => {
+    // Handles the submission of the signup form
+    const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
         console.log('Submit clicked', formData);
 
-        // check if the terms and conditions are checked 
+        // Check if the terms and conditions are checked
         if (!termsFlag) {
             setErrors((prev) => ({ ...prev, general: 'Please accept the terms and conditions.' }));
             return;
         }
 
-        // Checks if all main form fields are valid based on their flags.
+        // Checks if all main form fields are valid based on their flags
         const isValid =
             firstNameFlag &&
             lastNameFlag &&
@@ -320,14 +329,14 @@ const Signup = () => {
             passwordFlag &&
             retypeFlag;
 
-        // If the main form is not valid, prevents submission.
+        // If the main form is not valid, prevents submission
         if (!isValid) {
             console.log('Form validation failed');
             setErrors((prev) => ({ ...prev, general: 'Please correct the form errors.' }));
             return;
         }
 
-        // if user is a mentor but has not selected mentee
+        // If user is a mentor but has not selected mentee
         if (formData.accountType === 'mentor' && !assignedMenteeUsername) {
             setErrors((prev) => ({ ...prev, general: 'Please select your mentee' }));
             return;
@@ -337,7 +346,7 @@ const Signup = () => {
         let signupParams: URLSearchParams;
 
         if (parentAccountFlag) {
-            // Maps student data into the required format for the API.
+            // Maps student data into the required format for the API
             const studentsData = students.map((student: any) => ({
                 first: student.firstName,
                 last: student.lastName,
@@ -354,10 +363,10 @@ const Signup = () => {
                 password: formData.password,
                 username: formData.username,
                 role: formData.accountType,
-                students: JSON.stringify(studentsData), // Students array sent as a stringified JSON in query
+                students: JSON.stringify(studentsData),
             });
         } else {
-            // Prepare params for non-parent accounts.
+            // Prepare params for non-parent accounts
             signupParams = new URLSearchParams({
                 first: formData.firstName,
                 last: formData.lastName,
@@ -370,15 +379,12 @@ const Signup = () => {
 
         // Append query parameters to the URL for the signup request
         signupUrl = `${signupUrl}?${signupParams.toString()}`;
-
-        console.log('Signup Request URL:', signupUrl); // Log the full URL for debugging
+        console.log('Signup Request URL:', signupUrl);
 
         try {
-            // --- STEP 1: Perform User Signup (POST request with ALL data in query params) ---
+            // STEP 1: Perform User Signup
             const signupResponse = await fetch(signupUrl, {
                 method: 'POST',
-                // IMPORTANT: Removed headers and body here, as data is now in query params.
-                // This prevents sending an empty body with 'Content-Type: application/json' header.
             });
 
             console.log('Signup Response status:', signupResponse.status);
@@ -412,15 +418,13 @@ const Signup = () => {
 
             let jwtToken: string | null = null;
 
-            // --- STEP 2: Perform Login to get JWT Token (POST request with query params) ---
+            // STEP 2: Perform Login to get JWT Token
             try {
-                // Construct Login URL with username and password as query parameters
                 const loginUrl = `${environment.urls.middlewareURL}/auth/login?username=${encodeURIComponent(formData.username)}&password=${encodeURIComponent(formData.password)}`;
-                console.log('Login URL for token acquisition:', loginUrl); // Log the full URL for debugging
+                console.log('Login URL for token acquisition:', loginUrl);
 
                 const loginResponse = await fetch(loginUrl, {
                     method: 'POST',
-                    // No 'Content-Type' header or body needed as per backend expecting query params
                 });
 
                 console.log('Login Response status:', loginResponse.status);
@@ -433,7 +437,6 @@ const Signup = () => {
                 const loginData = await loginResponse.json();
                 jwtToken = loginData.token;
                 console.log('Login successful, JWT token obtained.');
-
             } catch (loginError: any) {
                 console.error('Error during login after signup:', loginError);
                 setErrors((prev) => ({
@@ -441,21 +444,19 @@ const Signup = () => {
                     general: `Signup successful, but failed to log in to assign mentee: ${loginError.message || 'Login network error'}`,
                 }));
                 window.location.href = '/';
-                return;
-            }
+      return;
+    }
 
-            // --- STEP 3: Conditionally Perform Mentee Assignment (PUT request for mentors with query params) ---
+            // STEP 3: Conditionally Perform Mentee Assignment
             if (formData.accountType === 'mentor' && assignedMenteeUsername && jwtToken) {
-                // Construct URL with 'mentorship' query parameter
                 const updateMentorshipUrl = `${environment.urls.middlewareURL}/user/updateMentorship?mentorship=${encodeURIComponent(assignedMenteeUsername)}`;
 
                 try {
                     const updateMentorshipResponse = await fetch(updateMentorshipUrl, {
                         method: 'PUT',
                         headers: {
-                            'Authorization': `Bearer ${jwtToken}`, // Bearer token is still in headers
+                            'Authorization': `Bearer ${jwtToken}`,
                         },
-                        // No body needed as per your backend's current PUT route definition expecting query param
                     });
 
                     console.log('Update Mentorship Response status:', updateMentorshipResponse.status);
@@ -480,9 +481,8 @@ const Signup = () => {
                 }
             }
 
-            // --- Final Step: Redirect to homepage after all operations ---
+            // Final Step: Redirect to homepage after all operations
             window.location.href = '/';
-
         } catch (error: any) {
             console.error('Signup error:', error);
             setErrors((prev) => ({
@@ -490,241 +490,246 @@ const Signup = () => {
                 general: error.message || 'Signup failed. Please try again.',
             }));
         }
-    };
+  };
 
-    return (
-        <form className='signupForm' onSubmit={(e) => e.preventDefault()} aria-labelledby="signup-title">
-            <h2 className="sign-up-title" id="signup-title" data-testid="title">Sign up</h2>
+  return (
+    <div className="signup-page">
+      <h1 className="signup-title">Create Account</h1>
+            
+      {errors.general && <p className="signup-error">{errors.general}</p>}
 
-            <div className={`errorMessages ${Object.values(errors).some(Boolean) ? 'visible' : ''}`} role="alert" aria-live="polite">
-                {/* Maps through the errors object and displays any error messages. */}
-                {Object.values(errors).map((error, index) =>
-                    error ? <h3 key={index}>{error}</h3> : null
-                )}
-            </div>
+      <form className="signup-form" onSubmit={handleSubmit}>
+        <div className="input-wrapper">
+          <label>First Name</label>
+          <input
+            type="text"
+            name="firstName"
+            placeholder="Enter your first name"
+            value={formData.firstName}
+            onChange={handleInputChange}
+            required
+          />
+                    {errors.firstName && <span className="error-text">{errors.firstName}</span>}
+        </div>
 
-            <div className='form-fields' data-testid="form-fields">
-                <label htmlFor="firstName">First name</label>
-                <input
-                    type='text'
-                    name='firstName'
-                    id='firstName'
-                    placeholder='First name'
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    aria-required="true"
-                />
-                <label htmlFor="lastName">Last name</label>
-                <input
-                    type='text'
-                    name='lastName'
-                    id='lastName'
-                    placeholder='Last name'
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    aria-required="true"
-                />
-                <label htmlFor="email">Email</label>
-                <input
-                    type='email'
-                    name='email'
-                    id='email'
-                    placeholder='Email'
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    aria-required="true"
-                />
-                <label htmlFor="username">Username</label>
-                <input
-                    type='text'
-                    name='username'
-                    id='username'
-                    placeholder='Username'
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    aria-required="true"
-                />
-                <label htmlFor="password">Password</label>
-                <input
-                    type='password'
-                    name='password'
-                    id='password'
-                    placeholder='Password'
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    aria-required="true"
-                />
-                <label htmlFor="retypedPassword">Re-type password</label>
-                <input
-                    type='password'
-                    name='retypedPassword'
-                    id='retypedPassword'
-                    placeholder='Re-type password'
-                    value={formData.retypedPassword}
-                    onChange={handleInputChange}
-                    aria-required="true"
-                />
-            </div>
+        <div className="input-wrapper">
+          <label>Last Name</label>
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Enter your last name"
+            value={formData.lastName}
+            onChange={handleInputChange}
+            required
+          />
+                    {errors.lastName && <span className="error-text">{errors.lastName}</span>}
+        </div>
 
-            <div className='account-type' data-testid='account-type'>
-                <p>Select Account Type</p>
-                <label htmlFor="account-selector">Account Type</label>
-                <select
-                    id="account-selector"
-                    value={formData.accountType}
-                    data-testid='account-selector'
-                    onChange={handleAccountTypeChange}
-                    aria-required="true"
-                >
-                    <option value='mentor' data-testid="account-mentor">Mentor</option>
-                    <option value='parent' data-testid="account-parent">Parent</option>
-                </select>
-            </div>
+        <div className="input-wrapper">
+          <label>Email</label>
+          <input
+            type="email"
+            name="email"
+            placeholder="you@example.com"
+            value={formData.email}
+            onChange={handleInputChange}
+            required
+          />
+                    {errors.email && <span className="error-text">{errors.email}</span>}
+        </div>
 
-            {!parentAccountFlag && (
-                <> {/* Using a React Fragment to wrap without an extra div */}
-                    <label htmlFor="mentee-search-input">Find a student</label>
-                    <input
-                        type="text"
-                        name="setMentee"
-                        id="mentee-search-input" // Keep ID for click outside handler
-                        placeholder="Find a student"
-                        value={usernameToSearch} // Controlled component
-                        onChange={(e) => handleMenteeSearchChange(e.target.value)}
-                        autoComplete="off" // Prevent browser's default autocomplete
-                    />
-                    {activeDropdown && (
-                        <div className="dropdown-users" id="mentee-dropdown-container" role="listbox"> {/* Keep ID for click outside handler */}
-                            {dropdownLoading ? (
-                                <div className="item-template" role="option">Loading...</div>
-                            ) : (
-                                matchingStudents.length > 0 ? (
-                                    matchingStudents.map((username) => (
-                                        <StudentTemplate
-                                            key={username} // Username is unique, use as key
-                                            studentUsername={username} // Corrected prop name
-                                            onClick={handleSelectMentee} // Pass the handler
-                                        />
-                                    ))
+        <div className="input-wrapper">
+          <label>Username</label>
+          <input
+            type="text"
+            name="username"
+            placeholder="Choose a username"
+            value={formData.username}
+            onChange={handleInputChange}
+            required
+          />
+                    {errors.username && <span className="error-text">{errors.username}</span>}
+        </div>
+
+        <div className="input-wrapper">
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            placeholder="Create a password"
+            value={formData.password}
+            onChange={handleInputChange}
+            required
+          />
+                    {errors.password && <span className="error-text">{errors.password}</span>}
+        </div>
+
+        <div className="input-wrapper">
+          <label>Re-type Password</label>
+          <input
+            type="password"
+            name="retypedPassword"
+            placeholder="Re-type your password"
+            value={formData.retypedPassword}
+            onChange={handleInputChange}
+            required
+          />
+                    {errors.retypePassword && <span className="error-text">{errors.retypePassword}</span>}
+        </div>
+
+        <div className="input-wrapper">
+          <label>Account Type</label>
+                    <select name="accountType" value={formData.accountType} onChange={handleAccountTypeChange}>
+            <option value="mentor">Mentor</option>
+            <option value="parent">Parent</option>
+          </select>
+        </div>
+
+                {!parentAccountFlag && (
+                    <div className="input-wrapper">
+                        <label>Find a Student (for Mentors)</label>
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            name="setMentee"
+                            id="mentee-search-input"
+                            placeholder="Find a student"
+                            value={usernameToSearch}
+                            onChange={(e) => handleMenteeSearchChange(e.target.value)}
+                            autoComplete="off"
+                        />
+                        {activeDropdown && (
+                            <div className="dropdown-users" id="mentee-dropdown-container" ref={dropdownRef}>
+                                {dropdownLoading ? (
+                                    <div className="item-template">Loading...</div>
                                 ) : (
-                                    <div className="item-template" role="option">No matching students found.</div>
-                                )
-                            )}
-                        </div>
-                    )}
-                </>
-            )}
+                                    matchingStudents.length > 0 ? (
+                                        matchingStudents.map((username) => (
+                                            <StudentTemplate
+                                                key={username}
+                                                studentUsername={username}
+                                                onClick={handleSelectMentee}
+                                            />
+                                        ))
+                                    ) : (
+                                        <div className="item-template">No matching students found.</div>
+                                    )
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
 
-            {/* Conditional rendering of the student section for parent accounts. */}
-            {parentAccountFlag && (
-                <div className='student-section'>
-                    {/* Button to add a new student form if the student form is not currently shown. */}
-                    {!showStudentForm && (
-                        <button
-                            type='button'
-                            className='add-student-btn'
-                            onClick={handleAddStudent}
-                        >
-                            Create Student
-                        </button>
-                    )}
-
-                    {/* Maps through the students array and renders a form for each student. */}
-                    {students.map((student: any) => (
-                        <div key={student.id} className='student-form'>
-                            {/* Button to remove a student form. */}
+                {parentAccountFlag && (
+                    <div className="student-section">
+                        {!showStudentForm && (
                             <button
-                                type='button'
-                                className='remove-student'
-                                onClick={() => handleRemoveStudent(student.id)}
+                                type="button"
+                                className="add-student-btn"
+                                onClick={handleAddStudent}
                             >
-                                Delete student
+                                Create Student
                             </button>
+                        )}
 
-                            <input
-                                type='text'
-                                placeholder="Student's first name"
-                                value={student.firstName}
-                                onChange={(e) =>
-                                    handleStudentInputChange(
-                                        student.id,
-                                        'firstName',
-                                        e.target.value
-                                    )
-                                }
-                            />
-                            <input
-                                type='text'
-                                placeholder="Student's last name"
-                                value={student.lastName}
-                                onChange={(e) =>
-                                    handleStudentInputChange(
-                                        student.id,
-                                        'lastName',
-                                        e.target.value
-                                    )
-                                }
-                            />
-                            <input
-                                type='text'
-                                placeholder='Student username'
-                                value={student.username}
-                                onChange={(e) =>
-                                    handleStudentInputChange(
-                                        student.id,
-                                        'username',
-                                        e.target.value
-                                    )
-                                }
-                            />
-                            <input
-                                type='text'
-                                placeholder="Student's email"
-                                value={student.email}
-                                onChange={(e) =>
-                                    handleStudentInputChange(student.id, 'email', e.target.value)
-                                }
-                            />
-                            <input
-                                type='password'
-                                placeholder="Student's password"
-                                value={student.password}
-                                onChange={(e) =>
-                                    handleStudentInputChange(
-                                        student.id,
-                                        'password',
-                                        e.target.value
-                                    )
-                                }
-                            />
-                            <input
-                                type='password'
-                                placeholder="Re-type student's password"
-                                value={student.retypedPassword}
-                                onChange={(e) =>
-                                    handleStudentInputChange(
-                                        student.id,
-                                        'retypedPassword',
-                                        e.target.value
-                                    )
-                                }
-                            />
-                        </div>
-                    ))}
-                </div>
-            )}
+                        {students.map((student: any) => (
+                            <div key={student.id} className="student-form">
+                                <button
+                                    type="button"
+                                    className="remove-student"
+                                    onClick={() => handleRemoveStudent(student.id)}
+                                >
+                                    Delete student
+                                </button>
+                                <input
+                                    type="text"
+                                    placeholder="Student's first name"
+                                    value={student.firstName}
+                                    onChange={(e) =>
+                                        handleStudentInputChange(
+                                            student.id,
+                                            'firstName',
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Student's last name"
+                                    value={student.lastName}
+                                    onChange={(e) =>
+                                        handleStudentInputChange(
+                                            student.id,
+                                            'lastName',
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Student username"
+                                    value={student.username}
+                                    onChange={(e) =>
+                                        handleStudentInputChange(
+                                            student.id,
+                                            'username',
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Student's email"
+                                    value={student.email}
+                                    onChange={(e) =>
+                                        handleStudentInputChange(student.id, 'email', e.target.value)
+                                    }
+                                />
+                                <input
+                                    type="password"
+                                    placeholder="Student's password"
+                                    value={student.password}
+                                    onChange={(e) =>
+                                        handleStudentInputChange(
+                                            student.id,
+                                            'password',
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                                <input
+                                    type="password"
+                                    placeholder="Re-type student's password"
+                                    value={student.retypedPassword}
+                                    onChange={(e) =>
+                                        handleStudentInputChange(
+                                            student.id,
+                                            'retypedPassword',
+                                            e.target.value
+                                        )
+                                    }
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )}
 
-            <div className='terms' data-testid='terms'>
-                <input type='checkbox' id='termsCheckbox' onChange={termsCheckChange} required aria-required="true" />
-                <label htmlFor='termsCheckbox'>I accept the terms and conditions</label>
-            </div>
+        <div className="terms-wrapper">
+                    <input type="checkbox" id="terms" onChange={termsCheckChange} required />
+          <label htmlFor="terms">I accept the terms and conditions</label>
+                    {errors.terms && <span className="error-text">{errors.terms}</span>}
+        </div>
 
-            {/* Submit button for the signup form. */}
-            <button type='submit' className='submit-btn' data-testid='submit-btn' onClick={handleSubmit} aria-label="Sign up">
-                Sign up
-            </button>
-        </form>
-    );
+        <div className="button-wrapper">
+          <button type="submit">Sign Up</button>
+        </div>
+      </form>
+
+      <div className="signup-links">
+        <a href="/login">Back to Login</a>
+      </div>
+    </div>
+  );
 };
 
 export default Signup;

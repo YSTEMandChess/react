@@ -1,254 +1,123 @@
-h2 {
-  margin-top: 5rem;
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to bottom right, #fef9c3, #bbf7d0);
 }
 
-.dropdown-users {
-  height: 40vh;
-  width: 37vw;
-  background-color: white;
-  overflow-y: auto;
-  border: 0.1rem solid black;
-  margin-top: -1rem;
-}
-
-
-
-.signupForm {
+.signup-page {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh; /* Centers form vertically */
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.signup-title {
+  font-size: 2.5rem;
+  color: #1e293b;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.signup-error {
+  color: #ef4444;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   width: 100%;
-  row-gap: 1rem;
-
-  .sign-up-title {
-    font-size: 3rem;
-    font-weight: bold;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-
-  .submit-btn {
-    border: 1px solid black;
-    color: lightgreen;
-    width: 30%;
-    background-color: whitesmoke;
-  }
-
-  .submit-btn:hover {
-    background-color: lightgreen;
-    color: whitesmoke;
-  }
+  max-width: 360px;
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-div.student-form input{
-  display: flex;
-  width: 20rem;
-  border: 2px solid black;
-  border-radius: 1rem;
-  row-gap: 1rem;
-}
-
-.student-form {
+.input-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  .remove-student {
-    margin-top: 0.5rem;
-    border: 1px solid black;
-    color: white;
-    font-size: 1rem;
-    width: 11rem;
-    background-color: lightcoral;
-  }
-
-  .remove-student:hover {
-    color: lightcoral;
-    background-color: white;
-  }
 }
 
-input[name="setMentee"] {
-    width: 41vw;
-    height: 7vh;
-    border-radius: 1rem;
-    border: 0.1rem solid black;
+.input-wrapper label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.4rem;
 }
 
-input[name="setMentee"]::placeholder {
-  opacity: 0.5;
-  font-size: 1.5rem;
-
+.input-wrapper input,
+.input-wrapper select {
+  padding: 12px 16px;
+  font-size: 1rem;
+  width: 100%;
+  border-radius: 8px;
+  border: 2px solid #cbd5e1;
+  transition: border 0.3s ease;
+  background-color: #fff;
+  font-family: 'Comic Sans MS', cursive;
+  color: #334155;
+  box-sizing: border-box;
 }
 
-.student-section {
+.input-wrapper input:focus,
+.input-wrapper select:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.terms-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center;
-
-  .add-student-btn {
-    border: 1px solid black;
-      color: lightgreen;
-      height: 3rem;
-      font-size: 1rem;
-      width: 11rem;
-      background-color: whitesmoke;
-      margin-top: 0.5rem;
-  }
-
-  .add-student-btn:hover {
-    background-color: lightgreen;
-    color: whitesmoke;
-  }
-
+  gap: 0.5rem;
+  font-size: 0.9rem;
 }
 
-div.form-fields input {
+.button-wrapper {
   display: flex;
-  width: 20rem;
-  height: 3rem;
-  border: 2px solid black;
-  border-radius: 1rem;
+  justify-content: center;
   margin-top: 1rem;
 }
 
-.termsCheckbox {
-  display: flex;                      // Use flexbox for alignment
-  align-items: center;               // Center items vertically
-  justify-content: center;            // Center items horizontally (optional)
-  margin: 15px 0;                    // Space above and below the terms checkbox
-  
-  input[type="checkbox"] {
-    margin-right: 10px;              // Space between checkbox and label
-  }
+.signup-form button {
+  padding: 12px 40px;
+  background-color: #3b82f6;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 25px;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  transition: 0.3s;
+  cursor: pointer;
 }
 
-.errorMessages {
-  color: red;
-  text-align: center;
-  margin-bottom: 1rem;
+.signup-form button:hover {
+  background-color: #2563eb;
+  transform: scale(1.05);
 }
 
-.errorMessages {
-  display: none; // Default to not displaying any error messages
-
-  &.visible {
-    display: block; // Only show when the .visible class is added
-  }
-
-  h3 {
-    color: red; // Styling for error messages
-    text-align: center; // Center the error message text
-  }
-}
-
-.input-container {
+.signup-links {
+  margin-top: 1.5rem;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
   gap: 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
 
-  .email-detail {
-    min-width: 41.5rem;
+.signup-links a {
+  color: #1e293b;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s;
+}
 
-    #email {
-      min-width: 41.5rem;
-    }
-  }
-
-  .terms-container {
-    font-size: 1.2rem;
-    display: flex;
-    gap: 0.5rem;
-    display: flex;
-    align-items: center;
-
-    input {
-      width: 1.2rem;
-      height: 1.2rem;
-    }
-  }
-  .account-details-container {
-    display: flex;
-    gap: 1.5rem;
-    align-items: center;
-
-    .account-type-container {
-      display: flex;
-      gap: 0.5rem;
-      font-size: 1.2rem;
-      align-items: center;
-      position: relative;
-
-      select {
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        padding: 0.5rem;
-
-        option {
-          padding: 0.5rem;
-        }
-      }
-    }
-  }
-  .account-detail {
-    width: 100%;
-    height: 40px;
-    position: relative;
-    width: 20rem;
-    display: flex;
-    justify-content: center;
-
-    input {
-      width: 100%;
-      height: 100%;
-      border: none;
-      border-bottom: 2px solid silver;
-      font-size: 1.1rem;
-      outline: none;
-    }
-
-    input:focus ~ label,
-    input:valid ~ label {
-      transform: translateY(-25px);
-      border: none;
-      color: black;
-    }
-
-    .underline {
-      position: absolute;
-      bottom: -2px;
-      height: 3px;
-      width: 100%;
-    }
-    .underline:before {
-      position: absolute;
-      content: "";
-      height: 100%;
-      width: 100%;
-      background: black;
-      transform: scale(0);
-      bottom: -3px;
-      left: 2px;
-    }
-
-    input:focus ~ .underline:before,
-    input:valid ~ .underline:before {
-      width: 100%;
-      transform: scale(1.01);
-      transition: transform 0.4s ease;
-    }
-
-    label {
-      position: absolute;
-      bottom: 5px;
-      left: 1px;
-      color: grey;
-      pointer-events: none;
-      transition: all 0.3s ease;
-    }
-  }
+.signup-links a:hover {
+  border-color: #1e293b;
 }

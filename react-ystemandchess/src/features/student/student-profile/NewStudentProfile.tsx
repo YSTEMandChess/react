@@ -20,16 +20,7 @@ import { ReactComponent as ActivitiesIcon } from "../../../assets/images/student
 import { ReactComponent as BadgesIcon } from "../../../assets/images/student/badges_button.svg";
 import { ReactComponent as LeaderboardIcon } from "../../../assets/images/student/leaderboard_button.svg";
 
-// Tab images
-import activityTab from "../../../assets/images/student/activity_tab.png";
-import mentorTab from "../../../assets/images/student/mento_tab.png";
-import prodevTab from "../../../assets/images/student/prodev_tab.png";
-import chessTab from "../../../assets/images/student/chess_tab.png";
-import mathTab from "../../../assets/images/student/math_tab.png";
-import gamesTab from "../../../assets/images/student/games_tab.png";
-import puzzlesTab from "../../../assets/images/student/puzzles_tab.png";
-import playTab from "../../../assets/images/student/play_tab.png";
-import recordingsTab from "../../../assets/images/student/recordings_tab.png";
+// Tab images - using Images from imageImporter (same as mentor)
 
 const Lessons = lazy(() => import("../../lessons/lessons-main/Lessons"));
 const LessonsSelection = lazy(() => import("../../lessons/lessons-selection/LessonsSelection"));
@@ -81,18 +72,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [celebrateAction, setCelebrateAction] = useState(false);
 
-  // Mapping of tab keys to custom image imports
-  const tabImages: Record<string, string> = {
-    activity: activityTab,
-    mentor: mentorTab,
-    prodev: prodevTab,
-    chessLessons: chessTab,
-    mathLessons: mathTab,
-    games: gamesTab,
-    puzzles: puzzlesTab,
-    playComputer: playTab,
-    recordings: recordingsTab,
-  };
+  // Tab keys - using Images from imageImporter (same pattern as mentor)
+  const tabKeys = ["activity", "mentor", "prodev", "chessLessons", "mathLessons", "games", "puzzles", "playComputer", "recordings"];
 
   // states for lessons tab
   const [lessonSelected, setLessonSelected] = useState(false); // whether user has navigated into a lesson
@@ -447,17 +428,38 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         <div className="inv-inventory-content-section">
           <nav className="inv-inventory-content-tabs">
             <ul>
-              {Object.keys(tabImages).map((tab) => (
-                <li key={tab}>
-                  <button
+              {tabKeys.map((tab) => {
+                // Map tab names to icon names (prodev -> learning, mathLessons -> learning)
+                const iconName = tab === "prodev" 
+                  ? "learningIcon" 
+                  : tab === "mathLessons"
+                  ? "learningIcon"
+                  : `${tab}Icon`;
+                
+                // Create display name for the tab
+                const displayName =
+                  tab === "chessLessons"
+                    ? "Chess Lessons"
+                    : tab === "mathLessons"
+                    ? "Math Lessons"
+                    : tab === "playComputer"
+                    ? "Play with Computer"
+                    : tab === "prodev"
+                    ? "Learning"
+                    : tab.charAt(0).toUpperCase() + tab.slice(1);
+                
+                return (
+                  <div
+                    key={tab}
                     className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
                     onClick={() => handleTabClick(tab)}
                     aria-label={tab}
                   >
-                    <img src={tabImages[tab]} alt={`${tab} icon`} />
-                  </button>
-                </li>
-              ))}
+                    <img src={Images[iconName as keyof typeof Images]} alt={`${tab} icon`} />
+                    <li>{displayName}</li>
+                  </div>
+                );
+              })}
             </ul>
           </nav>
           <div className="inv-inventory-content-content">{tabContent}</div>
