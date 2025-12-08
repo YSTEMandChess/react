@@ -66,26 +66,33 @@ const registerSocketHandlers = (socket, io) => {
     socket.on("move", async (msg) => {
         try {
             const { from, to, computerMove } = JSON.parse(msg);
-            const res = await gameManager.makeMove(socket.id, from, to, computerMove);
+            const res = gameManager.makeMove(socket.id, from, to, computerMove);
+            const state = res.result;
             gameManager.broadcastBoardState(res.result, io);
             console.log('move result ', res);
             if(!computerMove) {
                 const activityEvents = res.activityEvents;   
-
-                 
                 if (activityEvents && activityEvents.length > 0) {
-                    const studentSocketId = res.result.studentId;
-                    console.log('student id', studentSocketId)
-                    /*const payload = {
+                        const studentId = state.studentId;   
+                        console.log('student id', studentId)
+                    const payload = {
                         activities: activityEvents, 
-                        lastMove: { from, to, san: result.move?.san }
+                        lastMove: { from, to, san: state.move?.san }
                     };
                     console.log('payload', payload);
-                    const studentSocket = io.sockets.sockets.get(studentSocketId);
+                    const studentSocket = io.sockets.sockets.get(studentId);
                     console.log('student socket', studentSocket);
                     if (studentSocket) {
-                        studentSocket.emit("activityCompleted", JSON.stringify(payload));
-                    }*/
+                        //send payload
+                        console.log(JSON.stringify(payload));
+                        try {
+                            /*const query = await fetch(`${process.env.CHESS_CLIENT_URL}/activities/${}/${}`, {
+                                method: "PUT"
+                            });*/
+                        } catch (e) {
+
+                        }
+                    }
                 }
 
             }

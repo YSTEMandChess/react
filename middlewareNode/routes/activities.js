@@ -78,10 +78,17 @@ router.put("/activity/:activityName", async (req, res) => {
         }
         const userId = getUserId(db, username);
         const activities = db.collection("activities");
-        await activities.updateOne(
+        const activityIncomplete = await activities.findOne(
+            { userId, "activities.name": activityName }, 
+            { activities: {$elemMatch: { name: activityName }}, _id:0},
+        );
+        if(activityIncomplete) {
+            console.log('incomplete activity: ', activityName);
+        }
+        /*await activities.updateOne(
             { userId, "activities.name": activityName },
             { $set: { "activities.$.completed": true } }
-        );
+        );*/
         return res.status(200);
     } catch (err) {
         console.error('Error updating activities: ', err);
@@ -99,9 +106,10 @@ router.put("/activity/check", async (req, res) => {
         }
         const userId = getUserId(db, username);
         const activities = db.collection("activities");
-        const userActivities = await activities.findOne(
-            { userId }, { projection: {activities: 1, _id: 0}}
-        );
+
+        /*const userActivities = await activities.findOne(
+            { userId, }, { projection: {activities: 1, _id: 0}}
+        );*/
         //compare move data with activities
     }
     catch (err) {
