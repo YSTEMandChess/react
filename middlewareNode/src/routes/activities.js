@@ -55,7 +55,7 @@ async function getUserId(db, username) {
  * GET /activities
  * Retrieves all daily activities for a user
  */
-router.get("/", async (req, res) => {
+router.get("/:username", async (req, res) => {
     try {
         const db = await getDb();
         const { username } = req.params;
@@ -75,7 +75,7 @@ router.get("/", async (req, res) => {
     }
 })
 
-router.get("/dates", async (req, res) => {
+router.get("/:username/dates", async (req, res) => {
     try {
         const db = await getDb(); 
         const { username } = req.params;

@@ -152,21 +152,10 @@ function sendNewPuzzle () {
   socket.emit('newPuzzle', JSON.stringify(data))
 }
 
-<<<<<<< HEAD
-function sendNewLesson () {
-  console.log('starting new lesson with server')
-  var data = {'mentor': mentor, 'student': student, 'role': role}
-  console.log(data)
-  socket.emit('newLesson', JSON.stringify(data))
-}
-
-// for chess server to modify the game's board state & player color, (designed just for puzzles for now)
-=======
 /**
  * Updates the board state on the server with a new FEN string
  * @param {string} fen - FEN notation of the new board state
  */
->>>>>>> main
 function sendSetState (fen) {
   console.log('setting a new board state')
   var data = {'state': fen}
