@@ -6,11 +6,11 @@ import MoveTracker from '../move-tracker/MoveTracker';
 import { environment } from "../../../../environments/environment";
 import ChessBoard, { ChessBoardRef } from '../../../../components/ChessBoard/ChessBoard';
 import { Move } from "../../../../core/types/chess";
-import { ReactComponent as RedoIcon } from '../../../images/icons/icon_redo.svg';
-import { ReactComponent as BackIcon } from '../../../images/icons/icon_back.svg';
-import { ReactComponent as BackIconInactive } from '../../../images/icons/icon_back_inactive.svg';
-import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg';
-import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
+import { ReactComponent as RedoIcon } from '../../../../assets/images/icons/icon_redo.svg';
+import { ReactComponent as BackIcon } from '../../../../assets/images/icons/icon_back.svg';
+import { ReactComponent as BackIconInactive } from '../../../../assets/images/icons/icon_back_inactive.svg';
+import { ReactComponent as NextIcon } from '../../../../assets/images/icons/icon_next.svg';
+import { ReactComponent as NextIconInactive } from '../../../../assets/images/icons/icon_next_inactive.svg';
 import { useNavigate, useLocation } from 'react-router';
 import PromotionPopup from '../../lessons-main/PromotionPopup';
 
