@@ -12,8 +12,8 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
-    //user: environment.email!.user,
-    //pass: environment.email!.pass,
+    user: environment.email!.user,
+    pass: environment.email!.pass,
   },
 });
 
@@ -30,7 +30,7 @@ const transporter = nodemailer.createTransport({
 const sendResetPasswordEmail = (email: any, resetLink: any) => {
   // Prepare email content
   const mailOptions = {
-  //  from: environment.email!.user,
+    from: environment.email!.user,
     to: email,
     subject: 'Password Reset',
     text: `Click the link to reset your password: ${resetLink}`,

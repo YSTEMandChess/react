@@ -56,7 +56,6 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
           'Authorization': `Bearer ${cookies.login}`,
           'Content-Type': 'application/json',
         },
-        credentials: 'include'
       })
       const json = await response.json();
       const data = json.activities.activities;

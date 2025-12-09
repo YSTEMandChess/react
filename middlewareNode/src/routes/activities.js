@@ -62,7 +62,7 @@ router.get("/", async (req, res) => {
         if(!username) {
             return res.status(401).json({error:'Authentication required'});
         }
-        const userId = getUserId(db, username);
+        const userId = await getUserId(db, username);
         const activities = db.collection("activities");
         const userActivities = await activities.findOne(
             { userId }, { projection: {activities: 1, _id: 0}}
