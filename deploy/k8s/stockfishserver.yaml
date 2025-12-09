@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: stockfishserver
-        image: owenoertell/ystem-testing:chessclient
+        image: owenoertell/ystem-testing:stockfishserver
       imagePullSecrets:
-      - name: regcred 
+      - name: regcred
