@@ -1,7 +1,7 @@
 import { renderHook, act } from "@testing-library/react";
 import { useTimeTracking } from "./useTimeTracking";
 import { SetPermissionLevel } from "../../../../../globals";
-import { environment } from "../../../../../core/environments/environment";
+import { environment } from "../../../../../environments/environment";
 
 // mock SetPermissionLevel
 jest.mock("../../../../../globals", () => ({

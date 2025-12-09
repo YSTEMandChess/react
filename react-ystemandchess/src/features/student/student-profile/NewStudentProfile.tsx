@@ -3,7 +3,7 @@ import "./NewStudentProfile.scss";
 import Images from "../../../assets/images/imageImporter";
 import { SetPermissionLevel } from '../../../globals';
 import { useCookies } from 'react-cookie';
-import { environment } from "../../../core/environments/environment";
+import { environment } from "../../../environments/environment";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router";
 import StatsChart from "./StatsChart";

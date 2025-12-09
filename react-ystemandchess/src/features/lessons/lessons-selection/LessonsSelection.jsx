@@ -2,7 +2,7 @@ import profileStyles from "./ProfileStyle.module.scss";
 import pageStyles from "./LessonsStyle.module.scss";
 import { useNavigate } from "react-router";
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { environment } from "../../../core/environments/environment";
+import { environment } from "../../../environments/environment";
 import { getAllScenarios } from "../lessons-main/Scenarios";
 import { useCookies } from "react-cookie";
 import ScenarioTemplate from "./ScenarioTemplate/ScenarioTemplate.jsx"; // Importing the ScenarioTemplate component
