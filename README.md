@@ -128,14 +128,15 @@ Each service runs independently and requires its own terminal window. Start the 
 
 Handles user authentication, database operations, and coordinates other services.
 
-
 ```bash
 cd middlewareNode
 npm install    # Install backend dependencies  
-npm start      # Start the API server
+npm start      # Start the API server (runs from src/server.js)
 ```
 
 The server typically runs on port 8000. You should see "MongoDB Connected..." when it starts successfully.
+
+> **Note**: After modularization, the entry point is now `src/server.js`
 
 **If you intend to test the mentor and student login pages, you may use the following usernames and passwords respectively:**
 
@@ -166,10 +167,12 @@ Manages chess game logic, validates moves, and handles real-time gameplay:
 ```bash
 cd chessServer
 npm install
-npm start
+npm start      # Starts from src/index.js
 ```
 
 Defaults to port 3000 (or the next available port if taken).
+
+> **Note**: After modularization, the entry point is now `src/index.js`
 
 ---
 
@@ -180,10 +183,12 @@ Integrates Stockfish for AI opponents and move analysis:
 ```bash
 cd stockfishServer
 npm install
-npm start
+npm start      # Starts from src/index.js
 ```
 
 This service usually runs on port 8080.
+
+> **Note**: After modularization, the entry point is now `src/index.js`
 
 ---
 
@@ -198,8 +203,9 @@ Run the http server on port 80 using: `npx http-server -p 80` to ensure that the
 You can use the **Live Server extension in VS Code** to open the HTML files for local testing of the chess board:
 
 * **Board only:** Right-click `index.html` → "Open with Live Server"
-* **Board with controls:** Right-click `parent.html` → "Open with Live Server"
-* **Mentor/Student interaction:** Right-click `both.html` → "Open with Live Server"
+* **Archived files:** `archive/parent.html` and `archive/both.html` contain legacy testing interfaces
+
+> **Note**: Old HTML test files have been moved to `archive/` directory after modularization
 
 ---
 
@@ -231,4 +237,30 @@ git checkout -b my-branch-name
 
 ---
 
-You’re all set! Happy coding and thank you for contributing to educational equity! 🎯♟️
+## Project Structure
+
+This project has been recently modularized for better organization and maintainability. Key structural changes:
+
+- **All Node.js services** now have their code in a `src/` directory
+- **React app** uses a feature-based architecture with:
+  - `components/` - Reusable UI components
+  - `features/` - Feature modules (auth, lessons, student, mentor, etc.)
+  - `core/` - Core infrastructure (services, types, utils)
+  - `assets/` - Static assets and images
+- **Configuration files** are organized in the `config/` directory
+- **Kubernetes deployments** are in the `yaml/` directory
+
+---
+
+## Docker Deployment
+
+To run all services using Docker:
+
+```bash
+cd config
+docker-compose up
+```
+
+---
+
+You're all set! Happy coding and thank you for contributing to educational equity! 🎯♟️

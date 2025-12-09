@@ -1,3 +1,19 @@
+/**
+ * Angular Application Module
+ * 
+ * This is the root module that configures and bootstraps the Angular application.
+ * It imports all necessary modules, declares all components, and provides services.
+ * 
+ * Key Features:
+ * - Video conferencing via Agora integration
+ * - Socket communication for real-time chess gameplay
+ * - Cookie-based authentication
+ * - Comprehensive routing for all pages
+ * 
+ * @deprecated This is the old Angular version of the application.
+ * The project is being migrated to React (see react-ystemandchess directory).
+ */
+
 import { SocketService } from './services/socket/socket.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
@@ -58,11 +74,19 @@ import {ParentProfileComponent} from "./pages/parent-profile/parent-profile.comp
 import { PuzzlesComponent } from "./pages/puzzles/puzzles.component";
 import { PuzzlesService } from './services/puzzles/puzzles.service';
 
+/**
+ * Agora video conferencing configuration
+ * Used for mentor-student video calls during chess sessions
+ */
 const agoraConfig: AgoraConfig = {
   AppID: '6c368b93b82a4b3e9fb8e57da830f2a4',
 };
 
+/**
+ * Main application module configuration
+ */
 @NgModule({
+  // All components used in the application
   declarations: [
     AppComponent,
     PlayComponent,
@@ -108,16 +132,19 @@ const agoraConfig: AgoraConfig = {
     ParentProfileComponent,
     PuzzlesComponent
   ],
+  // External modules and libraries
   imports: [
-    BrowserModule,
-    AppRoutingModule,
-    HttpClientModule,
-    HttpClientTestingModule,
-    ModalModule,
-    NgxAgoraModule.forRoot(agoraConfig),
-    FormsModule,
+    BrowserModule,                              // Core Angular browser module
+    AppRoutingModule,                           // Application routing configuration
+    HttpClientModule,                           // HTTP client for API calls
+    HttpClientTestingModule,                    // HTTP testing utilities
+    ModalModule,                                // Custom modal component module
+    NgxAgoraModule.forRoot(agoraConfig),       // Video conferencing module
+    FormsModule,                                // Angular forms support
   ],
+  // Global services available throughout the app
   providers: [CookieService, SocketService, LoginGuardService],
+  // Root component to bootstrap
   bootstrap: [AppComponent],
 })
 export class AppModule {}
