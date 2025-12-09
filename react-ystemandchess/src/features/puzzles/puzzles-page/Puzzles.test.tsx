@@ -4,7 +4,7 @@ import Puzzles from "./Puzzles";
 import { MemoryRouter } from "react-router";
 
 // Mock environment
-jest.mock("../../../../environments/environment", () => ({
+jest.mock("../../../environments/environment", () => ({
   environment: {
     urls: {
       middlewareURL: "http://localhost:8000",
@@ -15,7 +15,7 @@ jest.mock("../../../../environments/environment", () => ({
 }));
 
 // Mock ChessBoard
-jest.mock("../../../../components/ChessBoard/ChessBoard", () => {
+jest.mock("../../../components/ChessBoard/ChessBoard", () => {
   const React = require("react");
   return {
     __esModule: true,
@@ -25,7 +25,7 @@ jest.mock("../../../../components/ChessBoard/ChessBoard", () => {
 
 // Mock socket hook
 jest.mock(
-  "../../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket",
+  "../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket",
   () => ({
     useChessSocket: () => ({
       connected: true,
@@ -40,7 +40,7 @@ jest.mock(
 );
 
 // Mock globals
-jest.mock("../../../../globals", () => ({
+jest.mock("../../../globals", () => ({
   SetPermissionLevel: jest.fn(() =>
     Promise.resolve({ error: false, username: "test-user" })
   ),
