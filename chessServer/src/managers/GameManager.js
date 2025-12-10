@@ -162,7 +162,7 @@ class GameManager {
      * @param {*} moveTo 
      * @returns {Object} Updated board state, move details, and socket IDs
      */
-    makeMove(socketId, moveFrom, moveTo) {
+    makeMove(socketId, moveFrom, moveTo, computerMove) {
         const game = this.getGameBySocketId(socketId);
 
         if (!game) {
@@ -170,10 +170,8 @@ class GameManager {
         }
 
         const board = game.boardState;
-        console.log('making move', moveFrom, moveTo);
-        console.log('types', typeof(moveFrom));
         const move = {from: moveFrom, to: moveTo};
-        console.log(move, typeof(move), typeof(move)==='object');
+        //console.log(move, typeof(move), typeof(move)==='object');
         const moveResult = board.move(move);
         console.log(moveResult);
 
@@ -220,9 +218,7 @@ class GameManager {
             at: Date.now()
             });
         }
-
-        const moverIsStudent = socketId === game.student.id;
-        console.log(activityEvents);
+        //console.log(activityEvents);
         return { 
                 result: {
                             boardState: board.fen(),
@@ -230,7 +226,7 @@ class GameManager {
                             studentId: game.student.id,
                             mentorId: game.mentor.id,
                         },
-                activityEvents: moverIsStudent ? activityEvents : []
+                activityEvents: activityEvents
         };
     }
 

@@ -63,25 +63,43 @@ const registerSocketHandlers = (socket, io) => {
      * Handles player move request
      * Expected payload: { from, to }
      */
-    socket.on("move", (msg) => {
+    socket.on("move", async (msg) => {
         try {
-            const { from, to } = JSON.parse(msg);
-            const res = gameManager.makeMove(socket.id, from, to);
+            const { from, to, computerMove } = JSON.parse(msg);
+            const res = gameManager.makeMove(socket.id, from, to, computerMove);
+            const state = res.result;
             gameManager.broadcastBoardState(res.result, io);
-            /*
-            const activityEvents = res.activityEvents;
+            console.log('move result ', res);
+            if(!computerMove) {
+                const activityEvents = res.activityEvents;   
+                if (activityEvents && activityEvents.length > 0) {
+                        const studentId = state.studentId;   
+                        console.log('student id', studentId)
+                    const payload = {
+                        activities: activityEvents, 
+                        lastMove: { from, to, san: state.move?.san }
+                    };
+                    console.log('payload', payload);
+                    const studentSocket = io.sockets.sockets.get(studentId);
+                    console.log('student socket', studentSocket);
+                    if (studentSocket) {
+                        //send payload
+                        console.log(JSON.stringify(payload));
+                        try {
+                            /*const query = await fetch(`${process.env.CHESS_CLIENT_URL}/activities/${}/${}`, {
+                                method: "PUT"
+                            });*/
+                        } catch (e) {
 
-            if (activityEvents && activityEvents.length > 0) {
-                const studentSocketId = result.studentId;
-                const payload = {
-                    activities: activityEvents, 
-                    lastMove: { from, to, san: result.move?.san }
-                };
-                const studentSocket = io.sockets.sockets.get(studentSocketId);
-                if (studentSocket) {
-                    studentSocket.emit("activityCompleted", JSON.stringify(payload));
+                        }
+                    }
                 }
-            }*/
+
+            }
+
+            /*
+
+            */
         }
         catch (err) {
             socket.emit("error", err.message);

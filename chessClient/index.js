@@ -538,7 +538,8 @@ eventer(
 
       updateStatus()
       sendToParent(currentState.fen())
-      socket.emit("move",JSON.stringify({from:data.from, to:data.to}));
+      console.log('move data',data);
+      socket.emit("move",JSON.stringify({from:data.from, to:data.to, computerMove: data.computerMove}));
 
     }
 
