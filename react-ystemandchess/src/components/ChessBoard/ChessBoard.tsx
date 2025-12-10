@@ -30,22 +30,37 @@ export interface ChessBoardRef {
 const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
   ({ lessonMoves = [], onMove, onPromote, onReset, fen: controlledFEN, onLessonComplete }, ref) => {
     const gameRef = useRef<Chess>(new Chess());
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [fen, setFen] = useState(gameRef.current.fen());
     const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
     const [lessonIndex, setLessonIndex] = useState<number>(0);
     const [isShaking, setIsShaking] = useState<boolean>(false);
     const [orientation, setOrientationState] = useState<"white" | "black">("white");
+    const [boardWidth, setBoardWidth] = useState(0);
+    const boardRef = useRef<HTMLDivElement | null>(null);
+
+    // Update width based on parent size
+    useEffect(() => {
+      const handleResize = () => {
+        if (boardRef.current) {
+          const containerWidth = boardRef.current.offsetWidth;
+          setBoardWidth(containerWidth);
+        }
+      };
+
+      handleResize(); // initial
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     // Sync controlled FEN to engine whenever it changes
     useEffect(() => {
       if (!controlledFEN) return;
       if (controlledFEN !== gameRef.current.fen()) {
         try {
-      gameRef.current.load(controlledFEN);
-    } catch (err) {
-      console.warn("Invalid FEN passed to ChessBoard:", controlledFEN, err);
-    }
+          gameRef.current.load(controlledFEN);
+        } catch (err) {
+          console.warn("Invalid FEN passed to ChessBoard:", controlledFEN, err);
+        }
         setFen(gameRef.current.fen());
         setHighlightSquares([]);
       }
@@ -136,8 +151,9 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     };
 
     return (
-      <div className={`chessboard-container ${isShaking ? "shake" : ""}`}>
+      <div ref={boardRef} className={`chessboard-wrapper ${isShaking ? "shake" : ""}`}>
         <Chessboard
+          width={boardWidth}
           position={fen}
           onDrop={onDrop}
           orientation={orientation}
@@ -145,18 +161,6 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
             acc[sq] = { backgroundColor: "yellow" };
             return acc;
           }, {} as Record<string, React.CSSProperties>)}
-          style={{ width: "100%", height: "100%" }}
-        />
-        <canvas
-          ref={canvasRef}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            pointerEvents: "none",
-          }}
         />
       </div>
     );

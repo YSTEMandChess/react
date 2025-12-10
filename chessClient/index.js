@@ -1,3 +1,4 @@
+// Global state flags for lesson management
 let flag = false
 let lessonFlag = false
 let isLesson = false
@@ -6,6 +7,8 @@ let lessonBoard = ''
 let lessonEnd = ''
 let endSquare = ''
 let previousEndSquare = ''
+
+// Chessboard UI configuration
 var squareClass = 'square-55d63'
 var $board = $('#myBoard')
 var board = null
@@ -15,18 +18,22 @@ var blackSquareGrey = '#ae5716d6'
 
 var serverStartNotified = false
 
+// Cross-browser event listener compatibility
 var eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent'
 var eventer = window[eventMethod]
 var messageEvent = eventMethod == 'attachEvent' ? 'onmessage' : 'message'
 
+// User identification
 var mentor = ''
 var student = ''
 var role = 'student'
 
 var playerColor
 
+// Free move mode allows moving pieces freely without restrictions
 var freemoveFlag = false
 
+// Mouse tracking for showing opponent's cursor
 var myMouseX
 var myMouseY
 const mouseImage = 'img/cursor.png'
@@ -34,9 +41,11 @@ const mouseImage = 'img/cursor.png'
 var opponentMouseX = 0
 var opponentMouseY = 0
 
+// Puzzle-specific variables
 var nextPuzzleMove = []
 var isPuzzle = false
 
+// Move highlighting state
 var highlightFrom = ''
 var highlightTo = ''
 
@@ -50,7 +59,9 @@ document.addEventListener('mousemove', (event) => {
   }
 })
 
-// Update the position of the other players mouse
+/**
+ * Updates the visual position of opponent's cursor on screen
+ */
 function updateOpponentMouseXY () {
   const img = document.getElementById('cursor')
 
@@ -77,23 +88,37 @@ const chessImages = {
   wR: 'wR.png' // White Rook
 }
 
+/**
+ * Returns the full path to a chess piece image
+ * @param {string} peice - Piece identifier (e.g., 'wP', 'bK')
+ */
 function getChessPieceImage (peice) {
   chessString = chessPieceFolder + chessImages[peice]
   return chessString
 }
 
+// Connect to chess server via Socket.IO
 const socket = io('http://localhost:3001')
 
+// Default starting FEN position
 let defaultFEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
 
+// Notify parent window that client is ready
 letParentKnow()
 
+/**
+ * Removes grey highlighting from all squares
+ */
 function removeGreySquares () {
   $('#myBoard .square-55d63').css('background', '')
   $('#myBoard .square-55d63').css('background-image', '')
   $('#myBoard .square-55d63').css('background-position', '')
 }
 
+/**
+ * Highlights a square with grey overlay and dot indicator
+ * @param {string} square - Square notation (e.g., 'e4')
+ */
 function greySquare (square) {
   var $square = $('#myBoard .square-' + square)
 
@@ -107,6 +132,9 @@ function greySquare (square) {
   $square.css('background-image', "url('img/chesspieces/wikipedia/dot.png')")
 }
 
+/**
+ * Initiates a new chess game with the server
+ */
 function sendNewGame () {
   console.log('starting new game with server')
   var data = {'mentor': mentor, 'student': student, 'role': role}
@@ -114,7 +142,9 @@ function sendNewGame () {
   socket.emit('newgame', JSON.stringify(data))
 }
 
-// similar to sendNewGame, but for puzzles specifically
+/**
+ * Initiates a new puzzle session with the server
+ */
 function sendNewPuzzle () {
   console.log('starting new puzzle with server')
   var data = {'mentor': mentor, 'student': student, 'role': role}
@@ -122,6 +152,7 @@ function sendNewPuzzle () {
   socket.emit('newPuzzle', JSON.stringify(data))
 }
 
+<<<<<<< HEAD
 function sendNewLesson () {
   console.log('starting new lesson with server')
   var data = {'mentor': mentor, 'student': student, 'role': role}
@@ -130,6 +161,12 @@ function sendNewLesson () {
 }
 
 // for chess server to modify the game's board state & player color, (designed just for puzzles for now)
+=======
+/**
+ * Updates the board state on the server with a new FEN string
+ * @param {string} fen - FEN notation of the new board state
+ */
+>>>>>>> main
 function sendSetState (fen) {
   console.log('setting a new board state')
   var data = {'state': fen}
@@ -137,7 +174,12 @@ function sendSetState (fen) {
   socket.emit('setstate', JSON.stringify(data))
 }
 
-// for chess server to modify the game's board state & player color, (designed just for puzzles for now)
+/**
+ * Updates the board state and player color (primarily for puzzles)
+ * @param {string} fen - FEN notation of the new board state
+ * @param {string} color - Player color ('white' or 'black')
+ * @param {string} hints - Puzzle hints to display
+ */
 function sendSetStateColor (fen, color, hints) {
   console.log('setting a new board state')
   var data = {'state': fen, 'color': color, 'hints': hints}
@@ -145,6 +187,11 @@ function sendSetStateColor (fen, color, hints) {
   socket.emit('setstateColor', JSON.stringify(data))
 }
 
+/**
+ * Sends a move to the server for validation and broadcast
+ * @param {string} from - Source square
+ * @param {string} to - Target square
+ */
 function sendMove (from, to) {
   console.log('sending move to server')
   var data = {'mentor': mentor, 'student': student, 'role': role, 'from': from, 'to': to}
@@ -152,6 +199,9 @@ function sendMove (from, to) {
   socket.emit('move', JSON.stringify(data))
 }
 
+/**
+ * Notifies the server to end the current game
+ */
 function sendEndGame () {
   console.log('sending end game to server')
   var data = {'mentor': mentor, 'student': student, 'role': role}
@@ -159,22 +209,38 @@ function sendEndGame () {
   socket.emit('endgame', JSON.stringify(data))
 }
 
+/**
+ * Broadcasts mouse position to opponent
+ */
 function sendMouseXY () {
   let data = {'x': myMouseX, 'y': myMouseY, 'mentor': mentor, 'student': student}
   socket.emit('mousexy', JSON.stringify(data))
 }
 
+/**
+ * Broadcasts the last move for highlighting
+ * @param {string} from - Source square
+ * @param {string} to - Target square
+ */
 function sendLastMove (from, to) {
   let data = {'from': from, 'to': to, 'mentor': mentor, 'student': student}
   socket.emit('lastmove', JSON.stringify(data))
 }
 
+/**
+ * Sends highlight command to opponent
+ * @param {string} from - Source square
+ * @param {string} to - Target square
+ */
 function sendHighLight (from, to) {
   console.log('sending highlihgt')
   let data = {'from': from, 'to': to, 'mentor': mentor, 'student': student}
   socket.emit('highlight', JSON.stringify(data))
 }
 
+/**
+ * Requests the server to undo the last move
+ */
 function sendUndo () {
   console.log('sending undo to server')
   var data = {'mentor': mentor, 'student': student, 'role': role}
@@ -182,29 +248,46 @@ function sendUndo () {
   socket.emit('undo', JSON.stringify(data))
 }
 
+/**
+ * Requests removal of grey square highlights
+ */
 function sendRemoveGrey () {
   var data = {'mentor': mentor, 'student': student}
   socket.emit('removegrey', JSON.stringify(data))
 }
 
+/**
+ * Requests adding grey highlight to a square
+ * @param {string} to - Target square to highlight
+ */
 function sendGreySquare (to) {
   var data = {'mentor': mentor, 'student': student, 'to': to}
   socket.emit('addgrey', JSON.stringify(data))
 }
 
+/**
+ * Notifies opponent that a piece is being dragged
+ * @param {string} piece - Piece identifier being dragged
+ */
 function sendPieceDrag (piece) {
   console.log('sending drag')
   var data = {'mentor': mentor, 'student': student, 'piece': piece}
   socket.emit('piecedrag', JSON.stringify(data))
 }
 
+/**
+ * Notifies opponent that a piece drag has ended
+ */
 function sendPieceDrop () {
   console.log('sending drop')
   var data = {'mentor': mentor, 'student': student}
   socket.emit('piecedrop', JSON.stringify(data))
 }
 
-// sending simple string messages
+/**
+ * Broadcasts a simple text message
+ * @param {string} message - Message to send
+ */
 function sendMessage (message) {
   console.log('sending message:', message)
   var data = {'message': message}
@@ -544,6 +627,12 @@ eventer(
   false
 )
 
+/**
+ * Highlights move squares on the board
+ * @param {string} from - Source square
+ * @param {string} to - Target square  
+ * @param {string} style - CSS class name to apply
+ */
 function highlightMove (from, to, style) {
   console.log('hightlight!!!', from, to)
   $board.find('.' + squareClass).removeClass(style)
@@ -557,10 +646,16 @@ function highlightMove (from, to, style) {
   }
 }
 
+/**
+ * Flips the board orientation
+ */
 function flip () {
   board.flip()
 }
 
+/**
+ * Notifies parent window that iframe is ready to receive messages
+ */
 function letParentKnow () {
   if (flag === false) {
     parent.postMessage('ReadyToRecieve', '*')
@@ -568,6 +663,10 @@ function letParentKnow () {
   flag = true
 }
 
+/**
+ * Validates whether a piece can be dragged
+ * Checks turn, player color, and game state
+ */
 function onDragStart (source, piece, position, orientation) {
   // if freeplay mode is off
   if (!freemoveFlag) {
@@ -606,6 +705,10 @@ function onDragStart (source, piece, position, orientation) {
   }
 }
 
+/**
+ * Handles piece drop event
+ * Validates move legality and updates game state
+ */
 function onDrop (source, target, draggedPieceSource) {
   removeGreySquares()
   sendPieceDrop()
@@ -657,7 +760,11 @@ function onDrop (source, target, draggedPieceSource) {
     sendToParent(currentState.fen())
   }
 }
-// To add possible move suggestion on chessboard
+
+/**
+ * Shows possible moves when hovering over a square
+ * Displays grey dots on valid destination squares
+ */
 function onMouseoverSquare (square, piece) {
   if (playerColor && playerColor[0] == currentState.turn()) {
     // get list of possible moves for this square
@@ -676,22 +783,34 @@ function onMouseoverSquare (square, piece) {
     }
   }
 }
-// To remove possible move suggestion on chessboard
+
+/**
+ * Removes possible move suggestions when mouse leaves square
+ */
 function onMouseoutSquare (square, piece) {
   removeGreySquares()
   sendRemoveGrey()
 }
 
+/**
+ * Sends data to parent window via postMessage
+ * @param {string} fen - Data to send (typically FEN or event info)
+ */
 function sendToParent (fen) {
   parent.postMessage(fen, '*')
 }
 
-// update the board position after the piece snap
-// for castling, en passant, pawn promotion
+/**
+ * Updates board position after piece snap animation
+ * Handles special moves like castling, en passant, pawn promotion
+ */
 function onSnapEnd () {
   board.position(currentState.fen())
 }
 
+/**
+ * Updates game status text and checks for game over conditions
+ */
 function updateStatus () {
   var status = ''
 
@@ -736,19 +855,33 @@ function updateStatus () {
   }
 }
 
+/**
+ * Notifies parent that game is over
+ */
 function sendGameOver () {
   parent.postMessage('gameOver', '*')
 }
 
+/**
+ * Notifies parent of draw condition
+ */
 function sendDraw () {
   parent.postMessage('draw', '*')
 }
 
+/**
+ * Notifies parent of checkmate
+ */
 function sendCheckmate () {
   parent.postMessage('checkmate', '*')
 }
 
-// chessboard arrows
+/**
+ * ChessboardArrows - Draws arrows on the chessboard for move annotations
+ * @param {string} id - Board container element ID
+ * @param {number} RES_FACTOR - Resolution scaling factor
+ * @param {string} COLOUR - Arrow color in RGB format
+ */
 var ChessboardArrows = function (
   id,
   RES_FACTOR = 2,
