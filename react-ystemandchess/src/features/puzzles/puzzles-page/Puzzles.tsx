@@ -8,6 +8,7 @@ import { environment } from "../../../core/environments/environment";
 import { v4 as uuidv4 } from "uuid";
 import { SetPermissionLevel } from "../../../globals";
 import { useCookies } from 'react-cookie'; 
+import { useLocation } from "react-router";
 
 const chessClientURL = environment.urls.chessClientURL;
 
@@ -48,6 +49,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     const [status, setStatus] = useState<string>("");
     const swalRef = useRef<string>("");
     const [cookies] = useCookies(['login']);
+    const location = useLocation();
+    const data = location.state;
 
     // needed for time tracking
     const [eventID, setEventID] = useState(null);
@@ -326,6 +329,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
     // try joining puzzle as guest / creating puzzle as host
     const joinOrCreatePuzzle = () => {
+        student = data ? data.username : null;
         if(!student) student = uuidv4(); // generate random username for navBar puzzles & unlogged-in users
         if(!mentor) mentor = uuidv4();
         postToBoard({ // send student & mentor info  before server creates a game

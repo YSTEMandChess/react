@@ -162,7 +162,7 @@ class GameManager {
      * @param {*} moveTo 
      * @returns {Object} Updated board state, move details, and socket IDs
      */
-    makeMove(socketId, moveFrom, moveTo, computerMove) {
+    makeMove(socketId, moveFrom, moveTo) {
         const game = this.getGameBySocketId(socketId);
 
         if (!game) {
@@ -219,12 +219,14 @@ class GameManager {
             });
         }
         //console.log(activityEvents);
+        console.log('student info',game.student);
         return { 
                 result: {
                             boardState: board.fen(),
                             move: moveResult,
                             studentId: game.student.id,
                             mentorId: game.mentor.id,
+                            studentUser: game.student.username,
                         },
                 activityEvents: activityEvents
         };

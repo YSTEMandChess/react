@@ -65,6 +65,8 @@ const registerSocketHandlers = (socket, io) => {
      */
     socket.on("move", async (msg) => {
         try {
+            //check latency for sending requests, if slow emit signal and push load to separate handler
+            
             const { from, to, computerMove } = JSON.parse(msg);
             const res = gameManager.makeMove(socket.id, from, to, computerMove);
             const state = res.result;
@@ -73,24 +75,34 @@ const registerSocketHandlers = (socket, io) => {
             if(!computerMove) {
                 const activityEvents = res.activityEvents;   
                 if (activityEvents && activityEvents.length > 0) {
-                        const studentId = state.studentId;   
-                        console.log('student id', studentId)
+                    const studentId = state.studentId;   
+                    const studentUsername = state.studentUser;
                     const payload = {
                         activities: activityEvents, 
                         lastMove: { from, to, san: state.move?.san }
                     };
                     console.log('payload', payload);
                     const studentSocket = io.sockets.sockets.get(studentId);
-                    console.log('student socket', studentSocket);
+                    //console.log('student socket', studentSocket);
                     if (studentSocket) {
-                        //send payload
-                        console.log(JSON.stringify(payload));
                         try {
-                            /*const query = await fetch(`${process.env.CHESS_CLIENT_URL}/activities/${}/${}`, {
-                                method: "PUT"
-                            });*/
+                            console.log('route:', `${process.env.MIDDLEWARE_URL}/activities/${studentUsername}/activity`);
+                            const response = await fetch(`${process.env.MIDDLEWARE_URL}/activities/${studentUsername}/activity}`, {
+                                method: "PUT",
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                //use new route to send activity 
+                                body: JSON.stringify({
+                                    activityName: 'captureBishop'
+                                })
+                            });
+                            console.log('response',response);
+                            const json = await response.json();
+                            console.log('json',json);
+                            socket.emit("completeActivity");
                         } catch (e) {
-
+                            console.log('Error: ', e);                            
                         }
                     }
                 }
@@ -105,6 +117,9 @@ const registerSocketHandlers = (socket, io) => {
             socket.emit("error", err.message);
             console.log('error thrown', err)
         }
+    });
+    socket.on("completeActivity", () => {
+        console.log('activity completed');
     });
 
     /**
