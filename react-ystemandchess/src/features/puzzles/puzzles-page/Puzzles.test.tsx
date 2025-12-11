@@ -5,6 +5,9 @@ import Puzzles from './Puzzles';
 jest.mock('../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket', () => ({
   useChessSocket: jest.fn(() => ({
     connected: false,
+    fen: '',
+    playerColor: null,
+    assignedRole: null,
     sendMessage: jest.fn(),
     startNewPuzzle: jest.fn(),
     setPuzzleMoves: jest.fn(),
@@ -12,9 +15,6 @@ jest.mock('../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChess
     sendMove: jest.fn(),
     sendLastMove: jest.fn(),
     undo: jest.fn(),
-    fen: '',
-    playerColor: null,
-    assignedRole: null,
     startNewGame: jest.fn(),
     endGame: jest.fn(),
     setExpectedMove: jest.fn(),
@@ -52,7 +52,7 @@ jest.mock('../../../globals', () => ({
 // 4. Mock react-cookie
 jest.mock('react-cookie', () => ({
   useCookies: jest.fn(() => [
-    { login: null }, 
+    { login: null },
     jest.fn(),
     jest.fn(),
   ]),
@@ -63,23 +63,21 @@ jest.mock('uuid', () => ({
   v4: jest.fn(() => 'test-uuid-1234'),
 }));
 
-// 6. Mock ChessBoard component with forwardRef
+// 6. Mock ChessBoard (forwardRef)
 jest.mock('../../../components/ChessBoard/ChessBoard', () => {
   const React = require('react');
   const MockChessBoard = React.forwardRef((props: any, ref: any) => (
-    <div data-testid="chess-board" ref={ref}>
-      Mocked ChessBoard
-    </div>
+    <div data-testid="chess-board" ref={ref}>Mocked ChessBoard</div>
   ));
   MockChessBoard.displayName = 'MockChessBoard';
-  
+
   return {
     __esModule: true,
     default: MockChessBoard,
   };
 });
 
-// 7. Mock chess.js
+// 7. Mock chess.js (Used in Puzzles.tsx via gameRef)
 jest.mock('chess.js', () => ({
   Chess: jest.fn().mockImplementation(() => ({
     load: jest.fn(),
@@ -114,21 +112,10 @@ global.fetch = jest.fn(() =>
   })
 ) as jest.Mock;
 
-// Mock window event listeners
 const mockAddEventListener = jest.fn();
 const mockRemoveEventListener = jest.fn();
-
-Object.defineProperty(window, 'addEventListener', {
-  writable: true,
-  configurable: true,
-  value: mockAddEventListener,
-});
-
-Object.defineProperty(window, 'removeEventListener', {
-  writable: true,
-  configurable: true,
-  value: mockRemoveEventListener,
-});
+Object.defineProperty(window, 'addEventListener', { writable: true, configurable: true, value: mockAddEventListener, });
+Object.defineProperty(window, 'removeEventListener', { writable: true, configurable: true, value: mockRemoveEventListener, });
 
 // --- TEST SUITE ---
 
