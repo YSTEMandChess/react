@@ -7,6 +7,7 @@ module.exports = {
     '\\.(jpg|jpeg|png|gif)$': '<rootDir>/__mocks__/fileMock.js',
     '\\.svg$': '<rootDir>/__mocks__/svgrMock.js',
     '^react-cookie$': '<rootDir>/node_modules/react-cookie',
+    '^socket.io-client$': 'socket.io-client/dist/socket.io.js',
   },
   testEnvironment: 'jsdom',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],

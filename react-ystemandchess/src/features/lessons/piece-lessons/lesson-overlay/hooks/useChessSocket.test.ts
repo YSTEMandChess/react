@@ -14,9 +14,19 @@ const mockSocketInstance = {
 };
 
 // 2. Mock socket.io-client
-jest.mock('socket.io-client', () => ({
-  io: jest.fn(() => mockSocketInstance),
-}));
+jest.mock('socket.io-client/dist/socket.io.js', () => {
+  const mockSocket = {
+    on: jest.fn(),
+    emit: jest.fn(),
+    disconnect: jest.fn(),
+    id: 'mock-socket-id'
+  };
+
+  return {
+    io: jest.fn(() => mockSocket)
+  };
+});
+
 
 // 3. Mock chess.js (used inside the hook)
 jest.mock('chess.js', () => ({
