@@ -9,12 +9,12 @@ interface ChessBoardProps {
   lessonMoves?: Move[];
   orientation?: "white" | "black";
   disabled?: boolean;
-  
+
   // Event handlers
   onMove?: (move: Move) => void;
   onInvalidMove?: () => void;
   onPromotion?: (from: string, to: string, piece: string) => void;
-  
+
   // Highlighting
   highlightSquares?: string[];
   onHighlightChange?: (squares: string[]) => void;
@@ -49,7 +49,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
   ) => {
     // Internal chess engine for move validation
     const gameRef = useRef<Chess>(new Chess());
-    
+
     // UI state
     const [internalHighlights, setInternalHighlights] = useState<string[]>([]);
     const [lessonIndex, setLessonIndex] = useState<number>(0);
@@ -57,7 +57,8 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     const [orientation, setOrientationState] = useState<"white" | "black">(propOrientation);
     const [boardPosition, setBoardPosition] = useState<string>(fen || "start");
     const [boardWidth, setBoardWidth] = useState(560);
-    
+    const [greySquares, setGreySquares] = useState<string[]>([]);
+
     const boardRef = useRef<HTMLDivElement | null>(null);
 
     // Responsive sizing
@@ -94,35 +95,31 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     // Combine highlights from props and internal state
     const allHighlights = [...externalHighlights, ...internalHighlights];
 
-    // ============================================================================
-    // IMPERATIVE METHODS (exposed via ref)
-    // ============================================================================
-
     useImperativeHandle(ref, () => ({
       handlePromotion: (from: string, to: string, piece: string) => {
         if (onPromotion) onPromotion(from, to, piece);
       },
-      
+
       reset: () => {
         gameRef.current.reset();
         setBoardPosition(gameRef.current.fen());
         setInternalHighlights([]);
         setLessonIndex(0);
       },
-      
+
       getFen: () => gameRef.current.fen(),
-      
+
       setOrientation: (color: "white" | "black") => setOrientationState(color),
-      
+
       flip: () => setOrientationState((o) => (o === "white" ? "black" : "white")),
-      
+
       undo: () => {
         gameRef.current.undo();
         setBoardPosition(gameRef.current.fen());
         setInternalHighlights([]);
         setLessonIndex((prev) => Math.max(0, prev - 1));
       },
-      
+
       loadPosition: (newFen: string) => {
         try {
           gameRef.current.load(newFen);
@@ -131,22 +128,18 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
           console.error("Failed to load FEN:", newFen, err);
         }
       },
-      
+
       highlightMove: (from: string, to: string) => {
         const highlights = [from, to];
         setInternalHighlights(highlights);
         if (onHighlightChange) onHighlightChange(highlights);
       },
-      
+
       clearHighlights: () => {
         setInternalHighlights([]);
         if (onHighlightChange) onHighlightChange([]);
       },
     }));
-
-    // ============================================================================
-    // CHESSBOARDJSX EVENT HANDLER
-    // ============================================================================
 
     const handleDrop = ({
       sourceSquare,
@@ -167,8 +160,8 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         }
 
         // Check for pawn promotion
-        const isPromotion = 
-          piece.type === "p" && 
+        const isPromotion =
+          piece.type === "p" &&
           (targetSquare[1] === "8" || targetSquare[1] === "1");
 
         // Construct move object
@@ -181,7 +174,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         // Lesson mode: validate expected moves BEFORE making the move
         if (lessonMoves.length > 0 && lessonIndex < lessonMoves.length) {
           const expected = lessonMoves[lessonIndex];
-          
+
           if (move.from !== expected.from || move.to !== expected.to) {
             setIsShaking(true);
             setTimeout(() => setIsShaking(false), 400);
@@ -219,7 +212,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
 
         // Send move to server/parent
         if (onMove) onMove(move);
-        
+
         // Don't return anything - allow the move to complete
       } catch (error) {
         console.error("Error in handleDrop:", error);
@@ -230,9 +223,40 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       }
     };
 
-    // ============================================================================
-    // SQUARE STYLING
-    // ============================================================================
+    const allowDrag = ({ piece }: { piece: string }) => {
+      if (disabled) return false;
+
+      const turn = gameRef.current.turn() === 'w' ? 'white' : 'black';
+      const pieceColor = piece.startsWith('w') ? 'white' : 'black';
+      
+      if (pieceColor !== turn) return false;
+      
+      return pieceColor === orientation; 
+    };
+
+    const onMouseOverSquare = (square: string) => {
+      if (disabled) {
+        setGreySquares([]);
+        return;
+      }
+      
+      const moves = gameRef.current.moves({
+        square: square as Square,
+        verbose: true,
+      });
+
+      if (moves.length === 0) {
+        setGreySquares([]);
+        return;
+      }
+
+      const newGreySquares = moves.map((move) => move.to);
+      setGreySquares(newGreySquares);
+    };
+
+    const onMouseOutSquare = () => {
+      setGreySquares([]);
+    };
 
     const squareStyles = (): Record<string, React.CSSProperties> => {
       const styles: Record<string, React.CSSProperties> = {};
@@ -244,12 +268,30 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         };
       });
 
+      // Add Grey Dots for move hints
+      greySquares.forEach((sq) => {
+        // Use a radial gradient for a perfect grey dot in the center
+        styles[sq] = {
+          ...styles[sq], // Keep existing highlight if present
+          background: styles[sq] 
+            ? `${styles[sq].backgroundColor}, radial-gradient(circle, #a1a1a1 12%, transparent 12%)`
+            : "radial-gradient(circle, #a1a1a1 12%, transparent 12%)",
+        };
+        
+        // For dark squares, use a slightly lighter grey
+        if (["a", "c", "e", "g"].includes(sq[0]) === (Number(sq[1]) % 2 === 0)) {
+            styles[sq].background = styles[sq] 
+                ? `${styles[sq].backgroundColor}, radial-gradient(circle, #b8b8b8 12%, transparent 12%)`
+                : "radial-gradient(circle, #b8b8b8 12%, transparent 12%)";
+        }
+      });
+
       return styles;
     };
 
     return (
-      <div 
-        ref={boardRef} 
+      <div
+        ref={boardRef}
         className={`chessboard-wrapper ${isShaking ? "shake" : ""}`}
         style={{ width: '100%', maxWidth: '600px', margin: '0 auto' }}
       >
@@ -259,6 +301,9 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
           onDrop={handleDrop}
           orientation={orientation}
           squareStyles={squareStyles()}
+          allowDrag={allowDrag}
+          onMouseOverSquare={onMouseOverSquare}
+          onMouseOutSquare={onMouseOutSquare}
         />
       </div>
     );

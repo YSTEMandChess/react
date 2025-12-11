@@ -42,14 +42,11 @@ const Student = () => {
   const handleMove = (move: Move) => {
     console.log("Move made:", move);
     socket.sendMove(move);
-    socket.sendLastMove(move.from, move.to);
   };
 
   const handleNewGame = () => {
     socket.startNewGame();
-    if (chessBoardRef.current) {
-      chessBoardRef.current.reset();
-    }
+    // Set local state immediately for fast visual feedback (optimistic UI)
     setCurrentFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   };
 
@@ -60,9 +57,6 @@ const Student = () => {
 
   const handleUndo = () => {
     socket.undo();
-    if (chessBoardRef.current) {
-      chessBoardRef.current.undo();
-    }
   };
 
   return (
@@ -75,6 +69,7 @@ const Student = () => {
         ref={chessBoardRef}
         fen={currentFEN}
         onMove={handleMove}
+        orientation="white"
         disabled={!socket.connected}
       />
 
@@ -82,9 +77,9 @@ const Student = () => {
       <br />
       <br />
 
-      <button onClick={handleNewGame}>New Game</button>
-      <button onClick={handlePlayComputer}>Play with a computer</button>
-      <button onClick={handleUndo}>Undo</button>
+      <button onClick={handleNewGame} disabled={!socket.connected}>New Game</button>
+      <button onClick={handlePlayComputer} disabled={!socket.connected}>Play with a computer</button>
+      <button onClick={handleUndo} disabled={!socket.connected}>Undo</button>
 
       <br />
       <p>
@@ -96,6 +91,7 @@ const Student = () => {
           max="30"
           value={movesAhead}
           onChange={(e) => setMovesAhead(parseInt(e.target.value) || 5)}
+          disabled={!socket.connected}
         />
         moves ahead of you
       </p>

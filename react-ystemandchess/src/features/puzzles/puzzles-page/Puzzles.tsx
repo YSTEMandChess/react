@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import pageStyles from "./Puzzles.module.scss";
 import profileStyles from "./Puzzles-profile.module.scss";
 import { Chess } from "chess.js";
@@ -27,7 +27,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 }) => {
   const styles = styleType === "profile" ? profileStyles : pageStyles;
 
-  // Refs
+  // Refs (for mutable, non-triggering data)
   const chessBoardRef = useRef<ChessBoardRef>(null);
   const gameRef = useRef<Chess>(new Chess());
   const swalRef = useRef<string>("");
@@ -35,7 +35,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const isPuzzleEndRef = useRef(false);
   const currentPuzzleRef = useRef<any>(null);
 
-  // Puzzle state
+  // Puzzle state (for rendering/triggers)
   const [puzzleArray, setPuzzleArray] = useState<any[]>([]);
   const [currentFEN, setCurrentFEN] = useState<string>('');
   const [dbIndex, setDbIndex] = useState<number>(0);
@@ -47,8 +47,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const [isInitialized, setIsInitialized] = useState(false);
 
   // User identification
-  const [studentId] = useState(student || uuidv4());
-  const [mentorId] = useState(mentor || uuidv4());
+  const studentId = student || cookies.login?.studentId || uuidv4();
+  const mentorId = mentor || "puzzle_mentor_" + studentId;
 
   // Time tracking
   const [eventID, setEventID] = useState(null);
@@ -56,80 +56,20 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const [username, setUsername] = useState(null);
   const handleUnloadRef = useRef(() => { });
 
-  // ============================================================================
-  // SOCKET CONNECTION
-  // ============================================================================
-
-  const socket = useChessSocket({
-    student: studentId,
-    mentor: mentorId,
-    role: role,
-    serverUrl: environment.urls.chessServerURL,
-    mode: 'puzzle',
-
-    onBoardStateChange: (newFEN) => {
-      console.log("Board state received:", newFEN);
-      setCurrentFEN(newFEN);
-      gameRef.current.load(newFEN);
-
-      if (chessBoardRef.current) {
-        chessBoardRef.current.loadPosition(newFEN);
-      }
-    },
-
-    onMessage: (msg) => {
-      console.log("Message received:", msg);
-      handleSocketMessage(msg);
-    },
-
-    onRoleAssigned: (assignedRole) => {
-      console.log("Role assigned:", assignedRole);
-      if (assignedRole === "host") {
-        setStatus("host");
-        initializeComponent();
-        if (styleType === "profile") {
-          if (status) {
-            if (role === "student") Swal.fire('Your mentor has left!', 'Creating a new puzzle for you', 'success');
-            else Swal.fire('Your student has left!', 'Creating a new puzzle for you', 'success');
-          } else {
-            if (role === "student") Swal.fire('You hosted a new puzzle!', 'Your mentor might join later', 'success');
-            else Swal.fire('You hosted a new puzzle!', 'Your student might join later', 'success');
-          }
-        }
-      } else if (assignedRole === "guest") {
-        if (status === "host") {
-          if (role === "student") Swal.fire('Your mentor has joined you!', 'You can now also see their moves', 'success');
-          else Swal.fire('Your student has joined you!', 'You can now also see their moves', 'success');
-        } else {
-          setStatus("guest");
-          if (role === "student") Swal.fire('You joined your mentor\'s puzzle!', 'Have fun collaborating.', 'success');
-          else Swal.fire('You joined your student\'s puzzle!', 'Have fun collaborating.', 'success');
-        }
-      }
-    },
-
-    onLastMove: (from, to) => {
-      console.log("Highlighting last move:", from, "→", to);
-      setHighlightSquares([from, to]);
-      if (chessBoardRef.current) {
-        chessBoardRef.current.highlightMove(from, to);
-      }
-    },
-
-    onError: (msg) => {
-      console.error("Socket error:", msg);
-    },
-  });
 
   // ============================================================================
-  // SOCKET MESSAGE HANDLER
+  // SOCKET MESSAGE HANDLER (Callback)
   // ============================================================================
 
-  const handleSocketMessage = (msg: string) => {
+  const handleSocketMessage = useCallback((msg: string) => {
     if (msg === "puzzle completed") {
+      // Only guests need the Swal trigger here, host already fired it
       if (status === "guest") {
         Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
-          if (result.isConfirmed) socket.sendMessage("next puzzle");
+          if (result.isConfirmed) {
+            // Notify host/server to move to the next puzzle
+            socket.sendMessage("next puzzle");
+          }
         });
       }
     } else if (msg === "next puzzle") {
@@ -163,10 +103,64 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         }
       }
     }
-  };
+  }, [status]); // Dependency on status for Swal logic
+
 
   // ============================================================================
-  // PUZZLE INITIALIZATION
+  // SOCKET CONNECTION
+  // ============================================================================
+
+  const socket = useChessSocket({
+    student: studentId,
+    mentor: mentorId,
+    role: role,
+    serverUrl: environment.urls.chessServerURL,
+    mode: 'puzzle',
+
+    onBoardStateChange: (newFEN) => {
+      // New FEN received from server (e.g., after computer response)
+      setCurrentFEN(newFEN);
+      gameRef.current.load(newFEN);
+    },
+
+    onMessage: handleSocketMessage, // Use the centralized handler
+
+    onRoleAssigned: (assignedRole) => {
+      if (assignedRole === "host") {
+        setStatus("host");
+        initializeComponent();
+        if (styleType === "profile") {
+          // Swal logic remains the same
+          if (role === "student") Swal.fire('Your mentor has left!', 'Creating a new puzzle for you', 'success');
+          else Swal.fire('Your student has left!', 'Creating a new puzzle for you', 'success');
+        }
+      } else if (assignedRole === "guest") {
+        setStatus("guest");
+        if (status === "host") {
+          if (role === "student") Swal.fire('Your mentor has joined you!', 'You can now also see their moves', 'success');
+          else Swal.fire('Your student has joined you!', 'You can now also see their moves', 'success');
+        } else {
+          if (role === "student") Swal.fire('You joined your mentor\'s puzzle!', 'Have fun collaborating.', 'success');
+          else Swal.fire('You joined your student\'s puzzle!', 'Have fun collaborating.', 'success');
+        }
+      }
+    },
+
+    onLastMove: (from, to) => {
+      // Highlights the move just made (player's move or server's response move)
+      setHighlightSquares([from, to]);
+      if (chessBoardRef.current) {
+        chessBoardRef.current.highlightMove(from, to);
+      }
+    },
+
+    onError: (msg) => {
+      console.error("Socket error:", msg);
+    },
+  });
+
+  // ============================================================================
+  // PUZZLE LOADING / SEQUENCING
   // ============================================================================
 
   const initPuzzleArray = async () => {
@@ -208,26 +202,18 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     }
   };
 
-  // ============================================================================
-  // PUZZLE LOADING
-  // ============================================================================
-
   const setStateAsActive = (state: any) => {
     if (!state?.FEN || !state?.Moves || !state?.Themes) {
       console.warn("Puzzle is missing required fields:", state);
       return;
     }
 
-    console.log("Loading puzzle:", state.PuzzleId);
-
     const sideToMove = state.FEN.split(" ")[1];
     const newPlayerColor = sideToMove === 'w' ? 'black' : 'white';
     setPlayerColor(newPlayerColor);
 
-    setTimeout(() => {
-      currentPuzzleRef.current = state;
-      startLesson(state);
-    }, 200);
+    currentPuzzleRef.current = state;
+    startLesson(state);
   };
 
   const startLesson = (puzzle: any) => {
@@ -242,11 +228,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     gameRef.current.load(fen);
 
     moveListRef.current = puzzle?.Moves?.split(" ") || [];
-    if (moveListRef.current.length === 0) {
-      console.warn("Empty or invalid move list:", puzzle);
-      return;
-    }
-
     isPuzzleEndRef.current = false;
     setHighlightSquares([]);
 
@@ -256,19 +237,14 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       promotion: moveStr.length > 4 ? moveStr[4] : undefined
     }));
 
+    // Tell the server the expected moves for validation
     socket.setPuzzleMoves(puzzleMoves);
 
-    // Send puzzle to server
     socket.setGameStateWithColor(fen, playerColor, puzzle.Themes);
 
     if (chessBoardRef.current) {
-      chessBoardRef.current.loadPosition(fen);
+      chessBoardRef.current.clearHighlights();
     }
-
-    setTimeout(() => {
-      // Computer plays first move
-      playComputerMove();
-    }, 500);
   };
 
   const getNextPuzzle = () => {
@@ -276,8 +252,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       console.error("Puzzle array is empty");
       return;
     }
-
-    console.log("Getting new puzzle...");
 
     const newDbIndex = (dbIndex + 1) % puzzleArray.length;
     setDbIndex(newDbIndex);
@@ -288,72 +262,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       return;
     }
 
-    currentPuzzleRef.current = nextPuzzle;
-    isPuzzleEndRef.current = false;
-    setHighlightSquares([]);
-
-    setThemeList(nextPuzzle.Themes.split(" "));
-
-    if (!nextPuzzle?.FEN || nextPuzzle.FEN.split("/").length !== 8) {
-      console.warn("Skipping puzzle with invalid FEN:", nextPuzzle);
-      return;
-    }
-
     setStateAsActive(nextPuzzle);
     updateInfoBox(nextPuzzle.Themes.split(" "));
-  };
-
-  // ============================================================================
-  // COMPUTER MOVE AUTOMATION
-  // ============================================================================
-
-  const playComputerMove = () => {
-    if (moveListRef.current.length === 0) return;
-
-    const computerMove = moveListRef.current.shift();
-    if (!computerMove || computerMove.length < 4) return;
-
-    const moveFrom = computerMove.substring(0, 2);
-    const moveTo = computerMove.substring(2, 4);
-    const promotion = computerMove.length > 4 ? computerMove[4] : undefined;
-
-    console.log("Computer move:", moveFrom, "→", moveTo);
-
-    setTimeout(() => {
-      // Make move on local board
-      try {
-        const moveResult = gameRef.current.move({
-          from: moveFrom,
-          to: moveTo,
-          promotion: promotion || 'q'
-        });
-
-        if (!moveResult) {
-          console.error("Invalid computer move");
-          return;
-        }
-
-        const newFEN = gameRef.current.fen();
-        setCurrentFEN(newFEN);
-
-        if (chessBoardRef.current) {
-          chessBoardRef.current.loadPosition(newFEN);
-        }
-
-        // Highlight computer's move
-        setHighlightSquares([moveFrom, moveTo]);
-        if (chessBoardRef.current) {
-          chessBoardRef.current.highlightMove(moveFrom, moveTo);
-        }
-
-        // Send to server for multiplayer sync
-        socket.sendMove({ from: moveFrom, to: moveTo, promotion });
-        socket.sendLastMove(moveFrom, moveTo);
-
-      } catch (error) {
-        console.error("Invalid computer move:", error);
-      }
-    }, 300);
   };
 
   // ============================================================================
@@ -362,30 +272,47 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   const handlePlayerMove = (move: Move) => {
     if (isPuzzleEndRef.current || !moveListRef.current || moveListRef.current.length === 0) {
-      console.log("Ignoring move - puzzle ended or no moves left");
-      return;
+      return "snapback";
     }
+    
+    // Check if the move is legal first
+    const localMove = gameRef.current.move({
+      from: move.from,
+      to: move.to,
+      promotion: move.promotion || 'q' // Promotion must be included for local check
+    });
 
+    if (!localMove) {
+      return "snapback";
+    }
+    
+    // The local move succeeded, now check if it's the CORRECT puzzle move
     const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ''}`;
     const expectedPlayerMove = moveListRef.current[0];
 
-    console.log("Player attempted:", playerAttemptedMove, "Expected:", expectedPlayerMove);
-
+    // Check for exact match (including promotion) or a 4-char match (allowing client to pick promotion)
     if (playerAttemptedMove === expectedPlayerMove ||
-      playerAttemptedMove === expectedPlayerMove.substring(0, 4)) {
+        playerAttemptedMove === expectedPlayerMove.substring(0, 4)) {
+      
       // Correct move
-      moveListRef.current.shift(); // Remove player's move
+      moveListRef.current.shift(); // Remove player's move from local list
 
-      // Highlight player's move
-      setHighlightSquares([move.from, move.to]);
+      // Highlight player's move (will be updated by onLastMove too)
+      setHighlightSquares([move.from, move.to]); 
 
-      // Send to server for multiplayer sync
-      socket.sendMove(move);
+      // Send the move to the server for validation and multiplayer sync
+      // NOTE: We rely on the server to send back the next FEN (the computer's response)
+      socket.sendMove(move); 
       socket.sendLastMove(move.from, move.to);
+      
+      // Update local FEN immediately for a smooth transition before server FEN arrives
+      setCurrentFEN(gameRef.current.fen());
+
 
       if (moveListRef.current.length === 0) {
         // Puzzle completed!
         isPuzzleEndRef.current = true;
+        socket.sendMessage("puzzle completed"); // Notify guests/server
         setTimeout(() => {
           Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
             if (result.isConfirmed) {
@@ -393,27 +320,26 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             }
           });
         }, 200);
-        socket.sendMessage("puzzle completed");
-      } else {
-        // Computer's turn next
-        setTimeout(() => {
-          playComputerMove();
-        }, 500);
       }
+      
     } else {
-      // Incorrect move
+      // Incorrect move - Rollback local move and reset puzzle
+      gameRef.current.undo();
+      
       console.log("Wrong move!");
       Swal.fire('Incorrect move', 'Try again!', 'error').then(() => {
-        // Reset puzzle
         if (currentPuzzleRef.current) {
-          startLesson(currentPuzzleRef.current);
+          // Reset board to starting FEN
+          startLesson(currentPuzzleRef.current); 
         }
       });
+      return "snapback";
     }
   };
 
   const handleInvalidMove = () => {
-    console.log("Invalid move attempted");
+    // This catches moves that fail ChessBoard.tsx's internal validation (e.g., knight move to illegal square)
+    console.log("Invalid move attempted by ChessBoard's validation.");
   };
 
   // ============================================================================
@@ -438,7 +364,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       hints += `<div style="margin-bottom: 14px;"><b>${name}:</b> ${desc}</div>`;
     }
 
-    // Notify other players
+    // Notify other players (guests)
     socket.sendMessage(hints);
 
     const hintText = document.getElementById("hint-text");
@@ -456,7 +382,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   };
 
   // ============================================================================
-  // TIME TRACKING
+  // TIME TRACKING / LIFECYCLE
   // ============================================================================
 
   async function startRecording() {
@@ -500,15 +426,10 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       );
 
       if (response.status !== 200) console.log("Time tracking update error:", response);
-      console.log("Time spent on puzzles:", diffInSeconds);
     } catch (err) {
       console.log("Time tracking error:", err);
     }
   };
-
-  // ============================================================================
-  // LIFECYCLE
-  // ============================================================================
 
   useEffect(() => {
     startRecording();
@@ -523,7 +444,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   useEffect(() => {
     if (socket.connected && status === "" && !isInitialized) {
-      // Try joining/creating puzzle
       socket.startNewPuzzle();
     }
   }, [socket.connected, status, isInitialized, socket]);

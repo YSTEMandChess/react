@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useCookies } from 'react-cookie';
+import { Chess } from 'chess.js';
 import pageStyles from './Lesson-overlay.module.scss';
 import profileStyles from './Lesson-overlay-profile.module.scss';
 import MoveTracker from '../move-tracker/MoveTracker';
@@ -282,7 +283,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     }
 
     // For other types, check game state
-    const Chess = require('chess.js').Chess;
     const game = new Chess(fen);
 
     if (lessonType === "checkmate" && game.isCheckmate()) {

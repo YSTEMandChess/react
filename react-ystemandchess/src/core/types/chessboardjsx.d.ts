@@ -10,6 +10,17 @@ declare module "chessboardjsx" {
     style?: React.CSSProperties;
     className?: string;
     orientation?: 'white' | 'black';
+
+    allowDrag?: (args: { 
+      piece: string; 
+      sourceSquare: string; 
+      targetSquare?: string; 
+    }) => boolean; 
+    
+    onMouseOverSquare?: (square: string) => void;
+    onMouseOutSquare?: () => void;
+    
+    onPromotionClick?: (promotion: { from: string, to: string }) => void;
   }
 
   export default class Chessboard extends Component<ChessboardProps> {}
