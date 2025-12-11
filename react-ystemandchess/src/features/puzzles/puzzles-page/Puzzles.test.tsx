@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 
 // 1. Mock react-cookie
-jest.mock('react-cookie', () => ({
+jest.mock('react-cookie/dist/react-cookie.cjs.js', () => ({
   useCookies: jest.fn(() => [
     { login: null },
     jest.fn(),
