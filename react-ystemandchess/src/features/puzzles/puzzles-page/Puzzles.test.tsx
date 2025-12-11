@@ -1,39 +1,46 @@
 import { render } from '@testing-library/react';
 import Puzzles from './Puzzles'; 
 
-// Mock all dependencies to prevent real initialization errors
+
+// 1. Mock useChessSocket
 jest.mock('../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket', () => ({
   useChessSocket: jest.fn(() => ({
     connected: false,
     sendMessage: jest.fn(),
-    startNewPuzzle: jest.fn(),
+    startNewPuzzle: jest.fn(), 
     setPuzzleMoves: jest.fn(),
     setGameStateWithColor: jest.fn(),
-    undo: jest.fn(),
-    // Include all methods used
+    sendMove: jest.fn(),
+    sendLastMove: jest.fn(),
+    undo: jest.fn(), 
   })),
 }));
+
+// 2. Mock sweetalert2
 jest.mock('sweetalert2', () => ({
   fire: jest.fn(),
   close: jest.fn(),
   showLoading: jest.fn(),
 }));
+
+// 3. Mock globals
 jest.mock('../../../globals', () => ({
     SetPermissionLevel: jest.fn(() => Promise.resolve({ error: true })),
 }));
 
-// Mock fetch for puzzle data
+// 4. Mock fetch (for puzzle data)
 global.fetch = jest.fn(() => 
   Promise.resolve({
     ok: true,
-    json: () => Promise.resolve([]), // Return empty array to stop initialization
+    json: () => Promise.resolve([]),
   }) as any
 );
 
+// --- TEST SUITE ---
+
 describe('Puzzles Component (CI Stub)', () => {
   it('stub: renders Puzzles without crashing', () => {
-    // We use a try/catch or simple render check to verify it doesn't immediately fail
-    render(<Puzzles />);
-    expect(true).toBe(true); // Always passes
+    render(<Puzzles />); 
+    expect(true).toBe(true); 
   });
 });
