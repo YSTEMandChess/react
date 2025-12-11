@@ -1,3 +1,4 @@
+import React from 'react';
 import { render } from '@testing-library/react';
 import Puzzles from './Puzzles';
 
@@ -50,13 +51,19 @@ jest.mock('../../../globals', () => ({
 }));
 
 // 4. Mock react-cookie
-jest.mock('react-cookie', () => ({
-  useCookies: jest.fn(() => [
-    { login: null },
+jest.mock('react-cookie', () => {
+  const useCookies = jest.fn(() => [
+    { login: null }, 
     jest.fn(),
     jest.fn(),
-  ]),
-}));
+  ]);
+
+  return {
+    useCookies,
+    __esModule: true,
+    default: { useCookies }, 
+  };
+});
 
 // 5. Mock uuid
 jest.mock('uuid', () => ({
@@ -120,10 +127,6 @@ Object.defineProperty(window, 'removeEventListener', { writable: true, configura
 // --- TEST SUITE ---
 
 describe('Puzzles Component (CI Stub)', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   it('stub: renders Puzzles without crashing', () => {
     const { container } = render(<Puzzles />);
     expect(container).toBeInTheDocument();
