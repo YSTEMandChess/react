@@ -1,33 +1,46 @@
 import { render } from '@testing-library/react';
 import React from 'react';
-import { useChessSocket } from './useChessSocket'; 
 
 // --- MOCKING EXTERNAL DEPENDENCIES ---
 
-// 1. Create a robust mock socket instance
+// 1. Create mock socket instance FIRST
 const mockSocketInstance = {
   on: jest.fn(),
   emit: jest.fn(),
   off: jest.fn(),
   disconnect: jest.fn(),
   connected: false,
-  id: 'mock-socket-id', 
+  id: 'mock-socket-id',
 };
 
 // 2. Mock socket.io-client
 jest.mock('socket.io-client', () => ({
-    __esModule: true,
-    io: jest.fn(() => mockSocketInstance), 
+  io: jest.fn(() => mockSocketInstance),
 }));
 
-// 3. Mock environment
+// 3. Mock chess.js (used inside the hook)
+jest.mock('chess.js', () => ({
+  Chess: jest.fn().mockImplementation(() => ({
+    load: jest.fn(),
+    move: jest.fn(),
+    fen: jest.fn(() => 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'),
+  })),
+}));
+
+// 4. Mock environment
 jest.mock('../../../../../environments/environment', () => ({
   environment: {
     urls: {
       chessServerURL: 'ws://mock-server:3000',
+      middlewareURL: 'http://mock-server:3000',
     },
   },
 }));
+
+// eslint-disable-next-line import/first
+import { useChessSocket } from './useChessSocket';
+// eslint-disable-next-line import/first
+import { io } from 'socket.io-client';
 
 // --- TEST SETUP ---
 
@@ -37,8 +50,11 @@ const mockOptions = {
   role: 'student' as const,
   mode: 'regular' as const,
   serverUrl: 'ws://mock-server:3000',
-  onBoardStateChange: jest.fn(), onMessage: jest.fn(), onLastMove: jest.fn(), 
-  onRoleAssigned: jest.fn(), onError: jest.fn(),
+  onBoardStateChange: jest.fn(),
+  onMessage: jest.fn(),
+  onLastMove: jest.fn(),
+  onRoleAssigned: jest.fn(),
+  onError: jest.fn(),
 };
 
 function HookExecutor() {
@@ -49,14 +65,32 @@ function HookExecutor() {
 describe('useChessSocket Hook (CI Stub)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSocketInstance.on.mockClear();
+    mockSocketInstance.emit.mockClear();
+    mockSocketInstance.disconnect.mockClear();
+  });
+
+  afterEach(() => {
+    // Clean up event listeners
+    jest.restoreAllMocks();
   });
 
   it('stub: initializes the hook without crashing and verifies socket call', () => {
-    render(React.createElement(HookExecutor));
+    const { unmount } = render(React.createElement(HookExecutor));
 
-    const { io } = require('socket.io-client');
+    // Verify socket.io was called
+    expect(io).toHaveBeenCalledWith('ws://mock-server:3000', {
+      transports: ['websocket'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+    });
 
-    expect(io).toHaveBeenCalledWith('ws://mock-server:3000', expect.anything());
+    // Verify socket listeners were set up
     expect(mockSocketInstance.on).toHaveBeenCalledWith('connect', expect.any(Function));
+    expect(mockSocketInstance.on).toHaveBeenCalledWith('disconnect', expect.any(Function));
+    expect(mockSocketInstance.on).toHaveBeenCalledWith('boardstate', expect.any(Function));
+
+    unmount();
   });
 });

@@ -1,8 +1,17 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import Puzzles from './Puzzles';
 
-// 1. Mock useChessSocket
+// 1. Mock react-cookie
+jest.mock('react-cookie', () => ({
+  useCookies: jest.fn(() => [
+    { login: null },
+    jest.fn(),
+    jest.fn(),
+  ]),
+  CookiesProvider: ({ children }: any) => children,
+}));
+
+// 2. Mock useChessSocket
 jest.mock('../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket', () => ({
   useChessSocket: jest.fn(() => ({
     connected: false,
@@ -35,56 +44,41 @@ jest.mock('../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChess
   })),
 }));
 
-// 2. Mock sweetalert2
-jest.mock('sweetalert2', () => ({
-  __esModule: true,
-  default: {
-    fire: jest.fn(() => Promise.resolve({ isConfirmed: true })),
-    close: jest.fn(),
-    showLoading: jest.fn(),
-  },
-}));
+// 3. Mock sweetalert2
+jest.mock('sweetalert2', () => {
+  const mockSwal: any = jest.fn(() => Promise.resolve({ isConfirmed: true }));
+  mockSwal.fire = jest.fn(() => Promise.resolve({ isConfirmed: true }));
+  mockSwal.close = jest.fn();
+  mockSwal.showLoading = jest.fn();
+  return mockSwal;
+});
 
-// 3. Mock globals
+// 4. Mock globals
 jest.mock('../../../globals', () => ({
   SetPermissionLevel: jest.fn(() => Promise.resolve({ error: true })),
 }));
-
-// 4. Mock react-cookie
-jest.mock('react-cookie', () => {
-  const useCookies = jest.fn(() => [
-    { login: null }, 
-    jest.fn(),
-    jest.fn(),
-  ]);
-
-  return {
-    useCookies,
-    __esModule: true,
-    default: { useCookies }, 
-  };
-});
 
 // 5. Mock uuid
 jest.mock('uuid', () => ({
   v4: jest.fn(() => 'test-uuid-1234'),
 }));
 
-// 6. Mock ChessBoard (forwardRef)
+// 6. Mock ChessBoard component
 jest.mock('../../../components/ChessBoard/ChessBoard', () => {
   const React = require('react');
-  const MockChessBoard = React.forwardRef((props: any, ref: any) => (
-    <div data-testid="chess-board" ref={ref}>Mocked ChessBoard</div>
-  ));
+  const MockChessBoard = React.forwardRef((props: any, ref: any) => {
+    React.useImperativeHandle(ref, () => ({
+      clearHighlights: jest.fn(),
+      highlightMove: jest.fn(),
+    }));
+    return React.createElement('div', { 'data-testid': 'chess-board' }, 'Mocked ChessBoard');
+  });
   MockChessBoard.displayName = 'MockChessBoard';
-
-  return {
-    __esModule: true,
-    default: MockChessBoard,
-  };
+  
+  return MockChessBoard;
 });
 
-// 7. Mock chess.js (Used in Puzzles.tsx via gameRef)
+// 7. Mock chess.js
 jest.mock('chess.js', () => ({
   Chess: jest.fn().mockImplementation(() => ({
     load: jest.fn(),
@@ -110,7 +104,7 @@ jest.mock('../../../environments/environment', () => ({
   },
 }));
 
-// 10. Mock fetch (for puzzle data)
+// 10. Mock fetch
 global.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
@@ -119,14 +113,29 @@ global.fetch = jest.fn(() =>
   })
 ) as jest.Mock;
 
-const mockAddEventListener = jest.fn();
-const mockRemoveEventListener = jest.fn();
-Object.defineProperty(window, 'addEventListener', { writable: true, configurable: true, value: mockAddEventListener, });
-Object.defineProperty(window, 'removeEventListener', { writable: true, configurable: true, value: mockRemoveEventListener, });
+// Mock window event listeners
+Object.defineProperty(window, 'addEventListener', {
+  writable: true,
+  configurable: true,
+  value: jest.fn(),
+});
+
+Object.defineProperty(window, 'removeEventListener', {
+  writable: true,
+  configurable: true,
+  value: jest.fn(),
+});
+
+// eslint-disable-next-line import/first
+import Puzzles from './Puzzles';
 
 // --- TEST SUITE ---
 
 describe('Puzzles Component (CI Stub)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('stub: renders Puzzles without crashing', () => {
     const { container } = render(<Puzzles />);
     expect(container).toBeInTheDocument();
