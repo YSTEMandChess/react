@@ -51,7 +51,11 @@ jest.mock('../../../globals', () => ({
 
 // 4. Mock react-cookie
 jest.mock('react-cookie', () => ({
-  useCookies: jest.fn(() => [{ login: null }, jest.fn(), jest.fn()]),
+  useCookies: jest.fn(() => [
+    { login: null }, 
+    jest.fn(),
+    jest.fn(),
+  ]),
 }));
 
 // 5. Mock uuid
@@ -59,16 +63,19 @@ jest.mock('uuid', () => ({
   v4: jest.fn(() => 'test-uuid-1234'),
 }));
 
-// 6. Mock ChessBoard component
+// 6. Mock ChessBoard component with forwardRef
 jest.mock('../../../components/ChessBoard/ChessBoard', () => {
   const React = require('react');
+  const MockChessBoard = React.forwardRef((props: any, ref: any) => (
+    <div data-testid="chess-board" ref={ref}>
+      Mocked ChessBoard
+    </div>
+  ));
+  MockChessBoard.displayName = 'MockChessBoard';
+  
   return {
     __esModule: true,
-    default: React.forwardRef((props: any, ref: any) => (
-      <div data-testid="chess-board" ref={ref}>
-        Mocked ChessBoard
-      </div>
-    )),
+    default: MockChessBoard,
   };
 });
 
@@ -102,6 +109,7 @@ jest.mock('../../../environments/environment', () => ({
 global.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
+    status: 200,
     json: () => Promise.resolve([]),
   })
 ) as jest.Mock;
@@ -110,15 +118,16 @@ global.fetch = jest.fn(() =>
 const mockAddEventListener = jest.fn();
 const mockRemoveEventListener = jest.fn();
 
-beforeAll(() => {
-  Object.defineProperty(window, 'addEventListener', {
-    writable: true,
-    value: mockAddEventListener,
-  });
-  Object.defineProperty(window, 'removeEventListener', {
-    writable: true,
-    value: mockRemoveEventListener,
-  });
+Object.defineProperty(window, 'addEventListener', {
+  writable: true,
+  configurable: true,
+  value: mockAddEventListener,
+});
+
+Object.defineProperty(window, 'removeEventListener', {
+  writable: true,
+  configurable: true,
+  value: mockRemoveEventListener,
 });
 
 // --- TEST SUITE ---

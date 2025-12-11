@@ -4,6 +4,7 @@ import { useChessSocket } from './useChessSocket';
 
 // --- MOCKING EXTERNAL DEPENDENCIES ---
 
+// Create mock socket instance
 const mockSocketInstance = {
   on: jest.fn(),
   emit: jest.fn(),
@@ -13,7 +14,7 @@ const mockSocketInstance = {
   id: 'mock-socket-id',
 };
 
-// Mock socket.io-client with proper default export structure
+// Mock socket.io-client
 jest.mock('socket.io-client', () => ({
   io: jest.fn(() => mockSocketInstance),
 }));
@@ -22,6 +23,7 @@ jest.mock('../../../../../environments/environment', () => ({
   environment: {
     urls: {
       chessServerURL: 'ws://mock-server:3000',
+      middlewareURL: 'http://mock-server:3000',
     },
   },
 }));
@@ -58,11 +60,17 @@ function HookExecutor() {
 describe('useChessSocket Hook (CI Stub)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset the mock implementation
+    mockSocketInstance.on.mockClear();
+    mockSocketInstance.emit.mockClear();
+    mockSocketInstance.disconnect.mockClear();
   });
 
   afterEach(() => {
     // Clean up any event listeners
-    document.removeEventListener('mousemove', expect.any(Function));
+    if (document.removeEventListener) {
+      document.removeEventListener('mousemove', expect.any(Function) as any);
+    }
   });
 
   it('stub: initializes the hook without crashing and verifies socket call', () => {
