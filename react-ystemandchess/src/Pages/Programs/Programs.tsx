@@ -59,7 +59,6 @@ const Programs = () => {
         </div>
       </section>
 
-      {/* Subscription terms */}
       <section className="sub-terms" aria-labelledby="sub-terms-heading">
         <h2 id="sub-terms-heading" className="sr-only">
           Program Subscription Terms

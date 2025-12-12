@@ -11,7 +11,8 @@
     gap: 3rem;                 /* spacing between text and image */
 
     .text-content {
-      flex: 0 1 520px;
+      flex: 1 1 400px;         /* flexible — no more rigid 520px */
+      max-width: 520px;
       text-align: left;
 
       h1 {
@@ -32,9 +33,10 @@
     }
 
     .image-content {
-      flex: 0 1 520px;
+      flex: 1 1 400px;        /* flexible — scales smoothly */
+      max-width: 520px;
       display: flex;
-      justify-content: center;  /* center the mentor image horizontally */
+      justify-content: center; 
       align-items: center;
 
       img {
@@ -140,6 +142,7 @@
 
     .mentor-details {
       max-width: 90%;
+
       img {
         margin-bottom: 10px;
       }

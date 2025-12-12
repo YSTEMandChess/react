@@ -1,7 +1,5 @@
-
 :root {
-  --container-max: 100rem; // 1600px = 100rem (assuming 1rem = 16px)
-  // Responsive gutter: min 0.75rem for small screens, scales with viewport (2vw), max 1.25rem for large screens
+  --container-max: 100rem;
   --container-gutter: clamp(0.75rem, 2vw, 1.25rem);
 }
 
@@ -81,34 +79,46 @@
       }
     }
 
+    /******************************
+     * BUTTON FIX (CONSISTENCY)
+     ******************************/
+
     a.register-button,
     a > button {
       display: inline-block;
       border: none;
       border-radius: 10px;
-      background-color: #eef36a;
-      color: #111;
+
+      /* NEW: unified site-wide orange button */
+      background-color: #f57c00;
+      color: #fff;
+
       min-width: 14rem;
       padding: 0.9rem 1.35rem;
       font-size: 1.1rem;
       font-weight: 800;
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-      transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+
+      /* NEW: remove transform animations */
+      transition: background-color 0.2s, box-shadow 0.2s;
+
       cursor: pointer;
       text-decoration: none;
       margin-top: 0.9rem;
     }
 
+    /* NEW: simple color-only hover */
     a.register-button:hover,
     a > button:hover {
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
-      background-color: #f3f67d;
+      background-color: #ff8f00; /* lighter orange */
+      box-shadow: 0 8px 14px rgba(0, 0, 0, 0.16);
+      transform: none !important; /* remove scaling */
     }
 
     a.register-button:active,
     a > button:active {
-      transform: translateY(0);
+      background-color: #e56f00; /* darker on press */
+      transform: none !important;
     }
 
     a.register-button:focus-visible,
@@ -118,6 +128,7 @@
     }
   }
 }
+
 
 //subscription cards(yellow)
 .sub-terms {
