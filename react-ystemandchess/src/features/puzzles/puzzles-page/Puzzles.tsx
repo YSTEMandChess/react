@@ -456,6 +456,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     <div className={styles.mainElements}>
       <div className={styles.chessBoardContainer}>
         <ChessBoard
+          mode="lesson"
           ref={chessBoardRef}
           fen={currentFEN}
           orientation={playerColor}

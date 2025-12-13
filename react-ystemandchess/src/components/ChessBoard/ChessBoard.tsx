@@ -1,10 +1,11 @@
 import React, { useState, useRef, useImperativeHandle, useEffect, forwardRef } from "react";
-import Chessboard from "chessboardjsx";
+import Chessboard , { ChessMode } from "chessboardjsx";
 import { Chess, Square } from "chess.js";
 import { Move } from "../../core/types/chess";
 import "./ChessBoard.css";
 
 interface ChessBoardProps {
+  mode?: ChessMode;
   fen?: string;
   lessonMoves?: Move[];
   orientation?: "white" | "black";
@@ -35,6 +36,7 @@ export interface ChessBoardRef {
 const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
   (
     {
+      mode = "multiplayer",
       fen,
       lessonMoves = [],
       orientation: propOrientation = "white",
@@ -226,12 +228,13 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     const allowDrag = ({ piece }: { piece: string }) => {
       if (disabled) return false;
 
-      const turn = gameRef.current.turn() === 'w' ? 'white' : 'black';
       const pieceColor = piece.startsWith('w') ? 'white' : 'black';
-      
-      if (pieceColor !== turn) return false;
-      
-      return pieceColor === orientation; 
+
+      if (mode === "lesson" || mode === "puzzle") {
+        return true;
+      }
+
+      return pieceColor === orientation;
     };
 
     const onMouseOverSquare = (square: string) => {
@@ -239,7 +242,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         setGreySquares([]);
         return;
       }
-      
+
       const moves = gameRef.current.moves({
         square: square as Square,
         verbose: true,
@@ -273,16 +276,16 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         // Use a radial gradient for a perfect grey dot in the center
         styles[sq] = {
           ...styles[sq], // Keep existing highlight if present
-          background: styles[sq] 
+          background: styles[sq]
             ? `${styles[sq].backgroundColor}, radial-gradient(circle, #a1a1a1 12%, transparent 12%)`
             : "radial-gradient(circle, #a1a1a1 12%, transparent 12%)",
         };
-        
+
         // For dark squares, use a slightly lighter grey
         if (["a", "c", "e", "g"].includes(sq[0]) === (Number(sq[1]) % 2 === 0)) {
-            styles[sq].background = styles[sq] 
-                ? `${styles[sq].backgroundColor}, radial-gradient(circle, #b8b8b8 12%, transparent 12%)`
-                : "radial-gradient(circle, #b8b8b8 12%, transparent 12%)";
+          styles[sq].background = styles[sq]
+            ? `${styles[sq].backgroundColor}, radial-gradient(circle, #b8b8b8 12%, transparent 12%)`
+            : "radial-gradient(circle, #b8b8b8 12%, transparent 12%)";
         }
       });
 

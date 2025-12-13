@@ -1,7 +1,9 @@
 declare module "chessboardjsx" {
   import { Component } from "react";
+  export type ChessMode = "lesson" | "puzzle" | "multiplayer";
 
   interface ChessboardProps {
+    mode?: ChessMode;
     position?: string;
     onDrop?: (move: { sourceSquare: string; targetSquare: string; }) => void;
     arePiecesDraggable?: boolean;

@@ -511,6 +511,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         {/* Chessboard */}
         <div className={`${styles.chessboardContainer} ${hidePieces ? styles.hidePieces : ""}`}>
           <ChessBoard
+            mode="lesson"
             ref={chessBoardRef}
             fen={currentFEN}
             orientation={boardOrientation}
