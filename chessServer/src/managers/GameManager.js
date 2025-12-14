@@ -73,7 +73,7 @@ class GameManager {
      * @param {Object} param0 - Contains student, mentor, role, socketId
      * @returns {Object} Game object, assigned color, and new game status
      */
-    createOrJoinPuzzle({ student, mentor, role, socketId }, io) {
+    createOrJoinPuzzle({ student, mentor, role, socketId, credentials }, io) {
         let game = this.ongoingGames.find(
             (g) => g.student.username === student || g.mentor.username === mentor
         );
@@ -131,7 +131,8 @@ class GameManager {
             student: {
                 username: student,
                 id: role === "student" ? socketId : null,
-                color: studentColor
+                color: studentColor,
+                credentials: credentials,
             },
             mentor: {
                 username: mentor,
@@ -226,7 +227,7 @@ class GameManager {
                             move: moveResult,
                             studentId: game.student.id,
                             mentorId: game.mentor.id,
-                            studentUser: game.student.username,
+                            studentUsername: game.student.username,
                         },
                 activityEvents: activityEvents
         };

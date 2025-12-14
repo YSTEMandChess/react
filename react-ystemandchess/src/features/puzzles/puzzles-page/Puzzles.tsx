@@ -336,7 +336,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             command: "userinfo",
             student: student,
             mentor: mentor,
-            role: role
+            role: role,
+            credentials: cookies.login
         });
         // try creating / joining, server will then notify whether user is a guest or host
         postToBoard({command: "newPuzzle"}); 

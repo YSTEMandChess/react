@@ -27,6 +27,7 @@ var messageEvent = eventMethod == 'attachEvent' ? 'onmessage' : 'message'
 var mentor = ''
 var student = ''
 var role = 'student'
+var credentials = ''
 
 var playerColor
 
@@ -147,7 +148,7 @@ function sendNewGame () {
  */
 function sendNewPuzzle () {
   console.log('starting new puzzle with server')
-  var data = {'mentor': mentor, 'student': student, 'role': role}
+  var data = {'mentor': mentor, 'student': student, 'role': role, 'credentials': credentials}
   console.log(data)
   socket.emit('newPuzzle', JSON.stringify(data))
 }
@@ -183,7 +184,7 @@ function sendSetStateColor (fen, color, hints) {
  */
 function sendMove (from, to) {
   console.log('sending move to server')
-  var data = {'mentor': mentor, 'student': student, 'role': role, 'from': from, 'to': to}
+  var data = {'mentor': mentor, 'student': student, 'role': role, 'from': from, 'to': to, 'credentials': credentials}
   console.log(data)
   socket.emit('move', JSON.stringify(data))
 }
@@ -497,6 +498,7 @@ eventer(
       mentor = data.mentor
       student = data.student
       role = data.role
+      credentials = data.credentials
     } else if (command == 'undo') { sendUndo() }
 
     // check if puzzle

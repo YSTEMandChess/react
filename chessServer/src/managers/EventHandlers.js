@@ -45,12 +45,14 @@ const registerSocketHandlers = (socket, io) => {
     socket.on("newPuzzle", (msg) => {
         try {
             const parsed = JSON.parse(msg);
+            console.log('data',parsed, msg);
             // create the new puzzle
             gameManager.createOrJoinPuzzle({
                 student: parsed.student,
                 mentor: parsed.mentor,
                 role: parsed.role,
-                socketId: socket.id
+                socketId: socket.id,
+                credentials: parsed.credentials,
             }, io);
         }
         catch (err) {
@@ -76,7 +78,7 @@ const registerSocketHandlers = (socket, io) => {
                 const activityEvents = res.activityEvents;   
                 if (activityEvents && activityEvents.length > 0) {
                     const studentId = state.studentId;   
-                    const studentUsername = state.studentUser;
+                    const studentUsername = state.studentUsername;
                     const payload = {
                         activities: activityEvents, 
                         lastMove: { from, to, san: state.move?.san }

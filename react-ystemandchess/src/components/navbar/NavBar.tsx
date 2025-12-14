@@ -410,7 +410,7 @@ const NavBar = () => {
       <Link
         to="/puzzles"
         className="text-gray-700 hover:text-black text-lg px-3 py-1"
-        state={{username: username}}
+        state={{username: username, credentials: cookies.login}}
       >
         Puzzles
       </Link>
