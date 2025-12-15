@@ -95,7 +95,7 @@ router.get("/:username/dates", async (req, res) => {
 });
 
 
-router.post("/:username/activity", async (req, res) => {
+router.put("/:username/activity", async (req, res) => {
     try {
         const db = await getDb();
         const { username } = req.params;
@@ -112,10 +112,10 @@ router.post("/:username/activity", async (req, res) => {
         if(activityIncomplete) {
             console.log('incomplete activity: ', activityName);
         }
-        /*await activities.updateOne(
+        await activities.updateOne(
             { userId, "activities.name": activityName },
             { $set: { "activities.$.completed": true } }
-        );*/
+        );
         return res.status(200).json({message:'success'});
     } catch (err) {
         console.error('Error updating activities: ', err);
@@ -123,26 +123,5 @@ router.post("/:username/activity", async (req, res) => {
     }
 })
 
-router.put("/activity/check", async (req, res) => {
-    try {
-        const db = await getDb();
-        const { username } = req.params;
-        const { moveData } = req.body;
-        if(!username) {
-            return res.status(401).json({error:'Authentication required'});
-        }
-        const userId = getUserId(db, username);
-        const activities = db.collection("activities");
-
-        /*const userActivities = await activities.findOne(
-            { userId, }, { projection: {activities: 1, _id: 0}}
-        );*/
-        //compare move data with activities
-    }
-    catch (err) {
-        console.error('Error checking move: ', err);
-        res.status(500).json({error: 'Server error'});
-    }
-})
 
 module.exports = router;

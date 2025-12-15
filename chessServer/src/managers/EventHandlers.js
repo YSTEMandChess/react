@@ -67,10 +67,8 @@ const registerSocketHandlers = (socket, io) => {
      */
     socket.on("move", async (msg) => {
         try {
-            //check latency for sending requests, if slow emit signal and push load to separate handler
-            
             const { from, to, computerMove } = JSON.parse(msg);
-            const res = gameManager.makeMove(socket.id, from, to, computerMove);
+            const res = await gameManager.makeMove(socket.id, from, to, computerMove);
             const state = res.result;
             gameManager.broadcastBoardState(res.result, io);
             console.log('move result ', res);
@@ -89,19 +87,18 @@ const registerSocketHandlers = (socket, io) => {
                     if (studentSocket) {
                         try {
                             console.log('route:', `${process.env.MIDDLEWARE_URL}/activities/${studentUsername}/activity`);
-                            const response = await fetch(`${process.env.MIDDLEWARE_URL}/activities/${studentUsername}/activity}`, {
+                            const response = await fetch(`${process.env.MIDDLEWARE_URL}/activities/${studentUsername}/activity`, {
                                 method: "PUT",
                                 headers: {
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
+                                    'Authentication' : `Bearer ${res.credentials}`,
                                 },
-                                //use new route to send activity 
                                 body: JSON.stringify({
-                                    activityName: 'captureBishop'
+                                    activityName: payload.activities[0].name,
                                 })
                             });
                             console.log('response',response);
                             const json = await response.json();
-                            console.log('json',json);
                             socket.emit("completeActivity");
                         } catch (e) {
                             console.log('Error: ', e);                            
