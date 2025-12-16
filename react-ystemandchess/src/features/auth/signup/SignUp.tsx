@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './SignUp.scss';
-import { environment } from '../../../core/environments/environment';
+import { environment } from '../../../environments/environment';
 
 // Define the interface for the props of the StudentTemplate component
 interface StudentTemplateProps {

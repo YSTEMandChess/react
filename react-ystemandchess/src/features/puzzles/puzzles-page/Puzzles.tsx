@@ -4,7 +4,7 @@ import profileStyles from "./Puzzles-profile.module.scss";
 import { Chess } from "chess.js";
 import { themesName, themesDescription } from "../../../core/services/themesService";
 import Swal from 'sweetalert2';
-import { environment } from "../../../core/environments/environment";
+import { environment } from "../../../environments/environment";
 import { v4 as uuidv4 } from "uuid";
 import { SetPermissionLevel } from "../../../globals";
 import { useCookies } from 'react-cookie'; 

@@ -9,7 +9,7 @@
 import "./App.css";
 import React, { useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import { environment } from "./core/environments/environment";
+import { environment } from "./environments/environment";
 import { useCookies } from "react-cookie";
 import { SetPermissionLevel } from "./globals";
 import NavBar from "./components/navbar/NavBar";
