@@ -1,7 +1,6 @@
 import { renderHook, act } from "@testing-library/react";
 import { useTimeTracking } from "./useTimeTracking";
 import { SetPermissionLevel } from "../../../../../globals";
-import { environment } from "../../../../../environments/environment";
 
 // mock SetPermissionLevel
 jest.mock("../../../../../globals", () => ({
@@ -9,7 +8,7 @@ jest.mock("../../../../../globals", () => ({
 }));
 
 // mock environment URL
-jest.mock("../../../../../core/environments/environment", () => ({
+jest.mock("../../../../../environments/environment", () => ({
     environment: { urls: { middlewareURL: "http://mockurl.com" } },
 }));
 
