@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import "./Student.scss";
-import {environment} from "../../../core/environments/environment";
+import {environment} from "../../../environments/environment";
 
 const Student = () => {
     const chessSrc = environment.urls.chessClientURL;
