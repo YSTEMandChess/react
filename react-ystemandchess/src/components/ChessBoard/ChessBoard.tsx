@@ -58,7 +58,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     const [isShaking, setIsShaking] = useState<boolean>(false);
     const [orientation, setOrientationState] = useState<"white" | "black">(propOrientation);
     const [boardPosition, setBoardPosition] = useState<string>(fen || "start");
-    const [boardWidth, setBoardWidth] = useState(560);
+    const [boardWidth, setBoardWidth] = useState(600);
     const [greySquares, setGreySquares] = useState<string[]>([]);
 
     const boardRef = useRef<HTMLDivElement | null>(null);
@@ -72,7 +72,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         }
       };
 
-      handleResize();
+      requestAnimationFrame(handleResize);
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }, []);
@@ -82,14 +82,22 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       setOrientationState(propOrientation);
     }, [propOrientation]);
 
-    // Sync FEN from parent (server is source of truth) with comparison check
+    // Sync FEN from parent - simplified to always update when FEN changes
     useEffect(() => {
-      if (fen && fen !== gameRef.current.fen()) {
+      if (fen) {
         try {
-          gameRef.current.load(fen);
-          setBoardPosition(fen);
+          const currentFen = gameRef.current.fen();
+          
+          // Normalize both FENs to compare just the board position
+          const newFenBoard = fen.split(' ')[0];
+          const currentFenBoard = currentFen.split(' ')[0];
+          
+          if (newFenBoard !== currentFenBoard) {
+            gameRef.current.load(fen);
+            setBoardPosition(fen);
+          }
         } catch (err) {
-          console.error("Invalid FEN from server:", fen, err);
+          console.error("ChessBoard: Invalid FEN from props:", fen, err);
         }
       }
     }, [fen]);

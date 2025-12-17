@@ -74,7 +74,7 @@
 .chessboard-wrapper {
   width: 100%;
   max-width: 600px;
-  height: auto;
+  aspect-ratio: 1 / 1;
   display: flex;
   justify-content: center;
   align-items: center;
