@@ -1,5 +1,5 @@
 import React, { useState, useRef, useImperativeHandle, useEffect, forwardRef } from "react";
-import Chessboard , { ChessMode } from "chessboardjsx";
+import Chessboard, { ChessMode } from "chessboardjsx";
 import { Chess, Square } from "chess.js";
 import { Move } from "../../core/types/chess";
 import "./ChessBoard.css";
@@ -87,12 +87,8 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       if (fen) {
         try {
           const currentFen = gameRef.current.fen();
-          
-          // Normalize both FENs to compare just the board position
-          const newFenBoard = fen.split(' ')[0];
-          const currentFenBoard = currentFen.split(' ')[0];
-          
-          if (newFenBoard !== currentFenBoard) {
+
+          if (fen !== currentFen) {
             gameRef.current.load(fen);
             setBoardPosition(fen);
           }

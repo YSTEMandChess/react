@@ -196,13 +196,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     isPuzzleEndRef.current = false;
     setHighlightSquares([]);
 
-    const puzzleMoves: Move[] = moveListRef.current.map(moveStr => ({
-      from: moveStr.substring(0, 2),
-      to: moveStr.substring(2, 4),
-      promotion: moveStr.length > 4 ? moveStr[4] as 'q' | 'r' | 'b' | 'n' : undefined
-    }));
-
-    socket.setPuzzleMoves(puzzleMoves);
     socket.setGameStateWithColor(normalizedFen, color, puzzle.Themes);
 
     if (chessBoardRef.current) {
@@ -562,7 +555,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     if (socket.connected && status === "" && !isInitialized && !isInitializingRef.current) {
       socket.startNewPuzzle();
     }
-  }, [socket.connected, status, isInitialized]);
+  }, [socket.connected, status, isInitialized, socket]);
 
   // ============================================================================
   // RENDER

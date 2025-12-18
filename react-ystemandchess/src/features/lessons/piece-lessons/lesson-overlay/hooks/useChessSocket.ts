@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { Chess } from "chess.js";
 import { Move, BoardState, MousePosition, GameConfig, GameMode, PlayerColor } from "../../../../../core/types/chess";
-import c from "config";
 
 interface UseChessSocketOptions {
   student: string;
@@ -109,7 +108,6 @@ export const useChessSocket = ({
   const currentFenRef = useRef<string>("");
   const expectedMoveRef = useRef<Move | null>(null);
   const isPuzzleRef = useRef<boolean>(mode === "puzzle");
-  const nextPuzzleMoveRef = useRef<Move[]>([]);
   const mouseTrackingRef = useRef<boolean>(false);
   const highlightFromRef = useRef<string>("");
   const highlightToRef = useRef<string>("");
@@ -169,54 +167,7 @@ export const useChessSocket = ({
         const rawFen = (parsed as any).boardState || (parsed as any).fen;
         const newFen = normalizeFen(rawFen);
 
-        // Puzzle validation - only validate if this is a new position (different from current)
-        if (isPuzzleRef.current && nextPuzzleMoveRef.current.length > 0 && currentFenRef.current && currentFenRef.current !== newFen) {
-          const expectedMove = nextPuzzleMoveRef.current[0];
-          const source = expectedMove.from;
-          const target = expectedMove.to;
-
-          // Use safe Chess instance creation with current position
-          const testState = createSafeChessInstance(currentFenRef.current);
-          const testMove = testState.move({
-            from: source,
-            to: target,
-            promotion: expectedMove.promotion || "q",
-          });
-
-          // Compare the resulting FEN after the expected move with the new FEN
-          // Extract just the board position (first part) for comparison
-          const testFenBoard = testMove ? testState.fen().split(' ')[0] : '';
-          const newFenBoard = newFen.split(' ')[0];
-
-          // Wrong puzzle move -> reset to current position
-          if (!testMove || testFenBoard !== newFenBoard) {
-            console.log("Wrong puzzle move, resetting to:", currentFenRef.current);
-            const data = { state: currentFenRef.current };
-            socketRef.current?.emit("setstate", JSON.stringify(data));
-
-            // Highlight the expected move
-            if (highlightFromRef.current && highlightToRef.current) {
-              if (onLastMove) {
-                onLastMove(highlightFromRef.current, highlightToRef.current);
-              }
-            }
-            return;
-          } else if (testMove) {
-            // Correct puzzle move
-            console.log("Correct puzzle move - board advanced");
-            nextPuzzleMoveRef.current.shift(); // Remove the validated move
-
-            // Notify parent of the move
-            if (onMove) {
-              onMove({
-                fen: newFen,
-                move: { from: source, to: target, promotion: expectedMove.promotion },
-              });
-            }
-          }
-        }
-
-        // Update game state ref with normalized FEN
+        // Update game state
         try {
           gameStateRef.current.load(newFen);
         } catch (err) {
@@ -228,21 +179,18 @@ export const useChessSocket = ({
         setFen(newFen);
         currentFenRef.current = newFen;
 
-        // Color assignment
+        // Handle color assignment
         if ((parsed as any).color) {
           const color = (parsed as any).color as PlayerColor;
           setPlayerColor(color);
           if (onColorAssigned) onColorAssigned(color);
         }
 
-        // Notify parent
+        // Notify parent component
         if (onBoardStateChange) {
           onBoardStateChange(newFen, (parsed as any).color);
         }
 
-        if (onMove && !isPuzzleRef.current) {
-          onMove({ fen: newFen, move: (parsed as any).move });
-        }
       } catch (err) {
         console.error("Invalid boardstate:", err);
       }
@@ -265,11 +213,6 @@ export const useChessSocket = ({
     socket.on("lastmove", (msg: string) => {
       try {
         const parsed = JSON.parse(msg);
-
-        // Check for puzzle mode and skip if no moves
-        if (!parsed.from && !parsed.to && nextPuzzleMoveRef.current.length > 0) {
-          return;
-        }
 
         if (parsed.from && parsed.to) {
           console.log("Last move highlight:", parsed.from, "→", parsed.to);
@@ -545,11 +488,6 @@ export const useChessSocket = ({
     expectedMoveRef.current = move;
   }, []);
 
-  const setPuzzleMoves = useCallback((moves: Move[]) => {
-    nextPuzzleMoveRef.current = moves;
-    isPuzzleRef.current = true;
-  }, []);
-
   // ======== mouse tracking helpers ========
   const _onMouseMove = useCallback(
     (e: MouseEvent) => {
@@ -618,7 +556,6 @@ export const useChessSocket = ({
     sendMove,
     undo,
     setExpectedMove,
-    setPuzzleMoves,
 
     // State management
     setGameState,
