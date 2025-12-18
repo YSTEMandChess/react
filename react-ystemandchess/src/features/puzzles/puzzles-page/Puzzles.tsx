@@ -53,7 +53,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   // Refs
   const chessBoardRef = useRef<ChessBoardRef>(null);
-  const gameRef = useRef<Chess>(new Chess());
   const swalRef = useRef<string>("");
   const moveListRef = useRef<string[]>([]);
   const isPuzzleEndRef = useRef(false);
@@ -64,7 +63,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const dbIndexRef = useRef(0);
   const getNextPuzzleRef = useRef<() => void>();
   const initializeComponentRef = useRef<() => Promise<void>>();
-
 
   // State
   const [puzzleArray, setPuzzleArray] = useState<any[]>([]);
@@ -85,7 +83,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const studentId = student || cookies.login?.studentId || uuidv4();
   const mentorId = mentor || "puzzle_mentor_" + studentId;
 
-  
+
   // ============================================================================
   // PUZZLE LOADING
   // ============================================================================
@@ -185,12 +183,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
     const normalizedFen = normalizeFen(fen);
     setCurrentFEN(normalizedFen);
-    try {
-      gameRef.current.load(normalizedFen);
-    } catch (err) {
-      console.error("Failed to load FEN locally:", err);
-      return;
-    }
 
     moveListRef.current = puzzle?.Moves?.split(" ") || [];
     isPuzzleEndRef.current = false;
@@ -254,23 +246,11 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       promotion: computerMoveStr.length > 4 ? computerMoveStr[4] as 'q' | 'r' | 'b' | 'n' : undefined
     };
 
-    const localMove = gameRef.current.move({
-      from: computerMove.from,
-      to: computerMove.to,
-      promotion: computerMove.promotion || 'q'
-    });
-
-    if (!localMove) {
-      console.error("Invalid computer move:", computerMove);
-      return;
-    }
-
-    const newFen = gameRef.current.fen();
-    setCurrentFEN(newFen);
-    setHighlightSquares([computerMove.from, computerMove.to]);
-
     socket.sendMove(computerMove);
     socket.sendLastMove(computerMove.from, computerMove.to);
+
+    // Optimistically update highlights
+    setHighlightSquares([computerMove.from, computerMove.to]);
 
     if (chessBoardRef.current) {
       chessBoardRef.current.highlightMove(computerMove.from, computerMove.to);
@@ -279,17 +259,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   const handlePlayerMove = (move: Move) => {
     if (isPuzzleEndRef.current || !moveListRef.current || moveListRef.current.length === 0) {
-      return "snapback";
-    }
-
-    const localMove = gameRef.current.move({
-      from: move.from,
-      to: move.to,
-      promotion: move.promotion || 'q'
-    });
-
-    if (!localMove) {
-      return "snapback";
+      return;
     }
 
     const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ''}`;
@@ -302,8 +272,11 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       moveListRef.current.shift();
       setHighlightSquares([move.from, move.to]);
 
-      const newFen = gameRef.current.fen();
-      setCurrentFEN(newFen);
+      // Get new FEN from ChessBoard (it already made the move)
+      const newFen = chessBoardRef.current?.getFen();
+      if (newFen) {
+        setCurrentFEN(newFen);
+      }
 
       socket.sendMove(move);
       socket.sendLastMove(move.from, move.to);
@@ -324,13 +297,12 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         }, 300);
       }
     } else {
-      gameRef.current.undo();
+      // Wrong move - reset to current position
       Swal.fire('Incorrect move', 'Try again!', 'error').then(() => {
         if (currentPuzzleRef.current) {
           startLesson(currentPuzzleRef.current, playerColor);
         }
       });
-      return "snapback";
     }
   };
 
@@ -371,7 +343,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         });
       }
 
-      getNextPuzzleRef.current?.(); // Use the ref
+      getNextPuzzleRef.current?.();
     } else if (msg === "new game received") {
       if (swalRef.current === "loading") Swal.close();
     } else if (msg.startsWith("<div")) {
@@ -394,11 +366,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
     onBoardStateChange: (newFEN) => {
       setCurrentFEN(newFEN);
-      try {
-        gameRef.current.load(newFEN);
-      } catch (err) {
-        console.error("Failed to load FEN in onBoardStateChange:", err);
-      }
+      // ChessBoard will sync its own gameRef from the fen prop
     },
 
     onMessage: handleSocketMessage,
@@ -547,7 +515,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     return () => {
       window.removeEventListener('beforeunload', handleUnloadRef.current);
       handleUnloadRef.current();
-      Swal.close(); // Clean up any open modals
+      Swal.close();
     };
   }, []);
 

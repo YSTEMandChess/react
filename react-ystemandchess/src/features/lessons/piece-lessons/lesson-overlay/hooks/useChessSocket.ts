@@ -104,7 +104,6 @@ export const useChessSocket = ({
 
   // ======== refs ========
   const socketRef = useRef<Socket | null>(null);
-  const gameStateRef = useRef<Chess>(new Chess());
   const currentFenRef = useRef<string>("");
   const expectedMoveRef = useRef<Move | null>(null);
   const isPuzzleRef = useRef<boolean>(mode === "puzzle");
@@ -166,14 +165,6 @@ export const useChessSocket = ({
         const parsed: BoardState = JSON.parse(msg);
         const rawFen = (parsed as any).boardState || (parsed as any).fen;
         const newFen = normalizeFen(rawFen);
-
-        // Update game state
-        try {
-          gameStateRef.current.load(newFen);
-        } catch (err) {
-          console.error("Failed to load normalized FEN into game state:", newFen, err);
-          gameStateRef.current = createSafeChessInstance(newFen);
-        }
 
         // Update refs/state
         setFen(newFen);
@@ -297,7 +288,6 @@ export const useChessSocket = ({
       setFen("");
       currentFenRef.current = "";
       expectedMoveRef.current = null;
-      gameStateRef.current = new Chess();
       if (onReset) onReset();
     });
 
@@ -585,6 +575,5 @@ export const useChessSocket = ({
     // Refs for direct access
     socketRef,
     currentFenRef,
-    gameStateRef,
   };
 };
