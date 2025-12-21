@@ -8,10 +8,13 @@ const stockfishManager = new StockfishManager();
  */
 const initializeSocket = (io, socket) => {
   // Start a new Stockfish session for the client
-  socket.on("start-session", ({ sessionType, fen }) => {
+  socket.on("start-session", ({ sessionType, fen, infoMode = false }) => {
     try {
-      stockfishManager.registerSession(socket, sessionType, fen);
-      socket.emit("session-started", { success: true, id: socket.id });
+      // Pass infoMode through to StockfishManager.registerSession(...)
+      stockfishManager.registerSession(socket, sessionType, fen, infoMode);
+
+      // Optional: include infoMode in the success payload for debugging
+      socket.emit("session-started", { success: true, id: socket.id, infoMode });
     } catch (err) {
       socket.emit("session-error", { error: err.message });
     }

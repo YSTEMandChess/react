@@ -1,4 +1,5 @@
 const { Chess } = require("chess.js")
+const crypto = require('crypto');
 
 /**
  * GameManager class handles chess game sessions, state, and logic.
@@ -56,7 +57,8 @@ class GameManager {
                 color: mentorColor
             },
             boardState: board,
-            pastStates: []
+            pastStates: [],
+            gameId: crypto.randomUUID() //stable game identifier (shared by both students and mentors)
         };
 
         this.ongoingGames.push(newGame);
@@ -141,6 +143,7 @@ class GameManager {
             boardState: board,
             pastStates: [],
             puzzle: "No hints available",
+            gameId: crypto.randomUUID(),
         };
         console.log("created puzzle:", newGame.puzzle);
 
@@ -171,20 +174,31 @@ class GameManager {
 
         const board = game.boardState;
 
-        const moveResult = board.move({ from: moveFrom, to: moveTo });
+        // capture the board state before the move and the move index (0 index)
+        const fenBefore = board.fen();
+        const moveIndex = game.pastStates.length;
 
+        const moveResult = board.move({ from: moveFrom, to: moveTo });
         if (!moveResult) {
             throw new Error("Invalid move!");
         }
-
         // Save board state
+        const fenAfter = board.fen();
         game.pastStates.push(board.fen())
+
+        const moveUci = moveResult.from + moveResult.to + (moveResult.promotion || "");
 
         return {
             boardState: board.fen(),
             move: moveResult,
             studentId: game.student.id,
-            mentorId: game.mentor.id
+            mentorId: game.mentor.id,
+            //new fields for LLM below
+            fenBefore: fenBefore,
+            fenAfter: fenAfter,
+            moveIndex: moveIndex,
+            moveUci: moveUci,
+            gameId: game.gameId,
         };
     }
 
