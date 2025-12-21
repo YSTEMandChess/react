@@ -1,30 +1,91 @@
-//Responsibility: Simple caching layer -->  avoid calling the LLM again for the exact same “input” when you already have the answer
-//this is important because the LLM is expensive and we want to avoid calling it unnecessarily (user switches tabs)
+// chessServer/src/utils/cache.js
+// Responsibility: Simple caching layer with TTL support
+// Cache key format: analysis:${fenAfter}:${moveUci}:depth${depth}:movetime${movetime}:multipv${multipv}
 
-//get(key), set(key, value, ttl), has(key)
-//Cache key format: analysis:${fenAfter}:${moveUci}:depth${depth}:movetime${movetime}:multipv${multipv}
-//Includes analysis settings to ensure cache matches analysis parameters
+const cache = new Map(); // Stores: { value, expiresAt }
 
+/**
+ * Get a value from cache if it exists and hasn't expired
+ * @param {string} key - Cache key
+ * @returns {any|null} - Cached value or null if not found/expired
+ */
+function get(key) {
+  const entry = cache.get(key);
+  
+  if (!entry) {
+    return null;
+  }
+  
+  // Check if expired
+  if (Date.now() > entry.expiresAt) {
+    cache.delete(key); // Clean up expired entry
+    return null;
+  }
+  
+  return entry.value;
+}
 
-//Caching Strategy
-//Cache Key Format:analysis:${fenAfter}:${moveUci}:depth${depth}:movetime${movetime}:multipv${multipv}Rationale:
+/**
+ * Set a value in cache with TTL
+ * @param {string} key - Cache key
+ * @param {any} value - Value to cache
+ * @param {number} ttlSeconds - Time to live in seconds (default: 24 hours)
+ */
+function set(key, value, ttlSeconds = 86400) {
+  const expiresAt = Date.now() + (ttlSeconds * 1000);
+  cache.set(key, { value, expiresAt });
+}
 
-//Uses fenAfter:moveUci for cache reuse across games (same position + move)
-//Includes analysis settings (depth, movetime, multipv) to ensure cache matches analysis parameters
-//Different settings produce different cache entries (e.g., depth 10 vs depth 20)
-//TTL: 24 hours (or per Google Doc requirements)Cache Storage: Start with in-memory Map, upgrade to Redis if needed for production.
+/**
+ * Check if a key exists in cache and hasn't expired
+ * @param {string} key - Cache key
+ * @returns {boolean} - True if key exists and is not expired
+ */
+function has(key) {
+  const entry = cache.get(key);
+  
+  if (!entry) {
+    return false;
+  }
+  
+  // Check if expired
+  if (Date.now() > entry.expiresAt) {
+    cache.delete(key); // Clean up expired entry
+    return false;
+  }
+  
+  return true;
+}
 
+/**
+ * Clear all cache entries
+ */
+function clear() {
+  cache.clear();
+}
 
-const cache = new Map();
+/**
+ * Remove expired entries (cleanup function, can be called periodically)
+ * @returns {number} - Number of entries removed
+ */
+function cleanup() {
+  const now = Date.now();
+  let removed = 0;
+  
+  for (const [key, entry] of cache.entries()) {
+    if (now > entry.expiresAt) {
+      cache.delete(key);
+      removed++;
+    }
+  }
+  
+  return removed;
+}
 
-export const get = (key) => {
-    return cache.get(key);
-};
-
-export const set = (key, value, ttl) => {
-    cache.set(key, value, ttl);
-};
-
-export const has = (key) => {
-    return cache.has(key);
+module.exports = {
+  get,
+  set,
+  has,
+  clear,
+  cleanup,
 };

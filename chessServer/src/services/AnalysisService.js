@@ -316,6 +316,12 @@ async function getStockfishAnalysis(fenAfter, analysisSettings)
 
 async function callOpenAI(stockfishFacts, moveContext)
 {
+  const client = openai.getClient ? openai.getClient() : openai;
+  
+  if (!client) {
+    throw new Error("OpenAI client not configured. Set OPENAI_API_KEY or use LLM_MODE=mock");
+  }
+
   const prompt = buildPromptFromDoc({
     fenBefore: moveContext.fenBefore,
     fenAfter: moveContext.fenAfter,
@@ -328,7 +334,7 @@ async function callOpenAI(stockfishFacts, moveContext)
     stockfish: stockfishFacts,
   });
 
-  const resp = await openai.chat.completions.create({
+  const resp = await client.chat.completions.create({
     model: process.env.OPENAI_MODEL || "gpt-4o",
     messages: [
       { role: "system", content: "Follow the user instructions exactly." },
@@ -413,10 +419,243 @@ async function analyzeMove(
   });
 }
 
-module.exports = {
-  analyzeMove,
-  getStockfishAnalysis,
-  callOpenAI,
-  getCacheKey,
-  computeMoveUci,
-};
+
+/**
+ * Analyze a move with chat history context
+ * @param {Object} params - Move analysis parameters
+ * @param {string} params.fen_before - FEN before move
+ * @param {string} params.fen_after - FEN after move
+ * @param {string} params.move - UCI move (e.g., "g1f3")
+ * @param {string} params.uciHistory - Space-separated UCI moves
+ * @param {number} params.depth - Stockfish depth
+ * @param {Array} params.chatHistory - Previous chat messages
+ * @returns {Promise<{explanation: string, cached: boolean}>}
+ */
+async function analyzeMoveWithHistory({
+    fen_before,
+    fen_after,
+    move,
+    uciHistory,
+    depth = 12,
+    chatHistory = [],
+  }) {
+    const analysisSettings = { depth, movetime: 2000, multipv: 1 };
+    const cacheKey = getCacheKey(fen_after, move, analysisSettings);
+  
+    // Check cache
+    if (cache.has(cacheKey)) {
+      return {
+        explanation: cache.get(cacheKey),
+        cached: true,
+      };
+    }
+  
+    // 1) Stockfish analysis
+    const stockfishFacts = await getStockfishAnalysis(fen_after, analysisSettings);
+  
+    // 2) Parse UCI history into move list
+    const lastMoves = uciHistory ? uciHistory.trim().split(/\s+/) : [];
+    
+    // Extract move index from history length
+    const moveIndex = lastMoves.length - 1;
+  
+    // 3) Build context with chat history
+    const moveContext = {
+      fenBefore: fen_before,
+      fenAfter: fen_after,
+      moveUci: move,
+      moveIndex: moveIndex >= 0 ? moveIndex : 0,
+      lastMoves: lastMoves,
+      chatHistory: chatHistory,
+    };
+  
+    // 4) Call OpenAI with chat history
+    const explanation = await callOpenAIWithHistory(
+      stockfishFacts,
+      moveContext,
+      "move"
+    );
+  
+    // 5) Cache result
+    cache.set(cacheKey, explanation, 60 * 60 * 24);
+  
+    return {
+      explanation,
+      cached: false,
+    };
+  }
+  
+  /**
+   * Answer a chess-related question
+   * @param {Object} params - Question parameters
+   * @param {string} params.fen - Current FEN position
+   * @param {string} params.question - User's question
+   * @param {Array} params.chatHistory - Previous chat messages
+   * @returns {Promise<{answer: string, cached: boolean}>}
+   */
+  async function answerQuestion({
+    fen,
+    question,
+    chatHistory = [],
+  }) {
+    // Cache key for questions (different from move analysis)
+    const questionCacheKey = `question:v1:${fen}:${question}`;
+  
+    // Check cache
+    if (cache.has(questionCacheKey)) {
+      return {
+        answer: cache.get(questionCacheKey),
+        cached: true,
+      };
+    }
+  
+    // Optional: Get Stockfish analysis for current position (for context)
+    let stockfishFacts = null;
+    try {
+      stockfishFacts = await getStockfishAnalysis(fen, { depth: 10 });
+    } catch (err) {
+      console.warn("[AnalysisService] Stockfish analysis failed for question, continuing without it:", err.message);
+    }
+  
+    // Build context
+    const questionContext = {
+      fen,
+      question,
+      chatHistory,
+      stockfish: stockfishFacts,
+    };
+  
+    // Call OpenAI
+    const answer = await callOpenAIWithHistory(
+      stockfishFacts,
+      questionContext,
+      "question"
+    );
+  
+    // Cache result
+    cache.set(questionCacheKey, answer, 60 * 60 * 24);
+  
+    return {
+      answer,
+      cached: false,
+    };
+  }
+  
+  /**
+   * Call OpenAI with chat history support
+   * @param {Object} stockfishFacts - Stockfish analysis results
+   * @param {Object} context - Move or question context
+   * @param {string} mode - "move" or "question"
+   * @returns {Promise<string>}
+   */
+  async function callOpenAIWithHistory(stockfishFacts, context, mode) {
+    const client = openai.getClient ? openai.getClient() : openai;
+    
+    if (!client) {
+      throw new Error("OpenAI client not configured. Set OPENAI_API_KEY or use LLM_MODE=mock");
+    }
+  
+    // Build messages array with chat history
+    const messages = [
+      {
+        role: "system",
+        content: mode === "move"
+          ? "You are a chess coach. Explain moves clearly and conversationally. Use chat history for context."
+          : "You are a chess coach. Answer questions about chess rules, strategy, and the current position. Be clear and educational.",
+      },
+    ];
+  
+    // Add chat history (convert to OpenAI message format)
+    if (Array.isArray(context.chatHistory) && context.chatHistory.length > 0) {
+      for (const msg of context.chatHistory) {
+        // Map roles: 'move' -> 'user', 'assistant' -> 'assistant', 'user' -> 'user'
+        let role = msg.role;
+        if (msg.role === "move") {
+          role = "user";
+        }
+  
+        if (role === "user" || role === "assistant") {
+          messages.push({
+            role: role,
+            content: msg.content,
+          });
+        }
+      }
+    }
+  
+    // Build the current prompt
+    let userPrompt;
+    if (mode === "move") {
+      userPrompt = buildPromptFromDoc({
+        fenBefore: context.fenBefore,
+        fenAfter: context.fenAfter,
+        moveUci: context.moveUci,
+        moveIndex: context.moveIndex,
+        san: null,
+        turn: null,
+        lastMoves: context.lastMoves || [],
+        legalMoves: [],
+        stockfish: stockfishFacts,
+      });
+    } else {
+      // Question mode
+      userPrompt = buildQuestionPrompt({
+        fen: context.fen,
+        question: context.question,
+        stockfish: stockfishFacts,
+      });
+    }
+  
+    // Add current user message
+    messages.push({
+      role: "user",
+      content: userPrompt,
+    });
+  
+    const resp = await client.chat.completions.create({
+      model: process.env.OPENAI_MODEL || "gpt-4o",
+      messages: messages,
+      temperature: 0.2,
+    });
+  
+    return resp.choices?.[0]?.message?.content ?? "";
+  }
+  
+  /**
+   * Build prompt for question answering
+   * @param {Object} params
+   * @returns {string}
+   */
+  function buildQuestionPrompt({ fen, question, stockfish }) {
+    return [
+      "You are a chess coach answering a student's question.",
+      "",
+      "CURRENT POSITION",
+      `- FEN: ${fen}`,
+      "",
+      stockfish?.bestMove ? `- Best move: ${stockfish.bestMove}` : "",
+      stockfish?.evalCp != null ? `- Evaluation: ${stockfish.evalCp} centipawns` : "",
+      stockfish?.mateIn != null ? `- Mate in: ${stockfish.mateIn} moves` : "",
+      "",
+      "STUDENT'S QUESTION",
+      question,
+      "",
+      "INSTRUCTIONS",
+      "- Answer the question clearly and helpfully.",
+      "- Reference the current position if relevant.",
+      "- If the question is about rules, explain the rule clearly.",
+      "- If the question is about strategy, provide strategic insights.",
+      "- Keep your answer concise (2-4 sentences unless more detail is needed).",
+    ].filter(line => line !== "").join("\n");
+  }
+  
+  module.exports = {
+    analyzeMove,
+    analyzeMoveWithHistory,
+    answerQuestion,
+    getStockfishAnalysis,
+    callOpenAI,
+    callOpenAIWithHistory,
+    getCacheKey,
+    computeMoveUci,
+  };
