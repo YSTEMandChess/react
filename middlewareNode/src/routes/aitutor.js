@@ -134,7 +134,7 @@ router.post("/analysis", async (req, res) => {
     // =========================
     res.json({
       reply,
-      bestMove: stockfishSummary.bestMove
+      bestMove: stockfishSummary ?  stockfishSummary.bestMove : ""
     });
 
   } catch (err) {

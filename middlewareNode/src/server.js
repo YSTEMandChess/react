@@ -46,6 +46,7 @@ app.use("/lessons", require("./routes/lessons"));
 app.use("/activities/:username", require("./routes/activities"));
 app.use('/streak', streakRoutes);
 app.use("/badges", require("./routes/badges"));
+app.use("/ai-tutor", require("./routes/aitutor"));
 
 
 // Start server on specified port

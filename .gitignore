@@ -13,6 +13,7 @@ node_modules
 #environment
 react-ystemandchess/environment.prod.ts
 react-ystemandchess/environment.ts
+react-ystemandchess/src/core/environments/
 environment.php
 .env
 environment.*.local

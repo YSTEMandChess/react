@@ -8,6 +8,7 @@ const Stockfish = require("stockfish");
 const querystring = require("querystring");
 const url = require("url");
 const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require("constants");
+const { spawn } = require("child_process");
 
 const app = express();
 
@@ -19,6 +20,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+app.use(express.json());
 // CORS headers
 app.use((req, res, next) => {
   // WARNING: allow only selected access for production
@@ -89,6 +91,59 @@ app.get("/", (req, res) => {
     }
   }, 5000);
 });
+
+
+//Stockfish function to get the move/game analysis 
+function runStockfish({ fen, moves = "", depth = 15 }) {
+  return new Promise((resolve) => {
+    const engine = spawn("stockfish");
+    let infoLines = [];
+
+    engine.stdout.on("data", data => {
+      data.toString().split("\n").forEach(line => {
+        if (!line.trim()) return;
+
+        if (line.startsWith("info")) infoLines.push(line);
+
+        if (line.startsWith("bestmove")) {
+          engine.stdin.write("quit\n");
+          engine.kill();
+          resolve({
+            bestMove: line.split(" ")[1],
+            infoLines
+          });
+        }
+      });
+    });
+
+    engine.stdin.write("uci\n");
+    engine.stdin.write("isready\n");
+    engine.stdin.write(`position fen ${fen} ${moves ? "moves " + moves : ""}\n`);
+    engine.stdin.write(`go depth ${depth}\n`);
+  });
+}
+
+//Takes request from middleware and sends back the stockfish engine response
+app.post("/analysis",async (req, res) => {
+  try{
+    const { fen, moves="", depth=12 } = req.body;
+    
+    if (!fen) return res.status(400).json({ error: "fen required" });
+
+    const result = await runStockfish({
+      fen,
+      moves,
+      depth: Number(depth || 12)
+    });
+
+    res.json(result);
+  }
+  catch(err){
+    console.error(err);
+    res.status(500).json({ error: "Stockfish error" });
+  }
+
+})
 
 
 // Start the server
