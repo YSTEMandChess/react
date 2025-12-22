@@ -220,8 +220,7 @@ class GameManager {
             });
         }
         //console.log(activityEvents);
-        console.log('student info',game.student);
-        console.log('cookie', game.student.credentials);
+        //console.log('student info',game.student);
         return { 
                 result: {
                             boardState: board.fen(),
@@ -230,7 +229,6 @@ class GameManager {
                             mentorId: game.mentor.id,
                             studentUsername: game.student.username,
                         },
-                credentials: game.student.credentials,
                 activityEvents: activityEvents
         };
     }

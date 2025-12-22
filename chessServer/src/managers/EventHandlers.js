@@ -67,38 +67,36 @@ const registerSocketHandlers = (socket, io) => {
      */
     socket.on("move", async (msg) => {
         try {
-            const { from, to, computerMove } = JSON.parse(msg);
-            const res = await gameManager.makeMove(socket.id, from, to, computerMove);
+            const { from, to, computerMove, username, credentials } = JSON.parse(msg);
+            const res = await gameManager.makeMove(socket.id, from, to);
             const state = res.result;
             gameManager.broadcastBoardState(res.result, io);
-            console.log('move result ', res);
+            console.log('Move: ', res);
             if(!computerMove) {
                 const activityEvents = res.activityEvents;   
                 if (activityEvents && activityEvents.length > 0) {
                     const studentId = state.studentId;   
-                    const studentUsername = state.studentUsername;
                     const payload = {
                         activities: activityEvents, 
                         lastMove: { from, to, san: state.move?.san }
                     };
-                    console.log('payload', payload);
+                    console.log('Payload', payload);
                     const studentSocket = io.sockets.sockets.get(studentId);
                     //console.log('student socket', studentSocket);
                     if (studentSocket) {
                         try {
-                            console.log('route:', `${process.env.MIDDLEWARE_URL}/activities/${studentUsername}/activity`);
-                            const response = await fetch(`${process.env.MIDDLEWARE_URL}/activities/${studentUsername}/activity`, {
+                            console.log('route:', `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`);
+                            const response = await fetch(`${process.env.MIDDLEWARE_URL}/activities/${username}/activity`, {
                                 method: "PUT",
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'Authentication' : `Bearer ${res.credentials}`,
+                                    'Authentication' : `Bearer ${credentials}`,
                                 },
                                 body: JSON.stringify({
                                     activityName: payload.activities[0].name,
                                 })
                             });
                             console.log('response',response);
-                            const json = await response.json();
                             socket.emit("completeActivity");
                         } catch (e) {
                             console.log('Error: ', e);                            

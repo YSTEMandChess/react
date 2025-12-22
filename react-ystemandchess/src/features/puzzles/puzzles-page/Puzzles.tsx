@@ -277,7 +277,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       if (newFen) {
         setCurrentFEN(newFen);
       }
-
+      move.username = username;
+      move.credentials = cookies.login;
       socket.sendMove(move);
       socket.sendLastMove(move.from, move.to);
 

@@ -45,8 +45,8 @@ async function getUserId(db, username) {
         { username },
     );
     if(!currentUser) {
-            return res.status(404).json({error: "User not found!"});
-        }
+        return;
+    }
     const userId = currentUser._id;
     return userId;
 }
