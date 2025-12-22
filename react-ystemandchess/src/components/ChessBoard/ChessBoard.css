@@ -71,6 +71,24 @@
   animation: shake 0.4s ease;
 }
 
+
+/* Fix chessboardjsx Black Piece Rendering Bug */
+
+/* Force black rooks to have black fill */
+.chessboard-wrapper [data-testid^="bR"] svg g,
+.chessboard-wrapper [data-testid^="bN"] svg g,
+.chessboard-wrapper [data-testid^="bB"] svg g,
+.chessboard-wrapper [data-testid^="bQ"] svg g,
+.chessboard-wrapper [data-testid^="bK"] svg g,
+.chessboard-wrapper [data-testid^="bP"] svg g {
+  fill: #000000 !important;
+}
+/* Handle pieces that start with fill:none */
+.chessboard-wrapper svg g[style^="fill: none"] {
+  fill: #000000 !important;
+}
+
+
 .chessboard-wrapper {
   width: 100%;
   max-width: 600px;

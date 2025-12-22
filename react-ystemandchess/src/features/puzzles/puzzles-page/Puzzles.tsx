@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import pageStyles from "./Puzzles.module.scss";
 import profileStyles from "./Puzzles-profile.module.scss";
-import { Chess } from "chess.js";
 import { themesName, themesDescription } from "../../../core/services/themesService";
 import Swal from 'sweetalert2';
 import { environment } from "../../../environments/environment";
