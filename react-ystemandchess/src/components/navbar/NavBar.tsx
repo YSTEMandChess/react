@@ -396,6 +396,12 @@ const NavBar = () => {
         Mentor
       </Link>
       <Link
+        to="/aitutor"
+        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+      >
+        AI Tutor
+      </Link>
+      <Link
         to="/learnings"
         className="text-gray-700 hover:text-black text-lg px-3 py-1"
       >

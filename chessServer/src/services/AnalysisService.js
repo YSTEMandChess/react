@@ -579,9 +579,14 @@ async function analyzeMoveWithHistory({
 
   // Check cache
   if (cache.has(cacheKey)) {
+    // Even on cache hit, we need bestMove for auto-play feature
+    // Stockfish analysis is fast compared to LLM, so we fetch it anyway
+    const stockfishFacts = await getStockfishAnalysis(fen_after, analysisSettings);
+
     return {
       explanation: cache.get(cacheKey),
       cached: true,
+      bestMove: stockfishFacts?.bestMove || null,
     };
   }
 
@@ -615,6 +620,7 @@ async function analyzeMoveWithHistory({
   return {
     explanation,
     cached: false,
+    bestMove: stockfishFacts?.bestMove || null,
   };
 }
 

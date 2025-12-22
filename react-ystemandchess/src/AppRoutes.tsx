@@ -53,6 +53,7 @@ import NewStudentProfile from "./features/student/student-profile/NewStudentProf
 
 // Static assets and default data
 import userPortraitImg from "./assets/images/user-portrait-placeholder.svg";
+import AITutor from "./features/aitutor/Aitutor";
 
 /**
  * Default username for components that require user data
@@ -103,6 +104,7 @@ const AppRoutes = () => {
       <Route path="/lessons-selection" element={<LessonSelection />} />
       <Route path="/lessons" element={<LessonOverlay />} />
       <Route path="/learnings" element={<Lessons />} />
+      <Route path="/aitutor" element={<AITutor />} />
       
       {/* User roles and mentoring */}
       <Route path="/mentor" element={<Mentor />} />

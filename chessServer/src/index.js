@@ -60,6 +60,7 @@ app.post("/api/analyze", async (req, res) => {
         type: "move",
         explanation: result.explanation,
         cached: result.cached,
+        bestMove: result.bestMove || null,
       });
     }
 
