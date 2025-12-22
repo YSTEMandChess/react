@@ -1,4 +1,4 @@
-import { environment } from "../../../../../core/environments/environment";
+import { environment } from "../../../../../environments/environment";
 import { useEffect, useRef } from "react";
 import io from "socket.io-client";
 

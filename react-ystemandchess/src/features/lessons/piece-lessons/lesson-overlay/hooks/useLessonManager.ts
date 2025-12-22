@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { environment } from "../../../../../core/environments/environment";
+import { environment } from "../../../../../environments/environment";
 
 export function useLessonManager(piece: string, cookies: any, initialLessonNum?: number) {
   const [lessonNum, setLessonNum] = useState<number>(initialLessonNum ?? 0);
