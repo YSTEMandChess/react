@@ -10,7 +10,6 @@
  */
 
 import { environment } from "../../environments/environment";
-
 /**
  * Fetches the complete catalog of all available badges
  * 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useImperativeHandle, useEffect, forwardRef } from "react";
-import Chessboard , { ChessMode } from "chessboardjsx";
+import Chessboard, { ChessMode } from "chessboardjsx";
 import { Chess, Square } from "chess.js";
 import { Move } from "../../core/types/chess";
 import "./ChessBoard.css";
@@ -49,7 +49,8 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     },
     ref
   ) => {
-    // Internal chess engine for move validation
+    // Internal chess engine for move validation and UI hints (grey dots)
+    // This is kept in sync with the authoritative FEN prop from parent/socket
     const gameRef = useRef<Chess>(new Chess());
 
     // UI state
@@ -58,7 +59,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     const [isShaking, setIsShaking] = useState<boolean>(false);
     const [orientation, setOrientationState] = useState<"white" | "black">(propOrientation);
     const [boardPosition, setBoardPosition] = useState<string>(fen || "start");
-    const [boardWidth, setBoardWidth] = useState(560);
+    const [boardWidth, setBoardWidth] = useState(600);
     const [greySquares, setGreySquares] = useState<string[]>([]);
 
     const boardRef = useRef<HTMLDivElement | null>(null);
@@ -72,7 +73,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         }
       };
 
-      handleResize();
+      requestAnimationFrame(handleResize);
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }, []);
@@ -82,14 +83,26 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       setOrientationState(propOrientation);
     }, [propOrientation]);
 
-    // Sync FEN from parent (server is source of truth) with comparison check
+    // Always keep gameRef.current in sync with the authoritative FEN prop
     useEffect(() => {
-      if (fen && fen !== gameRef.current.fen()) {
+      if (fen) {
         try {
-          gameRef.current.load(fen);
-          setBoardPosition(fen);
+          const currentFen = gameRef.current.fen();
+
+          // Only update if FEN has actually changed
+          if (fen !== currentFen) {
+            gameRef.current.load(fen);
+            setBoardPosition(fen);
+          }
         } catch (err) {
-          console.error("Invalid FEN from server:", fen, err);
+          console.error("ChessBoard: Invalid FEN from props:", fen, err);
+          // On error, try to reset to a valid state
+          try {
+            gameRef.current = new Chess();
+            setBoardPosition("start");
+          } catch {
+            // Last resort fallback
+          }
         }
       }
     }, [fen]);
@@ -185,7 +198,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
           }
         }
 
-        // Validate move locally (for instant feedback)
+        // Validate move locally for instant feedback (optimistic UI)
         const moveResult = gameRef.current.move({
           from: sourceSquare as Square,
           to: targetSquare as Square,
@@ -201,7 +214,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
           return "snapback";
         }
 
-        // Valid move - keep it and update board immediately
+        // Valid move - update UI immediately (optimistic update)
         setBoardPosition(gameRef.current.fen());
 
         // Highlight the move locally for instant feedback
@@ -212,10 +225,11 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
           setLessonIndex((idx) => idx + 1);
         }
 
-        // Send move to server/parent
+        // Send move to server/parent (server will send back authoritative FEN)
         if (onMove) onMove(move);
 
-        // Don't return anything - allow the move to complete
+        // Note: Server response will trigger FEN prop update, which will sync gameRef
+        // If server rejects the move, the FEN prop won't change and we stay in sync
       } catch (error) {
         console.error("Error in handleDrop:", error);
         setIsShaking(true);
@@ -267,25 +281,22 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       // Highlight selected/moved squares
       allHighlights.forEach((sq) => {
         styles[sq] = {
-          backgroundColor: "rgba(255, 251, 0, 0.75)",
+          background: "rgba(255, 251, 0, 0.75)",
         };
       });
 
       // Add Grey Dots for move hints
       greySquares.forEach((sq) => {
-        // Use a radial gradient for a perfect grey dot in the center
-        styles[sq] = {
-          ...styles[sq], // Keep existing highlight if present
-          background: styles[sq]
-            ? `${styles[sq].backgroundColor}, radial-gradient(circle, #a1a1a1 12%, transparent 12%)`
-            : "radial-gradient(circle, #a1a1a1 12%, transparent 12%)",
-        };
-
-        // For dark squares, use a slightly lighter grey
-        if (["a", "c", "e", "g"].includes(sq[0]) === (Number(sq[1]) % 2 === 0)) {
-          styles[sq].background = styles[sq]
-            ? `${styles[sq].backgroundColor}, radial-gradient(circle, #b8b8b8 12%, transparent 12%)`
-            : "radial-gradient(circle, #b8b8b8 12%, transparent 12%)";
+        const isLightSquare = ["a", "c", "e", "g"].includes(sq[0]) !== (Number(sq[1]) % 2 === 0);
+        const dotColor = isLightSquare ? "#a1a1a1" : "#b8b8b8";
+        
+        // Combine grey dot with highlight if square is highlighted
+        if (styles[sq]?.background) {
+          styles[sq].background = `radial-gradient(circle, ${dotColor} 12%, transparent 12%), ${styles[sq].background}`;
+        } else {
+          styles[sq] = {
+            background: `radial-gradient(circle, ${dotColor} 12%, transparent 12%)`,
+          };
         }
       });
 

@@ -29,6 +29,51 @@ interface UseChessSocketOptions {
   onColorAssigned?: (color: PlayerColor) => void;
 }
 
+// ======== CENTRALIZED FEN NORMALIZATION ========
+const normalizeFen = (fen: string): string => {
+  if (!fen || typeof fen !== 'string') {
+    console.warn("Invalid FEN input:", fen);
+    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; // Default starting position
+  }
+
+  const trimmed = fen.trim();
+  const parts = trimmed.split(" ");
+
+  // Already a complete 6-field FEN
+  if (parts.length === 6) {
+    return trimmed;
+  }
+
+  // Board-only FEN (just piece positions)
+  if (parts.length === 1 && parts[0].split("/").length === 8) {
+    return `${parts[0]} w KQkq - 0 1`;
+  }
+
+  // Partial FEN with 2-5 fields - pad to 6 fields
+  const defaults = ["w", "KQkq", "-", "0", "1"];
+  const paddedParts = [...parts];
+  
+  while (paddedParts.length < 6) {
+    paddedParts.push(defaults[paddedParts.length - 1]);
+  }
+
+  return paddedParts.join(" ");
+};
+
+// ======== SAFE CHESS INSTANCE CREATION ========
+const createSafeChessInstance = (fen?: string): Chess => {
+  try {
+    if (fen) {
+      const normalizedFen = normalizeFen(fen);
+      return new Chess(normalizedFen);
+    }
+    return new Chess();
+  } catch (err) {
+    console.error("Failed to create Chess instance with FEN:", fen, err);
+    return new Chess(); // Return default starting position
+  }
+};
+
 export const useChessSocket = ({
   student,
   mentor = "",
@@ -59,11 +104,9 @@ export const useChessSocket = ({
 
   // ======== refs ========
   const socketRef = useRef<Socket | null>(null);
-  const gameStateRef = useRef<Chess>(new Chess());
   const currentFenRef = useRef<string>("");
   const expectedMoveRef = useRef<Move | null>(null);
   const isPuzzleRef = useRef<boolean>(mode === "puzzle");
-  const nextPuzzleMoveRef = useRef<Move[]>([]);
   const mouseTrackingRef = useRef<boolean>(false);
   const highlightFromRef = useRef<string>("");
   const highlightToRef = useRef<string>("");
@@ -120,77 +163,25 @@ export const useChessSocket = ({
     socket.on("boardstate", (msg: string) => {
       try {
         const parsed: BoardState = JSON.parse(msg);
-        const newFen = (parsed as any).boardState || (parsed as any).fen;
-
-        console.log("Board state received:", newFen);
-
-        // Puzzle validation
-        if (isPuzzleRef.current && nextPuzzleMoveRef.current.length > 0) {
-          const expectedMove = nextPuzzleMoveRef.current[0];
-          const source = expectedMove.from;
-          const target = expectedMove.to;
-
-          const testState = new Chess(currentFenRef.current);
-          const testMove = testState.move({
-            from: source,
-            to: target,
-            promotion: expectedMove.promotion || "q",
-          });
-
-          // Wrong puzzle move -> reset to current position
-          if (!testMove || testState.fen() !== newFen) {
-            console.log("Wrong puzzle move, resetting");
-            const data = { state: currentFenRef.current };
-            socketRef.current?.emit("setstate", JSON.stringify(data));
-            
-            // Highlight the expected move
-            if (highlightFromRef.current && highlightToRef.current) {
-              if (onLastMove) {
-                onLastMove(highlightFromRef.current, highlightToRef.current);
-              }
-            }
-            return;
-          } else if (testMove) {
-            // Correct puzzle move
-            console.log("Correct puzzle move");
-            nextPuzzleMoveRef.current = [];
-            
-            // Notify parent of the move
-            if (onMove) {
-              onMove({
-                fen: newFen,
-                move: { from: source, to: target, promotion: expectedMove.promotion },
-              });
-            }
-          }
-        }
-
-        // Update game state ref
-        try {
-          gameStateRef.current.load(newFen);
-        } catch (err) {
-          console.error("Failed to load FEN into game state:", err);
-        }
+        const rawFen = (parsed as any).boardState || (parsed as any).fen;
+        const newFen = normalizeFen(rawFen);
 
         // Update refs/state
         setFen(newFen);
         currentFenRef.current = newFen;
 
-        // Color assignment
+        // Handle color assignment
         if ((parsed as any).color) {
           const color = (parsed as any).color as PlayerColor;
           setPlayerColor(color);
           if (onColorAssigned) onColorAssigned(color);
         }
 
-        // Notify parent
+        // Notify parent component
         if (onBoardStateChange) {
           onBoardStateChange(newFen, (parsed as any).color);
         }
 
-        if (onMove && !isPuzzleRef.current) {
-          onMove({ fen: newFen, move: (parsed as any).move });
-        }
       } catch (err) {
         console.error("Invalid boardstate:", err);
       }
@@ -213,12 +204,7 @@ export const useChessSocket = ({
     socket.on("lastmove", (msg: string) => {
       try {
         const parsed = JSON.parse(msg);
-        
-        // Check for puzzle mode and skip if no moves
-        if (!parsed.from && !parsed.to && nextPuzzleMoveRef.current.length > 0) {
-          return;
-        }
-        
+
         if (parsed.from && parsed.to) {
           console.log("Last move highlight:", parsed.from, "→", parsed.to);
           if (onLastMove) onLastMove(parsed.from, parsed.to);
@@ -273,14 +259,14 @@ export const useChessSocket = ({
     socket.on("mousexy", (msg: string) => {
       try {
         const parsed: MousePosition = JSON.parse(msg);
-        
+
         if (parsed.x && parsed.y) {
           const viewportWidth = window.innerWidth;
           const viewportHeight = window.innerHeight;
-          
+
           let adjustedX: number;
           let adjustedY: number;
-          
+
           if (isPuzzleRef.current) {
             adjustedX = parsed.x - 28;
             adjustedY = parsed.y - 28;
@@ -288,7 +274,7 @@ export const useChessSocket = ({
             adjustedX = -1 * parsed.x + viewportWidth - 28;
             adjustedY = -1 * parsed.y + viewportHeight - 28;
           }
-          
+
           if (onMouseMove) onMouseMove({ x: adjustedX, y: adjustedY });
         }
       } catch (err) {
@@ -302,7 +288,6 @@ export const useChessSocket = ({
       setFen("");
       currentFenRef.current = "";
       expectedMoveRef.current = null;
-      gameStateRef.current = new Chess();
       if (onReset) onReset();
     });
 
@@ -339,35 +324,46 @@ export const useChessSocket = ({
   // ======== Outgoing commands ========
 
   const startNewGame = useCallback(() => {
-    const data: GameConfig = { 
-      mentor: mentorRef.current, 
-      student: studentRef.current, 
-      role: roleRef.current 
+    const data: GameConfig = {
+      mentor: mentorRef.current,
+      student: studentRef.current,
+      role: roleRef.current
     };
     console.log("Starting new game:", data);
-    socketRef.current?.emit("newgame", JSON.stringify(data)); 
+    socketRef.current?.emit("newgame", JSON.stringify(data));
   }, []);
 
   const startNewPuzzle = useCallback(() => {
-    const data: GameConfig = { 
-      mentor: mentorRef.current, 
-      student: studentRef.current, 
-      role: roleRef.current 
+    const data: GameConfig = {
+      mentor: mentorRef.current,
+      student: studentRef.current,
+      role: roleRef.current
     };
     console.log("Starting new puzzle:", data);
     socketRef.current?.emit("newPuzzle", JSON.stringify(data));
   }, []);
 
   const setGameState = useCallback((fenToSet: string) => {
-    const data = { state: fenToSet };
-    console.log("Setting game state:", fenToSet);
+    const normalizedFen = normalizeFen(fenToSet);
+    
+    // CRITICAL: Update currentFenRef immediately BEFORE sending to server
+    currentFenRef.current = normalizedFen;
+    
+    const data = { state: normalizedFen };
+    console.log("Setting game state (normalized):", normalizedFen);
     socketRef.current?.emit("setstate", JSON.stringify(data));
   }, []);
 
   const setGameStateWithColor = useCallback(
     (fenToSet: string, color: PlayerColor, hints?: string) => {
-      const data = { state: fenToSet, color, hints: hints || "" };
-      console.log("Setting game state with color:", data);
+      const normalizedFen = normalizeFen(fenToSet);
+      
+      // Update currentFenRef immediately before sending to server
+      // This prevents the validation logic from thinking the server's echo is a move response
+      currentFenRef.current = normalizedFen;
+      
+      const data = { state: normalizedFen, color, hints: hints || "" };
+      console.log("Setting game state with color (normalized):", data);
       socketRef.current?.emit("setstateColor", JSON.stringify(data));
     },
     []
@@ -387,11 +383,11 @@ export const useChessSocket = ({
   }, []);
 
   const sendLastMove = useCallback((from: string, to: string) => {
-    const data = { 
-      from, 
-      to, 
-      mentor: mentorRef.current, 
-      student: studentRef.current 
+    const data = {
+      from,
+      to,
+      mentor: mentorRef.current,
+      student: studentRef.current
     };
     // Store for puzzle validation
     highlightFromRef.current = from;
@@ -400,74 +396,74 @@ export const useChessSocket = ({
   }, []);
 
   const sendHighlight = useCallback((from: string, to: string) => {
-    const data = { 
-      from, 
-      to, 
-      mentor: mentorRef.current, 
-      student: studentRef.current 
+    const data = {
+      from,
+      to,
+      mentor: mentorRef.current,
+      student: studentRef.current
     };
     socketRef.current?.emit("highlight", JSON.stringify(data));
   }, []);
 
   const sendMousePosition = useCallback((x: number, y: number) => {
-    const data = { 
-      x, 
-      y, 
-      mentor: mentorRef.current, 
-      student: studentRef.current 
+    const data = {
+      x,
+      y,
+      mentor: mentorRef.current,
+      student: studentRef.current
     };
     socketRef.current?.emit("mousexy", JSON.stringify(data));
   }, []);
 
   const sendPieceDrag = useCallback((piece: string) => {
-    const data = { 
-      mentor: mentorRef.current, 
-      student: studentRef.current, 
-      piece 
+    const data = {
+      mentor: mentorRef.current,
+      student: studentRef.current,
+      piece
     };
     socketRef.current?.emit("piecedrag", JSON.stringify(data));
   }, []);
 
   const sendPieceDrop = useCallback(() => {
-    const data = { 
-      mentor: mentorRef.current, 
-      student: studentRef.current 
+    const data = {
+      mentor: mentorRef.current,
+      student: studentRef.current
     };
     socketRef.current?.emit("piecedrop", JSON.stringify(data));
   }, []);
 
   const sendGreySquare = useCallback((square: string) => {
-    const data = { 
-      mentor: mentorRef.current, 
-      student: studentRef.current, 
-      to: square 
+    const data = {
+      mentor: mentorRef.current,
+      student: studentRef.current,
+      to: square
     };
     socketRef.current?.emit("addgrey", JSON.stringify(data));
   }, []);
 
   const sendRemoveGrey = useCallback(() => {
-    const data = { 
-      mentor: mentorRef.current, 
-      student: studentRef.current 
+    const data = {
+      mentor: mentorRef.current,
+      student: studentRef.current
     };
     socketRef.current?.emit("removegrey", JSON.stringify(data));
   }, []);
 
   const undo = useCallback(() => {
-    const data = { 
-      mentor: mentorRef.current, 
-      student: studentRef.current, 
-      role: roleRef.current 
+    const data = {
+      mentor: mentorRef.current,
+      student: studentRef.current,
+      role: roleRef.current
     };
     console.log("Sending undo");
     socketRef.current?.emit("undo", JSON.stringify(data));
   }, []);
 
   const endGame = useCallback(() => {
-    const data = { 
-      mentor: mentorRef.current, 
-      student: studentRef.current, 
-      role: roleRef.current 
+    const data = {
+      mentor: mentorRef.current,
+      student: studentRef.current,
+      role: roleRef.current
     };
     console.log("Ending game");
     socketRef.current?.emit("endgame", JSON.stringify(data));
@@ -480,11 +476,6 @@ export const useChessSocket = ({
 
   const setExpectedMove = useCallback((move: Move | null) => {
     expectedMoveRef.current = move;
-  }, []);
-
-  const setPuzzleMoves = useCallback((moves: Move[]) => {
-    nextPuzzleMoveRef.current = moves;
-    isPuzzleRef.current = true;
   }, []);
 
   // ======== mouse tracking helpers ========
@@ -526,10 +517,10 @@ export const useChessSocket = ({
 
   // allow runtime change of mentor/student/role
   const setUserInfo = useCallback(
-    (info: { 
-      mentor?: string; 
-      student?: string; 
-      role?: "mentor" | "student" | "host" | "guest" 
+    (info: {
+      mentor?: string;
+      student?: string;
+      role?: "mentor" | "student" | "host" | "guest"
     }) => {
       if (info.mentor) mentorRef.current = info.mentor;
       if (info.student) studentRef.current = info.student;
@@ -555,7 +546,6 @@ export const useChessSocket = ({
     sendMove,
     undo,
     setExpectedMove,
-    setPuzzleMoves,
 
     // State management
     setGameState,
@@ -585,6 +575,5 @@ export const useChessSocket = ({
     // Refs for direct access
     socketRef,
     currentFenRef,
-    gameStateRef,
   };
 };

@@ -19,6 +19,30 @@ type PuzzlesProps = {
   styleType?: any;
 };
 
+// Helper function to normalize FEN (same as in socket)
+const normalizeFen = (fen: string): string => {
+  if (!fen || typeof fen !== 'string') {
+    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  }
+
+  const trimmed = fen.trim();
+  const parts = trimmed.split(" ");
+
+  if (parts.length === 6) return trimmed;
+  if (parts.length === 1 && parts[0].split("/").length === 8) {
+    return `${parts[0]} w KQkq - 0 1`;
+  }
+
+  const defaults = ["w", "KQkq", "-", "0", "1"];
+  const paddedParts = [...parts];
+
+  while (paddedParts.length < 6) {
+    paddedParts.push(defaults[paddedParts.length - 1]);
+  }
+
+  return paddedParts.join(" ");
+};
+
 const Puzzles: React.FC<PuzzlesProps> = ({
   student = null,
   mentor = null,
@@ -27,53 +51,281 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 }) => {
   const styles = styleType === "profile" ? profileStyles : pageStyles;
 
-  // Refs (for mutable, non-triggering data)
+  // Refs
   const chessBoardRef = useRef<ChessBoardRef>(null);
-  const gameRef = useRef<Chess>(new Chess());
   const swalRef = useRef<string>("");
   const moveListRef = useRef<string[]>([]);
   const isPuzzleEndRef = useRef(false);
   const currentPuzzleRef = useRef<any>(null);
+  const isInitializingRef = useRef(false);
+  const handleUnloadRef = useRef(() => { });
+  const puzzleArrayRef = useRef<any[]>([]);
+  const dbIndexRef = useRef(0);
+  const getNextPuzzleRef = useRef<() => void>();
+  const initializeComponentRef = useRef<() => Promise<void>>();
 
-  // Puzzle state (for rendering/triggers)
+  // State
   const [puzzleArray, setPuzzleArray] = useState<any[]>([]);
   const [currentFEN, setCurrentFEN] = useState<string>('');
-  const [dbIndex, setDbIndex] = useState<number>(0);
   const [playerColor, setPlayerColor] = useState<'white' | 'black'>('white');
   const [themeList, setThemeList] = useState<string[]>([]);
   const [status, setStatus] = useState<string>("");
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
-  const [cookies] = useCookies(['login']);
   const [isInitialized, setIsInitialized] = useState(false);
-
-  // User identification
-  const studentId = student || cookies.login?.studentId || uuidv4();
-  const mentorId = mentor || "puzzle_mentor_" + studentId;
+  const [cookies] = useCookies(['login']);
 
   // Time tracking
   const [eventID, setEventID] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [username, setUsername] = useState(null);
-  const handleUnloadRef = useRef(() => { });
+
+  // User identification
+  const studentId = student || cookies.login?.studentId || uuidv4();
+  const mentorId = mentor || "puzzle_mentor_" + studentId;
 
 
   // ============================================================================
-  // SOCKET MESSAGE HANDLER (Callback)
+  // PUZZLE LOADING
+  // ============================================================================
+
+  const initPuzzleArray = async () => {
+    try {
+      const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
+      if (response.ok) {
+        const jsonData = await response.json();
+        setPuzzleArray(jsonData);
+        puzzleArrayRef.current = jsonData;
+        return jsonData;
+      } else {
+        throw new Error('Failed to fetch puzzles from backend');
+      }
+    } catch (error) {
+      console.error('Error fetching puzzles:', error);
+      setPuzzleArray([]);
+      puzzleArrayRef.current = [];
+      return [];
+    }
+  };
+
+  const prefetchPuzzles = async () => {
+    try {
+      const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
+      if (response.ok) {
+        const jsonData = await response.json();
+        setPuzzleArray(prev => {
+          const newArray = [...prev, ...jsonData];
+          puzzleArrayRef.current = newArray;
+          return newArray;
+        });
+      }
+    } catch (error) {
+      console.error('Error prefetching puzzles:', error);
+    }
+  };
+
+  // Prefetch when running low
+  useEffect(() => {
+    if (puzzleArray.length > 0 && dbIndexRef.current >= puzzleArray.length - 5) {
+      prefetchPuzzles();
+    }
+  }, [puzzleArray.length]);
+
+  initializeComponentRef.current = async () => {
+    if (isInitialized || isInitializingRef.current) return;
+
+    isInitializingRef.current = true;
+    setIsInitialized(true);
+
+    try {
+      const puzzles = await initPuzzleArray();
+      if (puzzles && puzzles.length > 0) {
+        const firstPuzzle = puzzles[0];
+        currentPuzzleRef.current = firstPuzzle;
+        moveListRef.current = firstPuzzle?.Moves?.split(" ") || [];
+
+        if (moveListRef.current.length === 0) {
+          console.warn("No valid moves in initial puzzle:", firstPuzzle);
+          isInitializingRef.current = false;
+          setIsInitialized(false);
+          return;
+        }
+
+        setThemeList(firstPuzzle.Themes.split(" "));
+        setStateAsActive(firstPuzzle);
+        updateInfoBox(firstPuzzle.Themes.split(" "));
+      }
+    } finally {
+      isInitializingRef.current = false;
+    }
+  };
+
+  const setStateAsActive = (state: any) => {
+    if (!state?.FEN || !state?.Moves || !state?.Themes) {
+      console.warn("Puzzle is missing required fields:", state);
+      return;
+    }
+
+    const sideToMove = state.FEN.split(" ")[1];
+    const newPlayerColor = sideToMove === 'w' ? 'black' : 'white';
+    setPlayerColor(newPlayerColor);
+
+    currentPuzzleRef.current = state;
+    startLesson(state, newPlayerColor);
+  };
+
+  const startLesson = (puzzle: any, color: 'white' | 'black') => {
+    const fen = puzzle.FEN;
+
+    if (!fen || fen.split("/").length !== 8) {
+      console.warn("Invalid or missing FEN:", fen);
+      return;
+    }
+
+    const normalizedFen = normalizeFen(fen);
+    setCurrentFEN(normalizedFen);
+
+    moveListRef.current = puzzle?.Moves?.split(" ") || [];
+    isPuzzleEndRef.current = false;
+    setHighlightSquares([]);
+
+    socket.setGameStateWithColor(normalizedFen, color, puzzle.Themes);
+
+    if (chessBoardRef.current) {
+      chessBoardRef.current.clearHighlights();
+    }
+
+    // Play first computer move
+    setTimeout(() => {
+      playComputerMove();
+    }, 500);
+  };
+
+  getNextPuzzleRef.current = () => {
+    if (!puzzleArrayRef.current || puzzleArrayRef.current.length === 0) {
+      console.error("Puzzle array is empty - reinitializing");
+      initPuzzleArray().then(puzzles => {
+        if (puzzles && puzzles.length > 0) {
+          dbIndexRef.current = 0;
+          setStateAsActive(puzzles[0]);
+          updateInfoBox(puzzles[0].Themes.split(" "));
+        }
+      });
+      return;
+    }
+
+    dbIndexRef.current = (dbIndexRef.current + 1) % puzzleArrayRef.current.length;
+    const nextPuzzle = puzzleArrayRef.current[dbIndexRef.current];
+
+    if (!nextPuzzle?.Moves) {
+      console.error("Selected puzzle has no moves");
+      return;
+    }
+
+    currentPuzzleRef.current = nextPuzzle;
+    isPuzzleEndRef.current = false;
+    setHighlightSquares([]);
+    setThemeList(nextPuzzle.Themes.split(" "));
+
+    setStateAsActive(nextPuzzle);
+    updateInfoBox(nextPuzzle.Themes.split(" "));
+  };
+
+  // ============================================================================
+  // MOVE HANDLING
+  // ============================================================================
+
+  const playComputerMove = () => {
+    if (moveListRef.current.length === 0) return;
+
+    const computerMoveStr = moveListRef.current.shift();
+    if (!computerMoveStr) return;
+
+    const computerMove: Move = {
+      from: computerMoveStr.substring(0, 2),
+      to: computerMoveStr.substring(2, 4),
+      promotion: computerMoveStr.length > 4 ? computerMoveStr[4] as 'q' | 'r' | 'b' | 'n' : undefined
+    };
+
+    socket.sendMove(computerMove);
+    socket.sendLastMove(computerMove.from, computerMove.to);
+
+    // Optimistically update highlights
+    setHighlightSquares([computerMove.from, computerMove.to]);
+
+    if (chessBoardRef.current) {
+      chessBoardRef.current.highlightMove(computerMove.from, computerMove.to);
+    }
+  };
+
+  const handlePlayerMove = (move: Move) => {
+    if (isPuzzleEndRef.current || !moveListRef.current || moveListRef.current.length === 0) {
+      return;
+    }
+
+    const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ''}`;
+    const expectedPlayerMove = moveListRef.current[0];
+
+    const isCorrect = playerAttemptedMove === expectedPlayerMove ||
+      playerAttemptedMove === expectedPlayerMove.substring(0, 4);
+
+    if (isCorrect) {
+      moveListRef.current.shift();
+      setHighlightSquares([move.from, move.to]);
+
+      // Get new FEN from ChessBoard (it already made the move)
+      const newFen = chessBoardRef.current?.getFen();
+      if (newFen) {
+        setCurrentFEN(newFen);
+      }
+
+      socket.sendMove(move);
+      socket.sendLastMove(move.from, move.to);
+
+      if (moveListRef.current.length === 0) {
+        isPuzzleEndRef.current = true;
+        socket.sendMessage("puzzle completed");
+        setTimeout(() => {
+          Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
+            if (result.isConfirmed) {
+              socket.sendMessage("next puzzle");
+            }
+          });
+        }, 200);
+      } else {
+        setTimeout(() => {
+          playComputerMove();
+        }, 300);
+      }
+    } else {
+      // Wrong move - reset to current position
+      Swal.fire('Incorrect move', 'Try again!', 'error').then(() => {
+        if (currentPuzzleRef.current) {
+          startLesson(currentPuzzleRef.current, playerColor);
+        }
+      });
+    }
+  };
+
+  const handleInvalidMove = () => {
+    console.log("Invalid move attempted");
+  };
+
+  // ============================================================================
+  // SOCKET HANDLERS
   // ============================================================================
 
   const handleSocketMessage = useCallback((msg: string) => {
     if (msg === "puzzle completed") {
-      // Only guests need the Swal trigger here, host already fired it
       if (status === "guest") {
         Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
           if (result.isConfirmed) {
-            // Notify host/server to move to the next puzzle
             socket.sendMessage("next puzzle");
           }
         });
       }
     } else if (msg === "next puzzle") {
       Swal.close();
+
       if (status === "guest") {
         Swal.fire({
           title: 'Loading next puzzle',
@@ -90,11 +342,11 @@ const Puzzles: React.FC<PuzzlesProps> = ({
           }
         });
       }
-      getNextPuzzle();
+
+      getNextPuzzleRef.current?.();
     } else if (msg === "new game received") {
       if (swalRef.current === "loading") Swal.close();
     } else if (msg.startsWith("<div")) {
-      // HTML hint update from host
       if (status === "guest") {
         const hintText = document.getElementById("hint-text");
         if (hintText) {
@@ -103,12 +355,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         }
       }
     }
-  }, [status]); // Dependency on status for Swal logic
-
-
-  // ============================================================================
-  // SOCKET CONNECTION
-  // ============================================================================
+  }, [status]);
 
   const socket = useChessSocket({
     student: studentId,
@@ -118,36 +365,42 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     mode: 'puzzle',
 
     onBoardStateChange: (newFEN) => {
-      // New FEN received from server (e.g., after computer response)
       setCurrentFEN(newFEN);
-      gameRef.current.load(newFEN);
+      // ChessBoard will sync its own gameRef from the fen prop
     },
 
-    onMessage: handleSocketMessage, // Use the centralized handler
+    onMessage: handleSocketMessage,
 
     onRoleAssigned: (assignedRole) => {
       if (assignedRole === "host") {
         setStatus("host");
-        initializeComponent();
-        if (styleType === "profile") {
-          // Swal logic remains the same
-          if (role === "student") Swal.fire('Your mentor has left!', 'Creating a new puzzle for you', 'success');
-          else Swal.fire('Your student has left!', 'Creating a new puzzle for you', 'success');
+        initializeComponentRef.current?.();
+
+        if (styleType === "profile" && status !== "") {
+          const message = role === "student"
+            ? 'Your mentor has left! Creating a new puzzle for you'
+            : 'Your student has left! Creating a new puzzle for you';
+          Swal.fire(message.split('!')[0] + '!', message.split('!')[1], 'success');
         }
       } else if (assignedRole === "guest") {
+        const wasHost = status === "host";
         setStatus("guest");
-        if (status === "host") {
-          if (role === "student") Swal.fire('Your mentor has joined you!', 'You can now also see their moves', 'success');
-          else Swal.fire('Your student has joined you!', 'You can now also see their moves', 'success');
+
+        if (wasHost) {
+          const message = role === "student"
+            ? 'Your mentor has joined you! You can now also see their moves'
+            : 'Your student has joined you! You can now also see their moves';
+          Swal.fire(message.split('!')[0] + '!', message.split('!')[1], 'success');
         } else {
-          if (role === "student") Swal.fire('You joined your mentor\'s puzzle!', 'Have fun collaborating.', 'success');
-          else Swal.fire('You joined your student\'s puzzle!', 'Have fun collaborating.', 'success');
+          const message = role === "student"
+            ? 'You joined your mentor\'s puzzle! Have fun collaborating.'
+            : 'You joined your student\'s puzzle! Have fun collaborating.';
+          Swal.fire(message.split('!')[0] + '!', message.split('!')[1], 'success');
         }
       }
     },
 
     onLastMove: (from, to) => {
-      // Highlights the move just made (player's move or server's response move)
       setHighlightSquares([from, to]);
       if (chessBoardRef.current) {
         chessBoardRef.current.highlightMove(from, to);
@@ -158,189 +411,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       console.error("Socket error:", msg);
     },
   });
-
-  // ============================================================================
-  // PUZZLE LOADING / SEQUENCING
-  // ============================================================================
-
-  const initPuzzleArray = async () => {
-    try {
-      const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
-      if (response.ok) {
-        const jsonData = await response.json();
-        setPuzzleArray(jsonData);
-        return jsonData;
-      } else {
-        throw new Error('Failed to fetch puzzles from backend');
-      }
-    } catch (error) {
-      console.error('Error fetching puzzles:', error);
-      setPuzzleArray([]);
-      return [];
-    }
-  };
-
-  const initializeComponent = async () => {
-    if (isInitialized) return;
-    setIsInitialized(true);
-
-    const puzzles = await initPuzzleArray();
-    if (puzzles && puzzles.length > 0) {
-      setPuzzleArray(puzzles);
-      const firstPuzzle = puzzles[0];
-      currentPuzzleRef.current = firstPuzzle;
-      moveListRef.current = firstPuzzle?.Moves?.split(" ") || [];
-
-      if (moveListRef.current.length === 0) {
-        console.warn("No valid moves in initial puzzle:", firstPuzzle);
-        return;
-      }
-
-      setThemeList(firstPuzzle.Themes.split(" "));
-      setStateAsActive(firstPuzzle);
-      updateInfoBox(firstPuzzle.Themes.split(" "));
-    }
-  };
-
-  const setStateAsActive = (state: any) => {
-    if (!state?.FEN || !state?.Moves || !state?.Themes) {
-      console.warn("Puzzle is missing required fields:", state);
-      return;
-    }
-
-    const sideToMove = state.FEN.split(" ")[1];
-    const newPlayerColor = sideToMove === 'w' ? 'black' : 'white';
-    setPlayerColor(newPlayerColor);
-
-    currentPuzzleRef.current = state;
-    startLesson(state);
-  };
-
-  const startLesson = (puzzle: any) => {
-    const fen = puzzle.FEN;
-
-    if (!fen || fen.split("/").length !== 8) {
-      console.warn("Invalid or missing FEN:", fen);
-      return;
-    }
-
-    setCurrentFEN(fen);
-    gameRef.current.load(fen);
-
-    moveListRef.current = puzzle?.Moves?.split(" ") || [];
-    isPuzzleEndRef.current = false;
-    setHighlightSquares([]);
-
-    const puzzleMoves: Move[] = moveListRef.current.map(moveStr => ({
-      from: moveStr.substring(0, 2),
-      to: moveStr.substring(2, 4),
-      promotion: moveStr.length > 4 ? moveStr[4] : undefined
-    }));
-
-    // Tell the server the expected moves for validation
-    socket.setPuzzleMoves(puzzleMoves);
-
-    socket.setGameStateWithColor(fen, playerColor, puzzle.Themes);
-
-    if (chessBoardRef.current) {
-      chessBoardRef.current.clearHighlights();
-    }
-  };
-
-  const getNextPuzzle = () => {
-    if (!puzzleArray || puzzleArray.length === 0) {
-      console.error("Puzzle array is empty");
-      return;
-    }
-
-    const newDbIndex = (dbIndex + 1) % puzzleArray.length;
-    setDbIndex(newDbIndex);
-
-    const nextPuzzle = puzzleArray[newDbIndex];
-    if (!nextPuzzle.Moves) {
-      console.error("Selected puzzle has no moves");
-      return;
-    }
-
-    setStateAsActive(nextPuzzle);
-    updateInfoBox(nextPuzzle.Themes.split(" "));
-  };
-
-  // ============================================================================
-  // PLAYER MOVE HANDLER
-  // ============================================================================
-
-  const handlePlayerMove = (move: Move) => {
-    if (isPuzzleEndRef.current || !moveListRef.current || moveListRef.current.length === 0) {
-      return "snapback";
-    }
-    
-    // Check if the move is legal first
-    const localMove = gameRef.current.move({
-      from: move.from,
-      to: move.to,
-      promotion: move.promotion || 'q' // Promotion must be included for local check
-    });
-
-    if (!localMove) {
-      return "snapback";
-    }
-    
-    // The local move succeeded, now check if it's the CORRECT puzzle move
-    const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ''}`;
-    const expectedPlayerMove = moveListRef.current[0];
-
-    // Check for exact match (including promotion) or a 4-char match (allowing client to pick promotion)
-    if (playerAttemptedMove === expectedPlayerMove ||
-        playerAttemptedMove === expectedPlayerMove.substring(0, 4)) {
-      
-      // Correct move
-      moveListRef.current.shift(); // Remove player's move from local list
-
-      // Highlight player's move (will be updated by onLastMove too)
-      setHighlightSquares([move.from, move.to]); 
-
-      // Send the move to the server for validation and multiplayer sync
-      // NOTE: We rely on the server to send back the next FEN (the computer's response)
-      socket.sendMove(move); 
-      socket.sendLastMove(move.from, move.to);
-      
-      // Update local FEN immediately for a smooth transition before server FEN arrives
-      setCurrentFEN(gameRef.current.fen());
-
-
-      if (moveListRef.current.length === 0) {
-        // Puzzle completed!
-        isPuzzleEndRef.current = true;
-        socket.sendMessage("puzzle completed"); // Notify guests/server
-        setTimeout(() => {
-          Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
-            if (result.isConfirmed) {
-              socket.sendMessage("next puzzle");
-            }
-          });
-        }, 200);
-      }
-      
-    } else {
-      // Incorrect move - Rollback local move and reset puzzle
-      gameRef.current.undo();
-      
-      console.log("Wrong move!");
-      Swal.fire('Incorrect move', 'Try again!', 'error').then(() => {
-        if (currentPuzzleRef.current) {
-          // Reset board to starting FEN
-          startLesson(currentPuzzleRef.current); 
-        }
-      });
-      return "snapback";
-    }
-  };
-
-  const handleInvalidMove = () => {
-    // This catches moves that fail ChessBoard.tsx's internal validation (e.g., knight move to illegal square)
-    console.log("Invalid move attempted by ChessBoard's validation.");
-  };
 
   // ============================================================================
   // HINT SYSTEM
@@ -354,17 +424,14 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
     let hints = `<div style="margin-bottom: 14px;"><b>Puzzle Rating:</b> ${rating}</div>`;
 
-    for (let i = 0; i < currentThemes.length; i++) {
-      const key = currentThemes[i];
+    for (const key of currentThemes) {
       const name = themesName[key] || key;
       const desc = themesDescription[key];
 
       if (!desc || desc === "No description available") continue;
-
       hints += `<div style="margin-bottom: 14px;"><b>${name}:</b> ${desc}</div>`;
     }
 
-    // Notify other players (guests)
     socket.sendMessage(hints);
 
     const hintText = document.getElementById("hint-text");
@@ -382,7 +449,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   };
 
   // ============================================================================
-  // TIME TRACKING / LIFECYCLE
+  // TIME TRACKING
   // ============================================================================
 
   async function startRecording() {
@@ -391,22 +458,26 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
     setUsername(uInfo?.username);
 
-    const response = await fetch(
-      `${environment.urls.middlewareURL}/timeTracking/start?username=${uInfo.username}&eventType=puzzle`,
-      {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${cookies.login}` }
+    try {
+      const response = await fetch(
+        `${environment.urls.middlewareURL}/timeTracking/start?username=${uInfo.username}&eventType=puzzle`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${cookies.login}` }
+        }
+      );
+
+      if (response.status !== 200) {
+        console.error("Time tracking error:", response);
+        return;
       }
-    );
 
-    if (response.status !== 200) {
-      console.log("Time tracking error:", response);
-      return;
+      const data = await response.json();
+      setEventID(data.eventId);
+      setStartTime(data.startTime);
+    } catch (err) {
+      console.error("Failed to start time tracking:", err);
     }
-
-    const data = await response.json();
-    setEventID(data.eventId);
-    setStartTime(data.startTime);
   }
 
   handleUnloadRef.current = async () => {
@@ -425,11 +496,17 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         }
       );
 
-      if (response.status !== 200) console.log("Time tracking update error:", response);
+      if (response.status !== 200) {
+        console.error("Time tracking update error:", response);
+      }
     } catch (err) {
-      console.log("Time tracking error:", err);
+      console.error("Time tracking error:", err);
     }
   };
+
+  // ============================================================================
+  // EFFECTS
+  // ============================================================================
 
   useEffect(() => {
     startRecording();
@@ -438,12 +515,12 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     return () => {
       window.removeEventListener('beforeunload', handleUnloadRef.current);
       handleUnloadRef.current();
+      Swal.close();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (socket.connected && status === "" && !isInitialized) {
+    if (socket.connected && status === "" && !isInitialized && !isInitializingRef.current) {
       socket.startNewPuzzle();
     }
   }, [socket.connected, status, isInitialized, socket]);
@@ -454,34 +531,22 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   return (
     <div className={styles.mainElements}>
-      <div className={styles.chessBoardContainer}>
-        <ChessBoard
-          mode="puzzle"
-          ref={chessBoardRef}
-          fen={currentFEN}
-          orientation={playerColor}
-          highlightSquares={highlightSquares}
-          onMove={handlePlayerMove}
-          onInvalidMove={handleInvalidMove}
-          disabled={isPuzzleEndRef.current || !socket.connected}
-        />
-
-        {!socket.connected && (
-          <div style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: 'rgba(255, 0, 0, 0.8)',
-            color: 'white',
-            padding: '5px 10px',
-            borderRadius: '5px',
-            fontSize: '12px',
-            zIndex: 1000
-          }}>
-            Disconnected
-          </div>
-        )}
-      </div>
+      {!currentFEN ? (
+        <div>Loading puzzle...</div>
+      ) : (
+        <div className={styles.chessBoardContainer}>
+          <ChessBoard
+            mode="puzzle"
+            ref={chessBoardRef}
+            fen={currentFEN}
+            orientation={playerColor}
+            highlightSquares={highlightSquares}
+            onMove={handlePlayerMove}
+            onInvalidMove={handleInvalidMove}
+            disabled={isPuzzleEndRef.current || !socket.connected}
+          />
+        </div>
+      )}
 
       <div className={styles.hintMenu}>
         <div className={styles.hintButtonRow}>
