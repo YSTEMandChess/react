@@ -1,5 +1,3 @@
-// src/Pages/NewStudentProfile/Modals/LeaderboardModal.tsx
-
 import React, { useEffect, useMemo, useState } from "react";
 import "./LeaderboardModal.scss";
 import { ReactComponent as LeaderboardIcon } from "../../../../assets/images/student/leaderboard_sidebar_icon.svg";
@@ -9,10 +7,10 @@ import rank2Img from "../../../../assets/images/student/Leaderboard_rank_2.svg";
 import rank3Img from "../../../../assets/images/student/Leaderboard_rank_3.svg";
 
 // AVATAR IMAGES
-import avatar1 from "../../../images/student/Leaderboard_User_avatar_1.png";
-import avatar2 from "../../../images/student/Leaderboard_User_avatar_2.png";
-import avatar3 from "../../../images/student/Leaderboard_User_avatar_3.png";
-import avatarAll from "../../../images/student/Leaderboard_User_avatar_all.png";
+import avatar1 from "../../../../assets/images/student/Leaderboard_User_avatar_1.png";
+import avatar2 from "../../../../assets/images/student/Leaderboard_User_avatar_2.png";
+import avatar3 from "../../../../assets/images/student/Leaderboard_User_avatar_3.png";
+import avatarAll from "../../../../assets/images/student/Leaderboard_User_avatar_all.png";
 
 type Props = { onClose: () => void };
 
