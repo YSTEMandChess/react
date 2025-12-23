@@ -4,8 +4,8 @@ printf "Creating environment files and variables\n\n"
 
 #Creating environment files and variables for react-ystemandchess
 printf "Creating environment files for react-ystemandchess\n"
-cd react-ystemandchess/src && mkdir environments
-cd environments
+cd react-ystemandchess/src && mkdir -p core/environments
+cd core/environments
 
 #Creating and adding environment.js file and variables
 touch environment.js
@@ -13,6 +13,10 @@ printf "export const environment = {\n" >> environment.js
 printf "    production: false,\n" >> environment.js
 printf "      agora: {\n" >> environment.js
 printf "     appId: ' ',\n" >> environment.js
+printf "    },\n" >> environment.js
+printf "    email: {\n" >> environment.js
+printf "      user: '',\n" >> environment.js
+printf "      pass: ''\n" >> environment.js
 printf "    },\n" >> environment.js
 printf "    urls: {\n" >> environment.js
 printf "      middlewareURL: 'http://127.0.0.1:8000',\n" >> environment.js
@@ -28,6 +32,10 @@ printf "export const environment = {\n" >> environment.prod.js
 printf "    production: false,\n" >> environment.prod.js
 printf "      agora: {\n" >> environment.prod.js
 printf "     appId: ' ',\n" >> environment.prod.js
+printf "    },\n" >> environment.prod.js
+printf "    email: {\n" >> environment.prod.js
+printf "      user: '',\n" >> environment.prod.js
+printf "      pass: ''\n" >> environment.prod.js
 printf "    },\n" >> environment.prod.js
 printf "    urls: {\n" >> environment.prod.js
 printf "      middlewareURL: 'http://127.0.0.1:8000',\n" >> environment.prod.js

@@ -18,41 +18,41 @@ import { Route, Router, Routes } from "react-router-dom";
 
 // Page component imports - organized by category
 // Home and main pages
-import Home from "./Pages/Home/Home";
-import Programs from "./Pages/Programs/Programs";
+import Home from "./features/home/Home";
+import Programs from "./features/programs/Programs";
 
 // About Us section pages
-import CSBenefitPage from "./Pages/About-Us/Benefit-of-CS/CSBenefitPage";
-import ChessBenefitPage from "./Pages/About-Us/Benefit-of-Chess/ChessBenefitPage";
-import MathTutBenefitPage from "./Pages/About-Us/Benefit-of-Math-tut/MathTutBenefitPage";
-import MentoringBenefitPage from "./Pages/About-Us/Benefit-of-Mentoring/MentoringBenefitPage";
-import Mission from "./Pages/About-Us/Mission/Mission";
-import SponsorsPartners from "./Pages/About-Us/SponsorsPartners/SponsorsPartners";
-import Board from "./Pages/About-Us/Board/Board";
-import Financial from "./Pages/About-Us/Financial/Financial";
-import AboutUs from "./Pages/About-Us/AboutUs/AboutUs";
+import CSBenefitPage from "./features/about-us/benefit-of-cs/CSBenefitPage";
+import ChessBenefitPage from "./features/about-us/benefit-of-chess/ChessBenefitPage";
+import MathTutBenefitPage from "./features/about-us/benefit-of-math-tut/MathTutBenefitPage";
+import MentoringBenefitPage from "./features/about-us/benefit-of-mentoring/MentoringBenefitPage";
+import Mission from "./features/about-us/mission/Mission";
+import SponsorsPartners from "./features/about-us/sponsors-partners/SponsorsPartners";
+import Board from "./features/about-us/board/Board";
+import Financial from "./features/about-us/financial/Financial";
+import AboutUs from "./features/about-us/aboutus/AboutUs";
 
 // Educational content pages
-import Lessons from "./Pages/Lessons/Lessons";
-import Puzzles from './Pages/Puzzles/Puzzles';
-import LessonSelection from "./Pages/LessonsSelection/LessonsSelection";
-import LessonOverlay from "./Pages/piece-lessons/lesson-overlay/Lesson-overlay";
+import Lessons from "./features/lessons/lessons-main/Lessons";
+import Puzzles from './features/puzzles/puzzles-page/Puzzles';
+import LessonSelection from "./features/lessons/lessons-selection/LessonsSelection";
+import LessonOverlay from "./features/lessons/piece-lessons/lesson-overlay/Lesson-overlay";
 
 // Authentication and user management pages
-import Login from "./Pages/Login/Login";
-import SignUp from "./Pages/SignUp/SignUp";
-import ResetPassword from "./Pages/Reset-Password/reset-password";
-import SetPassword from "./Pages/Set-Password/set-password";
+import Login from "./features/auth/login/Login";
+import SignUp from "./features/auth/signup/SignUp";
+import ResetPassword from "./features/auth/reset-password/Reset-Password/reset-password";
+import SetPassword from "./features/auth/set-password/Set-Password/set-password";
 
 // User profile and dashboard pages
-import Student from "./Pages/Student/Student";
-import Mentor from "./Pages/Mentor/Mentor";
-import StudentInventory from "./Pages/Student-Inventory/StudentInventory";
-import NewMentorProfile from "./Pages/NewMentorProfile/NewMentorProfile";
-import NewStudentProfile from "./Pages/NewStudentProfile/NewStudentProfile";
+import Student from "./features/student/student-page/Student";
+import Mentor from "./features/mentor/mentor-page/Mentor";
+import StudentInventory from "./features/student/student-inventory/StudentInventory";
+import NewMentorProfile from "./features/mentor/mentor-profile/NewMentorProfile";
+import NewStudentProfile from "./features/student/student-profile/NewStudentProfile";
 
 // Static assets and default data
-import userPortraitImg from "./images/user-portrait-placeholder.svg";
+import userPortraitImg from "./assets/images/user-portrait-placeholder.svg";
 
 /**
  * Default username for components that require user data
