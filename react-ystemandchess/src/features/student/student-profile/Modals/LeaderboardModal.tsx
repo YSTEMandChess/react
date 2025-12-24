@@ -6,6 +6,12 @@ import rank1Img from "../../../../assets/images/student/Leaderboard_rank_1.svg";
 import rank2Img from "../../../../assets/images/student/Leaderboard_rank_2.svg";
 import rank3Img from "../../../../assets/images/student/Leaderboard_rank_3.svg";
 
+// AVATAR IMAGES
+import avatar1 from "../../../../assets/images/student/Leaderboard_User_avatar_1.png";
+import avatar2 from "../../../../assets/images/student/Leaderboard_User_avatar_2.png";
+import avatar3 from "../../../../assets/images/student/Leaderboard_User_avatar_3.png";
+import avatarAll from "../../../../assets/images/student/Leaderboard_User_avatar_all.png";
+
 type Props = { onClose: () => void };
 
 type Row = {
@@ -13,7 +19,6 @@ type Row = {
   name: string;
   school: string;
   score: number;
-  avatar?: "blue" | "red" | "teal" | "gold";
 };
 
 const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
@@ -22,26 +27,29 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
   };
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // SAMPLE DATA
   const rows: Row[] = [
-    { rank: 1,  name: "princel04",   school: "Jefferson Middle",                score: 3882, avatar: "blue" },
-    { rank: 2,  name: "jesse_chess", school: "Pine View School",                score: 3790, avatar: "red"  },
-    { rank: 3,  name: "mary_rose",   school: "Archimedean Middle Conservatory", score: 3780, avatar: "teal" },
-    { rank: 4,  name: "user_name",   school: "school-name",                     score: 3680, avatar: "gold" },
-    { rank: 5,  name: "user_name",   school: "school-name",                     score: 3480, avatar: "gold" },
-    { rank: 6,  name: "user_name",   school: "school-name",                     score: 3110, avatar: "gold" },
-    { rank: 7,  name: "user_name",   school: "school-name",                     score: 2950, avatar: "gold" },
-    { rank: 8,  name: "user_name",   school: "school-name",                     score: 2856, avatar: "gold" },
-    { rank: 9,  name: "user_name",   school: "school-name",                     score: 2712, avatar: "gold" },
-    { rank: 10, name: "user_name",   school: "school-name",                     score: 2636, avatar: "gold" },
-    { rank: 11, name: "user_name",   school: "school-name",                     score: 2632, avatar: "gold" }
+    { rank: 1, name: "princel04", school: "Jefferson Middle", score: 3882 },
+    { rank: 2, name: "jesse_chess", school: "Pine View School", score: 3790 },
+    { rank: 3, name: "mary_rose", school: "Archimedean Middle Conservatory", score: 3780 },
+    { rank: 4, name: "user_name", school: "school-name", score: 3680 },
+    { rank: 5, name: "user_name", school: "school-name", score: 3480 },
+    { rank: 6, name: "user_name", school: "school-name", score: 3110 },
+    { rank: 7, name: "user_name", school: "school-name", score: 2950 },
+    { rank: 8, name: "user_name", school: "school-name", score: 2856 },
+    { rank: 9, name: "user_name", school: "school-name", score: 2712 },
+    { rank: 10, name: "user_name", school: "school-name", score: 2636 },
+    { rank: 11, name: "user_name", school: "school-name", score: 2632 },
   ];
 
-  const [rankAsc, setRankAsc] = useState(true); // rank 1 on top by default
+  const [rankAsc, setRankAsc] = useState(true);
 
   const sortedRows = useMemo(() => {
     const copy = [...rows];
@@ -49,6 +57,17 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
     return copy;
   }, [rows, rankAsc]);
 
+  // SHOW ONLY FIRST 4 ROWS INITIALLY
+  const [visibleCount, setVisibleCount] = useState(4);
+  const visibleRows = sortedRows.slice(0, visibleCount);
+
+  const handleLoadMore = () => {
+    setVisibleCount(sortedRows.length);
+  };
+
+  const allLoaded = visibleCount >= sortedRows.length;
+
+  // RANK BADGES
   const badgeForRank = (rank: number) => {
     if (rank === 1) return rank1Img;
     if (rank === 2) return rank2Img;
@@ -56,36 +75,61 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
     return null;
   };
 
+  // AVATAR IMAGE SELECTION
+  const avatarForRank = (rank: number) => {
+    if (rank === 1) return avatar1;
+    if (rank === 2) return avatar2;
+    if (rank === 3) return avatar3;
+    return avatarAll;
+  };
+
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal-content" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title">
-        <button className="close-button" onClick={onClose} aria-label="Close modal">&times;</button>
+      <div
+        className="modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="leaderboard-title"
+      >
+        <button className="close-button" onClick={onClose} aria-label="Close modal">
+          &times;
+        </button>
 
         {/* Header */}
         <header className="lb-header">
           <div className="lb-heading">
             <button className="lb-backpill" type="button">
-              Go To<br />Backpack
+              Go To
+              <br />
+              Backpack
             </button>
-            <h2 id="leaderboard-title" className="lb-title">Leaderboard</h2>
+            <h2 id="leaderboard-title" className="lb-title">
+              Leaderboard
+            </h2>
           </div>
           <LeaderboardIcon className="lb-crown-img" aria-hidden />
         </header>
 
         {/* Filters */}
-        <div className="lb-filters" role="group" aria-label="Filters">
-          <select aria-label="Country">
-            <option>Country</option><option>USA</option><option>Canada</option>
+        <div className="lb-filters">
+          <select>
+            <option>Country</option>
+            <option>USA</option>
+            <option>Canada</option>
           </select>
-          <select aria-label="State">
-            <option>State</option><option>FL</option><option>GA</option><option>ID</option>
+          <select>
+            <option>State</option>
+            <option>FL</option>
+            <option>GA</option>
           </select>
-          <select aria-label="School">
-            <option>School</option><option>Jefferson Middle</option><option>Pine View School</option>
+          <select>
+            <option>School</option>
+            <option>Jefferson Middle</option>
+            <option>Pine View School</option>
           </select>
         </div>
 
-        {/* Table */}
+        {/* TABLE */}
         <div className="lb-table-wrap">
           <table className="lb-table">
             <colgroup>
@@ -97,46 +141,55 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
 
             <thead>
               <tr>
-                <th scope="col" aria-sort={rankAsc ? "ascending" : "descending"}>
+                <th>
                   <button
                     className="lb-sort-btn"
                     type="button"
-                    onClick={() => setRankAsc(v => !v)}
-                    aria-label="Sort by rank"
+                    onClick={() => setRankAsc((v) => !v)}
                   >
                     <span>Rank</span>
-                    <svg className={`lb-sort-icon ${rankAsc ? "asc" : ""}`} viewBox="0 0 20 12" aria-hidden="true">
+                    <svg
+                      className={`lb-sort-icon ${rankAsc ? "asc" : ""}`}
+                      viewBox="0 0 20 12"
+                      aria-hidden="true"
+                    >
                       <path d="M2 2l8 8 8-8" />
                     </svg>
                   </button>
                 </th>
-                <th scope="col">Name</th>
-                <th scope="col">School</th>
-                <th scope="col">Score</th>
+                <th>Name</th>
+                <th>School</th>
+                <th>Score</th>
               </tr>
             </thead>
 
             <tbody>
-              {sortedRows.map((r) => {
+              {visibleRows.map((r) => {
                 const badge = badgeForRank(r.rank);
+                const avatar = avatarForRank(r.rank);
+
                 return (
                   <tr key={`${r.rank}-${r.name}`} data-rank={r.rank}>
                     <td className="lb-rank">
                       {badge ? (
                         <span
-                          className={`lb-rank-img rank-${r.rank}`}
+                          className="lb-rank-img"
                           style={{ backgroundImage: `url(${badge})` }}
-                          aria-label={`Rank ${r.rank}`}
-                          role="img"
                         />
                       ) : (
                         r.rank
                       )}
                     </td>
+
                     <td className="lb-user">
-                      <span className={`lb-avatar ${r.avatar ?? ""}`} aria-hidden />
+                      <img
+                        src={avatar}
+                        alt={`${r.name} avatar`}
+                        className="lb-avatar-img"
+                      />
                       <span className="lb-name">{r.name}</span>
                     </td>
+
                     <td className="lb-school">{r.school}</td>
                     <td className="lb-score">{r.score}</td>
                   </tr>
@@ -146,9 +199,16 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
           </table>
         </div>
 
-        {/* Load More */}
+        {/* LOAD MORE (OUTSIDE TABLE WRAP, POPUP SCROLLS) */}
         <div className="lb-loadmore">
-          <button type="button" className="lb-load-btn">Load More</button>
+          <button
+            className="lb-load-btn"
+            type="button"
+            onClick={handleLoadMore}
+            disabled={allLoaded}
+          >
+            {allLoaded ? "No more data" : "Load More"}
+          </button>
         </div>
       </div>
     </div>
