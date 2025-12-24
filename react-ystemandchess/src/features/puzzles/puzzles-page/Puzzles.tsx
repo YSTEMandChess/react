@@ -1,30 +1,45 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import pageStyles from "./Puzzles.module.scss";
 import profileStyles from "./Puzzles-profile.module.scss";
-import { Chess } from "chess.js";
 import { themesName, themesDescription } from "../../../core/services/themesService";
 import Swal from 'sweetalert2';
 import { environment } from "../../../environments/environment";
 import { v4 as uuidv4 } from "uuid";
 import { SetPermissionLevel } from "../../../globals";
-import { useCookies } from 'react-cookie'; 
+import { useCookies } from 'react-cookie';
+import ChessBoard, { ChessBoardRef } from '../../../components/ChessBoard/ChessBoard';
+import { useChessSocket } from '../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket';
+import { Move } from "../../../core/types/chess";
 
-const chessClientURL = environment.urls.chessClientURL;
-
-// Global variables (keeping similar to Angular version)
-let puzzleIndex = 0;
-var moveList: string[] = [];
-var computerColor: string;
-var isPuzzleEnd = false;
-var prevFEN: string;
-var currentPuzzle: any;
-
-// types for the puzzle props
 type PuzzlesProps = {
   student?: any;
   mentor?: any;
   role?: any;
   styleType?: any;
+};
+
+// Helper function to normalize FEN (same as in socket)
+const normalizeFen = (fen: string): string => {
+  if (!fen || typeof fen !== 'string') {
+    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  }
+
+  const trimmed = fen.trim();
+  const parts = trimmed.split(" ");
+
+  if (parts.length === 6) return trimmed;
+  if (parts.length === 1 && parts[0].split("/").length === 8) {
+    return `${parts[0]} w KQkq - 0 1`;
+  }
+
+  const defaults = ["w", "KQkq", "-", "0", "1"];
+  const paddedParts = [...parts];
+
+  while (paddedParts.length < 6) {
+    paddedParts.push(defaults[paddedParts.length - 1]);
+  }
+
+  return paddedParts.join(" ");
 };
 
 const Puzzles: React.FC<PuzzlesProps> = ({
@@ -35,543 +50,533 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 }) => {
   const styles = styleType === "profile" ? profileStyles : pageStyles;
 
-    const chessboard = useRef<HTMLIFrameElement>(null);
-    const [puzzleArray, setPuzzleArray] = useState<any[]>([]);
-    const [playerMove, setPlayerMove] = useState<string[]>([]);
-    const [prevMove, setPrevMove] = useState<string[]>([]);
-    const [currentFen, setCurrentFen] = useState<string>('');
-    const [prevFen, setPrevFen] = useState<string>('');
-    const [dbIndex, setDbIndex] = useState<number>(0);
-    const [info, setInfo] = useState<string>("Welcome to puzzles");
-    const [playerColor, setPlayerColor] = useState<string>('');
-    const [themeList, setThemeList] = useState<string[]>([]);
-    const [status, setStatus] = useState<string>("");
-    const swalRef = useRef<string>("");
-    const [cookies] = useCookies(['login']);
+  // Refs
+  const chessBoardRef = useRef<ChessBoardRef>(null);
+  const swalRef = useRef<string>("");
+  const moveListRef = useRef<string[]>([]);
+  const isPuzzleEndRef = useRef(false);
+  const currentPuzzleRef = useRef<any>(null);
+  const isInitializingRef = useRef(false);
+  const handleUnloadRef = useRef(() => { });
+  const puzzleArrayRef = useRef<any[]>([]);
+  const dbIndexRef = useRef(0);
+  const getNextPuzzleRef = useRef<() => void>();
+  const initializeComponentRef = useRef<() => Promise<void>>();
 
-    // needed for time tracking
-    const [eventID, setEventID] = useState(null);
-    const [startTime, setStartTime] = useState(null);
-    const [username, setUsername] = useState(null);
-    const handleUnloadRef = useRef(() => {});
+  // State
+  const [puzzleArray, setPuzzleArray] = useState<any[]>([]);
+  const [currentFEN, setCurrentFEN] = useState<string>('');
+  const [playerColor, setPlayerColor] = useState<'white' | 'black'>('white');
+  const [themeList, setThemeList] = useState<string[]>([]);
+  const [status, setStatus] = useState<string>("");
+  const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [cookies] = useCookies(['login']);
 
-    const postToBoard = (msg: any) => {
-    const board = chessboard.current;
-    if (!board || !board.contentWindow) return;
+  // Time tracking
+  const [eventID, setEventID] = useState(null);
+  const [startTime, setStartTime] = useState(null);
+  const [username, setUsername] = useState(null);
 
-    const payload: any = { ...msg };
+  // User identification
+  const studentId = student || cookies.login?.studentId || uuidv4();
+  const mentorId = mentor || "puzzle_mentor_" + studentId;
 
-    if (msg.from && msg.to && !msg.nextMove) {
-        const tempChess = new Chess(prevFEN);
-        try {
-            const moveResult = tempChess.move({
-                from: msg.from,
-                to: msg.to,
-                promotion: 'q'
-            });
 
-            if (!moveResult) {
-                console.warn("Invalid move (null):", msg);
-                return;
-            }
+  // ============================================================================
+  // PUZZLE LOADING
+  // ============================================================================
 
-            prevFEN = tempChess.fen();
-            payload.testFEN = prevFEN; // add for testing
-        } catch (error) {
-            console.warn("Invalid move (exception):", msg, error);
-            return;
+  const initPuzzleArray = async () => {
+    try {
+      const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
+      if (response.ok) {
+        const jsonData = await response.json();
+        setPuzzleArray(jsonData);
+        puzzleArrayRef.current = jsonData;
+        return jsonData;
+      } else {
+        throw new Error('Failed to fetch puzzles from backend');
+      }
+    } catch (error) {
+      console.error('Error fetching puzzles:', error);
+      setPuzzleArray([]);
+      puzzleArrayRef.current = [];
+      return [];
+    }
+  };
+
+  const prefetchPuzzles = async () => {
+    try {
+      const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
+      if (response.ok) {
+        const jsonData = await response.json();
+        setPuzzleArray(prev => {
+          const newArray = [...prev, ...jsonData];
+          puzzleArrayRef.current = newArray;
+          return newArray;
+        });
+      }
+    } catch (error) {
+      console.error('Error prefetching puzzles:', error);
+    }
+  };
+
+  // Prefetch when running low
+  useEffect(() => {
+    if (puzzleArray.length > 0 && dbIndexRef.current >= puzzleArray.length - 5) {
+      prefetchPuzzles();
+    }
+  }, [puzzleArray.length]);
+
+  initializeComponentRef.current = async () => {
+    if (isInitialized || isInitializingRef.current) return;
+
+    isInitializingRef.current = true;
+    setIsInitialized(true);
+
+    try {
+      const puzzles = await initPuzzleArray();
+      if (puzzles && puzzles.length > 0) {
+        const firstPuzzle = puzzles[0];
+        currentPuzzleRef.current = firstPuzzle;
+        moveListRef.current = firstPuzzle?.Moves?.split(" ") || [];
+
+        if (moveListRef.current.length === 0) {
+          console.warn("No valid moves in initial puzzle:", firstPuzzle);
+          isInitializingRef.current = false;
+          setIsInitialized(false);
+          return;
         }
+
+        setThemeList(firstPuzzle.Themes.split(" "));
+        setStateAsActive(firstPuzzle);
+        updateInfoBox(firstPuzzle.Themes.split(" "));
+      }
+    } finally {
+      isInitializingRef.current = false;
+    }
+  };
+
+  const setStateAsActive = (state: any) => {
+    if (!state?.FEN || !state?.Moves || !state?.Themes) {
+      console.warn("Puzzle is missing required fields:", state);
+      return;
     }
 
-    board.contentWindow.postMessage(JSON.stringify(payload), chessClientURL);
+    const sideToMove = state.FEN.split(" ")[1];
+    const newPlayerColor = sideToMove === 'w' ? 'black' : 'white';
+    setPlayerColor(newPlayerColor);
+
+    currentPuzzleRef.current = state;
+    startLesson(state, newPlayerColor);
   };
 
-    // Helper: Play the next computer move from moveList, update FEN, and highlight
-    const playComputerMove = () => {
-      if (moveList.length === 0) return;
-      const computerMove = moveList.shift();
-      if (!computerMove) return;
-      const moveFrom = computerMove.substring(0, 2);
-      const moveTo = computerMove.substring(2, 4);
+  const startLesson = (puzzle: any, color: 'white' | 'black') => {
+    const fen = puzzle.FEN;
 
-      setPrevMove([moveFrom, moveTo]); // For highlighting
+    if (!fen || fen.split("/").length !== 8) {
+      console.warn("Invalid or missing FEN:", fen);
+      return;
+    }
 
-      setTimeout(() => {
-          // Do NOT update FEN here — let iframe do it
-          // Do NOT include boardState in this message
-          const chessBoard = chessboard.current;
-          if (chessBoard && chessBoard.contentWindow) {
-              const expectedMove = moveList[0];
-            if (!expectedMove || expectedMove.length < 4) {
-                console.warn("Expected move missing or invalid:", expectedMove);
-                return;
-            }
+    const normalizedFen = normalizeFen(fen);
+    setCurrentFEN(normalizedFen);
 
+    moveListRef.current = puzzle?.Moves?.split(" ") || [];
+    isPuzzleEndRef.current = false;
+    setHighlightSquares([]);
 
-              chessBoard.contentWindow.postMessage(
-                  JSON.stringify({
-                      from: moveFrom,
-                      to: moveTo,
-                      nextMove: [
-                          expectedMove.substring(0, 2),
-                          expectedMove.substring(2, 4),
-                      ],
-                  }),
-                  chessClientURL
-              );
-          }
-      }, 300);
+    socket.setGameStateWithColor(normalizedFen, color, puzzle.Themes);
+
+    if (chessBoardRef.current) {
+      chessBoardRef.current.clearHighlights();
+    }
+
+    // Play first computer move
+    setTimeout(() => {
+      playComputerMove();
+    }, 500);
   };
 
-    const setStateAsActive = (state: any) => {
-        if (!state?.FEN || !state?.Moves || !state?.Themes) {
-            console.warn("Puzzle is missing required fields:", state);
-            return;
+  getNextPuzzleRef.current = () => {
+    if (!puzzleArrayRef.current || puzzleArrayRef.current.length === 0) {
+      console.error("Puzzle array is empty - reinitializing");
+      initPuzzleArray().then(puzzles => {
+        if (puzzles && puzzles.length > 0) {
+          dbIndexRef.current = 0;
+          setStateAsActive(puzzles[0]);
+          updateInfoBox(puzzles[0].Themes.split(" "));
         }
-        console.log("click state---->", state);
-        // Determine which side is to move in the FEN
-        const sideToMove = state.FEN.split(" ")[1];
-        // Player is the opposite color
-        const newPlayerColor = sideToMove === 'w' ? 'b' : 'w';
-        setPlayerColor(newPlayerColor);
-        
+      });
+      return;
+    }
 
-        const firstObj = {
-            'theme': state.Themes,
-            'fen': state.FEN,
-            'event': ''
-        };
-        console.log("first obj---->", firstObj);
+    dbIndexRef.current = (dbIndexRef.current + 1) % puzzleArrayRef.current.length;
+    const nextPuzzle = puzzleArrayRef.current[dbIndexRef.current];
 
-        setTimeout(() => {
-            currentPuzzle = state;
-            startLesson(firstObj);
-        }, 200);
+    if (!nextPuzzle?.Moves) {
+      console.error("Selected puzzle has no moves");
+      return;
+    }
+
+    currentPuzzleRef.current = nextPuzzle;
+    isPuzzleEndRef.current = false;
+    setHighlightSquares([]);
+    setThemeList(nextPuzzle.Themes.split(" "));
+
+    setStateAsActive(nextPuzzle);
+    updateInfoBox(nextPuzzle.Themes.split(" "));
+  };
+
+  // ============================================================================
+  // MOVE HANDLING
+  // ============================================================================
+
+  const playComputerMove = () => {
+    if (moveListRef.current.length === 0) return;
+
+    const computerMoveStr = moveListRef.current.shift();
+    if (!computerMoveStr) return;
+
+    const computerMove: Move = {
+      from: computerMoveStr.substring(0, 2),
+      to: computerMoveStr.substring(2, 4),
+      promotion: computerMoveStr.length > 4 ? computerMoveStr[4] as 'q' | 'r' | 'b' | 'n' : undefined
     };
 
-    const startLesson = ({ theme, fen, event }: { theme: string, fen: string, event: string }) => {
-        if (!fen || fen.split("/").length !== 8) {
-            console.warn("Invalid or missing FEN:", fen);
-            return;
+    socket.sendMove(computerMove);
+    socket.sendLastMove(computerMove.from, computerMove.to);
+
+    // Optimistically update highlights
+    setHighlightSquares([computerMove.from, computerMove.to]);
+
+    if (chessBoardRef.current) {
+      chessBoardRef.current.highlightMove(computerMove.from, computerMove.to);
+    }
+  };
+
+  const handlePlayerMove = (move: Move) => {
+    if (isPuzzleEndRef.current || !moveListRef.current || moveListRef.current.length === 0) {
+      return;
+    }
+
+    const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ''}`;
+    const expectedPlayerMove = moveListRef.current[0];
+
+    const isCorrect = playerAttemptedMove === expectedPlayerMove ||
+      playerAttemptedMove === expectedPlayerMove.substring(0, 4);
+
+    if (isCorrect) {
+      moveListRef.current.shift();
+      setHighlightSquares([move.from, move.to]);
+
+      // Get new FEN from ChessBoard (it already made the move)
+      const newFen = chessBoardRef.current?.getFen();
+      if (newFen) {
+        setCurrentFEN(newFen);
+      }
+
+      socket.sendMove(move);
+      socket.sendLastMove(move.from, move.to);
+
+      if (moveListRef.current.length === 0) {
+        isPuzzleEndRef.current = true;
+        socket.sendMessage("puzzle completed");
+        setTimeout(() => {
+          Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
+            if (result.isConfirmed) {
+              socket.sendMessage("next puzzle");
+            }
+          });
+        }, 200);
+      } else {
+        setTimeout(() => {
+          playComputerMove();
+        }, 300);
+      }
+    } else {
+      // Wrong move - reset to current position
+      Swal.fire('Incorrect move', 'Try again!', 'error').then(() => {
+        if (currentPuzzleRef.current) {
+          startLesson(currentPuzzleRef.current, playerColor);
         }
-      setCurrentFen(fen);
-      prevFEN = fen;
-      
-      moveList = currentPuzzle?.Moves?.split(" ") || [];
-      if (moveList.length === 0) {
-        console.warn("Empty or invalid moveList:", currentPuzzle);
+      });
+    }
+  };
+
+  const handleInvalidMove = () => {
+    console.log("Invalid move attempted");
+  };
+
+  // ============================================================================
+  // SOCKET HANDLERS
+  // ============================================================================
+
+  const handleSocketMessage = useCallback((msg: string) => {
+    if (msg === "puzzle completed") {
+      if (status === "guest") {
+        Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
+          if (result.isConfirmed) {
+            socket.sendMessage("next puzzle");
+          }
+        });
+      }
+    } else if (msg === "next puzzle") {
+      Swal.close();
+
+      if (status === "guest") {
+        Swal.fire({
+          title: 'Loading next puzzle',
+          text: 'Please wait...',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          showConfirmButton: false,
+          didOpen: () => {
+            Swal.showLoading();
+            swalRef.current = "loading";
+          },
+          willClose: () => {
+            swalRef.current = "";
+          }
+        });
+      }
+
+      getNextPuzzleRef.current?.();
+    } else if (msg === "new game received") {
+      if (swalRef.current === "loading") Swal.close();
+    } else if (msg.startsWith("<div")) {
+      if (status === "guest") {
+        const hintText = document.getElementById("hint-text");
+        if (hintText) {
+          hintText.innerHTML = msg;
+          hintText.style.display = "none";
+        }
+      }
+    }
+  }, [status]);
+
+  const socket = useChessSocket({
+    student: studentId,
+    mentor: mentorId,
+    role: role,
+    serverUrl: environment.urls.chessServerURL,
+    mode: 'puzzle',
+
+    onBoardStateChange: (newFEN) => {
+      setCurrentFEN(newFEN);
+      // ChessBoard will sync its own gameRef from the fen prop
+    },
+
+    onMessage: handleSocketMessage,
+
+    onRoleAssigned: (assignedRole) => {
+      if (assignedRole === "host") {
+        setStatus("host");
+        initializeComponentRef.current?.();
+
+        if (styleType === "profile" && status !== "") {
+          const message = role === "student"
+            ? 'Your mentor has left! Creating a new puzzle for you'
+            : 'Your student has left! Creating a new puzzle for you';
+          Swal.fire(message.split('!')[0] + '!', message.split('!')[1], 'success');
+        }
+      } else if (assignedRole === "guest") {
+        const wasHost = status === "host";
+        setStatus("guest");
+
+        if (wasHost) {
+          const message = role === "student"
+            ? 'Your mentor has joined you! You can now also see their moves'
+            : 'Your student has joined you! You can now also see their moves';
+          Swal.fire(message.split('!')[0] + '!', message.split('!')[1], 'success');
+        } else {
+          const message = role === "student"
+            ? 'You joined your mentor\'s puzzle! Have fun collaborating.'
+            : 'You joined your student\'s puzzle! Have fun collaborating.';
+          Swal.fire(message.split('!')[0] + '!', message.split('!')[1], 'success');
+        }
+      }
+    },
+
+    onLastMove: (from, to) => {
+      setHighlightSquares([from, to]);
+      if (chessBoardRef.current) {
+        chessBoardRef.current.highlightMove(from, to);
+      }
+    },
+
+    onError: (msg) => {
+      console.error("Socket error:", msg);
+    },
+  });
+
+  // ============================================================================
+  // HINT SYSTEM
+  // ============================================================================
+
+  const updateInfoBox = (themes?: string[]) => {
+    const currentThemes = themes || themeList;
+    if (!currentThemes || currentThemes.length === 0) return;
+
+    const rating = currentPuzzleRef.current?.Rating || 'N/A';
+
+    let hints = `<div style="margin-bottom: 14px;"><b>Puzzle Rating:</b> ${rating}</div>`;
+
+    for (const key of currentThemes) {
+      const name = themesName[key] || key;
+      const desc = themesDescription[key];
+
+      if (!desc || desc === "No description available") continue;
+      hints += `<div style="margin-bottom: 14px;"><b>${name}:</b> ${desc}</div>`;
+    }
+
+    socket.sendMessage(hints);
+
+    const hintText = document.getElementById("hint-text");
+    if (hintText) {
+      hintText.innerHTML = hints;
+      hintText.style.display = "none";
+    }
+  };
+
+  const openDialog = () => {
+    const hintText = document.getElementById('hint-text');
+    if (hintText) {
+      hintText.style.display = hintText.style.display === "block" ? "none" : "block";
+    }
+  };
+
+  // ============================================================================
+  // TIME TRACKING
+  // ============================================================================
+
+  async function startRecording() {
+    const uInfo = await SetPermissionLevel(cookies);
+    if (uInfo?.error) return;
+
+    setUsername(uInfo?.username);
+
+    try {
+      const response = await fetch(
+        `${environment.urls.middlewareURL}/timeTracking/start?username=${uInfo.username}&eventType=puzzle`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${cookies.login}` }
+        }
+      );
+
+      if (response.status !== 200) {
+        console.error("Time tracking error:", response);
         return;
       }
 
-      isPuzzleEnd = false;
-      setPrevMove(["", ""]);
-
-      setTimeout(() => {
-        if (!fen || fen.split(" ").length < 2 || fen.split("/").length !== 8) {
-            console.warn("Invalid FEN detected before sending to iframe:", fen);
-            return;
-        }
-
-        const hintText = document.getElementById("hint-text");
-        if(!hintText) return;
-
-        // 1. First send puzzle setup
-        postToBoard({
-            PuzzleId: currentPuzzle?.PuzzleId,
-            FEN: fen,
-            Moves: currentPuzzle?.Moves,
-            Rating: currentPuzzle?.Rating,
-            Themes: currentPuzzle?.Themes,
-            Hints: hintText.innerHTML
-        });
-
-        // 2. Wait for setup, then send the first computer move if needed
-        setTimeout(() => {
-            // If the puzzle starts with a computer move, play it
-            const tempChess = new Chess(fen);
-
-            // First move is always by computer
-            playComputerMove();
-
-            // Otherwise, wait for player move
-        }, 200);
-      }, 200);
-    };
-
-    const getNextPuzzle = () => {
-        if (!puzzleArray || puzzleArray.length === 0) {
-            console.error("Puzzle array is empty");
-            return;
-        }
-        console.log("getting new puzzle...");
-    
-        const newDbIndex = (dbIndex + 1) % puzzleArray.length;
-        setDbIndex(newDbIndex);
-    
-        const nextPuzzle = puzzleArray[newDbIndex];
-        if (!nextPuzzle.Moves) {
-            console.error("Selected puzzle has no moves");
-            return;
-        }
-    
-        currentPuzzle = nextPuzzle; // Set currentPuzzle before calling setStateAsActive
-        isPuzzleEnd = false;
-        setPrevMove(["", ""]); // Reset prevMove for highlighting
-    
-        setThemeList(nextPuzzle.Themes.split(" "));
-        console.log("Loading puzzle:", nextPuzzle.PuzzleId, "with FEN:", nextPuzzle.FEN);
-        if (!nextPuzzle?.FEN || nextPuzzle.FEN.split("/").length !== 8) {
-            console.warn("Skipping puzzle with invalid FEN:", nextPuzzle);
-            return;
-        }
-        setStateAsActive(nextPuzzle); // This will call startLesson
-        updateInfoBox(nextPuzzle.Themes.split(" "));
-    };
-
-    const isFEN = (data: string): boolean => {
-        return data.split("/").length === 8;
-    };
-
-    const shuffleArray = (array: any[]) => {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    };
-
-    const initPuzzleArray = async () => {
-        try {
-            const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
-            if (response.ok) {
-                const jsonData = await response.json();
-                setPuzzleArray(jsonData);
-                return jsonData;
-            } else {
-                throw new Error('Failed to fetch puzzles from backend');
-            }
-        } catch (error) {
-            console.error('Error fetching puzzles:', error);
-            setPuzzleArray([]);
-            return [];
-        }
-    };
-
-    const prefetchPuzzles = async () => {
-        try {
-            const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
-            if (response.ok) {
-                const jsonData = await response.json();
-                setPuzzleArray(prev => [...prev, ...jsonData]);
-            }
-        } catch (error) {
-            console.error('Error prefetching puzzles:', error);
-        }
-    };
-
-    const updateInfoBox = (themes?: string[]) => {
-      const currentThemes = themes || themeList;
-      if (!currentThemes || currentThemes.length === 0) return;
-
-      const colorDisplay = playerColor === 'w' ? 'White' : 'Black';
-      const rating = currentPuzzle?.Rating || 'N/A';
-
-      let hints = `<div style="margin-bottom: 14px;"><b>Puzzle Rating:</b> ${rating}</div>`;
-
-      for (let i = 0; i < currentThemes.length; i++) {
-        const key = currentThemes[i];
-        const name = themesName[key] || key;
-        const desc = themesDescription[key];
-
-        if (!desc || desc === "No description available") continue;
-
-        hints += `<div style="margin-bottom: 14px;"><b>${name}:</b> ${desc}</div>`;
-      }
-
-      // notify other players to also update their hints
-      postToBoard({command: "message", message: hints})
-
-      const hintText = document.getElementById("hint-text");
-      if (hintText) {
-        hintText.innerHTML = hints;
-        hintText.style.display = "none"; // Still hidden until Show Hint clicked
-      }
-    }; 
-
-    const openDialog = () => {
-      const hintText = document.getElementById('hint-text');
-      if (hintText) {
-        hintText.style.display = hintText.style.display === "block" ? "none" : "block";
-      }
-    };
-
-    // initialize component, fetch puzzles & initiate first puzzle
-    const initializeComponent = async () => {
-        const puzzles = await initPuzzleArray();
-        if (puzzles && puzzles.length > 0) {
-            setPuzzleArray(puzzles);
-            // Initialize first puzzle
-            const firstPuzzle = puzzles[0];
-            currentPuzzle = firstPuzzle;
-            moveList = firstPuzzle?.Moves?.split(" ") || [];
-            if (moveList.length === 0) {
-                console.warn("No valid moves in initial puzzle:", firstPuzzle);
-                return;
-            }
-
-            setThemeList(firstPuzzle.Themes.split(" "));
-            setStateAsActive(firstPuzzle);
-            updateInfoBox(firstPuzzle.Themes.split(" "));
-        }
-    };
-
-    // try joining puzzle as guest / creating puzzle as host
-    const joinOrCreatePuzzle = () => {
-        if(!student) student = uuidv4(); // generate random username for navBar puzzles & unlogged-in users
-        if(!mentor) mentor = uuidv4();
-        postToBoard({ // send student & mentor info  before server creates a game
-            command: "userinfo",
-            student: student,
-            mentor: mentor,
-            role: role
-        });
-        // try creating / joining, server will then notify whether user is a guest or host
-        postToBoard({command: "newPuzzle"}); 
+      const data = await response.json();
+      setEventID(data.eventId);
+      setStartTime(data.startTime);
+    } catch (err) {
+      console.error("Failed to start time tracking:", err);
     }
+  }
 
-    // start recording when users started browsing website
-    async function startRecording() {
-        const uInfo = await SetPermissionLevel(cookies); // get logged-in user info
+  handleUnloadRef.current = async () => {
+    if (!startTime || !username || !eventID) return;
 
-        // do nothing if the user is not logged in
-        if(uInfo.error) return;
-        setUsername(uInfo.username); // else record username
+    try {
+      const startDate = new Date(startTime);
+      const endDate = new Date();
+      const diffInSeconds = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
 
-        // start recording user's time spent browsing the website
-        const response = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/start?username=${uInfo.username}&eventType=puzzle`, 
+      const response = await fetch(
+        `${environment.urls.middlewareURL}/timeTracking/update?username=${username}&eventType=puzzle&eventId=${eventID}&totalTime=${diffInSeconds}`,
         {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${cookies.login}` }
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${cookies.login}` }
         }
-        );
-        if(response.status != 200) console.log(response) // error handling
+      );
 
-        // if data is fetched, record for later updates
-        const data = await response.json();
-        setEventID(data.eventId);
-        setStartTime(data.startTime);
+      if (response.status !== 200) {
+        console.error("Time tracking update error:", response);
+      }
+    } catch (err) {
+      console.error("Time tracking error:", err);
     }
+  };
 
-    // handler called when user exist the website, complete recording time
-    handleUnloadRef.current = async () => {
-        try {
-            const startDate = new Date(startTime)
-            const endDate = new Date();
-            const diffInMs = endDate.getTime() - startDate.getTime(); // time elapsed in milliseconds
-            const diffInSeconds = Math.floor(diffInMs / 1000); // time elapsed in seconds
+  // ============================================================================
+  // EFFECTS
+  // ============================================================================
 
-            // update the time users spent browsing website
-            const response = await fetch(
-                `${environment.urls.middlewareURL}/timeTracking/update?username=${username}&eventType=puzzle&eventId=${eventID}&totalTime=${diffInSeconds}`, 
-                {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${cookies.login}` }
-                }
-            );
-            if(response.status != 200) console.log(response) // error handling
+  useEffect(() => {
+    startRecording();
+    window.addEventListener('beforeunload', handleUnloadRef.current);
 
-            console.log("time spent on puzzles:", diffInSeconds);
-        } catch (err) {
-            console.log(err)
-        }
+    return () => {
+      window.removeEventListener('beforeunload', handleUnloadRef.current);
+      handleUnloadRef.current();
+      Swal.close();
     };
+  }, []);
 
-    useEffect(() => {
-        startRecording();
-        window.addEventListener('beforeunload', handleUnloadRef.current);
+  useEffect(() => {
+    if (socket.connected && status === "" && !isInitialized && !isInitializingRef.current) {
+      socket.startNewPuzzle();
+    }
+  }, [socket.connected, status, isInitialized, socket]);
 
-        return () => {
-            window.removeEventListener('beforeunload', handleUnloadRef.current); // remove listener when unloading
-            handleUnloadRef.current(); // when navigating away, stop recording time spent
-        }
-    }, [])
-    
-    useEffect(() => {
-        const eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
-        const eventer = (window as any)[eventMethod];
-        const messageEvent = eventMethod === 'attachEvent' ? 'onmessage' : 'message';
-    
-        const messageHandler = (e: MessageEvent) => {
-            let info = e.data;
-            if (typeof info === 'string' && info[0] === "{") {
-                try {
-                    let jsonInfo = JSON.parse(info);
-                    if (
-                        "from" in jsonInfo && "to" in jsonInfo &&
-                        typeof jsonInfo.from === 'string' && typeof jsonInfo.to === 'string' &&
-                        jsonInfo.from.length === 2 && jsonInfo.to.length === 2
-                    ) {
-                        const playerAttemptedMove = `${jsonInfo.from}${jsonInfo.to}`
-                        // Only allow if it's the player's turn and moveList[0] is the expected move
-                        if (isPuzzleEnd || !moveList || moveList.length === 0) return;
+  // ============================================================================
+  // RENDER
+  // ============================================================================
 
-                        const expectedPlayerMove = moveList[0]; 
-                        // Now, moveList[0] is always the player's move
-
-                        if (playerAttemptedMove === expectedPlayerMove) {
-                            // Correct move
-                            moveList.shift(); // Remove player's move
-
-                            setPrevFen(currentFen);
-
-                            if (moveList.length === 0) {
-                                isPuzzleEnd = true;
-                                setTimeout(() => {
-                                    Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
-                                        if(result.isConfirmed) postToBoard({command: "message", message: "next puzzle"}); // notify other players to move on to the next puzzle
-                                    });
-                                }, 200);
-                                postToBoard({command: "message", message: "puzzle completed"}) // notify other players of the completed puzzle
-                            } else {
-                                // Now it's computer's turn, play the next move automatically
-                                playComputerMove();
-                            }
-                        } else {
-                            // Incorrect move, reload the puzzle
-                            Swal.fire('Incorrect move', 'Try again!', 'error').then(() => {
-                                startLesson({
-                                    theme: currentPuzzle.Themes,
-                                    fen: currentPuzzle.FEN,
-                                    event: ''
-                                });
-                            });
-                        }
-                    }
-                } catch (error) {
-                    console.log("Error parsing JSON from iframe:", error);
-                }
-            } else if (info && typeof info === 'string' && isFEN(info)) {
-                // FEN update from iframe (after a move)
-                setCurrentFen(info); // Update current FEN based on board's state
-                // Highlighting logic for computer's response (if prevMove is set)
-                if (prevMove[0] && prevMove[1]) {
-                    const chessBoard = chessboard.current;
-                    if (chessBoard && chessBoard.contentWindow) {
-                        chessBoard.contentWindow.postMessage(
-                            JSON.stringify({
-                                highlightFrom: prevMove[0],
-                                highlightTo: prevMove[1]
-                            }),
-                            chessClientURL
-                        );
-                        setPrevMove(["", ""]); // Reset after highlighting
-                    }
-                }
-            } else if (typeof info == "string" && info == "host"){ // user has created a new puzzle in server
-                setStatus("host"); // change status
-                initializeComponent(); 
-                if (styleType === "profile") {
-                    if (status){
-                        if (role == "student") Swal.fire('Your mentor has left!', 'Creating a new puzzle for you', 'success');
-                        else Swal.fire('Your student has left!', 'Creating a new puzzle for you', 'success');
-                    } else {
-                        if (role == "student") Swal.fire('You hosted a new puzzle!', 'Your mentor might join later', 'success');
-                        else Swal.fire('You hosted a new puzzle!', 'Your student might join later', 'success');
-                    }
-                }
-            } else if (typeof info == "string" && info == "guest"){ // user has joined an existing puzzle in server
-                if (status == "host") {
-                    if (role == "student") Swal.fire('Your mentor has joined you!', 'You can now also see their moves,', 'success');
-                    else Swal.fire('Your student has joined you!', 'You can now also see their moves,', 'success');
-                } else {
-                    setStatus("guest"); 
-                    if (role == "student") Swal.fire('You joined your mentor\'s puzzle!', 'Have fun collaborating.', 'success');
-                    else Swal.fire('You joined your student\'s puzzle!', 'Have fun collaborating.', 'success');
-                }
-                // no need to fetch lessons, guest's chessboard is dependent on host's for simplicity
-            } else if (typeof info == "string" && info == "puzzle completed" ) { // puzzle completed
-                if (status == "guest") { // host would already have fired alert
-                    Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
-                        if(result.isConfirmed) postToBoard({command: "message", message: "next puzzle"}); // notify other players to move on to the next puzzle
-                    });
-                }
-            } else if (typeof info == "string" && info == "next puzzle") { // player / other users want to move to the next puzzle
-                Swal.close();
-                if(status == "guest"){
-                    Swal.fire({
-                        title: 'Loading next lesson',
-                        text: 'Please wait...',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        showConfirmButton: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                            swalRef.current = "loading";
-                        },
-                        willClose: () => {
-                            swalRef.current = "";
-                        }
-                    });
-                }
-                getNextPuzzle();
-            } else if (typeof info == "string" && info.startsWith("<div")) { // other users want to update the hint text
-                if(status == "guest") { // host initiates, only guests receive
-                    const hintText = document.getElementById("hint-text");
-                    if (hintText) {
-                        hintText.innerHTML = info;
-                        hintText.style.display = "none"; // Still hidden until Show Hint clicked
-                    }
-                }
-            } else if (typeof info == "string" && info == "new game received") {
-                if(swalRef.current == "loading") Swal.close();
-            }
-        };
-    
-        eventer(messageEvent, messageHandler, false);
-    
-        return () => {
-            const cleanupEventer = (window as any)[window.removeEventListener ? 'removeEventListener' : 'detachEvent'];
-            const cleanupMessageEvent = window.removeEventListener ? 'message' : 'onmessage';
-            cleanupEventer(cleanupMessageEvent, messageHandler, false);
-        };
-    }, [currentFen, prevFen, playerColor, puzzleArray, currentPuzzle, isPuzzleEnd, prevMove, status]);
-
-    return (
+  return (
     <div className={styles.mainElements}>
-        <iframe
-        onLoad={joinOrCreatePuzzle}
-        ref={chessboard}
-        className={styles.chessBoard}
-        src={chessClientURL}
-        title="board"
-        id="chessBoard"
-        />
-        <div className={styles.hintMenu}>
+      {!currentFEN ? (
+        <div>Loading puzzle...</div>
+      ) : (
+        <div className={styles.chessBoardContainer}>
+          <ChessBoard
+            mode="puzzle"
+            ref={chessBoardRef}
+            fen={currentFEN}
+            orientation={playerColor}
+            highlightSquares={highlightSquares}
+            onMove={handlePlayerMove}
+            onInvalidMove={handleInvalidMove}
+            disabled={isPuzzleEndRef.current || !socket.connected}
+          />
+        </div>
+      )}
+
+      <div className={styles.hintMenu}>
         <div className={styles.hintButtonRow}>
-            <button
+          <button
             className={styles.puzzleButton}
             onClick={() => {
-                isPuzzleEnd = false;
-                postToBoard({command: "message", message: "next puzzle"});
+              isPuzzleEndRef.current = false;
+              socket.sendMessage("next puzzle");
             }}
-            >
+            disabled={!socket.connected}
+          >
             Get New Puzzle
-            </button>
+          </button>
 
-            <button className={styles.puzzleButton} onClick={openDialog}>
+          <button
+            className={styles.puzzleButton}
+            onClick={openDialog}
+            disabled={!socket.connected}
+          >
             Show Hint
-            </button>
+          </button>
         </div>
+
         <div
-            id="hint-text"
-            className={styles.hintText}
-            style={{ display: 'none' }}
+          id="hint-text"
+          className={styles.hintText}
+          style={{ display: 'none' }}
         ></div>
-        </div>
+      </div>
     </div>
-    );
-
-
-}
+  );
+};
 
 export default Puzzles;
