@@ -35,7 +35,7 @@ const Mentor = () => {
         <img src={teacher} alt="Teaching and Learning" />
       </section>
 
-      <button className="apply-button" arial-label="Apply Button" >Apply Now</button>
+      <button className="apply-button" aria-label="Apply Button" >Apply Now</button>
     </main>
   );
 };

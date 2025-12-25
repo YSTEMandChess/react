@@ -1,124 +1,177 @@
-.mentor-roles {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 3rem;
-  margin-bottom: 3rem;
-}
-
-.mentor-card {
-  flex: 1 1 300px;
-  max-width: 400px;
-  min-width: 280px;
-  padding: 2.5rem;
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  backdrop-filter: blur(10px);
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+.board-container {
   text-align: center;
-}
+  padding: 20px;
+  max-width: 1200px;       /* center the entire page content */
+  margin: 0 auto;
 
-.mentor-card:hover {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-}
-
-.icon-container {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  .flex-container {
     display: flex;
     align-items: center;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-}
+    justify-content: center;   /* keep text + image centered as a group */
+    gap: 3rem;                 /* spacing between text and image */
 
-.icon-container span {
-  font-size: 2rem;
-  color: white;
-}
+    .text-content {
+      flex: 1 1 400px;         /* flexible — no more rigid 520px */
+      max-width: 520px;
+      text-align: left;
 
-.transform-icon:hover span {
-  transform: rotate(360deg);
-  transition: transform 0.6s ease-in-out;
+      h1 {
+        font-size: 2em;
+        color: #333;
+        margin-bottom: 10px;
       }
 
-.breathe-icon span {
-  animation: breathe 2.5s ease-in-out infinite;
-}
+      p {
+        font-size: 1.2em;
+        color: #666;
+        margin-bottom: 20px;
+      }
 
-@keyframes breathe {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.15);
+      .apply-button {
+        @extend .apply-button;
+      }
+    }
+
+    .image-content {
+      flex: 1 1 400px;        /* flexible — scales smoothly */
+      max-width: 520px;
+      display: flex;
+      justify-content: center; 
+      align-items: center;
+
+      img {
+        max-width: 100%;
+        max-height: 450px;
+        height: auto;
+      }
     }
   }
 
-.mentor-card h3 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
+  .line-break {
+    margin: 20px auto;
+    max-width: 900px;
+    text-align: center;
   }
 
-.mentor-card p {
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
+  .mentor-details {
+    display: flex;
+    justify-content: center;
+    max-width: 900px;
+    margin: 20px auto;
 
-.green-card {
-  background: linear-gradient(145deg, #73b313 0%, #8bc34a 100%);
-  color: #ffffff;
+    img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 20px;
+    }
   }
 
-.white-card {
-  background: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
-  border: 2px solid #73b313;
-  color: #333;
-}
+  .mentor-roles {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
 
-.apply-wrapper {
-  text-align: center;
+    img {
+      width: 45%;
+      height: auto;
+      margin: 0 5px;
+    }
+  }
+
+  /* center the final Apply Now button */
+  > .apply-button {
+    display: block;
+    margin: 20px auto 0;
+  }
 }
 
 .apply-button {
-  background-color: #0f172a;
+  background-color: #ead94c; /* keep original color */
   border: none;
-  border-radius: 9999px;
-  padding: 0.8rem 2rem;
-  font-size: 1.1rem;
-  color: #fff;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1em;
   cursor: pointer;
-  font-weight: 600;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.2s;
+
+  &:hover {
+    background-color: #ffe066;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
 }
 
-.apply-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  }
+@media screen and (max-width: 768px) {
+  .board-container {
+    padding: 10px;
 
-.apply-button:active {
-  transform: translateY(1px);
-  }
-
-@media (max-width: 768px) {
-  .hero-section {
+    .flex-container {
       flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+
+      .text-content {
         text-align: center;
+
+        h1 {
+          font-size: 1.5em;
         }
 
-  .hero-text {
-        text-align: center;
+        p {
+          font-size: 1em;
+        }
+
+        .apply-button {
+          width: 100%;
+        }
+      }
+
+      .image-content {
+        justify-content: center;
+
+        img {
+          width: 100%;
+          max-width: 300px;
+        }
+      }
+    }
+
+    .mentor-details {
+      max-width: 90%;
+
+      img {
+        margin-bottom: 10px;
+      }
+    }
+
+    .mentor-roles {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+
+      img {
+        width: 80%;
+        margin: 0;
+      }
+    }
+
+    .line-break {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    > .apply-button {
+      width: 80%;
+      max-width: 300px;
+    }
   }
 
-  .mentor-card {
-          width: 100%;
-    max-width: 350px;
+  .apply-button {
+    font-size: 1.1em;
+    padding: 12px;
   }
 }

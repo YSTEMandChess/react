@@ -5,8 +5,9 @@ export const environment = {
 	},
 	urls: {
 		middlewareURL: 'http://localhost:8000',
-		stockFishURL: 'http://localhost:8080',
-		chessServerURL: 'http://localhost:3001/',
+		chessClientURL: 'http://localhost',
+		stockFishURL: 'http://localhost:8080/stockfishserver/',
+		chessServer: 'http://localhost:3001/',
 	},
-	productionType: 'development',
+	productionType: 'development', // development/production
 };
