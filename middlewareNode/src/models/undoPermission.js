@@ -24,4 +24,4 @@ const undoPermissionSchema = new mongoose.Schema(
   { versionKey: false },
 );
 
-module.exports = undoPermission = model("undoPermission", undoPermissionSchema);
+module.exports = model("undoPermission", undoPermissionSchema);

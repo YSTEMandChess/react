@@ -128,7 +128,9 @@ const stopRecording = async (meetingID, resourceId, sid) => {
       username: config.get("customerId") || "",
       password: config.get("customerCertificate") || "",
     };
-    let newQueryURL = `https://api.agora.io/v1/apps/${config.appID}/cloud_recording/resourceid/${resourceId}/sid/${sid}/mode/mix/stop`;
+    // config keys use get("appID") elsewhere
+    const appId = config.get("appID");
+    let newQueryURL = `https://api.agora.io/v1/apps/${appId}/cloud_recording/resourceid/${resourceId}/sid/${sid}/mode/mix/stop`;
     const body = {
       uid: config.get("uid"),
       cname: meetingID,
@@ -147,8 +149,9 @@ const stopRecording = async (meetingID, resourceId, sid) => {
       return "Could not stop recording. Server error.";
     }
 
-    return response.data.serverResponse;
+    return response.data || response;
   } catch (error) {
+    console.error("stopRecording error:", error?.message || error);
     return "Could not stop recording. Server error.";
   }
 };
