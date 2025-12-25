@@ -2,7 +2,7 @@
   "name": "middleware",
   "version": "1.0.0",
   "description": "API for Y STEM And Chess Inc",
-  "main": "server.js",
+  "main": "src/server.js",
   "dependencies": {
     "aws-sdk": "^2.889.0",
     "axios": "^0.21.1",
@@ -22,11 +22,14 @@
     "uuid": "^8.3.2"
   },
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon src/server.js"
   },
   "author": "",
   "license": "ISC",
   "volta": {
     "node": "18.20.8"
+  },
+  "devDependencies": {
+    "node-schedule": "^2.1.1"
   }
 }

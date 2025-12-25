@@ -28,15 +28,6 @@ jobs:
         run: npm run build --if-present
         working-directory: ./middlewareNode
 
-      # chessClient
-      - name: Install dependencies (chessClient)
-        run: npm ci
-        working-directory: ./chessClient
-
-      - name: Lint chessClient
-        run: npm run lint
-        working-directory: ./chessClient
-
       # chessServer
       - name: Install dependencies (chessServer)
         run: npm ci
@@ -70,16 +61,19 @@ jobs:
 
       - name: Create environment file
         run: |
-          mkdir -p src/environments
-          cat <<EOF > src/environments/environment.js
+          mkdir -p src/core/environments
+          cat <<EOF > src/core/environments/environment.ts
           export const environment = {
             production: false,
             agora: {
               appId: '${{ secrets.APP_ID }}',
             },
+            email: {
+              user: '${{ secrets.EMAIL_USER || '' }}',
+              pass: '${{ secrets.EMAIL_PASS || '' }}'
+            },
             urls: {
               middlewareURL: '${{ secrets.MIDDLEWARE_URL }}',
-              chessClientURL: '${{ secrets.CHESS_CLIENT_URL }}',
               stockFishURL: '${{ secrets.STOCKFISH_URL }}',
               chessServer: '${{ secrets.CHESS_SERVER }}',
             },

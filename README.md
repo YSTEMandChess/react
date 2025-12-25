@@ -1,103 +1,66 @@
 # Welcome to the Y STEM and Chess Project
 
-This is an educational platform that combines chess instruction with STEM learning, aimed at supporting socially and economically underserved students. The platform helps students who benefit from alternative learning approaches by providing chess tutoring alongside mathematics, computer science, and mentoring.
-
----
+This is an educational platform combining chess instruction with STEM learning, aimed at supporting socially and economically underserved students. It helps learners who benefit from alternative approaches by providing chess tutoring alongside mathematics, computer science, and mentoring. The platform is built with React and Node.js and integrates the Stockfish chess engine for gameplay.
 
 ## Development Environment Setup
 
-To run the platform, you’ll need **Node.js v18**, **nodemon**, and **Apache** installed.
+To run the platform, you’ll need **Node.js v18** installed. **Nodemon** is optional and can be used to automatically restart servers when code changes, which is convenient during development.
 
-### NodeJS
-
-This project requires **Node.js v18.20.8**.
-
-We recommend using a version manager so everyone runs the same Node.js version consistently.
+### Node.js
 
 ---
 
-### Option 1: Using [Volta](https://volta.sh) (recommended)
+This project requires **Node.js v18.20.8**. Using a version manager ensures consistent Node versions across contributors.
+
+#### Option 1: Using [Volta](https://volta.sh) (recommended)
 
 Volta automatically uses the Node version pinned in this project’s `package.json`.
 
 **Install Volta:**
 
-- **Linux / macOS:**
-    ```bash
-    curl https://get.volta.sh | bash
-    source ~/.bashrc # or ~/.zshrc
-    ```
-- **Windows:**
-Download and run the installer from [volta.sh](https://volta.sh)
+* **Linux / macOS**
 
-Now when you cd into this project, Volta will automatically install and use **Node.js v18.20.8**.
+```bash
+curl https://get.volta.sh | bash
+source ~/.bashrc  # or ~/.zshrc
+```
 
-### Option 2: Using [nvm](https://github.com/nvm-sh/nvm)
+* **Windows**
+  Download and run the installer from [volta.sh](https://volta.sh).
+
+Volta will automatically install and use **Node.js v18.20.8** when you cd into the project.
+
+#### Option 2: Using [nvm](https://github.com/nvm-sh/nvm)
 
 If you prefer nvm:
 
-- **Linux / macOS:**
-    ```bash
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-    source ~/.nvm/nvm.sh
-    ```
-    Then:
-    ```bash
-    nvm install 18.20.8
-    nvm use 18.20.8
-    ```
-    (Optional) Set it as default:
-    ```bash
-    nvm alias default 18.20.8
-    ```
-- **Windows:**
-    Use [nvm-windows](https://github.com/coreybutler/nvm-windows):
-
-    Download and run the installer from the [releases page](https://github.com/coreybutler/nvm-windows/releases).
-    Then install and use Node:
-    ```powershell
-    nvm install 18.20.8
-    nvm use 18.20.8
-    ```
-
-### Nodemon
-
-Nodemon automatically restarts your server whenever code changes are detected.
-
-**Linux/macOS:**
+* **Linux / macOS**
 
 ```bash
-sudo npm install -g nodemon
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.nvm/nvm.sh
+nvm install 18.20.8
+nvm use 18.20.8
+nvm alias default 18.20.8  # optional
 ```
 
-**Windows:**
+* **Windows**
+  Use [nvm-windows](https://github.com/coreybutler/nvm-windows/releases).
+
+```powershell
+nvm install 18.20.8
+nvm use 18.20.8
+```
+
+### Nodemon (Optional)
+
+---
+
+Nodemon can be installed globally to automatically restart servers when code changes:
 
 ```bash
 npm install -g nodemon
 ```
-
----
-
-### Apache
-
-Apache is used as a web server to serve the chess client interface.
-
-**Linux:**
-
-```bash
-sudo apt update && sudo apt install apache2
-```
-
-**macOS:**
-
-```bash
-brew install httpd
-```
-
-**Windows:**
-[Apache Installation Guide](https://httpd.apache.org/docs/2.4/platform/windows.html)
-
----
 
 ## Getting Started
 
@@ -110,44 +73,33 @@ cd react
 
 ### 2. Environment Setup
 
-Running the following script creates all environment files needed for the platform services:
+A `default.json` file containing environment variables will be provided to contributors and should be placed in `middlewareNode/config`.
 
-**Linux/macOS or Windows (Git Bash):**
 
-```bash
-sh create_dev_envs.sh
-```
+## Running Each Service
 
----
+Each service runs independently in its own terminal window. Start the Middleware API first, then the other services in any order.
 
-## Setting Up Each Service
-
-Each service runs independently and requires its own terminal window. Start the Middleware API first, then the other services in any order.
-
-#### Middleware API (Backend)
+### Middleware API (Backend)
 
 Handles user authentication, database operations, and coordinates other services.
 
-
 ```bash
 cd middlewareNode
-npm install    # Install backend dependencies  
-npm start      # Start the API server
+npm install   
+npm start      
 ```
 
-The server typically runs on port 8000. You should see "MongoDB Connected..." when it starts successfully.
+The server typically runs on port 8000. You should see `"MongoDB Connected..."` when it starts successfully.
 
-**If you intend to test the mentor and student login pages, you may use the following usernames and passwords respectively:**
+The following credentials can be used for testing mentor and student accounts:
 
-mentor 123123123
+* **Mentor:** mentor / 123123123
+* **Student:** student / 123123123
 
-student 123123123
+### Main React Application (Frontend)
 
----
-
-#### Main React Application (Frontend)
-
-Primary interface for students and mentors:
+Primary interface for students and mentors.
 
 ```bash
 cd react-ystemandchess
@@ -155,27 +107,23 @@ npm install
 npm start
 ```
 
-The frontend runs on `http://localhost:3000` (or the next available port if 3000 is occupied).
+Once started, the React application is accessible at `http://localhost:3000` (or the next available port if 3000 is occupied).
 
----
+### Chess Game Server
 
-#### Chess Game Server
-
-Manages chess game logic, validates moves, and handles real-time gameplay:
+Manages chess game logic, validates moves, and handles real-time gameplay.
 
 ```bash
 cd chessServer
 npm install
-npm start
+npm start      
 ```
 
-Defaults to port 3000 (or the next available port if taken).
+The server runs on port 3001.
 
----
+### Chess Engine Server
 
-#### Chess Engine Server
-
-Integrates Stockfish for AI opponents and move analysis:
+Integrates Stockfish for AI opponents and move analysis.
 
 ```bash
 cd stockfishServer
@@ -183,37 +131,7 @@ npm install
 npm start
 ```
 
-This service usually runs on port 8080.
-
----
-
-#### Chess Client (Testing Interface)
-
-```bash
-cd chessClient
-npm install
-```
-
-Run the http server on port 80 using: `npx http-server -p 80` to ensure that the chess board frame loads during any session.
-You can use the **Live Server extension in VS Code** to open the HTML files for local testing of the chess board:
-
-* **Board only:** Right-click `index.html` → "Open with Live Server"
-* **Board with controls:** Right-click `parent.html` → "Open with Live Server"
-* **Mentor/Student interaction:** Right-click `both.html` → "Open with Live Server"
-
----
-
-#### React Chess Component (Optional)
-
-Modern React-based chess component for development/testing:
-
-```bash
-cd chess-client-react-refactor
-npm install 
-npm start 
-```
-
-Open `src/app.js` to ensure debug mode is set to `true`.
+The server runs on port 8080.
 
 ---
 
@@ -222,7 +140,7 @@ Open `src/app.js` to ensure debug mode is set to `true`.
 1. Create a new branch with a descriptive name:
 
 ```bash
-git checkout -b my-branch-name
+git checkout -b branch-name
 ```
 
 2. Test thoroughly to ensure all services work together.
@@ -231,4 +149,4 @@ git checkout -b my-branch-name
 
 ---
 
-You’re all set! Happy coding and thank you for contributing to educational equity! 🎯♟️
+You're all set! Happy coding, and thank you for contributing to educational equity! 🎯♟️

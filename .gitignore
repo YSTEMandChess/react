@@ -15,7 +15,8 @@ react-ystemandchess/environment.prod.ts
 react-ystemandchess/environment.ts
 environment.php
 .env
-environment.*
+environment.*.local
+environment.secret.*
 create_envs.sh
 create_env.sh
 create_dev_envs.sh
@@ -56,5 +57,5 @@ testem.log
 /deleteMeetings.php
 
 # System Files
-.DS_Store
+.DS_Store*
 Thumbs.db

@@ -1,6 +1,40 @@
-# Getting Started with Create React App
+# Y STEM and Chess React Application
+
+This is the main frontend application for the Y STEM and Chess educational platform. It provides an interactive interface for students and mentors to engage with chess lessons, puzzles, and educational content.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## Project Structure
+
+After recent modularization, the project follows a feature-based architecture:
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── navbar/         # Navigation bar component
+│   ├── footer/         # Footer component
+│   ├── chessboard/     # Chess board component
+│   └── ui/             # Generic UI components
+├── features/           # Feature-based modules
+│   ├── about-us/       # About Us pages
+│   ├── auth/           # Authentication (login, signup, password)
+│   ├── home/           # Landing page
+│   ├── lessons/        # Chess lessons
+│   ├── mentor/         # Mentor features
+│   ├── programs/       # Programs information
+│   ├── puzzles/        # Chess puzzles
+│   └── student/        # Student features
+├── core/               # Core infrastructure
+│   ├── environments/   # Environment configuration
+│   ├── services/       # API services
+│   ├── types/          # TypeScript type definitions
+│   └── utils/          # Utility functions
+├── assets/             # Static assets
+│   └── images/         # Image files
+├── App.tsx             # Main application component
+├── AppRoutes.tsx       # Route definitions
+└── index.tsx           # Application entry point
+```
 
 ## Available Scripts
 
@@ -68,3 +102,67 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Development Guidelines
+
+### Adding New Features
+
+When adding new features to the application:
+
+1. **Create a new feature directory** under `src/features/` with appropriate naming
+2. **Use the existing structure** as a template (components, hooks, services)
+3. **Update routes** in `src/AppRoutes.tsx` if adding new pages
+4. **Follow the established patterns** for imports and file organization
+
+### Component Organization
+
+- **Reusable components** → Place in `src/components/`
+- **Feature-specific components** → Place within the relevant feature directory
+- **Shared utilities** → Place in `src/core/utils/`
+- **API services** → Place in `src/core/services/`
+
+### Import Path Recommendations
+
+Consider using path aliases in `tsconfig.json` for cleaner imports:
+
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@features/*": ["src/features/*"],
+      "@core/*": ["src/core/*"],
+      "@assets/*": ["src/assets/*"]
+    }
+  }
+}
+```
+
+## Technology Stack
+
+- **React** 18.3
+- **TypeScript** 4.9
+- **React Router** 7
+- **Tailwind CSS** 3
+- **Socket.IO Client** 4
+- **Axios** for API calls
+- **Chess.js** for chess logic
+- **Framer Motion** for animations
+
+## Backend Services
+
+This frontend connects to several backend services:
+
+- **Middleware Node** - Main API backend (port 8000)
+- **Chess Server** - Real-time game server (port 3000)
+- **Stockfish Server** - Chess AI engine (port 8080)
+
+Make sure these services are running for full functionality.
+
+## Contributing
+
+1. Follow the established directory structure
+2. Write TypeScript with proper typing
+3. Include tests for new components
+4. Update documentation as needed
+5. Follow existing code style and conventions
