@@ -6,7 +6,7 @@ const stockfishManager = new StockfishManager();
  * @param {Server} io - Socket.IO server instance
  * @param {Socket} socket - Connected socket instance
  */
-const initializeSocket = (io, socket) => {
+const initializeSocket = (socket) => {
   // Start a new Stockfish session for the client
   socket.on("start-session", ({ sessionType, fen }) => {
     try {
