@@ -4,7 +4,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
-const initializeSocket = require("./manager/socket");
+const initializeSocket = require("./managers/socket");
 
 const app = express();
 const server = http.createServer(app);
@@ -25,7 +25,7 @@ app.get("/health", (req, res) => {
 
 io.on("connection", (socket) => {
   console.log(`Client connected ${socket.id}`);
-  initializeSocket(io, socket);
+  initializeSocket(socket);
 });
 
 const PORT = process.env.PORT || 8080;
