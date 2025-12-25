@@ -99,7 +99,6 @@ export default function LessonSelection({ onGo, styleType = "page" }) { // what 
       if (!cookies.login) {
         // Non-logged users: expose all lessons
         unlocked = currentScenario.subSections.length;
-        console.log("No login cookie detected. Granting full access. unlocked:", unlocked);
       } else {
         // Logged users: ask backend for how many lessons they have completed
         try {
