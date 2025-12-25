@@ -29,7 +29,7 @@ test("shows the register button", () => {
             <Programs />
         </MemoryRouter>
     );
-    const registerButton = screen.getByTestId("register-btn");
+    const registerButton = screen.getByTestId("register-btn-link");
     expect(registerButton).toBeInTheDocument();
 });
 
@@ -54,7 +54,7 @@ test("shows the left subscription terms", () => {
     const subTermsLeft = screen.getByTestId("sub-terms-left");
     expect(subTermsLeft).toBeInTheDocument();
     // Check the text content of the left subscription terms
-    expect(subTermsLeft.children[0].textContent).toBe("First Month is Free Cancel anytime");
+    expect(subTermsLeft.children[0].textContent).toBe("First Month is Free  Cancel anytime");
 });
 
 // Test that the right subscription terms are displayed correctly
