@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
 import "./NewStudentProfile.scss";
 import Images from "../../../assets/images/imageImporter";
 import { SetPermissionLevel } from '../../../globals';
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router";
 import { useLocation } from "react-router";
 import StatsChart from "./StatsChart";
 import Puzzles from "../../puzzles/puzzles-page/Puzzles";
+import PlayComputer from "../../engine/PlayComputer";
 import StreakModal from "./Modals/StreakModal";
 import ActivitiesModal from "./Modals/ActivitiesModal";
 import BadgesModal from "./Modals/BadgesModal";
@@ -197,7 +198,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       const data = await response.json();
 
       const newDataAxis = {} as { [key: string]: number[] };
-      for(let i = 0; i < displayEvents.length; i++) {
+      for (let i = 0; i < displayEvents.length; i++) {
         // get time spent for each event for plotting
         let event = displayEvents[i];
         let value = data[event];
@@ -342,7 +343,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
           </div>
         );
       case "playComputer":
-        return <div id="inventory-content-computer" className="inventory-content active-content"><h2>Play with Computer</h2><p>This is the content for the Play with Computer tab.</p></div>;
+        return <div id="inventory-content-computer" className="inventory-content active-content"> <PlayComputer/> </div>;
       case "recordings":
         return <div id="inventory-content-recordings" className="inventory-content active-content"><h2>Recordings</h2><p>This is the content for the Recordings tab.</p></div>;
       default:
@@ -430,24 +431,24 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
             <ul>
               {tabKeys.map((tab) => {
                 // Map tab names to icon names (prodev -> learning, mathLessons -> learning)
-                const iconName = tab === "prodev" 
-                  ? "learningIcon" 
-                  : tab === "mathLessons"
+                const iconName = tab === "prodev"
                   ? "learningIcon"
-                  : `${tab}Icon`;
-                
+                  : tab === "mathLessons"
+                    ? "learningIcon"
+                    : `${tab}Icon`;
+
                 // Create display name for the tab
                 const displayName =
                   tab === "chessLessons"
                     ? "Chess Lessons"
                     : tab === "mathLessons"
-                    ? "Math Lessons"
-                    : tab === "playComputer"
-                    ? "Play with Computer"
-                    : tab === "prodev"
-                    ? "Learning"
-                    : tab.charAt(0).toUpperCase() + tab.slice(1);
-                
+                      ? "Math Lessons"
+                      : tab === "playComputer"
+                        ? "Play with Computer"
+                        : tab === "prodev"
+                          ? "Learning"
+                          : tab.charAt(0).toUpperCase() + tab.slice(1);
+
                 return (
                   <div
                     key={tab}
