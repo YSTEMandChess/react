@@ -1,0 +1,152 @@
+/*! chessboard.js v1.0.0 | (c) 2019 Chris Oakman | MIT License chessboardjs.com/license */
+
+.clearfix-7da63 {
+  clear: both;
+}
+
+.board-b72b1 {
+  border: 2px solid #404040;
+  box-sizing: content-box;
+}
+
+.square-55d63 {
+  float: left;
+  position: relative;
+
+  /* disable any native browser highlighting */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.white-1e1d7 {
+  background-color: #f0d9b5;
+  color: #b58863;
+}
+
+.black-3c85d {
+  background-color: #b58863;
+  color: #f0d9b5;
+}
+
+.highlight1-32417,
+.highlight2-9c5d2 {
+  box-shadow: inset 0 0 3px 3px rgba(255, 251, 0, 0.75);
+}
+
+.notation-322f9 {
+  cursor: default;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  position: absolute;
+  font-weight: bold;
+}
+
+.alpha-d2270 {
+  bottom: 1px;
+  right: 3px;
+}
+
+.numeric-fc462 {
+  top: 2px;
+  left: 2px;
+}
+
+.hightlight-red {
+  color: red;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  50% { transform: translateX(10px); }
+  75% { transform: translateX(-10px); }
+  100% { transform: translateX(0); }
+}
+
+.shake {
+  animation: shake 0.4s ease;
+}
+
+
+/* Fix chessboardjsx Black Piece Rendering Bug */
+
+/* Force black rooks to have black fill */
+.chessboard-wrapper [data-testid^="bR"] svg g,
+.chessboard-wrapper [data-testid^="bN"] svg g,
+.chessboard-wrapper [data-testid^="bB"] svg g,
+.chessboard-wrapper [data-testid^="bQ"] svg g,
+.chessboard-wrapper [data-testid^="bK"] svg g,
+.chessboard-wrapper [data-testid^="bP"] svg g {
+  fill: #000000 !important;
+}
+/* Handle pieces that start with fill:none */
+.chessboard-wrapper svg g[style^="fill: none"] {
+  fill: #000000 !important;
+}
+
+
+.chessboard-wrapper {
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Prevent piece magnification during drag */
+.chessboard-wrapper img[data-piece] {
+  cursor: grab;
+  transition: none !important;
+  transform: none !important;
+}
+
+.chessboard-wrapper img[data-piece]:active {
+  cursor: grabbing;
+  /* Keep original size - don't scale */
+  transform: scale(1) !important;
+  opacity: 0.8;
+  z-index: 1000;
+}
+
+/* Tablet/Large Mobile Responsive */
+@media screen and (max-width: 1024px) {
+  .board-b72b1 {
+    box-sizing: border-box !important;
+    border-width: 1px !important;
+  }
+
+  .notation-322f9 {
+    font-size: 10px;
+  }
+
+  .square-55d63 {
+    box-sizing: border-box;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .notation-322f9 {
+    font-size: 9px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .notation-322f9 {
+    font-size: 8px;
+  }
+  
+  .alpha-d2270 {
+    right: 1px;
+    bottom: 0px;
+  }
+  
+  .numeric-fc462 {
+    left: 1px;
+    top: 1px;
+  }
+}

@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      # middlewareNode
+      - name: Install dependencies (middlewareNode)
+        run: npm ci
+        working-directory: ./middlewareNode
+
+      - name: Build middlewareNode
+        run: npm run build --if-present
+        working-directory: ./middlewareNode
+
+      # chessServer
+      - name: Install dependencies (chessServer)
+        run: npm ci
+        working-directory: ./chessServer
+
+      - name: Build chessServer
+        run: npm run build --if-present
+        working-directory: ./chessServer
+
+      - name: Test chessServer
+        run: npm test
+        working-directory: ./chessServer
+
+      # stockfishServer
+      - name: Install dependencies (stockfishServer)
+        run: npm ci
+        working-directory: ./stockfishServer
+
+      - name: Build stockfishServer
+        run: npm run build --if-present
+        working-directory: ./stockfishServer
+
+      - name: Test stockfishServer
+        run: npm test
+        working-directory: ./stockfishServer
+
+      # react frontend
+      - name: Install dependencies (react frontend)
+        run: npm ci
+        working-directory: ./react-ystemandchess
+
+      - name: Create environment file
+        run: |
+          mkdir -p src/core/environments
+          cat <<EOF > src/core/environments/environment.ts
+          export const environment = {
+            production: false,
+            agora: {
+              appId: '${{ secrets.APP_ID }}',
+            },
+            email: {
+              user: '${{ secrets.EMAIL_USER || '' }}',
+              pass: '${{ secrets.EMAIL_PASS || '' }}'
+            },
+            urls: {
+              middlewareURL: '${{ secrets.MIDDLEWARE_URL }}',
+              stockFishURL: '${{ secrets.STOCKFISH_URL }}',
+              chessServer: '${{ secrets.CHESS_SERVER }}',
+            },
+          };
+          EOF
+        working-directory: ./react-ystemandchess
+
+      - name: Build react-ystemandchess
+        run: CI=false npm run build --if-present
+        working-directory: ./react-ystemandchess
+
+      - name: Test react-ystemandchess
+        run: npm test
+        working-directory: ./react-ystemandchess

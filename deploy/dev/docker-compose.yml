@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  apache:
+    image: httpd:2.4
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/dev/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+    depends_on:
+      - react-app
+      - middlewareNode
+      - chessServer
+      - stockfishServer
+
+  react-app:
+    build: ../../react-ystemandchess
+    container_name: react-app
+    expose:
+      - "3000"
+    environment:
+      - REACT_APP_CHESS_SERVER_URL=http://localhost:3001
+      - REACT_APP_MIDDLEWARE_URL=http://localhost:8000
+      - REACT_APP_STOCKFISH_URL=http://localhost:8080
+
+  middlewareNode:
+    build: ../../middlewareNode
+    container_name: middlewarenode
+    expose:
+      - "8000"
+    environment:
+      - PORT=8000
+
+  chessServer:
+    build: ../../chessServer
+    container_name: chessserver
+    expose:
+      - "3001"
+    environment:
+      - PORT=3001
+
+  stockfishServer:
+    build: ../../stockfishServer
+    container_name: stockfishserver
+    expose:
+      - "9324"
+    environment:
+      - PORT=9324
+
+# Usage: docker-compose up --build
+# Access at: http://localhost

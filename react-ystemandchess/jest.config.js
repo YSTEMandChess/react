@@ -6,9 +6,11 @@ module.exports = {
     '\\.(css|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif)$': '<rootDir>/__mocks__/fileMock.js',
     '\\.svg$': '<rootDir>/__mocks__/svgrMock.js',
+    '^react-cookie$': '<rootDir>/node_modules/react-cookie',
+    '^socket.io-client$': 'socket.io-client/dist/socket.io.js',
   },
   testEnvironment: 'jsdom',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  setupFilesAfterEnv: ['@testing-library/jest-dom', '<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['@testing-library/jest-dom'],
   moduleDirectories: ['node_modules', 'src'],
 };
