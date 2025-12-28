@@ -9,6 +9,9 @@ export interface Move {
   piece?: string;
   captured?: string;
   flags?: string;
+  computerMove?: boolean;
+  username?: string;
+  credentials?: string;
 }
 
 export interface GameConfig {

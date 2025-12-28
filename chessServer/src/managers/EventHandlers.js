@@ -45,12 +45,14 @@ const registerSocketHandlers = (socket, io) => {
     socket.on("newPuzzle", (msg) => {
         try {
             const parsed = JSON.parse(msg);
+            console.log('data',parsed, msg);
             // create the new puzzle
             gameManager.createOrJoinPuzzle({
                 student: parsed.student,
                 mentor: parsed.mentor,
                 role: parsed.role,
-                socketId: socket.id
+                socketId: socket.id,
+                credentials: parsed.credentials,
             }, io);
         }
         catch (err) {
@@ -63,16 +65,58 @@ const registerSocketHandlers = (socket, io) => {
      * Handles player move request
      * Expected payload: { from, to }
      */
-    socket.on("move", (msg) => {
+    socket.on("move", async (msg) => {
         try {
-            const { from, to } = JSON.parse(msg);
-            const result = gameManager.makeMove(socket.id, from, to);
-            gameManager.broadcastBoardState(result, io);
+            const { from, to, computerMove, username, credentials } = JSON.parse(msg);
+            const res = await gameManager.makeMove(socket.id, from, to);
+            const state = res.result;
+            gameManager.broadcastBoardState(res.result, io);
+            console.log('Move: ', res);
+            if(!computerMove) {
+                const activityEvents = res.activityEvents;   
+                if (activityEvents && activityEvents.length > 0) {
+                    const studentId = state.studentId;   
+                    const payload = {
+                        activities: activityEvents, 
+                        lastMove: { from, to, san: state.move?.san }
+                    };
+                    console.log('Payload', payload);
+                    const studentSocket = io.sockets.sockets.get(studentId);
+                    //console.log('student socket', studentSocket);
+                    if (studentSocket) {
+                        try {
+                            console.log('route:', `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`);
+                            const response = await fetch(`${process.env.MIDDLEWARE_URL}/activities/${username}/activity`, {
+                                method: "PUT",
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authentication' : `Bearer ${credentials}`,
+                                },
+                                body: JSON.stringify({
+                                    activityName: payload.activities[0].name,
+                                })
+                            });
+                            console.log('response',response);
+                            socket.emit("completeActivity");
+                        } catch (e) {
+                            console.log('Error: ', e);                            
+                        }
+                    }
+                }
+
+            }
+
+            /*
+
+            */
         }
         catch (err) {
             socket.emit("error", err.message);
-            console.log("move error")
+            console.log('error thrown', err)
         }
+    });
+    socket.on("completeActivity", () => {
+        console.log('activity completed');
     });
 
     /**

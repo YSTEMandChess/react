@@ -73,7 +73,7 @@ class GameManager {
      * @param {Object} param0 - Contains student, mentor, role, socketId
      * @returns {Object} Game object, assigned color, and new game status
      */
-    createOrJoinPuzzle({ student, mentor, role, socketId }, io) {
+    createOrJoinPuzzle({ student, mentor, role, socketId, credentials }, io) {
         let game = this.ongoingGames.find(
             (g) => g.student.username === student || g.mentor.username === mentor
         );
@@ -131,7 +131,8 @@ class GameManager {
             student: {
                 username: student,
                 id: role === "student" ? socketId : null,
-                color: studentColor
+                color: studentColor,
+                credentials: credentials,
             },
             mentor: {
                 username: mentor,
@@ -170,8 +171,10 @@ class GameManager {
         }
 
         const board = game.boardState;
-
-        const moveResult = board.move({ from: moveFrom, to: moveTo });
+        const move = {from: moveFrom, to: moveTo};
+        //console.log(move, typeof(move), typeof(move)==='object');
+        const moveResult = board.move(move);
+        console.log(moveResult);
 
         if (!moveResult) {
             throw new Error("Invalid move!");
@@ -180,11 +183,53 @@ class GameManager {
         // Save board state
         game.pastStates.push(board.fen())
 
-        return {
-            boardState: board.fen(),
-            move: moveResult,
-            studentId: game.student.id,
-            mentorId: game.mentor.id
+        const flags = moveResult.flags || ""; // e.g., 'c' capture, 'k'/'q' castle, 'e' en passant, 'p' promotion
+        const activityEvents = [];
+
+        const captureMap = {
+            q: "captureQueen",
+            r: "captureRook",
+            n: "captureKnight",
+            b: "captureBishop",
+            p: "capturePawn"
+        };
+
+        // Capture (including en passant)
+        if (flags.includes("c") || flags.includes("e")) {
+            const capLetter = moveResult.captured; // 'q','r','n','b','p'
+            const name = capLetter ? captureMap[capLetter] : null;
+            if (name) {
+            activityEvents.push({
+                name,
+                meta: {
+                from: moveResult.from,
+                to: moveResult.to,
+                san: moveResult.san
+                },
+                at: Date.now()
+            });
+            }
+        }
+
+        // Castling
+        if (flags.includes("k") || flags.includes("q")) {
+            activityEvents.push({
+            name: "performCastle",
+            meta: { san: moveResult.san },
+            at: Date.now()
+            });
+        }
+        //console.log(activityEvents);
+        //console.log('student info',game.student);
+        return { 
+                result: {
+                            boardState: board.fen(),
+                            move: moveResult,
+                            studentId: game.student.id,
+                            mentorId: game.mentor.id,
+                            studentUsername: game.student.username,
+                        },
+                activityEvents: activityEvents
         };
     }
 
