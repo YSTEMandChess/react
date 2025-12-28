@@ -72,7 +72,7 @@ const registerSocketHandlers = (socket, io) => {
             const state = res.result;
             gameManager.broadcastBoardState(res.result, io);
             console.log('Move: ', res);
-            if(!computerMove) {
+            if(!computerMove && credentials) {
                 const activityEvents = res.activityEvents;   
                 if (activityEvents && activityEvents.length > 0) {
                     const studentId = state.studentId;   
