@@ -3,6 +3,7 @@ const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const passport = require("passport");
 const config = require("config");
+const users = require("../models/users.js")
 
 /**
  * Serializes user for session storage
