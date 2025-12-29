@@ -24,9 +24,9 @@ app.use(express.json({ extended: false }));
 // Configure session middleware
 app.use(
   session({
-    secret: 'your_secret_key_here', // Use a long and random string for better security
+    secret: "your_secret_key_here", // Use a long and random string for better security
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
   })
 );
 
