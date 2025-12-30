@@ -247,6 +247,9 @@ const PlayComputer: React.FC = () => {
 
   // Handle new game with settings
   const newGame = useCallback(() => {
+    if (socketRef.current && sessionStartedRef.current) {
+      socketRef.current.emit('end-session');
+    }
     resetGame();
     setShowSettings(true);
     setSessionStarted(false);

@@ -35,6 +35,16 @@ const initializeSocket = (socket) => {
     }
   });
 
+  // End the current session without disconnecting the socket
+  socket.on("end-session", () => {
+    try {
+      stockfishManager.deleteSession(socket.id);
+      socket.emit("session-ended", { success: true });
+    } catch (err) {
+      console.error("Error ending session:", err);
+    }
+  });
+
   // Clean up session when client disconnects
   socket.on("disconnect", () => {
     stockfishManager.deleteSession(socket.id);
