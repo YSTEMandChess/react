@@ -55,7 +55,7 @@ const PlayComputer: React.FC = () => {
 
   // Initialize socket connection
   useEffect(() => {
-    const socket = io(environment.urls.stockfishServerURL || 'http://localhost:8080', {
+    const socket = io(environment.urls.stockfishServerURL, {
       transports: ['websocket'],
       reconnection: true,
     });
