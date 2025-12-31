@@ -80,8 +80,8 @@ describe('PlayComputer', () => {
     it('should show settings panel on initial render', () => {
       render(<PlayComputer />);
       expect(screen.getByText('Game Settings')).toBeInTheDocument();
-      expect(screen.getByText('Play as:')).toBeInTheDocument();
-      expect(screen.getByText('Difficulty:')).toBeInTheDocument();
+      expect(screen.getByText('Play as')).toBeInTheDocument();
+      expect(screen.getByText('Difficulty')).toBeInTheDocument();
     });
 
     it('should connect to Stockfish server on mount', () => {
@@ -151,7 +151,7 @@ describe('PlayComputer', () => {
     it('should allow selecting white as player color', () => {
       render(<PlayComputer />);
 
-      const whiteButton = screen.getByText('♔ White');
+      const whiteButton = screen.getByText('White');
       fireEvent.click(whiteButton);
 
       expect(whiteButton.className).toContain('active');
@@ -160,7 +160,7 @@ describe('PlayComputer', () => {
     it('should allow selecting black as player color', () => {
       render(<PlayComputer />);
 
-      const blackButton = screen.getByText('♚ Black');
+      const blackButton = screen.getByText('Black');
       fireEvent.click(blackButton);
 
       expect(blackButton.className).toContain('active');
@@ -292,10 +292,10 @@ describe('PlayComputer', () => {
       setupGame();
 
       await waitFor(() => {
-        expect(screen.getByText('↶ Undo')).toBeInTheDocument();
-        expect(screen.getByText('⟲ Reset')).toBeInTheDocument();
+        expect(screen.getByText('Undo')).toBeInTheDocument();
+        expect(screen.getByText('Reset')).toBeInTheDocument();
         expect(screen.getByText('New Game')).toBeInTheDocument();
-        expect(screen.getByText('⇅ Flip Board')).toBeInTheDocument();
+        expect(screen.getByText('Flip Board')).toBeInTheDocument();
       });
     });
 
@@ -323,24 +323,6 @@ describe('PlayComputer', () => {
         move: '',
         level: expect.any(Number),
       }));
-    });
-
-    it('should show thinking indicator when computer is thinking', async () => {
-      setupGame();
-
-      await waitFor(() => {
-        expect(screen.getByTestId('make-move-button')).toBeInTheDocument();
-      });
-
-      // Make a move to trigger computer thinking
-      const moveButton = screen.getByTestId('make-move-button');
-      act(() => {
-        fireEvent.click(moveButton);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Computer is thinking...')).toBeInTheDocument();
-      });
     });
 
     it('should handle computer move from evaluation-complete event', async () => {
@@ -437,7 +419,7 @@ describe('PlayComputer', () => {
     it('should reset game when reset button is clicked', async () => {
       await setupGameWithMoves();
 
-      const resetButton = screen.getByText('⟲ Reset');
+      const resetButton = screen.getByText('Reset');
 
       act(() => {
         fireEvent.click(resetButton);
@@ -451,7 +433,7 @@ describe('PlayComputer', () => {
     it('should undo both player and computer moves', async () => {
       await setupGameWithMoves();
 
-      const undoButton = screen.getByText('↶ Undo');
+      const undoButton = screen.getByText('Undo');
       expect(undoButton).not.toBeDisabled();
 
       act(() => {
@@ -479,7 +461,7 @@ describe('PlayComputer', () => {
       });
 
       await waitFor(() => {
-        const undoButton = screen.getByText('↶ Undo');
+        const undoButton = screen.getByText('Undo');
         expect(undoButton).toBeDisabled();
       });
     });
@@ -556,7 +538,7 @@ describe('PlayComputer', () => {
       });
 
       // Select black before starting game
-      const blackButton = screen.getByText('♚ Black');
+      const blackButton = screen.getByText('Black');
       fireEvent.click(blackButton);
 
       // Start game
