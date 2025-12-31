@@ -15,6 +15,7 @@ const PlayComputer: React.FC = () => {
   const playerColorRef = useRef<'white' | 'black'>('white');
   const sessionStartedRef = useRef<boolean>(false);
   const difficultyRef = useRef<Difficulty>(10);
+  const movesContainerRef = useRef<HTMLDivElement>(null);
   
   const [fen, setFen] = useState<string>("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   const [playerColor, setPlayerColor] = useState<'white' | 'black'>('white');
@@ -26,6 +27,8 @@ const PlayComputer: React.FC = () => {
   const [gameStatus, setGameStatus] = useState<string>("");
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
   const [showSettings, setShowSettings] = useState(true);
+  const [showGameEndModal, setShowGameEndModal] = useState(false);
+  const [gameEndMessage, setGameEndMessage] = useState('');
 
   // Update refs whenever state changes
   useEffect(() => {
@@ -40,7 +43,12 @@ const PlayComputer: React.FC = () => {
     difficultyRef.current = difficulty;
   }, [difficulty]);
 
-  // Request computer move from Stockfish
+  useEffect(() => {
+    if (movesContainerRef.current) {
+      movesContainerRef.current.scrollTop = movesContainerRef.current.scrollHeight;
+    }
+  }, [moveHistory]);
+
   const requestComputerMove = useCallback((currentFen: string) => {
     if (!socketRef.current || !sessionStartedRef.current) return;
 
@@ -98,7 +106,7 @@ const PlayComputer: React.FC = () => {
             const updatedFen = gameRef.current.fen();
             setFen(updatedFen);
             setHighlightSquares([moveResult.from, moveResult.to]);
-            setMoveHistory(prev => [...prev, `${moveResult.from}-${moveResult.to}`]);
+            setMoveHistory(prev => [...prev, `${moveResult.from} -> ${moveResult.to}`]);
             
             // Update chessboard
             if (chessBoardRef.current) {
@@ -161,7 +169,7 @@ const PlayComputer: React.FC = () => {
       const newFen = gameRef.current.fen();
       setFen(newFen);
       setHighlightSquares([move.from, move.to]);
-      setMoveHistory(prev => [...prev, `${move.from}-${move.to}`]);
+      setMoveHistory(prev => [...prev, `${move.from} -> ${move.to}`]);
 
       // Check if game ended
       if (checkGameStatus()) {
@@ -179,39 +187,44 @@ const PlayComputer: React.FC = () => {
     }
   }, [requestComputerMove]);
 
-  // Check game status (checkmate, stalemate, draw)
   const checkGameStatus = useCallback((): boolean => {
     const game = gameRef.current;
 
     if (game.isCheckmate()) {
       const winner = game.turn() === 'w' ? 'Black' : 'White';
-      setGameStatus(`Checkmate! ${winner} wins!`);
+      setGameEndMessage(`Checkmate! ${winner} wins!`);
+      setShowGameEndModal(true);
       return true;
     }
 
     if (game.isDraw()) {
-      setGameStatus('Draw!');
+      setGameEndMessage('Game over: Draw!');
+      setShowGameEndModal(true);
       return true;
     }
 
     if (game.isStalemate()) {
-      setGameStatus('Stalemate! Draw!');
-      return true;
-    }
+    setGameEndMessage('Stalemate! Draw!');
+    setShowGameEndModal(true);
+    return true;
+  }
 
     if (game.isThreefoldRepetition()) {
-      setGameStatus('Draw by threefold repetition!');
+      setGameEndMessage('Draw by threefold repetition!');
+      setShowGameEndModal(true);
       return true;
     }
 
     if (game.isInsufficientMaterial()) {
-      setGameStatus('Draw by insufficient material!');
+      setGameEndMessage('Draw by insufficient material!');
+      setShowGameEndModal(true);
       return true;
     }
 
     if (game.isCheck()) {
-      setGameStatus('Check!');
-      setTimeout(() => setGameStatus(''), 2000);
+      const sideInCheck = game.turn() === 'w' ? 'White' : 'Black';
+      setGameStatus(`${sideInCheck} is in Check!`);
+      setTimeout(() => setGameStatus(''), 5000);
     } else {
       setGameStatus('');
     }
@@ -219,7 +232,6 @@ const PlayComputer: React.FC = () => {
     return false;
   }, []);
 
-  // Reset game
   const resetGame = useCallback(() => {
     gameRef.current.reset();
     const startFen = gameRef.current.fen();
@@ -245,7 +257,6 @@ const PlayComputer: React.FC = () => {
     }
   }, [requestComputerMove]);
 
-  // Handle new game with settings
   const newGame = useCallback(() => {
     if (socketRef.current && sessionStartedRef.current) {
       socketRef.current.emit('end-session');
@@ -285,12 +296,6 @@ const PlayComputer: React.FC = () => {
     <div className={styles.playComputerContainer}>
       <div className={styles.header}>
         <h1>Play vs Computer</h1>
-        {!showSettings && (
-          <div className={styles.statusBar}>
-            {isThinking && <span className={styles.thinking}>Computer is thinking...</span>}
-            {gameStatus && <span className={styles.gameStatus}>{gameStatus}</span>}
-          </div>
-        )}
       </div>
 
       {showSettings ? (
@@ -298,25 +303,25 @@ const PlayComputer: React.FC = () => {
           <h2>Game Settings</h2>
           
           <div className={styles.setting}>
-            <label>Play as:</label>
+            <label>Play as</label>
             <div className={styles.colorButtons}>
               <button
                 className={playerColor === 'white' ? styles.active : ''}
                 onClick={() => setPlayerColor('white')}
               >
-                ♔ White
+                White
               </button>
               <button
                 className={playerColor === 'black' ? styles.active : ''}
                 onClick={() => setPlayerColor('black')}
               >
-                ♚ Black
+                Black
               </button>
             </div>
           </div>
 
           <div className={styles.setting}>
-            <label>Difficulty:</label>
+            <label>Difficulty</label>
             <div className={styles.difficultyButtons}>
               <button
                 className={difficulty === 1 ? styles.active : ''}
@@ -363,17 +368,25 @@ const PlayComputer: React.FC = () => {
         <>
           <div className={styles.controls}>
             <button onClick={undoMove} disabled={moveHistory.length < 2 || isThinking}>
-              ↶ Undo
+              Undo
             </button>
             <button onClick={resetGame} disabled={isThinking}>
-              ⟲ Reset
+              Reset
             </button>
             <button onClick={newGame}>
               New Game
             </button>
             <button onClick={() => chessBoardRef.current?.flip()}>
-              ⇅ Flip Board
+              Flip Board
             </button>
+          </div>
+
+          <div className={styles.statusBarFixed}>
+            {gameStatus && (
+              <div className={`${styles.statusMessage} ${styles.check}`}>
+                {gameStatus}
+              </div>
+            )}
           </div>
 
           <div className={styles.chessboardContainer}>
@@ -390,15 +403,46 @@ const PlayComputer: React.FC = () => {
 
           <div className={styles.moveHistory}>
             <h3>Move History</h3>
-            <div className={styles.moves}>
-              {moveHistory.map((move, idx) => (
-                <span key={idx} className={styles.move}>
-                  {Math.floor(idx / 2) + 1}. {move}
-                </span>
-              ))}
+            <div className={styles.moves} ref={movesContainerRef}>
+              {moveHistory.reduce((acc: JSX.Element[], move, idx) => {
+                const moveNumber = Math.floor(idx / 2) + 1;
+                const isWhiteMove = idx % 2 === 0;
+                
+                if (isWhiteMove) {
+                  acc.push(
+                    <div key={idx} className={styles.movePair}>
+                      <span className={styles.moveNumber}>{moveNumber}.</span>
+                      <span className={styles.whiteMove}>{move}</span>
+                      {moveHistory[idx + 1] && (
+                        <span className={styles.blackMove}>{moveHistory[idx + 1]}</span>
+                      )}
+                    </div>
+                  );
+                }
+                return acc;
+              }, [])}
             </div>
           </div>
         </>
+      )}
+
+      {showGameEndModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowGameEndModal(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h2>{gameEndMessage}</h2>
+            <div className={styles.modalButtons}>
+              <button onClick={() => {setShowGameEndModal(false); newGame()}} className={styles.primaryButton}>
+                New Game
+              </button>
+              <button 
+                onClick={() => setShowGameEndModal(false)}
+                className={styles.secondaryButton}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
