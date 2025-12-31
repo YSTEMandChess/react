@@ -15,6 +15,7 @@ switch (process.platform) {
       break;
     case 'linux':
       enginePath = path.join(__dirname, "..", "bin", "stockfish_11_linux");
+      break;
     default:
       throw new Error(`Unsupported platform: ${process.platform}`);
 }
