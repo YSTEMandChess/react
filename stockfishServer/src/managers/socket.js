@@ -6,7 +6,7 @@ const stockfishManager = new StockfishManager();
  * @param {Server} io - Socket.IO server instance
  * @param {Socket} socket - Connected socket instance
  */
-const initializeSocket = (io, socket) => {
+const initializeSocket = (socket) => {
   // Start a new Stockfish session for the client
   socket.on("start-session", ({ sessionType, fen }) => {
     try {
@@ -32,6 +32,16 @@ const initializeSocket = (io, socket) => {
       stockfishManager.evaluateFen(socket.id, fen, move, level);
     } catch (err) {
       socket.emit("evaluation-error", { error: err.message });
+    }
+  });
+
+  // End the current session without disconnecting the socket
+  socket.on("end-session", () => {
+    try {
+      stockfishManager.deleteSession(socket.id);
+      socket.emit("session-ended", { success: true });
+    } catch (err) {
+      console.error("Error ending session:", err);
     }
   });
 

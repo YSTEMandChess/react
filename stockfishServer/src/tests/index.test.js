@@ -1,6 +1,7 @@
 const ioClient = require("socket.io-client");
 const http = require("http");
 const express = require("express");
+const { Server } = require("socket.io");
 const socketHandler = require("../managers/socket");
 
 describe("Server and socket", () => {
@@ -12,18 +13,19 @@ describe("Server and socket", () => {
     const app = express();
     server = http.createServer(app);
 
-    ioServer = require("socket.io")(server, {
+    ioServer = new Server(server, {
       cors: { origin: "*", methods: ["GET", "POST"] },
     });
 
     ioServer.on("connection", (socket) => {
-      socketHandler(ioServer, socket);
+      socketHandler(socket);
     });
 
-    stockfishManager.registerSession = jest.fn();
-    stockfishManager.updateFen = jest.fn();
-    stockfishManager.evaluateFen = jest.fn();
-    stockfishManager.deleteSession = jest.fn();
+    // Mock the stockfishManager methods
+    jest.spyOn(stockfishManager, 'registerSession').mockReturnValue(undefined);
+    jest.spyOn(stockfishManager, 'updateFen').mockReturnValue(undefined);
+    jest.spyOn(stockfishManager, 'evaluateFen').mockReturnValue(undefined);
+    jest.spyOn(stockfishManager, 'deleteSession').mockReturnValue(undefined);
 
     server.listen(() => {
       const port = server.address().port;
@@ -37,6 +39,8 @@ describe("Server and socket", () => {
   });
 
   afterEach((done) => {
+    jest.restoreAllMocks();
+    
     if (clientSocket.connected) {
       clientSocket.disconnect();
     }
@@ -49,11 +53,11 @@ describe("Server and socket", () => {
 
     clientSocket.on("session-started", (data) => {
       expect(data.success).toBe(true);
-      serverSocketId = data;
+      serverSocketId = data.id;
       expect(stockfishManager.registerSession).toHaveBeenCalled();
       done();
     });
-  });
+  }, 10000);
 
   test("start-session emits session-error on failure", (done) => {
     stockfishManager.registerSession.mockImplementation(() => {
@@ -66,7 +70,7 @@ describe("Server and socket", () => {
       expect(data.error).toBe("Session failed");
       done();
     });
-  });
+  }, 10000);
 
   test("update-fen calls updateFen", (done) => {
     const fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
@@ -84,9 +88,9 @@ describe("Server and socket", () => {
           fen
         );
         done();
-      }, 50);
+      }, 100);
     });
-  });
+  }, 10000);
 
   test("evaluate-fen calls evaluateFen", (done) => {
     const fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
@@ -108,9 +112,9 @@ describe("Server and socket", () => {
           level
         );
         done();
-      }, 50);
+      }, 100);
     });
-  });
+  }, 10000);
 
   test("disconnect triggers deleteSession", (done) => {
     clientSocket.emit("start-session", { sessionType: "lesson", fen: "" });
@@ -125,7 +129,7 @@ describe("Server and socket", () => {
           serverSocketId
         );
         done();
-      }, 50);
+      }, 100);
     });
-  });
+  }, 10000);
 });

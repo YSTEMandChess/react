@@ -129,12 +129,10 @@ export const useChessSocket = ({
 
     // on connect
     socket.on("connect", () => {
-      console.log("Connected to chess server - socket id:", socket.id);
       setConnected(true);
     });
 
     socket.on("disconnect", (reason: any) => {
-      console.log("Disconnected from chess server", reason);
       setConnected(false);
     });
 
@@ -350,7 +348,6 @@ export const useChessSocket = ({
     currentFenRef.current = normalizedFen;
     
     const data = { state: normalizedFen };
-    console.log("Setting game state (normalized):", normalizedFen);
     socketRef.current?.emit("setstate", JSON.stringify(data));
   }, []);
 
@@ -363,7 +360,6 @@ export const useChessSocket = ({
       currentFenRef.current = normalizedFen;
       
       const data = { state: normalizedFen, color, hints: hints || "" };
-      console.log("Setting game state with color (normalized):", data);
       socketRef.current?.emit("setstateColor", JSON.stringify(data));
     },
     []

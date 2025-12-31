@@ -402,6 +402,12 @@ const NavBar = () => {
         Learn
       </Link>
       <Link
+        to="/play"
+        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+      >
+        Play
+      </Link>
+      <Link
         to="/lessons-selection"
         className="text-gray-700 hover:text-black text-lg px-3 py-1"
       >

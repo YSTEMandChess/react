@@ -1,6 +1,6 @@
 declare module "chessboardjsx" {
   import { Component } from "react";
-  export type ChessMode = "lesson" | "puzzle" | "multiplayer";
+  export type ChessMode = "lesson" | "puzzle" | "multiplayer" | "engine";
 
   interface ChessboardProps {
     mode?: ChessMode;
