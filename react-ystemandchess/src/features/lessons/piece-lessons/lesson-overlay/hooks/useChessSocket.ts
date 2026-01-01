@@ -373,6 +373,9 @@ export const useChessSocket = ({
       from: move.from,
       to: move.to,
       promotion: move.promotion,
+      computerMove: move.computerMove,
+      username: move.username,
+      credentials: move.credentials,
     };
     console.log("Sending move:", data);
     socketRef.current?.emit("move", JSON.stringify(data));

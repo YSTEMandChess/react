@@ -43,8 +43,8 @@ async function getUserId(db, username) {
         { username },
     );
     if(!currentUser) {
-            return res.status(404).json({error: "User not found!"});
-        }
+        return;
+    }
     const userId = currentUser._id;
     return userId;
 }
@@ -53,14 +53,14 @@ async function getUserId(db, username) {
  * GET /activities
  * Retrieves all daily activities for a user
  */
-router.get("/", async (req, res) => {
+router.get("/:username", async (req, res) => {
     try {
         const db = await getDb();
         const { username } = req.params;
-        if(!username) {
-            return res.status(401).json({error:'Authentication required'});
+        const userId = await getUserId(db, username);
+        if(!userId) {
+            return res.status(404).json({error:'User not found'});
         }
-        const userId = getUserId(db, username);
         const activities = db.collection("activities");
         const userActivities = await activities.findOne(
             { userId }, { projection: {activities: 1, _id: 0}}
@@ -73,14 +73,14 @@ router.get("/", async (req, res) => {
     }
 })
 
-router.get("/dates", async (req, res) => {
+router.get("/:username/dates", async (req, res) => {
     try {
         const db = await getDb(); 
         const { username } = req.params;
-        if(!username) {
-            return res.status(401).json({error: "User not found"});
+        const userId = await getUserId(db, username);
+        if(!userId) {
+            return res.status(404).json({error: "User not found"});
         }
-        const userId = getUserId(db, username);
         const activities = db.collection("activities");
         const completedDates = await activities.findOne(
             { userId }, {projection: {_id: 0, completedDates: 1}}
@@ -93,45 +93,33 @@ router.get("/dates", async (req, res) => {
 });
 
 
-router.put("/activity/:activityName", async (req, res) => {
+router.put("/:username/activity", async (req, res) => {
     try {
         const db = await getDb();
-        const { username, activityName } = req.params;
-        if(!username) {
-            return res.status(401).json({error:'Authentication required'});
+        const { username } = req.params;
+        const { activityName } = req.body;
+        const userId = await getUserId(db, username);
+        if(!userId) {
+            return res.status(404).json({error:'User not found'});
         }
-        const userId = getUserId(db, username);
         const activities = db.collection("activities");
+        const activityIncomplete = await activities.findOne(
+            { userId, "activities.name": activityName }, 
+            { activities: {$elemMatch: { name: activityName }}, _id:0},
+        );
+        if(activityIncomplete) {
+            console.log('incomplete activity: ', activityName);
+        }
         await activities.updateOne(
             { userId, "activities.name": activityName },
             { $set: { "activities.$.completed": true } }
         );
-        return res.status(200);
+        return res.status(200).json({message:'success'});
     } catch (err) {
         console.error('Error updating activities: ', err);
         return res.status(500).json({error: 'Server error'});
     }
 })
 
-router.put("/activity/check", async (req, res) => {
-    try {
-        const db = await getDb();
-        const { username } = req.params;
-        const { moveData } = req.body;
-        if(!username) {
-            return res.status(401).json({error:'Authentication required'});
-        }
-        const userId = getUserId(db, username);
-        const activities = db.collection("activities");
-        const userActivities = await activities.findOne(
-            { userId }, { projection: {activities: 1, _id: 0}}
-        );
-        //compare move data with activities
-    }
-    catch (err) {
-        console.error('Error checking move: ', err);
-        res.status(500).json({error: 'Server error'});
-    }
-})
 
 module.exports = router;

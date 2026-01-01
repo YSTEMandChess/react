@@ -12,7 +12,7 @@
 
 const express = require("express");
 const { BADGE_CATALOG } = require("../badges/catalog");
-const { getEarned, awardIfEligible } = require("../Badges/service");
+const { getEarned, awardIfEligible } = require("../badges/service");
 
 const router = express.Router();
 

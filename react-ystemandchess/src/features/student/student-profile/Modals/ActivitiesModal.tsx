@@ -56,7 +56,6 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
           'Authorization': `Bearer ${cookies.login}`,
           'Content-Type': 'application/json',
         },
-        credentials: 'include'
       })
       const json = await response.json();
       const data = json.activities.activities;
@@ -110,12 +109,20 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
 
             {/* Stack of daily activity buttons. Activities are hard coded for now.*/}
             <div className="button-stack">
-              {activities.map((activity, idx) => (
-                <button className="activity-button" key={idx}>
-                  <span className="label">Daily Activity</span><br />
-                  <span className="action">{activity}</span>
-                </button>
-              ))}
+              {activities.map((activity, idx) => {
+                //Use activity.completed to change visual for complete or incomplete task
+                return (
+                  <button className="activity-button" key={idx}>
+                    <span className="label">Daily Activity</span><br />
+                    <span className="action">{activity.name}</span>
+                    {activity.completed ? <div>t</div> : <div>f</div>}
+
+                  </button>
+                  //check completed status, display conditional, then complete task in puzzles to check
+                )
+              }
+              
+              )}
             </div>
           </div>
         </div>

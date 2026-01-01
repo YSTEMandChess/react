@@ -42,8 +42,12 @@ const activityNameMap: Record<string, string> = {
  * @param {Array<Activity>} names - Array of activity objects
  * @returns {Array<string>} Array of display names for the activities
  */
-export const parseActivities = (names: Array<Activity>): Array<string> => {
-    const namesArray = names.map((activity) => activityNameMap[activity.name] || activity.name);
+export const parseActivities = (names: Array<Activity>): Array<Activity> => {
+    const namesArray = names.map((activity) => ({
+                name: activityNameMap[activity.name] || activity.name,
+                type: activity.type, 
+                completed: activity.completed,
+    }));
     return namesArray;
     // TODO: Consider making API call to fetch display names dynamically
 }

@@ -50,8 +50,8 @@ describe('GameManager', () => {
     game.mentor.id = 'socket2';
     const moveResult = gameManager.makeMove('socket1', 'e2', 'e4');
 
-    expect(moveResult.move.from).toBe('e2');
-    expect(moveResult.move.to).toBe('e4');
+    expect(moveResult.result.move.from).toBe('e2');
+    expect(moveResult.result.move.to).toBe('e4');
   });
 
   test('throws error for invalid move', () => {
