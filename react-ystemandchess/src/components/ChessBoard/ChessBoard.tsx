@@ -29,6 +29,7 @@ export interface ChessBoardRef {
   flip: () => void;
   undo: () => void;
   loadPosition: (fen: string) => void;
+  setPosition: (fen: string) => void;
   highlightMove: (from: string, to: string) => void;
   clearHighlights: () => void;
 }
@@ -144,6 +145,15 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         }
       },
 
+      setPosition: (newFen: string) => {
+        try {
+          gameRef.current.load(newFen);
+          setBoardPosition(newFen);
+        } catch (err) {
+          console.error("Failed to set position:", newFen, err);
+        }
+      },
+
       highlightMove: (from: string, to: string) => {
         const highlights = [from, to];
         setInternalHighlights(highlights);
@@ -207,7 +217,6 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
 
         if (!moveResult) {
           // Invalid move - shake animation and snapback
-          console.log("Invalid move:", move);
           setIsShaking(true);
           setTimeout(() => setIsShaking(false), 400);
           if (onInvalidMove) onInvalidMove();

@@ -307,7 +307,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   };
 
   const handleInvalidMove = () => {
-    console.log("Invalid move attempted");
   };
 
   // ============================================================================

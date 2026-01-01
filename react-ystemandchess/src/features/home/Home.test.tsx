@@ -33,16 +33,16 @@ it("renders join & subscribe", () => {
 });
 
 // checks correct navigation
-it("navigates to the lessons page when Get Started is clicked", () => {
+it("navigates to the play page when Get Started is clicked", () => {
     render(
         <MemoryRouter>
             <Home/>
         </MemoryRouter>
     );
-    // click on lesson start buttin
+    // click on get started button
     fireEvent.click(screen.getByText("Get Started!"));
-    // check if the page goes to /lessons
-    expect(mockedNavigate).toHaveBeenCalledWith("./lessons");
+    // check if the page goes to /play
+    expect(mockedNavigate).toHaveBeenCalledWith("./play");
 });
 
 // check if books are being rendered

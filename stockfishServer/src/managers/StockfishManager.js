@@ -1,19 +1,20 @@
 const { spawn } = require('child_process');
 const crypto = require("crypto");
 const { Chess } = require("chess.js");
+const path = require("path");
 
 // Determine the correct Stockfish binary path based on platform
 let enginePath;
 
 switch (process.platform) {
     case 'win32':
-      enginePath = "./bin/stockfish_11_win.exe";
+      enginePath = path.join(__dirname, "..", "bin", "stockfish_11_win.exe");
       break;
     case 'darwin':
-      enginePath = "./bin/stockfish_11_mac";
+      enginePath = path.join(__dirname, "..", "bin", "stockfish_11_mac");
       break;
     case 'linux':
-      enginePath = "./bin/stockfish_11_linux";
+      enginePath = path.join(__dirname, "..", "bin", "stockfish_11_linux");
       break;
     default:
       throw new Error(`Unsupported platform: ${process.platform}`);
