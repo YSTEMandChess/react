@@ -16,6 +16,11 @@ type Square = `${"a" | "b" | "c" | "d" | "e" | "f" | "g" | "h"}${
 type ChatMessage = {
   role: "user" | "assistant" | "move";
   content: string;
+  explanation?: {
+    moveIndicator?: "Best" | "Good" | "Inaccuracy" | "Mistake" | "Blunder";
+    Analysis?: string;
+    nextStepHint?: string;
+  };
 };
 
 const AITutor: React.FC = () => {
@@ -33,30 +38,47 @@ const AITutor: React.FC = () => {
     return moves.map((m) => `${m.from}${m.to}${m.promotion ?? ""}`).join(" ");
   }
 
+  function getMoveIndicatorStyles(
+    moveIndicator?: "Best" | "Good" | "Inaccuracy" | "Mistake" | "Blunder"
+  ) {
+    console.log(moveIndicator);
+    if (moveIndicator === "Best") {
+      return { background: "#ECFDF3", border: "#86EFAC", accent: "#166534" };
+    }
+    if (moveIndicator === "Good") {
+      return { background: "#F0FDF4", border: "#BBF7D0", accent: "#15803D" };
+    }
+    if (moveIndicator === "Inaccuracy") {
+      return { background: "#FFFBEB", border: "#FCD34D", accent: "#92400E" };
+    }
+    if (moveIndicator === "Mistake") {
+      return { background: "#FFF7ED", border: "#FDBA74", accent: "#9A3412" };
+    }
+    if (moveIndicator === "Blunder") {
+      return { background: "#FEF2F2", border: "#FCA5A5", accent: "#991B1B" };
+    }
+    return { background: "#EFF6FF", border: "#93C5FD", accent: "#1D4ED8" };
+  }
+
   async function sendMoveForAnalysis(
     fenBefore: string,
     fenAfter: string,
     moveUci: string,
     uciHistory: string
   ) {
-    
-
-    const response = await fetch(
-      `${environment.urls.chessServer}api/analyze`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "move",
-          fen_before: fenBefore,
-          fen_after: fenAfter,
-          move: moveUci,
-          uciHistory,
-          depth: 12,
-          chatHistory: chatMessages,
-        }),
-      }
-    );
+    const response = await fetch(`${environment.urls.chessServer}api/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "move",
+        fen_before: fenBefore,
+        fen_after: fenAfter,
+        move: moveUci,
+        uciHistory,
+        depth: 15,
+        chatHistory: chatMessages,
+      }),
+    });
 
     const data = await response.json();
 
@@ -64,18 +86,43 @@ const AITutor: React.FC = () => {
       console.error("Analysis error:", data.error);
       setChatMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `Error: ${data.error || "Analysis failed"}` },
+        {
+          role: "assistant",
+          content: `Error: ${data.error || "Analysis failed"}`,
+        },
       ]);
       return;
     }
 
+    let explanation: ChatMessage["explanation"] | undefined;
+    try {
+      if (typeof data.explanation === "string") {
+        explanation = JSON.parse(
+          data.explanation
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim()
+        );
+      } else if (data.explanation && typeof data.explanation === "object") {
+        explanation = data.explanation;
+      }
+    } catch (error) {
+      console.error("Failed to parse explanation:", error);
+    }
+    console.log(explanation)
+    applyCpuMove(data.bestMove);
+
     // append LLM explanation to chat
     setChatMessages((prev) => [
       ...prev,
-      { role: "assistant", content: data.explanation },
+      {
+        role: "assistant",
+        content: explanation?.Analysis ?? "Analysis ready.",
+        explanation,
+      },
     ]);
 
-    applyCpuMove(data.bestMove);
+    
   }
   //helper function
   function formatMoveText(color: "w" | "b", from: string, to: string) {
@@ -94,23 +141,20 @@ const AITutor: React.FC = () => {
 
     setChatMessages(newMessages);
 
-    const filteredChatHistory = newMessages.filter((m) => m.role !== "move");
+    
 
     setChatInput("");
 
-    const res = await fetch(
-      `${environment.urls.chessServer}api/analyze`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "question",
-          fen,
-          question: chatInput,
-          chatHistory: filteredChatHistory,
-        }),
-      }
-    );
+    const res = await fetch(`${environment.urls.chessServer}api/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "question",
+        fen,
+        question: chatInput,
+        chatHistory: newMessages,
+      }),
+    });
 
     const data = await res.json();
 
@@ -168,16 +212,16 @@ const AITutor: React.FC = () => {
     const move = game.move({ from, to, promotion });
     // Add move to chat
     setChatMessages((prev) => [
-    ...prev,
-    {
+      ...prev,
+      {
         role: "move",
         content: formatMoveText(move.color, move.from, move.to),
-    },
+      },
     ]);
 
     if (!move) {
-        console.error("Invalid CPU move:", uci);
-        return;
+      console.error("Invalid CPU move:", uci);
+      return;
     }
 
     // Update UI state
@@ -187,8 +231,7 @@ const AITutor: React.FC = () => {
     setFen(game.fen());
     setHistory(newHistory);
     setMoves(uciMoves);
-}
-
+  }
 
   return (
     <div
@@ -261,13 +304,60 @@ const AITutor: React.FC = () => {
                 >
                   ♟ MOVE: {m.content}
                 </div>
+              ) : m.role === "assistant" && m.explanation ? (
+                (() => {
+                  const tone = getMoveIndicatorStyles(
+                    m.explanation?.moveIndicator
+                  );
+                  return (
+                <div
+                  style={{
+                    maxWidth: "92%",
+                    alignSelf: "flex-start",
+                    background: tone.background,
+                    color: "#1F2937",
+                    border: `2px solid ${tone.border}`,
+                    borderRadius: 18,
+                    padding: "14px 16px",
+                    lineHeight: 1.5,
+                    boxShadow: "0 8px 18px rgba(0,0,0,0.08)",
+                    fontSize: 15,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      marginBottom: 10,
+                      fontSize: 16,
+                      color: tone.accent,
+                    }}
+                  >
+                    🧠 AI Tutor
+                  </div>
+
+                  <div>{m.explanation.Analysis ?? m.content}</div>
+
+                  {m.explanation.nextStepHint && (
+                    <div
+                      style={{
+                        marginTop: 8,
+                        fontSize: 12,
+                        color: tone.accent,
+                        opacity: 0.9,
+                      }}
+                    >
+                      ⭐ {m.explanation.nextStepHint}
+                    </div>
+                  )}
+                </div>
+                  );
+                })()
               ) : (
                 <div
                   style={{
                     maxWidth: "88%",
                     alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                    background:
-                      m.role === "user" ? "#1f2937" : "#ffffff",
+                    background: m.role === "user" ? "#1f2937" : "#ffffff",
                     color: m.role === "user" ? "#ffffff" : "#111827",
                     border:
                       m.role === "user"

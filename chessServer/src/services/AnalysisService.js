@@ -208,42 +208,76 @@ function buildPromptFromDoc({
   stockfish,
 }) {
   return [
-    "You are a chess coach. Explain the move in a clear, conversational, BIG-PICTURE way.",
-    "Do NOT invent moves, evaluations, or tactics. If data is missing, say it's not provided.",
+    "You are a chess ctutor. Explain the move in a clear, conversational, BIG-PICTURE way.",
+    "Base your assessment of the player's move primarily on the ENGINE CONTEXT provided.",
+    "Use the engine lines to understand which ideas were stronger or weaker.",
+    "Do NOT quote, paraphrase, or mention engine evaluations, scores, or rankings.",
+    "Translate engine insights into human, strategic reasoning only.",
     "",
     "BOARD STATE",
     `- FEN before: ${fenBefore}`,
-    `- FEN after:  ${fenAfter}`,
+    `Player Move : ${moveUci}`,
+    `CPU Move : ${stockfish.cpuMove}`,
     "",
-    "MOVE + CONTEXT",
-    `- Move index: ${moveIndex}`,
-    `- Played move (UCI): ${moveUci}`,
-    san ? `- Played move (SAN): ${san}` : "- Played move (SAN): (not provided)",
-    turn ? `- Side to move before: ${turn}` : "- Side to move before: (not provided)",
-    Array.isArray(lastMoves) && lastMoves.length
-      ? `- Last moves (context): ${lastMoves.join(" ")}`
-      : "- Last moves (context): (not provided)",
+    "ENGINE SUMMARY (PRE-INTERPRETED — TRUST THIS)",
+    `- Move quality label: ${stockfish.classify}`,
     "",
-    "LEGAL MOVES / CANDIDATES",
-    Array.isArray(legalMoves) && legalMoves.length
-      ? `- Legal moves (or candidates): ${legalMoves.join(", ")}`
-      : "- Legal moves (or candidates): (not provided)",
+     "BEST MOVE CONTEXT (BEFORE PLAYER MOVE)",
+    "- The following moves represented stronger or weaker strategic ideas:",
+    ...stockfish.topBestMoves.map(
+      m => `- ${m.move} → represents a ${m.rank <= 3 ? "strong" : m.rank <= 7 ? "playable" : "inferior"} idea`
+    ),
     "",
-    "STOCKFISH INFO",
-    stockfish?.bestMove ? `- bestMove: ${stockfish.bestMove}` : "- bestMove: (not provided)",
-    stockfish?.evalCp != null ? `- evalAfter (cp): ${stockfish.evalCp}` : "- evalAfter (cp): (not provided)",
-    stockfish?.mateIn != null ? `- mateIn: ${stockfish.mateIn}` : "- mateIn: (not provided)",
-    stockfish?.pv ? `- pvForBest: ${stockfish.pv}` : "- pvForBest: (not provided)",
+    "POSITION AFTER PLAYER MOVE",
+    "- Opponent immediately responded with a principled reply.",
+    "- The opponent's reply follows this idea:",
+    `  ${stockfish.cpuPV.split(" ").slice(0, 4).join(" ")} (conceptual reference only)`,
     "",
-    "INSTRUCTIONS TO EXPLAIN",
-    "- Explain why this move is significant.",
-    "- Identify if it's a good move or a mistake, and why.",
-    "- Mention what better moves/plans were available if applicable (use bestMove + PV if available).",
-    "- Keep it high level (king safety, development, initiative, tactics themes) — do not list every piece.",
+    "YOUR TASK",
+    "Return a JSON object with EXACTLY these three fields:",
     "",
-    "OUTPUT FORMAT",
-    "- Return 2–5 sentences. Broad explanation, not a deep line-by-line calculation.",
-  ].join("\n");
+    "{",
+    "  moveIndicator: string,",
+    "  Analysis: string,",
+    "  nextStepHint: string",
+    "}",
+    "",
+    "FIELD RULES",
+    "",
+    "moveIndicator",
+    `send the '${stockfish.classify}' as it is as string for moveIndicator`,
+    "",
+    "Analysis:",
+    "- 3–5 sentences.",
+    "- Start by clearly stating the move quality using this label:",
+    `  '${stockfish.classify}'.`,
+    "- Explain WHY the move was good / neutral / bad using:",
+    "  • comparison to better ideas from topBestMoves",
+    "  • what strategic goal was missed or achieved",
+    "  • why the opponent's reply made sense",
+    "  • what the opponent is now aiming to do next",
+    "- If the move was not optimal:",
+    "  • describe the TYPE of better plan that existed (never name a specific move)",
+    "",
+    "nextStepHint:",
+    "- EXACTLY one sentence.",
+    "- Based ONLY on the position after the CPU move.",
+    "- Use nextBestMoves to infer the idea.",
+    "- Do NOT name any move.",
+    "- Give a conceptual hint like:",
+    "  • developing a piece",
+    "  • increasing central control",
+    "  • preparing a recapture",
+    "  • improving king safety",
+    "",
+    "OUTPUT RULES",
+    "- Output ONLY valid JSON.",
+    "- No markdown.",
+    "- No extra keys.",
+    "- No commentary outside JSON.",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 /**
@@ -261,10 +295,11 @@ function buildQuestionPrompt({ fen, question, stockfish }) {
     "CURRENT POSITION",
     `- FEN: ${fen}`,
     "",
-    stockfish?.bestMove ? `- Best move: ${stockfish.bestMove}` : "",
-    stockfish?.evalCp != null ? `- Evaluation: ${stockfish.evalCp} centipawns` : "",
-    stockfish?.mateIn != null ? `- Mate in: ${stockfish.mateIn} moves` : "",
-    "",
+    // stockfish?.bestMove ? `- Best move: ${stockfish.bestMove}` : "",
+    // stockfish?.evalCp != null ? `- Evaluation: ${stockfish.evalCp} centipawns` : "",
+    // stockfish?.mateIn != null ? `- Mate in: ${stockfish.mateIn} moves` : "",
+    "Use these Stock Fish Calculations If needed",
+    `${stockfish}`,
     "STUDENT'S QUESTION",
     question,
     "",
@@ -571,8 +606,9 @@ async function analyzeMoveWithHistory({
   fen_after,
   move,
   uciHistory,
-  depth = 12,
+  depth = 15,
   chatHistory = [],
+  multipv = 15
 }) {
   const analysisSettings = { depth, movetime: 2000, multipv: 1 };
   const cacheKey = getCacheKey(fen_after, move, analysisSettings);
@@ -591,7 +627,25 @@ async function analyzeMoveWithHistory({
   }
 
   // 1) Get Stockfish analysis
-  const stockfishFacts = await getStockfishAnalysis(fen_after, analysisSettings);
+  const stockFishResponse = await fetch(`${process.env.STOCKFISH_SERVER_URL}/analysis`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      fen : fen_before,
+      moves: move,
+      depth : depth,
+      multipv : multipv
+    })
+  })
+
+  if (!stockFishResponse.ok) {
+    throw new Error(`Stockfish server error: ${respostockFishResponse.status}`);
+  }
+
+  const stockFishfacts = await stockFishResponse.json();
+  // const stockfishFacts = await getStockfishAnalysis(fen_after, analysisSettings);
 
   // 2) Parse UCI history into move list
   const lastMoves = uciHistory ? uciHistory.trim().split(/\s+/) : [];
@@ -609,7 +663,7 @@ async function analyzeMoveWithHistory({
 
   // 4) Call OpenAI with chat history
   const explanation = await callOpenAIWithHistory(
-    stockfishFacts,
+    stockFishfacts,
     moveContext,
     "move"
   );
@@ -620,7 +674,7 @@ async function analyzeMoveWithHistory({
   return {
     explanation,
     cached: false,
-    bestMove: stockfishFacts?.bestMove || null,
+    bestMove: stockFishfacts?.cpuMove || null,
   };
 }
 
@@ -651,7 +705,25 @@ async function answerQuestion({
   // Optional: Get Stockfish analysis for current position (for context)
   let stockfishFacts = null;
   try {
-    stockfishFacts = await getStockfishAnalysis(fen, { depth: 10 });
+    // stockfishFacts = await getStockfishAnalysis(fen, { depth: 10 });  
+    const stockFishResponse = await fetch(`${process.env.STOCKFISH_SERVER_URL}/analysis`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        fen : fen,
+        depth : 15,
+        multipv : 15
+      })
+    })
+
+    if (!stockFishResponse.ok) {
+      throw new Error(`Stockfish server error: ${respostockFishResponse.status}`);
+    }
+
+    stockfishFacts = await stockFishResponse.json();
+    console.log(stockfishFacts)
   } catch (err) {
     console.warn("[AnalysisService] Stockfish analysis failed for question, continuing without it:", err.message);
   }
@@ -661,7 +733,7 @@ async function answerQuestion({
     fen,
     question,
     chatHistory,
-    stockfish: stockfishFacts,
+    stockfish: stockfishFacts.topBestMoves,
   };
 
   // Call OpenAI

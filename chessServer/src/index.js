@@ -51,8 +51,9 @@ app.post("/api/analyze", async (req, res) => {
         fen_after: data.fen_after,
         move: data.move,
         uciHistory: data.uciHistory,
-        depth: data.depth || 12,
+        depth: data.depth || 15,
         chatHistory: data.chatHistory || [],
+        multipv : data.multipv || 15
       });
 
       return res.json({
