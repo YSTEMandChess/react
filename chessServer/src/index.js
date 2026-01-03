@@ -39,22 +39,36 @@ io.on("connection", (socket) => {
 });
 
 
+function withTimeout(promise, ms, label) {
+  let id;
+  const timeout = new Promise((_, reject) => {
+    id = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(id));
+}
+
 
 // REST API endpoint for analysis requests
 app.post("/api/analyze", async (req, res) => {
+  const TOTAL_MS = 15000;
+
   try {
     const { type, ...data } = req.body;
 
     if (type === "move") {
-      const result = await analysisService.analyzeMoveWithHistory({
-        fen_before: data.fen_before,
-        fen_after: data.fen_after,
-        move: data.move,
-        uciHistory: data.uciHistory,
-        depth: data.depth || 15,
-        chatHistory: data.chatHistory || [],
-        multipv : data.multipv || 15
-      });
+      const result = await withTimeout(
+        analysisService.analyzeMoveWithHistory({
+          fen_before: data.fen_before,
+          fen_after: data.fen_after,
+          move: data.move,
+          uciHistory: data.uciHistory,
+          depth: data.depth || 15,
+          chatHistory: data.chatHistory || [],
+          multipv: data.multipv || 15,
+        }),
+        TOTAL_MS,
+        "Move analysis"
+      );
 
       return res.json({
         success: true,
@@ -66,11 +80,15 @@ app.post("/api/analyze", async (req, res) => {
     }
 
     if (type === "question") {
-      const result = await analysisService.answerQuestion({
-        fen: data.fen,
-        question: data.question,
-        chatHistory: data.chatHistory || [],
-      });
+      const result = await withTimeout(
+        analysisService.answerQuestion({
+          fen: data.fen,
+          question: data.question,
+          chatHistory: data.chatHistory || [],
+        }),
+        TOTAL_MS,
+        "Question analysis"
+      );
 
       return res.json({
         success: true,
@@ -85,11 +103,9 @@ app.post("/api/analyze", async (req, res) => {
       error: `Unknown request type: ${type}. Expected 'move' or 'question'`,
     });
   } catch (error) {
-    console.error("[API] Analysis error:", error);
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Internal server error",
-    });
+    const msg = error?.message || "Internal server error";
+    const isTimeout = msg.toLowerCase().includes("timed out");
+    return res.status(isTimeout ? 504 : 500).json({ success: false, error: msg });
   }
 });
 

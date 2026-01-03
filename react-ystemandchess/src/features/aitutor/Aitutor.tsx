@@ -1,7 +1,10 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { Chessboard } from "react-chessboard";
 import { Chess, Move } from "chess.js";
 import { environment } from "../../environments/environment";
+import avatarDefault from "../../assets/images/Devin_tutor_default.png";
+import avatarThinking from "../../assets/images/Devin_tutor_thinking.png";
+import avatarMistake from "../../assets/images/Devin_tutor_mistake.png";
 
 type Square = `${"a" | "b" | "c" | "d" | "e" | "f" | "g" | "h"}${
   | 1
@@ -27,12 +30,15 @@ const AITutor: React.FC = () => {
   const chessRef = useRef(new Chess());
   const [fen, setFen] = useState(chessRef.current.fen());
   const [history, setHistory] = useState<Move[]>([]);
-  const [moves, setMoves] = useState<String>("");
+  const [moves, setMoves] = useState<string>("");
   const [message, setMessage] = useState<string>("");
 
   //chat UI
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
+  // Avatar and analysis state
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   function historyToUci(moves: Move[]): string {
     return moves.map((m) => `${m.from}${m.to}${m.promotion ?? ""}`).join(" ");
@@ -60,70 +66,165 @@ const AITutor: React.FC = () => {
     return { background: "#EFF6FF", border: "#93C5FD", accent: "#1D4ED8" };
   }
 
+
+  function replaceLatestAssistantPlaceholder(
+    prev: ChatMessage[],
+    replacement: ChatMessage
+  ) {
+    // Find the most recent placeholder (assistant with empty content and no explanation)
+    const idxFromEnd = [...prev]
+      .reverse()
+      .findIndex((m) => m.role === "assistant" && !m.explanation && m.content === "");
+  
+    if (idxFromEnd === -1) return prev; // nothing to replace
+  
+    const idx = prev.length - 1 - idxFromEnd;
+    const updated = [...prev];
+    updated[idx] = replacement;
+    return updated;
+  }
+
+  
+  function getAvatarImage(
+    moveIndicator?: "Best" | "Good" | "Inaccuracy" | "Mistake" | "Blunder",
+    isAnalyzing: boolean = false
+  ): string {
+    if (isAnalyzing) {
+      return avatarThinking;
+    }
+    if (
+      moveIndicator === "Inaccuracy" ||
+      moveIndicator === "Mistake" ||
+      moveIndicator === "Blunder"
+    ) {
+      return avatarMistake;
+    }
+    return avatarDefault;
+  }
+
+  // Loading dots component
+  const LoadingDots: React.FC = () => {
+    const [dots, setDots] = useState(".");
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setDots((prev) => {
+          if (prev === ".") return "..";
+          if (prev === "..") return "...";
+          return ".";
+        });
+      }, 500);
+
+      return () => clearInterval(interval);
+    }, []);
+
+    return <span>{dots}</span>;
+  };
+
+
+
+  
   async function sendMoveForAnalysis(
     fenBefore: string,
     fenAfter: string,
     moveUci: string,
-    uciHistory: string
+    uciHistory: string,
+    chatHistory: ChatMessage[]
   ) {
-    const response = await fetch(`${environment.urls.chessServer}api/analyze`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "move",
-        fen_before: fenBefore,
-        fen_after: fenAfter,
-        move: moveUci,
-        uciHistory,
-        depth: 15,
-        chatHistory: chatMessages,
-      }),
-    });
+    // Set analyzing state
+    setIsAnalyzing(true);
 
-    const data = await response.json();
-
-    if (!data.success) {
-      console.error("Analysis error:", data.error);
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: `Error: ${data.error || "Analysis failed"}`,
-        },
-      ]);
-      return;
-    }
-
-    let explanation: ChatMessage["explanation"] | undefined;
-    try {
-      if (typeof data.explanation === "string") {
-        explanation = JSON.parse(
-          data.explanation
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
-            .trim()
-        );
-      } else if (data.explanation && typeof data.explanation === "object") {
-        explanation = data.explanation;
-      }
-    } catch (error) {
-      console.error("Failed to parse explanation:", error);
-    }
-    console.log(explanation)
-    applyCpuMove(data.bestMove);
-
-    // append LLM explanation to chat
-    setChatMessages((prev) => [
-      ...prev,
+    // Add placeholder message for loading state
+    const nextChatHistory = [
+      ...chatHistory,
       {
-        role: "assistant",
-        content: explanation?.Analysis ?? "Analysis ready.",
-        explanation,
+        role: "assistant" as const,
+        content: "",
+        explanation: undefined,
       },
-    ]);
+    ];
+    setChatMessages(nextChatHistory);
 
+    // Helper to ensure exactly one slash in URL
+    const baseUrl = environment.urls.chessServer.replace(/\/$/, "");
+    const apiUrl = `${baseUrl}/api/analyze`;
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "move",
+          fen_before: fenBefore,
+          fen_after: fenAfter,
+          move: moveUci,
+          uciHistory,
+          depth: 15,
+          chatHistory: nextChatHistory,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        console.error("Analysis error:", data.error);
+        setIsAnalyzing(false);
+        // Replace last message (placeholder) with error
+        setChatMessages((prev) =>
+          replaceLatestAssistantPlaceholder(prev, {
+            role: "assistant",
+            content: `Error: ${data.error || "Analysis failed"}`,
+          })
+        );
+        return;
+      }
+
+      let explanation: ChatMessage["explanation"] | undefined;
+      try {
+        if (typeof data.explanation === "string") {
+          explanation = JSON.parse(
+            data.explanation
+              .replace(/```json/g, "")
+              .replace(/```/g, "")
+              .trim()
+          );
+        } else if (data.explanation && typeof data.explanation === "object") {
+          explanation = data.explanation;
+        }
+      } catch (error) {
+        console.error("Failed to parse explanation:", error);
+      }
+      console.log(explanation);
+      setIsAnalyzing(false);
+
+      setChatMessages((prev) =>
+        replaceLatestAssistantPlaceholder(prev, {
+          role: "assistant",
+          content: explanation?.Analysis ?? "Analysis ready.",
+          explanation,
+        })
+      );
+
+      if (data.bestMove) {
+        applyCpuMove(data.bestMove);
+      }
+
+
+    } catch (error) {
+      setIsAnalyzing(false);
+      console.error("Network error:", error);
     
+      setChatMessages((prev) =>
+        replaceLatestAssistantPlaceholder(prev, {
+          role: "assistant",
+          content: "Network error: Failed to analyze move.",
+        })
+      );
+    }
   }
+  
+
+
   //helper function
   function formatMoveText(color: "w" | "b", from: string, to: string) {
     const side = color === "w" ? "White" : "Black";
@@ -134,35 +235,73 @@ const AITutor: React.FC = () => {
   async function sendChat() {
     if (!chatInput.trim()) return;
 
-    const newMessages: ChatMessage[] = [
-      ...chatMessages,
-      { role: "user", content: chatInput },
-    ];
-
-    setChatMessages(newMessages);
-
-    
-
+    const questionText = chatInput;
     setChatInput("");
 
-    const res = await fetch(`${environment.urls.chessServer}api/analyze`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "question",
-        fen,
-        question: chatInput,
-        chatHistory: newMessages,
-      }),
-    });
+    // Build updated messages with user question
+    const newMessages: ChatMessage[] = [
+      ...chatMessages,
+      { role: "user" as const, content: questionText },
+    ];
+    setChatMessages(newMessages);
 
-    const data = await res.json();
+    // Set analyzing state for question
+    setIsAnalyzing(true);
 
-    setChatMessages((prev) => [
-      ...prev,
-      { role: "assistant", content: data.answer },
-    ]);
+    // Add placeholder message for loading state
+    const nextChatHistory = [
+      ...newMessages,
+      {
+        role: "assistant" as const,
+        content: "",
+        explanation: undefined,
+      },
+    ];
+    setChatMessages(nextChatHistory);
+
+    // Helper to ensure exactly one slash in URL
+    const baseUrl = environment.urls.chessServer.replace(/\/$/, "");
+    const apiUrl = `${baseUrl}/api/analyze`;
+
+    try {
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "question",
+          fen,
+          question: questionText,
+          chatHistory: nextChatHistory,
+        }),
+      });
+
+      const data = await res.json();
+
+      // Reset analyzing state
+      setIsAnalyzing(false);
+
+      // Replace placeholder message with actual answer
+      setChatMessages((prev) =>
+        replaceLatestAssistantPlaceholder(prev, {
+          role: "assistant",
+          content: data.answer ?? "No answer returned.",
+        })
+      );
+      
+    } catch (error) {
+      setIsAnalyzing(false);
+      console.error("Network error:", error);
+      // Replace placeholder message with error
+      setChatMessages((prev) =>
+        replaceLatestAssistantPlaceholder(prev, {
+          role: "assistant",
+          content: "Network error: Failed to get answer.",
+        })
+      );
+    }
   }
+
+
 
   function onDrop(sourceSquare: Square, targetSquare: Square): boolean {
     try {
@@ -175,25 +314,36 @@ const AITutor: React.FC = () => {
         promotion: "q",
       });
 
-      // Add move to chat
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: "move",
-          content: formatMoveText(move.color, move.from, move.to),
-        },
-      ]);
-
       const fenAfter = game.fen();
       const currentMoveUci = `${move.from}${move.to}${move.promotion ?? ""}`;
       const newHistory = game.history({ verbose: true });
       const uciMoves = historyToUci(newHistory);
 
+      // Build the updated chat history with the move message
+      let nextChatHistory: ChatMessage[] = [];
+      setChatMessages((prev) => {
+        nextChatHistory = [
+          ...prev,
+          {
+            role: "move" as const,
+            content: formatMoveText(move.color, move.from, move.to),
+          },
+        ];
+        return nextChatHistory;
+      });
+
       setFen(game.fen());
       setHistory(newHistory);
       setMoves(uciMoves);
 
-      sendMoveForAnalysis(fenBefore, fenAfter, currentMoveUci, uciMoves);
+      // Pass the updated chatHistory to sendMoveForAnalysis
+      sendMoveForAnalysis(
+        fenBefore,
+        fenAfter,
+        currentMoveUci,
+        uciMoves,
+        nextChatHistory
+      );
 
       return true;
     } catch {
@@ -210,6 +360,12 @@ const AITutor: React.FC = () => {
     const promotion = uci.length === 5 ? uci[4] : undefined;
 
     const move = game.move({ from, to, promotion });
+
+    if (!move) {
+      console.error("Invalid CPU move:", uci);
+      return;
+    }
+
     // Add move to chat
     setChatMessages((prev) => [
       ...prev,
@@ -218,11 +374,6 @@ const AITutor: React.FC = () => {
         content: formatMoveText(move.color, move.from, move.to),
       },
     ]);
-
-    if (!move) {
-      console.error("Invalid CPU move:", uci);
-      return;
-    }
 
     // Update UI state
     const newHistory = game.history({ verbose: true });
@@ -309,47 +460,197 @@ const AITutor: React.FC = () => {
                   const tone = getMoveIndicatorStyles(
                     m.explanation?.moveIndicator
                   );
+                  const isLastMessage = i === chatMessages.length - 1;
+                  const showLoading = isAnalyzing && isLastMessage;
+                  const avatarForMessage = showLoading
+                    ? getAvatarImage(undefined, true)
+                    : getAvatarImage(m.explanation?.moveIndicator, false);
+
                   return (
-                <div
-                  style={{
-                    maxWidth: "92%",
-                    alignSelf: "flex-start",
-                    background: tone.background,
-                    color: "#1F2937",
-                    border: `2px solid ${tone.border}`,
-                    borderRadius: 18,
-                    padding: "14px 16px",
-                    lineHeight: 1.5,
-                    boxShadow: "0 8px 18px rgba(0,0,0,0.08)",
-                    fontSize: 15,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      marginBottom: 10,
-                      fontSize: 16,
-                      color: tone.accent,
-                    }}
-                  >
-                    🧠 AI Tutor
-                  </div>
-
-                  <div>{m.explanation.Analysis ?? m.content}</div>
-
-                  {m.explanation.nextStepHint && (
                     <div
                       style={{
-                        marginTop: 8,
-                        fontSize: 12,
-                        color: tone.accent,
-                        opacity: 0.9,
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 12,
+                        width: "100%",
                       }}
                     >
-                      ⭐ {m.explanation.nextStepHint}
+                      {/* Avatar */}
+                      <img
+                        src={avatarForMessage}
+                        alt="AI Tutor"
+                        style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          flexShrink: 0,
+                        }}
+                      />
+
+                      {/* Speech Bubble */}
+                      <div
+                        style={{
+                          position: "relative",
+                          background: tone.background,
+                          color: "#1F2937",
+                          border: `2px solid ${tone.border}`,
+                          borderRadius: 18,
+                          padding: "14px 16px",
+                          lineHeight: 1.5,
+                          boxShadow: "0 8px 18px rgba(0,0,0,0.08)",
+                          fontSize: 15,
+                          maxWidth: "calc(100% - 80px)",
+                          // Speech bubble tail pointing left
+                          marginLeft: 8,
+                        }}
+                      >
+                        {/* Speech bubble tail */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: -12,
+                            top: 20,
+                            width: 0,
+                            height: 0,
+                            borderTop: "12px solid transparent",
+                            borderBottom: "12px solid transparent",
+                            borderRight: `12px solid ${tone.border}`,
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: -10,
+                            top: 21,
+                            width: 0,
+                            height: 0,
+                            borderTop: "11px solid transparent",
+                            borderBottom: "11px solid transparent",
+                            borderRight: `11px solid ${tone.background}`,
+                          }}
+                        />
+
+                        {showLoading ? (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              minHeight: 20,
+                            }}
+                          >
+                            <LoadingDots />
+                          </div>
+                        ) : (
+                          <>
+                            <div>{m.explanation.Analysis ?? m.content}</div>
+
+                            {m.explanation.nextStepHint && (
+                              <div
+                                style={{
+                                  marginTop: 8,
+                                  fontSize: 12,
+                                  color: tone.accent,
+                                  opacity: 0.9,
+                                }}
+                              >
+                                ⭐ {m.explanation.nextStepHint}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
+                  );
+                })()
+              ) : m.role === "assistant" && !m.explanation ? (
+                // Regular assistant message (from questions) - also show with avatar
+                (() => {
+                  const isLastMessage = i === chatMessages.length - 1;
+                  const showLoading = isAnalyzing && isLastMessage;
+                  const avatarForMessage = showLoading
+                    ? getAvatarImage(undefined, true)
+                    : getAvatarImage(undefined, false);
+
+                  return (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 12,
+                        width: "100%",
+                      }}
+                    >
+                      {/* Avatar */}
+                      <img
+                        src={avatarForMessage}
+                        alt="AI Tutor"
+                        style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          flexShrink: 0,
+                        }}
+                      />
+
+                      {/* Speech Bubble */}
+                      <div
+                        style={{
+                          position: "relative",
+                          background: "#ffffff",
+                          color: "#1F2937",
+                          border: "2px solid #e5e7eb",
+                          borderRadius: 18,
+                          padding: "14px 16px",
+                          lineHeight: 1.5,
+                          boxShadow: "0 8px 18px rgba(0,0,0,0.08)",
+                          fontSize: 15,
+                          maxWidth: "calc(100% - 80px)",
+                          marginLeft: 8,
+                        }}
+                      >
+                        {/* Speech bubble tail */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: -12,
+                            top: 20,
+                            width: 0,
+                            height: 0,
+                            borderTop: "12px solid transparent",
+                            borderBottom: "12px solid transparent",
+                            borderRight: "12px solid #e5e7eb",
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: -10,
+                            top: 21,
+                            width: 0,
+                            height: 0,
+                            borderTop: "11px solid transparent",
+                            borderBottom: "11px solid transparent",
+                            borderRight: "11px solid #ffffff",
+                          }}
+                        />
+
+                        {showLoading ? (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              minHeight: 20,
+                            }}
+                          >
+                            <LoadingDots />
+                          </div>
+                        ) : (
+                          <div>{m.content}</div>
+                        )}
+                      </div>
+                    </div>
                   );
                 })()
               ) : (

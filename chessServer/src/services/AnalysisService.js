@@ -24,6 +24,10 @@ const crypto = require("crypto");
 
 const STOCKFISH_URL = process.env.STOCKFISH_SERVER_URL || "http://localhost:4002";
 
+if (typeof fetch !== "function") {
+  throw new Error("Global fetch not found. Use Node 18+ or install node-fetch.");
+}
+
 // ============================================================================
 // STOCKFISH SESSION MANAGEMENT
 // ============================================================================
@@ -186,6 +190,30 @@ function parseInfoOutput(outputLines) {
     raw: outputLines,
   };
 }
+
+
+
+async function fetchWithTimeout(url, options = {}, ms = 8000, label = "fetch") {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), ms);
+
+  // If caller provided a signal, abort this fetch too.
+  if (options.signal) {
+    options.signal.addEventListener("abort", () => controller.abort(), { once: true });
+  }
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (controller.signal.aborted) {
+      throw new Error(`${label} timed out after ${ms}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 
 // ============================================================================
 // PROMPT BUILDING FUNCTIONS
@@ -402,6 +430,7 @@ async function callOpenAI(stockfishFacts, moveContext) {
   const client = openai.getClient ? openai.getClient() : openai;
   
   if (!client) {
+    console.error("[AnalysisService] OpenAI client not available. This should not happen - check openai.js configuration.");
     throw new Error("OpenAI client not configured. Set OPENAI_API_KEY or use LLM_MODE=mock");
   }
 
@@ -426,7 +455,14 @@ async function callOpenAI(stockfishFacts, moveContext) {
     temperature: 0.2,
   });
 
-  return resp.choices?.[0]?.message?.content ?? "";
+  const responseContent = resp.choices?.[0]?.message?.content ?? "";
+  
+  // Log response if in mock mode
+  if (openai.isMockMode && openai.isMockMode()) {
+    console.log("[AnalysisService] Sample response (mock mode):", responseContent);
+  }
+
+  return responseContent;
 }
 
 /**
@@ -440,6 +476,7 @@ async function callOpenAIWithHistory(stockfishFacts, context, mode) {
   const client = openai.getClient ? openai.getClient() : openai;
   
   if (!client) {
+    console.error("[AnalysisService] OpenAI client not available. This should not happen - check openai.js configuration.");
     throw new Error("OpenAI client not configured. Set OPENAI_API_KEY or use LLM_MODE=mock");
   }
 
@@ -505,7 +542,14 @@ async function callOpenAIWithHistory(stockfishFacts, context, mode) {
     temperature: 0.2,
   });
 
-  return resp.choices?.[0]?.message?.content ?? "";
+  const responseContent = resp.choices?.[0]?.message?.content ?? "";
+  
+  // Log response if in mock mode
+  if (openai.isMockMode && openai.isMockMode()) {
+    console.log(`[AnalysisService] Sample response (mock mode, ${mode}):`, responseContent);
+  }
+
+  return responseContent;
 }
 
 // ============================================================================
@@ -627,21 +671,24 @@ async function analyzeMoveWithHistory({
   }
 
   // 1) Get Stockfish analysis
-  const stockFishResponse = await fetch(`${process.env.STOCKFISH_SERVER_URL}/analysis`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
+  const stockFishResponse = await fetchWithTimeout(
+    `${STOCKFISH_URL}/analysis`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fen: fen_before,
+        moves: move,
+        depth,
+        multipv,
+      }),
     },
-    body: JSON.stringify({
-      fen : fen_before,
-      moves: move,
-      depth : depth,
-      multipv : multipv
-    })
-  })
+    6000, //timeout ms
+    "Stockfish /analysis"  
+  );
 
   if (!stockFishResponse.ok) {
-    throw new Error(`Stockfish server error: ${respostockFishResponse.status}`);
+    throw new Error(`Stockfish server error: ${stockFishResponse.status}`);
   }
 
   const stockFishfacts = await stockFishResponse.json();
@@ -660,6 +707,10 @@ async function analyzeMoveWithHistory({
     lastMoves: lastMoves,
     chatHistory: chatHistory,
   };
+
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/faac9266-bc5f-4ac8-89ce-7169defbdfc0',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AnalysisService.js:712',message:'before OpenAI call',data:{chatHistoryLength:chatHistory?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C,D'})}).catch(()=>{});
+  // #endregion
 
   // 4) Call OpenAI with chat history
   const explanation = await callOpenAIWithHistory(
@@ -706,20 +757,23 @@ async function answerQuestion({
   let stockfishFacts = null;
   try {
     // stockfishFacts = await getStockfishAnalysis(fen, { depth: 10 });  
-    const stockFishResponse = await fetch(`${process.env.STOCKFISH_SERVER_URL}/analysis`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        fen : fen,
-        depth : 15,
-        multipv : 15
-      })
-    })
+    const stockFishResponse = await fetchWithTimeout(
+      `${STOCKFISH_URL}/analysis`, // use the same STOCKFISH_URL constant you already defined
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fen,
+          depth: 15,
+          multipv: 15,
+        }),
+      },
+      6000,
+      "Stockfish /analysis"
+    );
 
     if (!stockFishResponse.ok) {
-      throw new Error(`Stockfish server error: ${respostockFishResponse.status}`);
+      throw new Error(`Stockfish server error: ${stockFishResponse.status}`);
     }
 
     stockfishFacts = await stockFishResponse.json();
@@ -733,7 +787,7 @@ async function answerQuestion({
     fen,
     question,
     chatHistory,
-    stockfish: stockfishFacts.topBestMoves,
+    stockfish: stockfishFacts?.topBestMoves || [],
   };
 
   // Call OpenAI
