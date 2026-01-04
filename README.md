@@ -73,6 +73,12 @@ cd react
 
 ### 2. Environment Setup
 
+Before running any services, create the local development environment from the **project root directory**:
+
+```bash
+./create_dev_envs.sh
+```
+
 A `default.json` file containing environment variables will be provided to contributors and should be placed in `middlewareNode/config`.
 
 
