@@ -6,6 +6,10 @@ import avatarDefault from "../../assets/images/Devin_tutor_default.png";
 import avatarThinking from "../../assets/images/Devin_tutor_thinking.png";
 import avatarMistake from "../../assets/images/Devin_tutor_mistake.png";
 
+
+// ------------------------------
+//       TYPES DEFINITIONS
+//------------------------------
 type Square = `${"a" | "b" | "c" | "d" | "e" | "f" | "g" | "h"}${
   | 1
   | 2
@@ -26,28 +30,44 @@ type ChatMessage = {
   };
 };
 
+
+
+
+
 const AITutor: React.FC = () => {
   const chessRef = useRef(new Chess());
-  const [fen, setFen] = useState(chessRef.current.fen());
-  const [history, setHistory] = useState<Move[]>([]);
-  const [moves, setMoves] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
 
+  // ------------------------------
+  //        STATE VARIABLES
+  //------------------------------
+  const [fen, setFen] = useState(chessRef.current.fen());          //current FEN of the board
+  const [history, setHistory] = useState<Move[]>([]);              //history of moves(array of move Objects)
+  const [moves, setMoves] = useState<string>("");                  //string of moves in UCI format
+  const [message, setMessage] = useState<string>("");              //message to display to the user (error messages)
   //chat UI
-  const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-
+  const [chatInput, setChatInput] = useState("");                 //the current text the user has typed in (not sent yet). shows text while typing
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);  //array of chat messages. Contains every message sent or received.
   // Avatar and analysis state
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);          //flag to indicate if the AI is analyzing a move or question. Shows loading dots while analyzing.
 
+  //------------------------------
+  //       DATA FORMAT HELPERS
+  //------------------------------
   function historyToUci(moves: Move[]): string {
+    "converts the history of moves to a string of moves in UCI format"
     return moves.map((m) => `${m.from}${m.to}${m.promotion ?? ""}`).join(" ");
   }
 
-  function getMoveIndicatorStyles(
-    moveIndicator?: "Best" | "Good" | "Inaccuracy" | "Mistake" | "Blunder"
-  ) {
-    console.log(moveIndicator);
+  function formatMoveText(color: "w" | "b", from: string, to: string) {
+    const side = color === "w" ? "White" : "Black";
+    return `${side} moved from ${from} to ${to}`;
+  }
+
+  //--------------------------------
+  //       RENDERING HELPERS
+  //--------------------------------
+  function getMoveIndicatorStyles(moveIndicator?: "Best" | "Good" | "Inaccuracy" | "Mistake" | "Blunder") {
+    "returns the styles for the speech bubble based on the move indicator"
     if (moveIndicator === "Best") {
       return { background: "#ECFDF3", border: "#86EFAC", accent: "#166534" };
     }
@@ -63,32 +83,10 @@ const AITutor: React.FC = () => {
     if (moveIndicator === "Blunder") {
       return { background: "#FEF2F2", border: "#FCA5A5", accent: "#991B1B" };
     }
-    return { background: "#EFF6FF", border: "#93C5FD", accent: "#1D4ED8" };
+    return { background: "#EFF6FF", border: "#93C5FD", accent: "#1D4ED8" };   //default case: Best move
   }
 
-
-  function replaceLatestAssistantPlaceholder(
-    prev: ChatMessage[],
-    replacement: ChatMessage
-  ) {
-    // Find the most recent placeholder (assistant with empty content and no explanation)
-    const idxFromEnd = [...prev]
-      .reverse()
-      .findIndex((m) => m.role === "assistant" && !m.explanation && m.content === "");
-  
-    if (idxFromEnd === -1) return prev; // nothing to replace
-  
-    const idx = prev.length - 1 - idxFromEnd;
-    const updated = [...prev];
-    updated[idx] = replacement;
-    return updated;
-  }
-
-  
-  function getAvatarImage(
-    moveIndicator?: "Best" | "Good" | "Inaccuracy" | "Mistake" | "Blunder",
-    isAnalyzing: boolean = false
-  ): string {
+  function getAvatarImage(moveIndicator?: "Best" | "Good" | "Inaccuracy" | "Mistake" | "Blunder",isAnalyzing: boolean = false): string {
     if (isAnalyzing) {
       return avatarThinking;
     }
@@ -102,28 +100,48 @@ const AITutor: React.FC = () => {
     return avatarDefault;
   }
 
-  // Loading dots component
-  const LoadingDots: React.FC = () => {
-    const [dots, setDots] = useState(".");
+    // Loading dots component
+    const LoadingDots: React.FC = () => {
+      const [dots, setDots] = useState(".");
+  
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setDots((prev) => {
+            if (prev === ".") return "..";
+            if (prev === "..") return "...";
+            return ".";
+          });
+        }, 500);
+  
+        return () => clearInterval(interval);
+      }, []);
+  
+      return <span>{dots}</span>;
+    };
 
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setDots((prev) => {
-          if (prev === ".") return "..";
-          if (prev === "..") return "...";
-          return ".";
-        });
-      }, 500);
 
-      return () => clearInterval(interval);
-    }, []);
-
-    return <span>{dots}</span>;
-  };
-
-
+  //--------------------------------
+  //       Chat-State HELPER
+  //--------------------------------
+  function replaceLatestAssistantPlaceholder(prev: ChatMessage[], replacement: ChatMessage) {
+    // Find the most recent placeholder (assistant with empty content and no explanation)
+    const idxFromEnd = [...prev]
+      .reverse()
+      .findIndex((m) => m.role === "assistant" && !m.explanation && m.content === "");
+  
+    if (idxFromEnd === -1) return prev; // nothing to replace
+  
+    const idx = prev.length - 1 - idxFromEnd
+    const updated = [...prev];
+    updated[idx] = replacement;
+    return updated;
+  }
 
   
+
+  //--------------------------------
+  //       APP BEHAVIOR HELPERS
+  //--------------------------------  
   async function sendMoveForAnalysis(
     fenBefore: string,
     fenAfter: string,
@@ -225,12 +243,6 @@ const AITutor: React.FC = () => {
   
 
 
-  //helper function
-  function formatMoveText(color: "w" | "b", from: string, to: string) {
-    const side = color === "w" ? "White" : "Black";
-    return `${side} moved from ${from} to ${to}`;
-  }
-
   //send chat function
   async function sendChat() {
     if (!chatInput.trim()) return;
@@ -304,6 +316,7 @@ const AITutor: React.FC = () => {
 
 
   function onDrop(sourceSquare: Square, targetSquare: Square): boolean {
+    if (isAnalyzing) return false; // Don't allow moves while thinking
     try {
       const game = chessRef.current;
       const fenBefore = game.fen();
@@ -319,18 +332,16 @@ const AITutor: React.FC = () => {
       const newHistory = game.history({ verbose: true });
       const uciMoves = historyToUci(newHistory);
 
-      // Build the updated chat history with the move message
-      let nextChatHistory: ChatMessage[] = [];
-      setChatMessages((prev) => {
-        nextChatHistory = [
-          ...prev,
-          {
-            role: "move" as const,
-            content: formatMoveText(move.color, move.from, move.to),
-          },
-        ];
-        return nextChatHistory;
-      });
+      // Build the updated chat history with the move message (synchronously)
+      const moveMsg: ChatMessage = {
+        role: "move" as const,
+        content: formatMoveText(move.color, move.from, move.to),
+      };
+
+      const nextChatHistory = [...chatMessages, moveMsg];
+
+      // Update chat UI immediately
+      setChatMessages(nextChatHistory);
 
       setFen(game.fen());
       setHistory(newHistory);
@@ -351,6 +362,7 @@ const AITutor: React.FC = () => {
       return false;
     }
   }
+
 
   function applyCpuMove(uci: string) {
     const game = chessRef.current;
@@ -384,6 +396,10 @@ const AITutor: React.FC = () => {
     setMoves(uciMoves);
   }
 
+  
+  // ------------------------------
+  //       RENDER FUNCTION
+  //------------------------------
   return (
     <div
       style={{
@@ -692,31 +708,35 @@ const AITutor: React.FC = () => {
         >
           <input
             value={chatInput}
+            disabled={isAnalyzing}
             onChange={(e) => setChatInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendChat()}
-            placeholder="Ask the tutor..."
+            onKeyDown={(e) => e.key === "Enter" && !isAnalyzing && sendChat()} // Prevent Enter key too
+            placeholder={isAnalyzing ? "AI is thinking..." : "Ask the tutor..."} // Dynamic placeholder
             style={{
               flex: 1,
               border: "1px solid #d1d5db",
               borderRadius: 10,
               padding: "10px 12px",
               outline: "none",
-              background: "#f9fafb",
+              background: isAnalyzing ? "#f3f4f6" : "#f9fafb", // Slight color change when disabled
+              cursor: isAnalyzing ? "not-allowed" : "text",
             }}
           />
           <button
             onClick={sendChat}
+            disabled={isAnalyzing} // Logic added here
             style={{
               border: "1px solid #111827",
-              background: "#111827",
+              background: isAnalyzing ? "#9ca3af" : "#111827", // Grey out when analyzing
               color: "#ffffff",
               padding: "10px 14px",
               borderRadius: 10,
-              cursor: "pointer",
+              cursor: isAnalyzing ? "not-allowed" : "pointer",
               fontWeight: 600,
-            }}
-          >
-            Send
+              opacity: isAnalyzing ? 0.7 : 1,
+          }}
+        >
+          Send
           </button>
         </div>
       </div>
