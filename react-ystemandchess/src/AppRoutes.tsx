@@ -12,9 +12,8 @@
  * - Educational content (Lessons, Puzzles, Learning materials)
  */
 
-// React and routing imports
-import React from "react";
-import { Route, Router, Routes } from "react-router-dom";
+// React routing imports
+import { Route, Routes } from "react-router-dom";
 
 // Page component imports - organized by category
 // Home and main pages

@@ -6,8 +6,7 @@
  * It manages the application layout and handles user session monitoring.
  */
 
-import "./App.css";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { environment } from "./environments/environment";
 import { useCookies } from "react-cookie";
@@ -15,6 +14,7 @@ import { SetPermissionLevel } from "./globals";
 import NavBar from "./components/navbar/NavBar";
 import Footer from "./components/footer/Footer";
 import AppRoutes from "./AppRoutes";
+import "./App.css";
 
 /**
  * Main App component that serves as the root of the application

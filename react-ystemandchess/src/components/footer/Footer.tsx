@@ -11,7 +11,6 @@
  * - Partner organization logos
  */
 
-import React from "react";
 import "./Footer.css";
 import TwitterIcon from "../../assets/images/twitterIcon.svg";
 import InstagramIcon from "../../assets/images/instagramIcon.svg";
