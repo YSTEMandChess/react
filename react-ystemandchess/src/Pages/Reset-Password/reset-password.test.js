@@ -1,10 +1,14 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ResetPassword from './ResetPassword';
+import ResetPassword from './reset-password';
+// import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 
 test('renders reset password component', () => {
   render(<ResetPassword />);
-  const heading = screen.getByText(/Please Enter UserName and Email To Reset Your Password/i);
+  const heading = screen.getByText(
+    /Please Enter UserName and Email To Reset Your Password/i
+  );
   expect(heading).toBeInTheDocument();
 });
 
@@ -32,5 +36,4 @@ test('verifies user input', () => {
   fireEvent.blur(emailInput, { target: { value: 'validemail@example.com' } });
   const button = screen.getByText('Enter');
   fireEvent.click(button);
-  // Add assertions based on the behavior after clicking the button
 });

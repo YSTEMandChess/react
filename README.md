@@ -62,10 +62,22 @@ This project consists of several services. Here's how to set each one up:
 
 #### Chess Client (`chessClient`)
 
+The purpose of the chess Client is to 
+
 1. Navigate to the `chessClient` directory inside the `react` folder.
 2. Run `npm i dotenv` to install the necessary dependencies.
-3. Start the chess client:
-  - On Linux: Run `cp -r * /var/www/html/`. You'll need to do this every time you make a change to the `chessClient` directory.
-  - On Windows: Copy all the files from `chessClient` into the `htdocs` folder of your Apache installation. Then, run `httpd -k install` and `httpd -k start` in your terminal. After this, you should be able to go to "http://localhost" and see the chessboard.
+3. Install live server visual studio extension.
+4. To see the chessBoard only, click on index.html and select "run with live server".
+5. To see the chessBoard with parentWindow, right click on parent.html and select "run with live server"
+6. To see how both mentor and student interact, right click on both.html and select "run with live server"
+
+
+### Chess Client React Refactor
+
+The purpose of the chessClient React Refactor folder is to hold the chess game react component that will be imported into react-ystemandchess that interfaces with the ChessClient. To start this individually, do the following : 
+
+1. Navigate to the 'chess-client-react-refactor'
+2. Run 'npm i dotenv' to install necessary dependencies.
+3. Start the react app by running 'npm start'
 
 That's it! You've set up your development environment for the Y STEM and Chess project. Happy coding!
