@@ -16,10 +16,12 @@ import Mentor from './Pages/Mentor/Mentor';
 import Financial from './Pages/About-Us/Financial/Financial';
 import StudentInventory from './Pages/Student-Inventory/StudentInventory';
 import ResetPassword from './Pages/Reset-Password/reset-password';
+import SetPassword from './Pages/Set-Password/set-password';
 import Student from './Pages/Student/Student';
 import MentorProfile from './Pages/Mentor-Profile/MentorProfile';
 import UserProfile from './Pages/Student-Profile/UserProfile';
-import SetPassword from './Pages/Set-Password/set-password';
+import LessonOverlay from './Pages/piece-lessons/lesson-overlay/lesson-overlay';
+import StudentProfile from './Pages/StudentProfile/Student-Profile';
 
 // Variables and Mutable Data
 import userPortraitImg from './images/user-portrait-placeholder.svg';
@@ -60,7 +62,8 @@ const AppRoutes = () => {
       <Route path='/student' element={<Student />} />
       <Route path='/mentor-profile' element={<MentorProfile />} />
       <Route path='/student-profile' element={<UserProfile />} />
-      {/* <Route path="/learnings" element={<LessonOverlay />} /> */}
+      <Route path='/learnings' element={<LessonOverlay />} />
+      {/* <Route path="/play-nolog" element={<ChessFreePlay />} /> */}
     </Routes>
   );
 };

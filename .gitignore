@@ -58,3 +58,9 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+react-ystemandchess/package-lock.json
+chessClient/package-lock.json
+middleware/package-lock.json
+middlewareNode/package-lock.json
+stockfishServer/package-lock.json
+chessServer/package-lock.json
