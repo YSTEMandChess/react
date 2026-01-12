@@ -2,22 +2,21 @@
  * AnalysisService.js
  * 
  * Orchestrates the complete analysis pipeline:
- * 1) Triggers Stockfish analysis
+ * 1) Triggers Stockfish analysis via HTTP REST API
  * 2) Formats OpenAI prompts
  * 3) Calls OpenAI API
  * 4) Caches results
- * 5) Emits socket events back to players
+ * 5) Returns results via REST API
  * 
  * Supports two modes:
- * - Move analysis (with/without chat history)
- * - Question answering
+ * - Move analysis (with chat history) - used by AI Tutor
+ * - Question answering - used by AI Tutor
  */
 
 // ============================================================================
 // IMPORTS & CONFIGURATION
 // ============================================================================
 
-const { io: ioClient } = require("socket.io-client");
 const cache = require("../utils/cache");
 const openai = require("../config/openai");
 const crypto = require("crypto");
@@ -29,71 +28,34 @@ if (typeof fetch !== "function") {
 }
 
 // ============================================================================
-// STOCKFISH SESSION MANAGEMENT
-// ============================================================================
-
-// Connect to stockfishServer
-const stockfishSocket = ioClient(STOCKFISH_URL, {
-  transports: ["websocket"],
-  reconnection: true,
-});
-
-// Session state management
-let stockfishSessionReady = false;
-let resolveReady = null;
-let stockfishQueue = Promise.resolve(); // Queue to prevent overlapping evaluations
-
-/**
- * Creates a promise that resolves when Stockfish session is ready
- */
-function makeReadyPromise() {
-  return new Promise((resolve) => {
-    resolveReady = resolve;
-  });
-}
-
-let readyPromise = makeReadyPromise();
-
-/**
- * Ensures Stockfish session is ready before proceeding
- * @returns {Promise<void>}
- */
-function ensureStockfishSession() {
-  if (stockfishSessionReady) {
-    return Promise.resolve();
-  }
-  return readyPromise;
-}
-
-// Socket event handlers
-stockfishSocket.on("connect", () => {
-  console.log("[AnalysisService] Connected to stockfishServer:", STOCKFISH_URL);
-  
-  stockfishSocket.emit("start-session", {
-    sessionType: "analysis",
-    fen: null,
-    infoMode: true,
-  });
-});
-
-stockfishSocket.on("session-started", (data) => {
-  stockfishSessionReady = true;
-  console.log("[AnalysisService] Stockfish session started:", data?.id);
-  
-  if (resolveReady) {
-    resolveReady();
-  }
-});
-
-stockfishSocket.on("disconnect", () => {
-  console.log("[AnalysisService] Disconnected from stockfishServer");
-  stockfishSessionReady = false;
-  readyPromise = makeReadyPromise();
-});
-
-// ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
+
+/**
+ * Logs a metric as structured JSON
+ * @param {string} metric - Metric name (e.g., "stockfish_latency", "openai_latency", "cache_hit")
+ * @param {number} duration_ms - Duration in milliseconds (optional)
+ * @param {boolean} success - Whether the operation was successful
+ * @param {Object} metadata - Additional metadata to log
+ */
+function logMetric(metric, duration_ms = null, success = true, metadata = {}) {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    metric,
+    ...metadata,
+  };
+
+  if (duration_ms !== null) {
+    logEntry.duration_ms = duration_ms;
+  }
+
+  logEntry.success = success;
+
+  // Only log if metrics are enabled (default: true)
+  if (process.env.METRICS_LOG_ENABLED !== "false") {
+    console.log(JSON.stringify(logEntry));
+  }
+}
 
 /**
  * Computes UCI move notation from chess.js move result
@@ -102,6 +64,76 @@ stockfishSocket.on("disconnect", () => {
  */
 function computeMoveUci(moveResult) {
   return moveResult.from + moveResult.to + (moveResult.promotion || "");
+}
+
+/**
+ * Parses OpenAI JSON response, handling markdown code fences
+ * @param {string} rawText - Raw text from OpenAI response
+ * @returns {Object|null} Parsed JSON object, or null if parsing fails
+ */
+function parseOpenAIJson(rawText) {
+  if (!rawText || typeof rawText !== "string") {
+    return null;
+  }
+
+  try {
+    // Remove markdown code fences (```json and ```)
+    let cleaned = rawText
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
+
+    // Try to parse as JSON
+    return JSON.parse(cleaned);
+  } catch (err) {
+    return null;
+  }
+}
+
+/**
+ * Validates that an object matches the expected tutor response shape
+ * @param {Object} obj - Object to validate
+ * @returns {boolean} True if valid, false otherwise
+ */
+function validateTutorResponse(obj) {
+  if (!obj || typeof obj !== "object") {
+    return false;
+  }
+
+  // Required fields: moveIndicator and Analysis (both strings)
+  if (typeof obj.moveIndicator !== "string" || !obj.moveIndicator.trim()) {
+    return false;
+  }
+
+  if (typeof obj.Analysis !== "string" || !obj.Analysis.trim()) {
+    return false;
+  }
+
+  // nextStepHint is optional but if present should be a string
+  if (obj.nextStepHint !== undefined && typeof obj.nextStepHint !== "string") {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Generates a fallback tutor response when OpenAI fails but Stockfish succeeded
+ * @param {Object} stockfishFacts - Stockfish analysis results
+ * @returns {Object} Fallback response matching expected format
+ */
+function generateFallbackResponse(stockfishFacts) {
+  const moveIndicator = stockfishFacts?.classify || "Good";
+  
+  const analysis = `I'm having trouble providing a detailed analysis right now, but based on the engine evaluation, this appears to be a ${moveIndicator.toLowerCase()} move. Consider the position carefully and look for tactical opportunities.`;
+  
+  const nextStepHint = "Continue developing your pieces and controlling key squares.";
+
+  return {
+    moveIndicator,
+    Analysis: analysis,
+    nextStepHint,
+  };
 }
 
 /**
@@ -117,18 +149,6 @@ function getCacheKey(fenAfter, moveUci, analysisSettings) {
   const multipv = analysisSettings?.multipv ?? 1;
   
   return `analysis:v1:${fenAfter}:${moveUci}:depth${depth}:movetime${movetime}:multipv${multipv}`;
-}
-
-/**
- * Emits socket event to both student and mentor
- * @param {Object} io - Socket.IO server instance
- * @param {string} studentSocketId - Student socket ID
- * @param {string} mentorSocketId - Mentor socket ID
- * @param {string} eventName - Event name
- * @param {Object} payload - Event payload
- */
-function emitToBoth(io, studentSocketId, mentorSocketId, eventName, payload) {
-  io.to(studentSocketId).to(mentorSocketId).emit(eventName, payload);
 }
 
 /**
@@ -341,82 +361,6 @@ function buildQuestionPrompt({ fen, question, stockfish }) {
 }
 
 // ============================================================================
-// STOCKFISH ANALYSIS
-// ============================================================================
-
-/**
- * Gets Stockfish analysis for a position
- * @param {string} fenAfter - FEN position to analyze
- * @param {Object} analysisSettings - Analysis parameters (depth, movetime, multipv)
- * @returns {Promise<Object>} Stockfish facts object
- */
-async function getStockfishAnalysis(fenAfter, analysisSettings) {
-  await ensureStockfishSession();
-
-  // Serialize evaluations through queue to prevent conflicts
-  stockfishQueue = stockfishQueue.then(() => {
-    return new Promise((resolve, reject) => {
-      const depth = analysisSettings?.depth ?? 15;
-      const timeoutMs = 8000;
-      
-      const timeout = setTimeout(() => {
-        cleanup();
-        reject(new Error("Stockfish analysis timed out"));
-      }, timeoutMs);
-
-      function cleanup() {
-        clearTimeout(timeout);
-        stockfishSocket.off("evaluation-complete", onComplete);
-        stockfishSocket.off("evaluation-error", onError);
-      }
-
-      function onError(err) {
-        cleanup();
-        reject(new Error(err?.error || "Stockfish evaluation error"));
-      }
-
-      function onComplete(data) {
-        cleanup();
-
-        if (!data) {
-          return reject(new Error("Stockfish returned empty response"));
-        }
-
-        // Handle info mode response
-        if (data.mode === "info" && Array.isArray(data.output)) {
-          return resolve(parseInfoOutput(data.output));
-        }
-
-        // Handle move mode response (fallback)
-        if (data.mode === "move") {
-          return resolve({
-            bestMove: data.move || null,
-            evalCp: null,
-            mateIn: null,
-            pv: null,
-            raw: [JSON.stringify(data)],
-          });
-        }
-
-        return reject(new Error(`Unexpected stockfish response mode: ${data.mode}`));
-      }
-
-      stockfishSocket.on("evaluation-complete", onComplete);
-      stockfishSocket.on("evaluation-error", onError);
-
-      // Request analysis from Stockfish server
-      stockfishSocket.emit("evaluate-fen", {
-        fen: fenAfter,
-        move: "",
-        level: depth,
-      });
-    });
-  });
-
-  return stockfishQueue;
-}
-
-// ============================================================================
 // OPENAI INTEGRATION
 // ============================================================================
 
@@ -446,23 +390,80 @@ async function callOpenAI(stockfishFacts, moveContext) {
     stockfish: stockfishFacts,
   });
 
-  const resp = await client.chat.completions.create({
-    model: process.env.OPENAI_MODEL || "gpt-4o",
-    messages: [
-      { role: "system", content: "Follow the user instructions exactly." },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.2,
-  });
-
-  const responseContent = resp.choices?.[0]?.message?.content ?? "";
-  
-  // Log response if in mock mode
-  if (openai.isMockMode && openai.isMockMode()) {
-    console.log("[AnalysisService] Sample response (mock mode):", responseContent);
+  // Check rate limiter before making API call
+  const rateLimitResult = openai.rateLimiter.acquire();
+  if (!rateLimitResult.allowed) {
+    logMetric("openai_rate_limit", null, false, { retryAfter: rateLimitResult.retryAfter });
+    const error = new Error("OPENAI_RATE_LIMIT");
+    error.retryAfter = rateLimitResult.retryAfter;
+    throw error;
   }
 
-  return responseContent;
+  const startTime = Date.now();
+  let success = true;
+  let error = null;
+
+  try {
+    const resp = await client.chat.completions.create({
+      model: process.env.OPENAI_MODEL || "gpt-4o",
+      messages: [
+        { role: "system", content: "Follow the user instructions exactly." },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.2,
+    });
+
+    const responseContent = resp.choices?.[0]?.message?.content ?? "";
+    const duration_ms = Date.now() - startTime;
+    
+    // Log timing metric
+    logMetric("openai_latency", duration_ms, true);
+
+    // Log response if in mock mode
+    if (openai.isMockMode && openai.isMockMode()) {
+      console.log("[AnalysisService] Sample response (mock mode):", responseContent);
+    }
+
+    // Parse and validate the response
+    const parsed = parseOpenAIJson(responseContent);
+    if (!parsed) {
+      throw new Error("OPENAI_INVALID_RESPONSE");
+    }
+
+    if (!validateTutorResponse(parsed)) {
+      throw new Error("OPENAI_INVALID_RESPONSE");
+    }
+
+    // Return normalized response (nextStepHint is optional but we prefer it to be a string)
+    return {
+      moveIndicator: parsed.moveIndicator,
+      Analysis: parsed.Analysis,
+      nextStepHint: parsed.nextStepHint || "",
+    };
+  } catch (err) {
+    success = false;
+    error = err.message;
+    const duration_ms = Date.now() - startTime;
+    logMetric("openai_latency", duration_ms, false, { error: err.message });
+    throw err;
+  }
+
+  // Parse and validate the response
+  const parsed = parseOpenAIJson(responseContent);
+  if (!parsed) {
+    throw new Error("OPENAI_INVALID_RESPONSE");
+  }
+
+  if (!validateTutorResponse(parsed)) {
+    throw new Error("OPENAI_INVALID_RESPONSE");
+  }
+
+  // Return normalized response (nextStepHint is optional but we prefer it to be a string)
+  return {
+    moveIndicator: parsed.moveIndicator,
+    Analysis: parsed.Analysis,
+    nextStepHint: parsed.nextStepHint || "",
+  };
 }
 
 /**
@@ -549,90 +550,32 @@ async function callOpenAIWithHistory(stockfishFacts, context, mode) {
     console.log(`[AnalysisService] Sample response (mock mode, ${mode}):`, responseContent);
   }
 
+  // For move mode, parse and validate as tutor response
+  if (mode === "move") {
+    const parsed = parseOpenAIJson(responseContent);
+    if (!parsed) {
+      throw new Error("OPENAI_INVALID_RESPONSE");
+    }
+
+    if (!validateTutorResponse(parsed)) {
+      throw new Error("OPENAI_INVALID_RESPONSE");
+    }
+
+    // Return normalized response
+    return {
+      moveIndicator: parsed.moveIndicator,
+      Analysis: parsed.Analysis,
+      nextStepHint: parsed.nextStepHint || "",
+    };
+  }
+
+  // For question mode, return raw content (string answer)
   return responseContent;
 }
 
 // ============================================================================
 // PUBLIC API FUNCTIONS
 // ============================================================================
-
-/**
- * Analyzes a move and emits explanation via socket (for socket-based games)
- * @param {string} gameId - Game identifier
- * @param {string} fenBefore - FEN before move
- * @param {string} fenAfter - FEN after move
- * @param {string} moveUci - UCI move notation
- * @param {number} moveIndex - Move index in game
- * @param {Object} analysisSettings - Analysis parameters
- * @param {Object} io - Socket.IO server instance
- * @param {string} studentSocketId - Student socket ID
- * @param {string} mentorSocketId - Mentor socket ID
- * @returns {Promise<void>}
- */
-async function analyzeMove(
-  gameId,
-  fenBefore,
-  fenAfter,
-  moveUci,
-  moveIndex,
-  analysisSettings,
-  io,
-  studentSocketId,
-  mentorSocketId
-) {
-  const cacheKey = getCacheKey(fenAfter, moveUci, analysisSettings);
-
-  // Cache hit: return immediately
-  if (cache.has(cacheKey)) {
-    const cached = cache.get(cacheKey);
-    emitToBoth(io, studentSocketId, mentorSocketId, "move-explanation", {
-      gameId,
-      moveIndex,
-      moveUci,
-      explanation: cached,
-      cached: true,
-    });
-    return;
-  }
-
-  // Cache miss: notify UI immediately
-  emitToBoth(io, studentSocketId, mentorSocketId, "analysis-started", {
-    gameId,
-    moveIndex,
-    moveUci,
-  });
-
-  // 1) Get Stockfish analysis
-  const stockfishFacts = await getStockfishAnalysis(fenAfter, analysisSettings);
-
-  // 2) Build move context
-  const moveContext = {
-    gameId,
-    moveIndex,
-    fenBefore,
-    fenAfter,
-    moveUci,
-    san: null,
-    turn: null,
-    lastMoves: [],
-    legalMoves: [],
-  };
-
-  // 3) Call OpenAI
-  const explanation = await callOpenAI(stockfishFacts, moveContext);
-
-  // 4) Cache result (24h)
-  cache.set(cacheKey, explanation, 60 * 60 * 24);
-
-  // 5) Emit result to both clients
-  emitToBoth(io, studentSocketId, mentorSocketId, "move-explanation", {
-    gameId,
-    moveIndex,
-    moveUci,
-    explanation,
-    cached: false,
-  });
-}
 
 /**
  * Analyzes a move with chat history context (for REST API)
@@ -659,39 +602,92 @@ async function analyzeMoveWithHistory({
 
   // Check cache
   if (cache.has(cacheKey)) {
+    // Log cache hit
+    const stats = cache.getStats();
+    logMetric("cache_hit", null, true, { key: cacheKey, stats });
+
     // Even on cache hit, we need bestMove for auto-play feature
     // Stockfish analysis is fast compared to LLM, so we fetch it anyway
-    const stockfishFacts = await getStockfishAnalysis(fen_after, analysisSettings);
+    const startTime = Date.now();
+    let success = true;
+    let error = null;
 
-    return {
-      explanation: cache.get(cacheKey),
-      cached: true,
-      bestMove: stockfishFacts?.bestMove || null,
-    };
+    try {
+      const stockFishResponse = await fetchWithTimeout(
+        `${STOCKFISH_URL}/analysis`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fen: fen_before,
+            moves: move,
+            depth,
+            multipv,
+          }),
+        },
+        6000,
+        "Stockfish /analysis"
+      );
+      
+      if (!stockFishResponse.ok) {
+        throw new Error(`Stockfish server error: ${stockFishResponse.status}`);
+      }
+      
+      const stockfishFacts = await stockFishResponse.json();
+      const duration_ms = Date.now() - startTime;
+      logMetric("stockfish_latency", duration_ms, true);
+      
+      return {
+        explanation: cache.get(cacheKey),
+        cached: true,
+        bestMove: stockfishFacts?.cpuMove || null,
+      };
+    } catch (err) {
+      success = false;
+      error = err.message;
+      const duration_ms = Date.now() - startTime;
+      logMetric("stockfish_latency", duration_ms, false, { error: err.message });
+      throw err;
+    }
   }
+
+  // Log cache miss
+  const stats = cache.getStats();
+  logMetric("cache_miss", null, true, { key: cacheKey, stats });
 
   // 1) Get Stockfish analysis
-  const stockFishResponse = await fetchWithTimeout(
-    `${STOCKFISH_URL}/analysis`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fen: fen_before,
-        moves: move,
-        depth,
-        multipv,
-      }),
-    },
-    6000, //timeout ms
-    "Stockfish /analysis"  
-  );
+  const startTime = Date.now();
 
-  if (!stockFishResponse.ok) {
-    throw new Error(`Stockfish server error: ${stockFishResponse.status}`);
+  let stockFishfacts;
+  try {
+    const stockFishResponse = await fetchWithTimeout(
+      `${STOCKFISH_URL}/analysis`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fen: fen_before,
+          moves: move,
+          depth,
+          multipv,
+        }),
+      },
+      6000, //timeout ms
+      "Stockfish /analysis"  
+    );
+
+    if (!stockFishResponse.ok) {
+      throw new Error(`Stockfish server error: ${stockFishResponse.status}`);
+    }
+
+    stockFishfacts = await stockFishResponse.json();
+    const duration_ms = Date.now() - startTime;
+    logMetric("stockfish_latency", duration_ms, true);
+  } catch (err) {
+    const duration_ms = Date.now() - startTime;
+    logMetric("stockfish_latency", duration_ms, false, { error: err.message });
+    throw err;
   }
-
-  const stockFishfacts = await stockFishResponse.json();
   // const stockfishFacts = await getStockfishAnalysis(fen_after, analysisSettings);
 
   // 2) Parse UCI history into move list
@@ -713,11 +709,39 @@ async function analyzeMoveWithHistory({
   // #endregion
 
   // 4) Call OpenAI with chat history
-  const explanation = await callOpenAIWithHistory(
-    stockFishfacts,
-    moveContext,
-    "move"
-  );
+  let explanation;
+  try {
+    const openaiResponse = await callOpenAIWithHistory(
+      stockFishfacts,
+      moveContext,
+      "move"
+    );
+
+    // openaiResponse is now a normalized object for move mode
+    explanation = JSON.stringify(openaiResponse);
+  } catch (error) {
+    // Log error metric if it's a rate limit
+    if (error.message === "OPENAI_RATE_LIMIT") {
+      logMetric("openai_rate_limit", null, false, { retryAfter: error.retryAfter });
+    }
+    
+    // If OpenAI fails but Stockfish succeeded, use fallback
+    // Stockfish succeeded if stockFishfacts exists and has required data
+    if (stockFishfacts && stockFishfacts.classify) {
+      const fallbackResponse = generateFallbackResponse(stockFishfacts);
+      explanation = JSON.stringify(fallbackResponse);
+      // Don't throw - return fallback as successful response
+      // Cache the fallback response (shorter TTL could be used here, but keeping it consistent)
+      cache.set(cacheKey, explanation, 60 * 60 * 24);
+      return {
+        explanation,
+        cached: false,
+        bestMove: stockFishfacts?.cpuMove || null,
+      };
+    }
+    // If Stockfish also failed, re-throw the error
+    throw error;
+  }
 
   // 5) Cache result
   cache.set(cacheKey, explanation, 60 * 60 * 24);
@@ -747,16 +771,26 @@ async function answerQuestion({
 
   // Check cache
   if (cache.has(questionCacheKey)) {
+    // Log cache hit
+    const stats = cache.getStats();
+    logMetric("cache_hit", null, true, { key: questionCacheKey, stats });
+    
     return {
       answer: cache.get(questionCacheKey),
       cached: true,
     };
   }
 
+  // Log cache miss
+  const stats = cache.getStats();
+  logMetric("cache_miss", null, true, { key: questionCacheKey, stats });
+
   // Optional: Get Stockfish analysis for current position (for context)
   let stockfishFacts = null;
+  let stockfishStartTime = null;
   try {
     // stockfishFacts = await getStockfishAnalysis(fen, { depth: 10 });  
+    stockfishStartTime = Date.now();
     const stockFishResponse = await fetchWithTimeout(
       `${STOCKFISH_URL}/analysis`, // use the same STOCKFISH_URL constant you already defined
       {
@@ -777,8 +811,14 @@ async function answerQuestion({
     }
 
     stockfishFacts = await stockFishResponse.json();
+    const duration_ms = Date.now() - stockfishStartTime;
+    logMetric("stockfish_latency", duration_ms, true);
     console.log(stockfishFacts)
   } catch (err) {
+    if (stockfishStartTime) {
+      const duration_ms = Date.now() - stockfishStartTime;
+      logMetric("stockfish_latency", duration_ms, false, { error: err.message });
+    }
     console.warn("[AnalysisService] Stockfish analysis failed for question, continuing without it:", err.message);
   }
 
@@ -812,12 +852,10 @@ async function answerQuestion({
 
 module.exports = {
   // Public API
-  analyzeMove,
   analyzeMoveWithHistory,
   answerQuestion,
   
   // Internal functions (exposed for testing/debugging)
-  getStockfishAnalysis,
   callOpenAI,
   callOpenAIWithHistory,
   getCacheKey,

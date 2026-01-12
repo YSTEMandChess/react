@@ -104,8 +104,61 @@ app.post("/api/analyze", async (req, res) => {
     });
   } catch (error) {
     const msg = error?.message || "Internal server error";
-    const isTimeout = msg.toLowerCase().includes("timed out");
-    return res.status(isTimeout ? 504 : 500).json({ success: false, error: msg });
+    const msgLower = msg.toLowerCase();
+    
+    // Classify error types
+    let errorCode = "INTERNAL_ERROR";
+    let retryable = false;
+    let statusCode = 500;
+
+    if (msg === "OPENAI_INVALID_RESPONSE") {
+      errorCode = "OPENAI_INVALID_RESPONSE";
+      retryable = true;
+      statusCode = 500;
+    } else if (msgLower.includes("openai") && msgLower.includes("timeout")) {
+      errorCode = "OPENAI_TIMEOUT";
+      retryable = true;
+      statusCode = 504;
+    } else if (msgLower.includes("rate limit") || msgLower.includes("rate_limit")) {
+      errorCode = "OPENAI_RATE_LIMIT";
+      retryable = true;
+      statusCode = 429;
+    } else if (msgLower.includes("openai")) {
+      errorCode = "OPENAI_API_ERROR";
+      retryable = true;
+      statusCode = 500;
+    } else if (msgLower.includes("stockfish") && msgLower.includes("timeout")) {
+      errorCode = "STOCKFISH_TIMEOUT";
+      retryable = true;
+      statusCode = 504;
+    } else if (msgLower.includes("stockfish") && (msgLower.includes("network") || msgLower.includes("fetch"))) {
+      errorCode = "STOCKFISH_NETWORK_ERROR";
+      retryable = true;
+      statusCode = 502;
+    } else if (msgLower.includes("stockfish") && msgLower.includes("parse")) {
+      errorCode = "STOCKFISH_PARSE_ERROR";
+      retryable = false;
+      statusCode = 500;
+    } else if (msgLower.includes("validation")) {
+      errorCode = "VALIDATION_ERROR";
+      retryable = false;
+      statusCode = 400;
+    } else if (msgLower.includes("network") || msgLower.includes("fetch") || msgLower.includes("econnrefused")) {
+      errorCode = "NETWORK_ERROR";
+      retryable = true;
+      statusCode = 502;
+    } else if (msgLower.includes("timed out")) {
+      errorCode = "TIMEOUT";
+      retryable = true;
+      statusCode = 504;
+    }
+
+    return res.status(statusCode).json({
+      success: false,
+      error: msg,
+      errorCode,
+      retryable,
+    });
   }
 });
 

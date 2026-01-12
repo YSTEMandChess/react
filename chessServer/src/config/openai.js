@@ -3,10 +3,16 @@
 // - Loads OPENAI_API_KEY from environment
 // - Exports configured OpenAI client
 // - Supports mock mode for development
+// - Rate limiting for API calls
 
 const OpenAI = require("openai");
+const RateLimiter = require("../utils/rateLimiter");
 
 const mode = (process.env.LLM_MODE || "openai").toLowerCase(); // "openai" | "mock"
+
+// Initialize rate limiter (default: 60 requests per minute)
+const rateLimitRPM = Number(process.env.OPENAI_RATE_LIMIT_RPM || 60);
+const rateLimiter = new RateLimiter(rateLimitRPM);
 
 function hasOpenAIKey() {
   const key = process.env.OPENAI_API_KEY;
@@ -106,6 +112,7 @@ module.exports = {
   isConfigured,
   isMockMode,
   llmMode: mode,
+  rateLimiter,
   // For backward compatibility, export a getter that returns the client
   get openai() {
     return getClient();
