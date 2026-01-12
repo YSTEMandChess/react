@@ -28,6 +28,11 @@ type ChatMessage = {
     Analysis?: string;
     nextStepHint?: string;
   };
+  error?: {
+    message: string;
+    errorCode?: string;
+    retryable?: boolean;
+  };
 };
 
 
@@ -49,6 +54,11 @@ const AITutor: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);  //array of chat messages. Contains every message sent or received.
   // Avatar and analysis state
   const [isAnalyzing, setIsAnalyzing] = useState(false);          //flag to indicate if the AI is analyzing a move or question. Shows loading dots while analyzing.
+  // Retry state
+  const [lastFailedRequest, setLastFailedRequest] = useState<{
+    type: "move" | "question";
+    payload: any;
+  } | null>(null);
 
   //------------------------------
   //       DATA FORMAT HELPERS
@@ -140,6 +150,31 @@ const AITutor: React.FC = () => {
   
 
   //--------------------------------
+  //       ERROR HANDLING HELPERS
+  //--------------------------------
+  function getErrorMessage(errorCode?: string, fallbackMessage?: string): string {
+    if (!errorCode) {
+      return fallbackMessage || "An error occurred. Please try again.";
+    }
+
+    const errorMessages: Record<string, string> = {
+      OPENAI_INVALID_RESPONSE: "Received an unexpected response. Trying again...",
+      OPENAI_TIMEOUT: "The analysis is taking longer than expected. Please try again.",
+      OPENAI_RATE_LIMIT: "Too many requests. Please wait a moment and try again.",
+      OPENAI_API_ERROR: "Unable to analyze the move. Please try again or make another move.",
+      STOCKFISH_TIMEOUT: "The engine analysis timed out. Please try again.",
+      STOCKFISH_NETWORK_ERROR: "Connection issue with the chess engine. Please check your internet and try again.",
+      STOCKFISH_PARSE_ERROR: "Failed to parse engine response. Please try again.",
+      VALIDATION_ERROR: "Invalid request. Please check your input and try again.",
+      NETWORK_ERROR: "Connection issue. Please check your internet and try again.",
+      TIMEOUT: "Request timed out. Please try again.",
+      INTERNAL_ERROR: "Server error. Please try again later.",
+    };
+
+    return errorMessages[errorCode] || fallbackMessage || "An error occurred. Please try again.";
+  }
+
+  //--------------------------------
   //       APP BEHAVIOR HELPERS
   //--------------------------------  
   async function sendMoveForAnalysis(
@@ -185,13 +220,34 @@ const AITutor: React.FC = () => {
       const data = await response.json();
 
       if (!data.success) {
-        console.error("Analysis error:", data.error);
+        const errorMessage = getErrorMessage(data.errorCode, data.error);
         setIsAnalyzing(false);
+        
+        // Store the failed request for retry
+        if (data.retryable) {
+          setLastFailedRequest({
+            type: "move",
+            payload: {
+              fen_before: fenBefore,
+              fen_after: fenAfter,
+              move: moveUci,
+              uciHistory,
+              depth: 15,
+              chatHistory: nextChatHistory,
+            },
+          });
+        }
+
         // Replace last message (placeholder) with error
         setChatMessages((prev) =>
           replaceLatestAssistantPlaceholder(prev, {
             role: "assistant",
-            content: `Error: ${data.error || "Analysis failed"}`,
+            content: errorMessage,
+            error: {
+              message: errorMessage,
+              errorCode: data.errorCode,
+              retryable: data.retryable || false,
+            },
           })
         );
         return;
@@ -231,11 +287,31 @@ const AITutor: React.FC = () => {
     } catch (error) {
       setIsAnalyzing(false);
       console.error("Network error:", error);
+      
+      const errorMessage = getErrorMessage("NETWORK_ERROR", "Network error: Failed to analyze move.");
+      
+      // Store the failed request for retry
+      setLastFailedRequest({
+        type: "move",
+        payload: {
+          fen_before: fenBefore,
+          fen_after: fenAfter,
+          move: moveUci,
+          uciHistory,
+          depth: 15,
+          chatHistory: nextChatHistory,
+        },
+      });
     
       setChatMessages((prev) =>
         replaceLatestAssistantPlaceholder(prev, {
           role: "assistant",
-          content: "Network error: Failed to analyze move.",
+          content: errorMessage,
+          error: {
+            message: errorMessage,
+            errorCode: "NETWORK_ERROR",
+            retryable: true,
+          },
         })
       );
     }
@@ -292,6 +368,36 @@ const AITutor: React.FC = () => {
       // Reset analyzing state
       setIsAnalyzing(false);
 
+      if (!data.success) {
+        const errorMessage = getErrorMessage(data.errorCode, data.error);
+        
+        // Store the failed request for retry
+        if (data.retryable) {
+          setLastFailedRequest({
+            type: "question",
+            payload: {
+              fen,
+              question: questionText,
+              chatHistory: nextChatHistory,
+            },
+          });
+        }
+
+        // Replace placeholder message with error
+        setChatMessages((prev) =>
+          replaceLatestAssistantPlaceholder(prev, {
+            role: "assistant",
+            content: errorMessage,
+            error: {
+              message: errorMessage,
+              errorCode: data.errorCode,
+              retryable: data.retryable || false,
+            },
+          })
+        );
+        return;
+      }
+
       // Replace placeholder message with actual answer
       setChatMessages((prev) =>
         replaceLatestAssistantPlaceholder(prev, {
@@ -303,11 +409,144 @@ const AITutor: React.FC = () => {
     } catch (error) {
       setIsAnalyzing(false);
       console.error("Network error:", error);
+      
+      const errorMessage = getErrorMessage("NETWORK_ERROR", "Network error: Failed to get answer.");
+      
+      // Store the failed request for retry
+      setLastFailedRequest({
+        type: "question",
+        payload: {
+          fen,
+          question: questionText,
+          chatHistory: nextChatHistory,
+        },
+      });
+      
       // Replace placeholder message with error
       setChatMessages((prev) =>
         replaceLatestAssistantPlaceholder(prev, {
           role: "assistant",
-          content: "Network error: Failed to get answer.",
+          content: errorMessage,
+          error: {
+            message: errorMessage,
+            errorCode: "NETWORK_ERROR",
+            retryable: true,
+          },
+        })
+      );
+    }
+  }
+
+  // Retry function
+  async function retryLastFailedRequest() {
+    if (!lastFailedRequest) return;
+
+    setIsAnalyzing(true);
+
+    // Add placeholder message for loading state
+    const nextChatHistory = [
+      ...chatMessages,
+      {
+        role: "assistant" as const,
+        content: "",
+        explanation: undefined,
+      },
+    ];
+    setChatMessages(nextChatHistory);
+
+    // Helper to ensure exactly one slash in URL
+    const baseUrl = environment.urls.chessServer.replace(/\/$/, "");
+    const apiUrl = `${baseUrl}/api/analyze`;
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: lastFailedRequest.type,
+          ...lastFailedRequest.payload,
+          chatHistory: nextChatHistory,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        const errorMessage = getErrorMessage(data.errorCode, data.error);
+        setIsAnalyzing(false);
+        
+        // Keep the failed request for another retry attempt if retryable
+        if (!data.retryable) {
+          setLastFailedRequest(null);
+        }
+
+        setChatMessages((prev) =>
+          replaceLatestAssistantPlaceholder(prev, {
+            role: "assistant",
+            content: errorMessage,
+            error: {
+              message: errorMessage,
+              errorCode: data.errorCode,
+              retryable: data.retryable || false,
+            },
+          })
+        );
+        return;
+      }
+
+      // Handle successful response
+      if (lastFailedRequest.type === "move") {
+        let explanation: ChatMessage["explanation"] | undefined;
+        try {
+          if (typeof data.explanation === "string") {
+            explanation = JSON.parse(data.explanation);
+          } else if (data.explanation && typeof data.explanation === "object") {
+            explanation = data.explanation;
+          }
+        } catch (error) {
+          console.error("Failed to parse explanation:", error);
+        }
+
+        setIsAnalyzing(false);
+        setLastFailedRequest(null);
+
+        setChatMessages((prev) =>
+          replaceLatestAssistantPlaceholder(prev, {
+            role: "assistant",
+            content: explanation?.Analysis ?? "Analysis ready.",
+            explanation,
+          })
+        );
+
+        if (data.bestMove) {
+          applyCpuMove(data.bestMove);
+        }
+      } else {
+        setIsAnalyzing(false);
+        setLastFailedRequest(null);
+
+        setChatMessages((prev) =>
+          replaceLatestAssistantPlaceholder(prev, {
+            role: "assistant",
+            content: data.answer ?? "No answer returned.",
+          })
+        );
+      }
+    } catch (error) {
+      setIsAnalyzing(false);
+      console.error("Network error:", error);
+      
+      const errorMessage = getErrorMessage("NETWORK_ERROR", "Network error: Please try again.");
+      
+      setChatMessages((prev) =>
+        replaceLatestAssistantPlaceholder(prev, {
+          role: "assistant",
+          content: errorMessage,
+          error: {
+            message: errorMessage,
+            errorCode: "NETWORK_ERROR",
+            retryable: true,
+          },
         })
       );
     }
@@ -470,6 +709,45 @@ const AITutor: React.FC = () => {
                   }}
                 >
                   ♟ MOVE: {m.content}
+                </div>
+              ) : m.role === "assistant" && m.error ? (
+                // Error message with retry button - check this BEFORE regular assistant messages
+                <div
+                  style={{
+                    maxWidth: "88%",
+                    alignSelf: "flex-start",
+                    background: "#FEF2F2",
+                    color: "#991B1B",
+                    border: "1px solid #FCA5A5",
+                    borderRadius: 14,
+                    padding: "12px 14px",
+                    lineHeight: 1.5,
+                    boxShadow: "0 6px 14px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  <div style={{ marginBottom: m.error.retryable ? 8 : 0 }}>
+                    {m.content}
+                  </div>
+                  {m.error.retryable && (
+                    <button
+                      onClick={retryLastFailedRequest}
+                      disabled={isAnalyzing}
+                      style={{
+                        marginTop: 8,
+                        padding: "6px 12px",
+                        background: "#DC2626",
+                        color: "#ffffff",
+                        border: "none",
+                        borderRadius: 8,
+                        cursor: isAnalyzing ? "not-allowed" : "pointer",
+                        fontSize: 13,
+                        fontWeight: 500,
+                        opacity: isAnalyzing ? 0.7 : 1,
+                      }}
+                    >
+                      Retry
+                    </button>
+                  )}
                 </div>
               ) : m.role === "assistant" && m.explanation ? (
                 (() => {
