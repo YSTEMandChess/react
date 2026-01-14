@@ -1,35 +1,67 @@
-/**
- * Home Page Component
- * 
- * This is the main landing page component for the Y STEM and Chess application.
- * It serves as the entry point for visitors and provides an overview of the
- * organization's mission, featured content, and calls-to-action.
- * 
- * Features:
- * - Hero section with organization branding
- * - Featured books and publications
- * - Donation and purchase functionality
- * - Navigation to other sections of the site
- * - Responsive design for all device types
- */
-
-import "./Home.css";
-import Images from "../../assets/images/imageImporter";
 import { useNavigate } from "react-router";
+import Images from "../../assets/images/imageImporter";
+import Ventive from "../../assets/images/sponsors/ventive.png";
+import Kount from "../../assets/images/sponsors/kount.png";
+import IdahoCentral from "../../assets/images/sponsors/idahoCentral.jpg";
+import PH from "../../assets/images/sponsors/PH.png";
+import BoiseRescue from "../../assets/images/partners/boiseRescue.png";
+import BoysAndGirls from "../../assets/images/partners/boysAndGirls.png";
+import Possible from "../../assets/images/partners/possible.png";
+import BoiseDistrict from "../../assets/images/partners/boiseDistrict.png";
+import Rotary from "../../assets/images/partners/Rotary.png";
+import "./Home.css";
 
-/**
- * Static data for featured books displayed on the home page
- * 
- * This array contains information about the organization's published books,
- * including cover images, titles, subtitles, and descriptions. The data
- * is used to render book cards with purchase functionality.
- * 
- * Each book object contains:
- * - image: Reference to the book cover image
- * - title: Main book title
- * - subtitle: Descriptive subtitle
- * - description: Detailed book description for marketing
- */
+const sponsors = [
+  {
+    name: "Ventive",
+    logo: Ventive,
+    href: "https://www.getventive.com",
+  },
+  {
+    name: "Kount",
+    logo: Kount,
+    href: "https://kount.com",
+  },
+  {
+    name: "Idaho Central",
+    logo: IdahoCentral,
+    href: "https://iccu.com",
+  },
+  {
+    name: "PH",
+    logo: PH,
+    href: "https://partnerhero.com",
+  },
+];
+
+const partners = [
+  {
+    name: "Boise Rescue Mission",
+    logo: BoiseRescue,
+    href: "https://boiserm.org",
+  },
+  {
+    name: "Boys and Girls Clubs of Ada County",
+    logo: BoysAndGirls,
+    href: "https://adaclubs.org",
+  },
+  {
+    name: "Everything's Possible",
+    logo: Possible,
+    href: "https://www.boiseschools.org",
+  },
+  {
+    name: "Boise District Community Schools",
+    logo: BoiseDistrict,
+    href: "https://community-schools.boiseschools.org",
+  },
+  {
+    name: "Boise Sunrise Rotary Club",
+    logo: Rotary,
+    href: "https://portal.clubrunner.ca/3864",
+  }
+];
+
 const books = [
   {
     image: Images.Book1,
@@ -61,34 +93,11 @@ const Home = () => {
   // Hook for programmatic navigation between pages
   const navigate = useNavigate();
 
-  /**
-   * Handles donation button click events
-   * 
-   * This function redirects users to the external donation platform
-   * (DonorBox) where they can make contributions to support the
-   * organization's mission and programs.
-   * 
-   * Uses window.location.href for external navigation to ensure
-   * proper handling of the third-party donation platform.
-   */
   const handleDonateButton = () => {
     window.location.href =
       "https://donorbox.org/y-stem-and-chess-inc-learning-platform";
   };
 
-  /**
-   * Handles book purchase button click events
-   * 
-   * This function opens the appropriate Amazon product page in a new tab
-   * based on the book title provided. It supports multiple books and
-   * can be easily extended for additional publications.
-   * 
-   * @param title - The title of the book to purchase (optional)
-   * 
-   * Supported books:
-   * - "How to Start a Tech-Based Nonprofit"
-   * - "The Zero Dollar Workforce"
-   */
   const handleBuyNow = (title = "") => {
     // Handle purchase for "How to Start a Tech-Based Nonprofit"
     if (title === "How to Start a Tech-Based Nonprofit") {
@@ -265,6 +274,63 @@ const Home = () => {
         <footer role="contentinfo">
           <p>All proceeds will be donated to the organization</p>
         </footer>
+      </div>
+
+      <img
+        src={Images.LogoLineBr}
+        className="logo-break"
+        alt="Y STEM styled line break"
+        role="presentation">
+      </img>
+
+      {/* Sponsors Row */}
+      <div className="ml-5 mr-5 mb-12">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-text-primary text-center mb-8">
+          Sponsors
+        </h3>
+        <div className="flex flex-wrap justify-center items-center gap-12">
+          {sponsors.map((sponsor) => (
+            <a
+              key={sponsor.name}
+              href={sponsor.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={sponsor.name}
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src={sponsor.logo}
+                alt={`${sponsor.name} logo`}
+                className="h-20 w-40 object-contain rounded-md"
+              />
+            </a>
+          ))}
+        </div>
+      </div>
+
+      {/* Partners Row */}
+      <div className="ml-5 mr-5 mb-24">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-text-primary text-center mb-8">
+          Partners
+        </h3>
+        <div className="flex flex-wrap justify-center items-center gap-8">
+          {partners.map((partner) => (
+            <a
+              key={partner.name}
+              href={partner.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={partner.name}
+              className="bg-white p-4 rounded-md transition-opacity hover:opacity-80"
+            >
+              <img
+                src={partner.logo}
+                alt={`${partner.name} logo`}
+                className="h-16 w-37 object-contain"
+              />
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );
