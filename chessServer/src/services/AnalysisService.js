@@ -19,6 +19,7 @@
 
 const cache = require("../utils/cache");
 const openai = require("../config/openai");
+const mockTutor = require("../utils/mockTutor");
 const crypto = require("crypto");
 
 const STOCKFISH_URL = process.env.STOCKFISH_SERVER_URL || "http://localhost:4002";
@@ -474,6 +475,20 @@ async function callOpenAI(stockfishFacts, moveContext) {
  * @returns {Promise<string>} LLM response
  */
 async function callOpenAIWithHistory(stockfishFacts, context, mode) {
+  // Check if mock mode and move mode - use MockTutor directly
+  if (openai.isMockMode && openai.isMockMode() && mode === "move") {
+    const mockResponse = mockTutor.buildMockMoveTutorResponse(stockfishFacts, context);
+    console.log(`[AnalysisService] Mock tutor response (move mode):`, mockResponse);
+    
+    // Return normalized response (same format as OpenAI response)
+    return {
+      moveIndicator: mockResponse.moveIndicator,
+      Analysis: mockResponse.Analysis,
+      nextStepHint: mockResponse.nextStepHint || "",
+    };
+  }
+
+  // Continue with OpenAI (or mock client for question mode)
   const client = openai.getClient ? openai.getClient() : openai;
   
   if (!client) {
@@ -702,6 +717,7 @@ async function analyzeMoveWithHistory({
     moveIndex: moveIndex >= 0 ? moveIndex : 0,
     lastMoves: lastMoves,
     chatHistory: chatHistory,
+    learnerColor: "w", // Default to white learner (can be extended to infer from request later)
   };
 
   // #region agent log
