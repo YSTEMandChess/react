@@ -46,6 +46,7 @@ module.exports = {
         xs: "0.75rem",
         sm: "0.875rem",
         md: "1rem",
+        base: "1rem",
         lg: "1.125rem",
         xl: "1.375rem",
         xxl: "1.75rem",
@@ -80,6 +81,8 @@ module.exports = {
       boxShadow: {
         sm: "0 2px 6px rgba(0, 0, 0, 0.08)",
         md: "0 4px 12px rgba(0, 0, 0, 0.12)",
+        soft: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+        'soft-up': "0 -2px 10px rgba(0, 0, 0, 0.05)",
       },
 
       animation: {
