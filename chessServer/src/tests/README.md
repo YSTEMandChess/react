@@ -9,6 +9,7 @@ This directory contains comprehensive tests for the AI Tutor flow.
 - **`cache.test.js`** - Cache utility tests (TTL, expiration, cleanup)
 - **`openai.test.js`** - OpenAI client initialization and mock mode tests
 - **`AnalysisService.test.js`** - Main service tests for move analysis and question answering
+- **`mockTutor.test.js`** - Mock tutor response generation tests (UCI to SAN conversion, evaluation normalization, contradiction resolution)
 - **`errorHandling.test.js`** - Error scenarios (timeouts, API failures)
 - **`api.test.js`** - REST API endpoint tests using supertest
 
@@ -38,6 +39,7 @@ cd chessServer
 npm test -- AnalysisService.test.js
 npm test -- cache.test.js
 npm test -- openai.test.js
+npm test -- mockTutor.test.js
 npm test -- errorHandling.test.js
 npm test -- api.test.js
 ```
