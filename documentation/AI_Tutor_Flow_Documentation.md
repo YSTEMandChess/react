@@ -662,7 +662,7 @@ All metrics logged as structured JSON:
 - `OPENAI_TIMEOUT_MS`: OpenAI API timeout in milliseconds (default: `7000`)
 - `OPENAI_MAX_RETRIES`: Maximum retries for OpenAI API (default: `0`)
 - `OPENAI_RATE_LIMIT_RPM`: Rate limit in requests per minute (default: `60`)
-- `STOCKFISH_SERVER_URL`: Stockfish server URL (default: `"http://localhost:4002"`)
+- `STOCKFISH_SERVER_URL`: Stockfish server URL (default: `"http://localhost:4002"`). **Note:** The Stockfish server defaults to port 3002, so either set `STOCKFISH_SERVER_URL=http://localhost:3002` or configure the Stockfish server to run on port 4002.
 - `PORT`: Chess server port (default: `4000`)
 - `CACHE_MAX_SIZE`: Maximum cache entries before LRU eviction (default: `5000`)
 - `METRICS_LOG_ENABLED`: Enable/disable structured JSON metric logging (default: `true`)
@@ -680,9 +680,10 @@ All metrics logged as structured JSON:
 
 When `LLM_MODE=mock` or no `OPENAI_API_KEY`:
 
-- Returns sample JSON for move analysis: `{ moveIndicator: "Good", Analysis: "...", nextStepHint: "..." }`
-- Returns sample text for questions
+- For move analysis: Uses `mockTutor.buildMockMoveTutorResponse()` which generates position-specific responses based on Stockfish analysis data (move classification, evaluation, best moves, etc.)
+- Returns JSON for move analysis: `{ moveIndicator: "Best|Good|Inaccuracy|Mistake|Blunder", Analysis: "...", nextStepHint: "..." }`
+- For questions: Returns sample text via mock OpenAI client
 - Rate limiting still applies (prevents excessive mock calls)
 - Logs responses to console
 - Allows full flow testing without API costs
-- **Note:** Mock responses are generic and do not reflect actual move quality (see future enhancements)
+- **Note:** Mock move responses are position-specific and reflect actual move quality based on Stockfish analysis
