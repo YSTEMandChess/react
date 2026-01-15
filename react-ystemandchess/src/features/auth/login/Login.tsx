@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 // import { Link } from 'react-router-dom';
 import './Login.scss';
 import { useState } from 'react';
@@ -6,10 +6,10 @@ import { environment } from "../../../environments/environment";
 import { useCookies } from 'react-cookie';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [cookies, setCookie] = useCookies(['login']);
-  const [loginError, setLoginError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [cookies, setCookie] = useCookies(["login"]);
+  const [loginError, setLoginError] = useState("");
   const [usernameFlag, setUsernameFlag] = useState(false);
   const [passwordFlag, setPasswordFlag] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +35,7 @@ const Login = () => {
     if (passwordFlag === true || usernameFlag === true) {
       setLoginError('Invalid username or password');
     } else {
-      setLoginError('');
+      setLoginError("");
     }
   };
 
@@ -47,9 +47,10 @@ const Login = () => {
       setUsernameFlag(true);
       setPasswordFlag(true);
       setLoginError('Invalid username or password');
+      setIsLoading(false);
       return;
     } else {
-      setLoginError('');
+      setLoginError("");
     }
 
     let url = `${environment.urls.middlewareURL}/auth/login?username=${username}&password=${password}`;
@@ -67,7 +68,7 @@ const Login = () => {
           }
         }
       };
-      xmlHttp.open('POST', theUrl, true);
+      xmlHttp.open("POST", theUrl, true);
       xmlHttp.send(null);
     };
 
@@ -80,28 +81,28 @@ const Login = () => {
         expires.setDate(expires.getDate() + 1);
         setCookie('login', JSON.parse(response).token, { expires });
 
-        let payload = JSON.parse(atob(response.split('.')[1]));
-        console.log(payload)
+        let payload = JSON.parse(atob(response.split(".")[1]));
+        console.log(payload);
 
-        switch (payload['role']) {
-          case 'student':
-            window.location.pathname = '/student-profile';
-            console.log(payload['role'])
+        switch (payload["role"]) {
+          case "student":
+            window.location.pathname = "/student-profile";
+            console.log(payload["role"]);
             break;
-          case 'parent':
-            window.location.pathname = '/parent';
+          case "parent":
+            window.location.pathname = "/parent";
             break;
-          case 'mentor':
-            window.location.pathname = '/mentor-profile';
+          case "mentor":
+            window.location.pathname = "/mentor-profile";
             break;
-          case 'admin':
-            window.location.pathname = '/admin';
+          case "admin":
+            window.location.pathname = "/admin";
             break;
           default:
-            window.location.pathname = '';
+            window.location.pathname = "";
         }
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }, () => {
       setLoginError('The username or password is incorrect.');
       setIsLoading(false);
@@ -117,10 +118,10 @@ const Login = () => {
         <div className='input-wrapper'>
           <label htmlFor='username' id="username-label">Username</label>
           <input
-            type='text'
-            name='username'
-            id='username'
-            placeholder='Username'
+            type="text"
+            name="username"
+            id="username"
+            placeholder="Username"
             value={username}
             onChange={(e) => {
               setUsername(e.target.value);
@@ -134,10 +135,10 @@ const Login = () => {
         <div className='input-wrapper'>
           <label htmlFor='password' id="password-label">Password</label>
           <input
-            type='password'
-            name='password'
-            placeholder='Password'
-            id='password'
+            type="password"
+            name="password"
+            placeholder="Password"
+            id="password"
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);

@@ -39,31 +39,25 @@ const Home = () => {
             Helping your child develop <br />
             critical thinking skills!
           </h1>
-
           <p>
-            We are a nonprofit organization empowering <br></br>children to find
-            their own success in STEM through <br></br>Chess, Math and Computer
-            Science.
+            We are a nonprofit organization empowering <br />
+            children to find their own success in STEM through <br />
+            Chess, Math and Computer Science.
           </p>
 
           <button className="donate-button" onClick={handleDonateButton}>
             <strong>Donate</strong>
           </button>
         </div>
-        <div className="pic">
-          <img
-            src={Images.TreesGroup}
-            id="tree-group-img"
-            alt="ystemandchess mascot"
-          ></img>
-        </div>
+
+        <img
+          src={Images.TreesGroup}
+          id="tree-group-img"
+          alt="ystemandchess mascot"
+        />
       </div>
 
-      <img
-        src={Images.LogoLineBr}
-        className="logo-break"
-        alt="line break"
-      ></img>
+      <img src={Images.LogoLineBr} className="logo-break" alt="line break" />
 
       <h1 id="floating-h1">Everyone is included.</h1>
       <h1 id="floating-h1">Everyone is welcomed.</h1>

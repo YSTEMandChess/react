@@ -17,6 +17,7 @@ const express = require("express");
 const passport = require("passport");
 const router = express.Router();
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 const { check, validationResult } = require("express-validator");
 const users = require("../models/users");
 const Activities = require("../models/activities");
@@ -26,7 +27,7 @@ const {
 } = require("../template/changePasswordTemplate");
 const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
-const { MongoClient } = require('mongodb');
+const { MongoClient } = require("mongodb");
 const config = require("config");
 
 // Cache database client to prevent repeated connections
@@ -110,7 +111,6 @@ router.post(
       //Set the account created date for the new user
       const currDate = new Date();
 
-
       //Switch statement for functionality depending on role
       if (role === "parent") {
         let studentsArray = JSON.parse(students);
@@ -180,7 +180,7 @@ router.post(
       console.error(error.message);
       res.status(500).json("Server error");
     }
-  },
+  }
 );
 
 // @route   POST /user/children
@@ -236,7 +236,7 @@ router.post(
       console.error(error.message);
       res.status(500).json("Server error");
     }
-  },
+  }
 );
 // @route POST /user/sendMail
 // @desc sending the mail based on username and email
@@ -289,7 +289,7 @@ const updatePassword = async (body) => {
   const result = await users.findOneAndUpdate(
     { username: body.username, email: body.email },
     { password: body.password },
-    { new: true },
+    { new: true }
   );
   return result;
 };
@@ -297,7 +297,7 @@ const updatePassword = async (body) => {
 // @route GET /user/mentorless/:keyword
 // @desc for getting the mentorless students whose username matches keyword.
 router.get("/mentorless", async (req, res) => {
-  const keyword = req.query.keyword || ''; // get the keyword
+  const keyword = req.query.keyword || ""; // get the keyword
   try {
     const db = await getDb();
     const users = db.collection("users");
@@ -318,21 +318,28 @@ router.get("/mentorless", async (req, res) => {
 // @desc if user is mentor, update its student username to the mentorship= query
 // @access  Public with jwt Authentication
 router.put(
-  "/updateMentorship", 
+  "/updateMentorship",
   async (req, res, next) => {
-    passport.authenticate("jwt", { session: false }, async (err, user, info) => {
-      if (!user) {
-        return res.status(401).json({ message: "Unauthorized" });
+    passport.authenticate(
+      "jwt",
+      { session: false },
+      async (err, user, info) => {
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+        req.user = user;
+        next();
       }
-      req.user = user;
-      next();
-    })(req, res, next) // authenticate jwt
-  }, 
+    )(req, res, next); // authenticate jwt
+  },
   async (req, res) => {
     // get the student/mentor username
     const mentorship = req.query.mentorship;
-    if (!mentorship) { // mentorship query is required
-      return res.status(400).json({ message: "Missing mentorship username in query" });
+    if (!mentorship) {
+      // mentorship query is required
+      return res
+        .status(400)
+        .json({ message: "Missing mentorship username in query" });
     }
 
     try {
@@ -359,23 +366,28 @@ router.put(
     } catch (err) {
       res.status(500).json({ error: err.message }); // error
     }
-    }
+  }
 );
 
 // @route GET /user/getMentorship
 // @desc if user is a student, responds with its mentor's object {username, firstName, lastName}
 // @desc if user is a mentor, responds with its student's object {username, firstName, lastName}
 // @access  Public with jwt Authentication
-router.get("/getMentorship",
+router.get(
+  "/getMentorship",
   async (req, res, next) => {
-    passport.authenticate("jwt", { session: false }, async (err, user, info) => {
-      if (!user) {
-        return res.status(401).json({ message: "Unauthorized" });
+    passport.authenticate(
+      "jwt",
+      { session: false },
+      async (err, user, info) => {
+        if (!user) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+        req.user = user;
+        next();
       }
-      req.user = user;
-      next();
-    })(req, res, next) // authenticate jwt
-  }, 
+    )(req, res, next); // authenticate jwt
+  },
   async (req, res) => {
     try {
       const db = await getDb();
@@ -401,5 +413,64 @@ router.get("/getMentorship",
     }
   }
 );
+
+router.get("/getStudent", async (req, res) => {
+  const keyword = req.query.keyword || "";
+
+  try {
+    const db = await getDb();
+    const users = db.collection("users");
+
+    const userList = await users
+      .find({
+        role: "student", // get student
+        username: { $regex: keyword, $options: "i" }, // case-insensitive match for username
+      })
+      .toArray();
+
+    res.json(userList.map((user) => user.username)); // return a list of the usernames
+  } catch (err) {
+    res.status(500).json({ error: err.message }); // error
+  }
+});
+
+// verify role
+
+router.post("/verifyRole", async (req, res) => {
+  const { token } = req.body;
+
+  if (!token.login) {
+    return res.status(400).json({ error: "Missing token" });
+  }
+
+  const decoded = jwt.verify(token.login, config.get("indexKey"));
+
+  const user = await users
+    .findOne({ username: decoded.username })
+    .select("role");
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  console.log(decoded.role, user.role);
+  if (decoded.role === user.role) {
+    return res.json({ verified: true });
+  } else {
+    return res.status(403).json({ error: "Role mismatch", verified: false });
+  }
+});
+
+router.get("/getUser", async (req, res) => {
+  const username = req.query.username || "";
+  try {
+    const user = await users.findOne({ username }).select("-password");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    return res.status(200).json(user);
+  } catch (err) {
+    return res.status(401).json({ error: err });
+  }
+});
 
 module.exports = router;
