@@ -47,6 +47,7 @@ const Login = () => {
       setUsernameFlag(true);
       setPasswordFlag(true);
       setLoginError('Invalid username or password');
+      setIsLoading(false);
       return;
     } else {
       setLoginError("");
@@ -80,29 +81,28 @@ const Login = () => {
         expires.setDate(expires.getDate() + 1);
         setCookie('login', JSON.parse(response).token, { expires });
 
-          let payload = JSON.parse(atob(response.split(".")[1]));
-          console.log(payload);
+        let payload = JSON.parse(atob(response.split(".")[1]));
+        console.log(payload);
 
-          switch (payload["role"]) {
-            case "student":
-              window.location.pathname = "/student-profile";
-              console.log(payload["role"]);
-              break;
-            case "parent":
-              window.location.pathname = "/parent";
-              break;
-            case "mentor":
-              window.location.pathname = "/mentor-profile";
-              break;
-            case "admin":
-              window.location.pathname = "/admin";
-              break;
-            default:
-              window.location.pathname = "";
-          }
+        switch (payload["role"]) {
+          case "student":
+            window.location.pathname = "/student-profile";
+            console.log(payload["role"]);
+            break;
+          case "parent":
+            window.location.pathname = "/parent";
+            break;
+          case "mentor":
+            window.location.pathname = "/mentor-profile";
+            break;
+          case "admin":
+            window.location.pathname = "/admin";
+            break;
+          default:
+            window.location.pathname = "";
         }
-      },
-      setIsLoading(false);
+        setIsLoading(false);
+      }
     }, () => {
       setLoginError('The username or password is incorrect.');
       setIsLoading(false);
