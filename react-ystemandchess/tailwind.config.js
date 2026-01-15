@@ -22,8 +22,7 @@ module.exports = {
         },
 
         border: {
-          light: "#E0E0E0",
-          focus: "#7FCC26",
+          light: "#E0E0E0",        
         },
 
         error: {
@@ -40,60 +39,6 @@ module.exports = {
           "BlinkMacSystemFont",
           "sans-serif",
         ],
-      },
-
-      fontSize: {
-        xs: "0.75rem",
-        sm: "0.875rem",
-        md: "1rem",
-        base: "1rem",
-        lg: "1.125rem",
-        xl: "1.375rem",
-        xxl: "1.75rem",
-      },
-
-      fontWeight: {
-        regular: 400,
-        medium: 500,
-        bold: 700,
-      },
-
-      lineHeight: {
-        tight: "1.2",
-        normal: "1.5",
-        relaxed: "1.7",
-      },
-
-      spacing: {
-        xs: "4px",
-        sm: "8px",
-        md: "16px",
-        lg: "24px",
-        xl: "32px",
-      },
-
-      borderRadius: {
-        sm: "6px",
-        md: "10px",
-        lg: "16px",
-      },
-
-      boxShadow: {
-        sm: "0 2px 6px rgba(0, 0, 0, 0.08)",
-        md: "0 4px 12px rgba(0, 0, 0, 0.12)",
-        soft: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-        'soft-up': "0 -2px 10px rgba(0, 0, 0, 0.05)",
-      },
-
-      animation: {
-        shimmer: "shimmer 2s linear infinite",
-      },
-
-      keyframes: {
-        shimmer: {
-          from: { backgroundPosition: "0 0" },
-          to: { backgroundPosition: "-200% 0" },
-        },
       },
     },
   },
