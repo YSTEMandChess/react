@@ -9,7 +9,6 @@ import BoysAndGirls from "../../assets/images/partners/boysAndGirls.png";
 import Possible from "../../assets/images/partners/possible.png";
 import BoiseDistrict from "../../assets/images/partners/boiseDistrict.png";
 import Rotary from "../../assets/images/partners/Rotary.png";
-import "./Home.css";
 
 const sponsors = [
   {
@@ -80,17 +79,8 @@ const books = [
   },
 ];
 
-/**
- * Main Home page component
- * 
- * This component renders the landing page with featured content, donation
- * options, and book purchases. It serves as the main entry point for
- * visitors to learn about the organization and take action.
- * 
- * @returns JSX element representing the complete home page
- */
+
 const Home = () => {
-  // Hook for programmatic navigation between pages
   const navigate = useNavigate();
 
   const handleDonateButton = () => {
@@ -99,192 +89,203 @@ const Home = () => {
   };
 
   const handleBuyNow = (title = "") => {
-    // Handle purchase for "How to Start a Tech-Based Nonprofit"
     if (title === "How to Start a Tech-Based Nonprofit") {
       window.open(
         "https://www.amazon.com/How-Start-Tech-based-Nonprofit-Opportunity/dp/B0C4MML5WG",
-        "_blank"  // Open in new tab to preserve user's current session
+        "_blank"
       );
     }
 
-    // Handle purchase for "The Zero Dollar Workforce"
     if (title === "The Zero Dollar Workforce") {
       window.open(
         "https://www.amazon.com/Zero-Dollar-Workforce-Company-Spend/dp/B09NGVLQSS",
-        "_blank"  // Open in new tab to preserve user's current session
+        "_blank"
       );
     }
   };
+
   return (
-    <div role="main" className="home-container">
-      <div className="home-content1" role="region">
-        <div className="info">
-          <h1 id="h1-home">
-            Helping your child develop <br />
-            critical thinking skills!
+    <div role="main" className="w-full h-auto mt-2">
+      {/* HERO SECTION */}
+      <div role="region" className="w-full md:w-[85%] h-auto md:h-[460px] mx-auto flex flex-col md:flex-row gap-8 mb-12 px-6">
+        <div className="w-full md:w-1/2 h-full flex justify-center items-center flex-col gap-6">
+          <h1 className="pt-[5%] text-3xl md:text-4xl text-left w-full text-text-primary font-bold">
+            Helping your child develop <br/> critical thinking skills!
           </h1>
 
-          <p>
-            We are a nonprofit organization empowering <br></br>children to find
-            their own success in STEM through <br></br>Chess, Math and Computer
+          <p className="text-xl md:text-2xl/10 pt-4 text-left w-full text-text-secondary">
+            We are a nonprofit organization empowering children <br/> to find
+            their own success in STEM <br/> through Chess, Math and Computer
             Science.
           </p>
 
-          {/* <button className="donate-button" onClick={handleDonateButton}> */}
-          {/* <strong>Donate</strong> */}
-          {/* </button> */}
-
           <button
-            className="donateButton"
+            className="mt-8 bg-text-primary border-2 border-background text-background rounded-2xl py-3 px-8 hover:bg-text-secondary transition-colors font-bold self-start"
+            onClick={handleDonateButton}
             aria-label="Donate to Y STEM and Chess"
           >
             Donate
           </button>
         </div>
-        <div className="pic">
+        
+        <div className="w-full md:w-1/2 flex items-center justify-center">
           <img
             src={Images.TreesGroup}
-            id="tree-group-img"
             alt="Group of Y STEM mascots playing chess"
-          ></img>
+            className="w-full h-full object-contain"
+          />
         </div>
       </div>
 
+      {/* LOGO BREAK */}
       <img
         src={Images.LogoLineBr}
-        className="logo-break"
+        className="w-full mx-auto"
         alt=""
         role="presentation"
-      ></img>
+      />
 
-      <h1 id="floating-h1">Everyone is included. Everyone is welcome.</h1>
+      {/* "EVERYONE IS INCLUDED" HEADING */}
+      <h2 className="text-center text-3xl md:text-5xl md:my-8 font-bold text-text-primary">
+        Everyone is included. Everyone is welcome.
+      </h2>
 
-      <div className="home-content2" role="region">
-        <div className="card1">
-          <img src={Images.Heart} alt="Heart icon"></img>
-          <h1 id="h1-home">Free</h1>
-          <p>
-            For students who qualify for <br></br> free and reduced lunch.
-            <br></br>
+      {/* FREE/PREMIUM CARDS */}
+      <div role="region" className="w-full md:w-[85%] h-auto mx-auto mt-5 flex flex-col md:flex-row items-stretch gap-8 md:gap-16 lg:gap-40 justify-center px-6 md:px-0 mb-12">
+        {/* Free Card */}
+        <div className="flex flex-col justify-center items-center w-full md:w-[35%] min-h-[600px] md:h-[700px] bg-primary rounded-[1.25rem] shadow-[1.25rem_1.25rem_0.063rem_rgb(209,230,28)] p-8 gap-4">
+          <img src={Images.Heart} alt="" className="w-16 h-16 md:w-20 md:h-20" />
+          <h3 className="text-3xl md:text-4xl font-bold text-white mt-4 mb-4">Free</h3>
+          <p className="text-lg md:text-xl text-center text-white leading-relaxed mt-[5%] mb-8">
+            For students who qualify for <br />free and reduced lunch.<br />
             Our lessons are free.
           </p>
-          <button
-            className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-            aria-label="Join now for free button"
+          <button 
+            className="mt-auto bg-[#1a1a1a] text-white font-bold py-3 px-8 rounded-full hover:bg-[#2a2a2a] transition-colors border-2 border-white"
+            aria-label="Join now for free"
           >
-            {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" /> */}
-            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
-              Join Now !
-            </span>
+            Join Now!
           </button>
         </div>
-        <div className="card2">
-          <img src={Images.Gem} alt="Gem icon"></img>
-          <h1 id="h1-home">Premium</h1>
-          <p>
-            For students who don't qualify <br></br> for free and reduced lunch.{" "}
-            <br></br>
-            $25 / Week <br></br> First lesson is FREE. <br></br> Cancel anytime.
+
+        {/* Premium Card */}
+        <div className="flex flex-col justify-center items-center w-full md:w-[35%] min-h-[600px] md:h-[700px] bg-white rounded-[1.25rem] shadow-[1.25rem_1.25rem_0.063rem_rgb(115,179,19)] p-8 gap-4">
+          <img src={Images.Gem} alt="" className="w-16 h-16 md:w-20 md:h-20" />
+          <h3 className="text-3xl md:text-4xl font-bold text-text-primary mt-4 mb-4">Premium</h3>
+          <p className="text-lg md:text-xl text-center text-text-primary leading-relaxed mt-[5%] mb-8">
+            For students who don't qualify <br />for free and reduced lunch.{" "}
+            <br />$25 / Week <br />First lesson is FREE. <br />Cancel anytime.
           </p>
-          <button
-            className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-            aria-label="Join now premium button"
+          <button 
+            className="mt-auto bg-[#1a1a1a] text-white font-bold py-3 px-8 rounded-full hover:bg-[#2a2a2a] transition-colors border-2 border-white"
+            aria-label="Join now premium"
           >
-            {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" /> */}
-            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
-              Join Now !
-            </span>
+            Join Now!
           </button>
         </div>
       </div>
 
-      <div className="home-content3" role="region">
+      {/* MISSION STATEMENT IMAGE */}
+      <div role="region" className="flex w-full justify-center items-center">
         <img
           src={Images.LargeInfo}
           alt="Y STEM mission statement emphasising Play, Learn and Donate"
-          aria-label="Y STEM mission statement emphasising Play, Learn and Donate"
-        ></img>
+          className="w-full h-auto"
+        />
       </div>
 
-      <div className="home-video-container">
+      {/* VIDEO SECTION */}
+      <div className="flex w-full h-auto md:h-[90vh] justify-center items-center py-8 md:py-0">
         <iframe
           title="Y STEM and Chess Introduction Video"
-          className="home-video"
-          width="560"
-          height="315"
+          className="w-[90%] md:w-[85%] h-[300px] md:h-[90%]"
           src="https://www.youtube.com/embed/SBr0bGgddIc"
           style={{ border: "0" }}
           allowFullScreen
-        ></iframe>
+        />
       </div>
 
-      <div className="home-content4" role="region">
-        <div className="home-content4-box">
+      {/* CTA SECTION - "START NOW" */}
+      <div role="region" className="flex justify-center items-center w-full h-auto py-12 md:py-16 mt-8 mb-8">
+        <div className="flex justify-center items-center flex-col w-[90%] md:w-[70%] h-full border-4 border-primary py-12 px-6 gap-6">
           <img
             src={Images.ChessGroup}
-            alt="Chess peices lined up next to eachother"
-            aria-label="Chess peices lined up next to eachother"
-          ></img>
-          <div className="lesson-link-text">Start now and sign up later!</div>
+            alt="Chess pieces lined up next to each other"
+            className="w-full max-w-md h-auto"
+          />
+          <div className="text-2xl md:text-4xl font-bold text-text-primary text-center">
+            Start now and sign up later!
+          </div>
           <button
-            className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
+            className="bg-[#1a1a1a] text-white font-bold py-3 px-8 rounded-full hover:bg-[#2a2a2a] transition-colors border-2 border-white"
             onClick={() => navigate("./play")}
             aria-label="Get started"
           >
-            {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" /> */}
-            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
-              Get Started!
-            </span>
+            Get Started!
           </button>
         </div>
       </div>
 
+      {/* LOGO BREAK */}
       <img
         src={Images.LogoLineBr}
-        className="logo-break"
-        alt="Y STEM styled line break"
+        className="w-full md:w-[85%] mx-auto mt-10"
+        alt=""
         role="presentation"
-      ></img>
+      />
 
-      <div className="home-content5" role="region">
-        <h1 id="h1-home">Books by Devin Nakano</h1>
+      {/* BOOKS SECTION */}
+      <div role="region" className="w-full h-auto my-12 px-6 md:px-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-text-primary text-center mb-12">
+          Books by Devin Nakano
+        </h2>
+        
         {books.map((book, index) => (
-          <div key={index} className="book">
-            <div className="book-left">
+          <div key={index} className="flex flex-col md:flex-row items-start border border-border-light p-4 md:p-6 rounded-md mb-8">
+            <div className="flex flex-col items-center mx-auto md:mx-8 mb-6 md:mb-0">
               <img
                 src={book.image}
                 alt={`${book.title} cover image`}
-                className="book-image"
+                className="w-[150px] h-auto mb-4"
               />
               <button
-                className="buy-now"
+                className="bg-transparent border-none p-0 cursor-pointer hover:opacity-90 transition-opacity"
                 aria-label={`Buy now ${book.title}`}
                 onClick={() => handleBuyNow(book.title)}
               >
-                <img src={Images.BuyNow} alt="Buy now" />
+                <img src={Images.BuyNow} alt="Buy now" className="w-[150px] h-auto" />
               </button>
             </div>
-            <div className="book-details">
-              <h2>{book.title}</h2>
-              <h3>{book.subtitle}</h3>
-              <p>{book.description}</p>
+            
+            <div className="flex-1">
+              <h3 className="text-xl md:text-2xl font-bold text-text-primary text-left mb-2">
+                {book.title}
+              </h3>
+              <h4 className="text-lg md:text-xl text-text-secondary text-left mb-4">
+                {book.subtitle}
+              </h4>
+              <p className="text-base text-text-secondary text-left leading-relaxed">
+                {book.description}
+              </p>
             </div>
           </div>
         ))}
-        <footer role="contentinfo">
-          <p>All proceeds will be donated to the organization</p>
+        
+        <footer role="contentinfo" className="text-center mt-8">
+          <p className="text-text-secondary">All proceeds will be donated to the organization</p>
         </footer>
       </div>
 
+      {/* LOGO BREAK */}
       <img
         src={Images.LogoLineBr}
-        className="logo-break"
-        alt="Y STEM styled line break"
-        role="presentation">
-      </img>
+        className="w-full md:w-[85%] mx-auto mt-10"
+        alt=""
+        role="presentation"
+      />
 
-      {/* Sponsors Row */}
-      <div className="ml-5 mr-5 mb-12">
+      {/* SPONSORS */}
+      <div className="px-6 md:px-12 mb-16 mt-12">
         <h3 className="text-sm font-bold uppercase tracking-wide text-text-primary text-center mb-8">
           Sponsors
         </h3>
@@ -308,8 +309,8 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Partners Row */}
-      <div className="ml-5 mr-5 mb-24">
+      {/* PARTNERS */}
+      <div className="px-6 md:px-12 mb-16">
         <h3 className="text-sm font-bold uppercase tracking-wide text-text-primary text-center mb-8">
           Partners
         </h3>
@@ -326,7 +327,7 @@ const Home = () => {
               <img
                 src={partner.logo}
                 alt={`${partner.name} logo`}
-                className="h-16 w-37 object-contain"
+                className="h-20 w-32 object-contain"
               />
             </a>
           ))}

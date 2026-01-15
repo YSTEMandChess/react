@@ -2,7 +2,7 @@ import { FaLinkedin, FaSquareInstagram, FaFacebook, FaSquareXTwitter } from "rea
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-background border-t-4 border-text-primary pt-16 pb-12">
+    <footer className="w-full bg-background border-t-2 border-text-primary pt-10 pb-8">
       <div className="mx-auto px-6 md:px-12 lg:px-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
 

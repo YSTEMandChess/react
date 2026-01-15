@@ -152,7 +152,7 @@ const NavBar = () => {
       {/* Programs page link */}
       <Link
         to="/programs"
-        className="px-4 text-lg font-bold text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Programs
       </Link>
@@ -162,7 +162,7 @@ const NavBar = () => {
         {/* About Us dropdown trigger button */}
         <div
           onClick={toggleAboutUs}
-          className="flex items-center cursor-pointer justify-center px-4 text-lg font-bold text-text-primary transition-colors hover:text-primary"
+          className="flex items-center cursor-pointer justify-center px-4 text-lg font-medium text-text-primary transition-colors hover:text-primary"
           aria-haspopup="true"
           aria-expanded={aboutUsDropDown}
           aria-controls="aboutus-menu"
@@ -171,7 +171,7 @@ const NavBar = () => {
           {/* Dropdown indicator icon that changes based on menu state */}
           <FontAwesomeIcon
             icon={aboutUsDropDown ? faCaretUp : faCaretDown}
-            className="ml-2 translate-y-[-1px]"
+            className={`ml-2 ${aboutUsDropDown ? "translate-y-[2px]" : "translate-y-[-1px]"}`}
           />
         </div>
         
@@ -270,31 +270,31 @@ const NavBar = () => {
       {/* Main navigation links */}
       <Link
         to="/mentor"
-        className="px-4 text-lg font-bold text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Mentor
       </Link>
       <Link
         to="/learnings"
-        className="px-4 text-lg font-bold text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Learn
       </Link>
       <Link
         to="/play"
-        className="px-4 text-lg font-bold text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Play
       </Link>
       <Link
         to="/lessons-selection"
-        className="px-4 text-lg font-bold text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Lessons
       </Link>
       <Link
         to="/puzzles"
-        className="px-4 text-lg font-bold text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Puzzles
       </Link>
@@ -303,7 +303,7 @@ const NavBar = () => {
       {!username && (
         <Link
           to="/login"
-          className="px-4 text-lg font-bold text-text-primary transition-colors hover:text-primary"
+          className="px-4 text-lg font-medium text-text-primary transition-colors hover:text-primary"
         >
           Login
         </Link>
@@ -316,7 +316,7 @@ const NavBar = () => {
             {/* Profile dropdown trigger button showing username */}
             <button
               onClick={profileToggleDropdown}
-              className="flex items-center gap-1 px-3 py-1 text-lg font-bold text-text-primary hover:text-primary"
+              className="flex items-center gap-1 px-3 py-1 text-lg font-medium text-text-primary hover:text-primary"
               aria-haspopup="true"
               aria-expanded={profileDropdown}
               aria-controls="login-menu"
@@ -325,7 +325,7 @@ const NavBar = () => {
               {/* Dropdown indicator icon */}
               <FontAwesomeIcon
                 icon={profileDropdown ? faCaretUp : faCaretDown}
-                className="ml-1 translate-y-[-1px]"
+                className={`ml-1 ${profileDropdown ? "translate-y-[2px]" : "translate-y-[-1px]"}`}
               />
             </button>
 
@@ -376,7 +376,7 @@ const NavBar = () => {
   );
 
   return (
-    <header className="bg-background border-b-4 border-text-primary sticky top-0 z-50">
+    <header className="bg-background border-b-2 border-text-primary sticky top-0 z-50">
       <div className="max-w-full mx-auto">
         <div className="flex justify-between items-center h-24 pr-8">
           
