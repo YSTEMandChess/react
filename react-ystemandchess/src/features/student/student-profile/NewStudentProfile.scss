@@ -1,0 +1,435 @@
+// =====================================
+// Font Imports
+// =====================================
+
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@700&display=swap");
+
+// =====================================
+// Color Variables
+// =====================================
+
+$brand-color-primary: #ffffff;
+$brand-color-secondary: #eaf4f4;
+$brand-color-tertiary: #3a7cca;
+$brand-color-accent: #d64309;
+$brand-color-background-grey: #f7f7f7;
+$inventory-tab-color: #ffffff;
+$inventory-tab-active: #3a7cca;
+
+// =====================================
+// Main Container
+// =====================================
+
+#main-inventory-content {
+  background-color: $brand-color-primary;
+  font-family: "Roboto", sans-serif;
+  min-height: 100vh;
+  position: relative;
+
+  // ===========================
+  // Toolbar Section
+  // ===========================
+
+  .inv-toolbar {
+    width: 100%;
+    height: 8.3rem;
+    background-color: $brand-color-tertiary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .inv-toolbar-buttons {
+    width: clamp(1200px, 80%, 1700px);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .toolbar-button {
+    position: relative;
+    width: 21.6675rem;
+    height: 6.75rem;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    cursor: pointer;
+    overflow: hidden;
+
+    .toolbar-icon {
+      width: 100%;
+      height: 100%;
+      transition: filter 0.2s ease;
+      display: block;
+      color: #FDD835;
+      object-fit: contain;
+    }
+
+    &:hover .toolbar-icon,
+    &.active .toolbar-icon {
+      color: #FFFF00;
+    }
+  }
+
+  // ===========================
+  // Intro Section
+  // ===========================
+
+  .inv-intro {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+
+    .inv-intro-portrait {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 4px solid #3a7cca;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(58, 124, 202, 0.3);
+      margin-top: 2rem;
+
+      .inv-intro-portrait-face {
+        width: 60%;
+        height: 60%;
+        object-fit: contain;
+        filter: brightness(0) saturate(100%) invert(29%) sepia(81%) saturate(746%) hue-rotate(189deg) brightness(95%) contrast(91%);
+      }
+
+      .inv-intro-portrait-camera {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        transform: translate(30%, 30%);
+        width: 30px;
+        height: 30px;
+        background: #ffffff;
+        border: 2px solid #3a7cca;
+        border-radius: 50%;
+        padding: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    .inv-intro-welcome {
+      margin-top: 1.5rem;
+
+      h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+      margin: 0 0 1rem 0;
+      padding: 0;
+      }
+    }
+  }
+
+  // ===========================
+  // Inventory Section
+  // ===========================
+
+  .inv-inventory {
+    background: $brand-color-background-grey;
+    width: clamp(300px, 80%, 1200px);
+    margin: 2rem auto;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+    .inv-inventory-topbar {
+      background: $brand-color-tertiary;
+      padding: 1rem 0;
+      margin: 0;
+
+      .progress-heading {
+        font-family: "Lato", sans-serif;
+        font-weight: 700;
+        font-size: 2.25rem;
+        color: #ffffff;
+        margin: 0;
+      }
+    }
+
+    .inv-inventory-analytics {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+
+      .inv-inventory-analytics-graph {
+        height: 18rem;
+        width: 40rem;
+        padding: 0.8rem;
+        margin-right: 3rem;
+      }
+
+      .inv-inventory-analytics-metrics {
+        text-align: left;
+
+        h3 {
+          font-size: 1.2rem;
+          font-weight: bold;
+          margin: 0 0 1rem 0;
+          color: #333;
+        }
+
+        ul {
+          list-style: none;
+          padding: 0;
+
+          li {
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+
+            strong {
+              color: $brand-color-accent;
+            }
+          }
+        }
+      }
+    }
+
+    // ===========================
+    // Inventory Tab Layout
+    // ===========================
+
+    .inv-inventory-content-section {
+      display: grid;
+      grid-template-columns: 30% 70%;
+      background: $brand-color-primary;
+
+      .inv-inventory-content-tabs {
+        position: relative;
+
+        ul {
+          list-style: none;
+          padding: 1rem;
+          background: $brand-color-secondary;
+          border-right: 1px solid #ddd;
+          margin: 0;
+
+          li {
+            &:first-child .inventory-tab {
+              border-top-left-radius: 0.5rem;
+            }
+
+            &:last-child .inventory-tab {
+              border-bottom-left-radius: 0.5rem;
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+
+    .inventory-tab {
+        all: unset;
+        position: relative;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.5rem;
+        transition: background 0.3s;
+
+        img {
+          width: 32px;
+          height: 32px;
+          max-width: 32px;
+          max-height: 32px;
+          object-fit: contain;
+          margin-right: 0.75rem;
+          flex-shrink: 0;
+          filter: grayscale(1);
+          transition: filter 0.3s, transform 0.3s;
+        }
+
+        li {
+          list-style: none;
+          font-size: 1rem;
+          font-weight: 500;
+          color: #333;
+        }
+
+        &:hover {
+          background: lighten($brand-color-tertiary, 40%);
+        }
+
+        &.active-tab {
+          background: $brand-color-tertiary;
+
+          img {
+            filter: none;
+          }
+
+          li {
+            color: white;
+          }
+        }
+      }
+
+      .inv-inventory-content-content {
+        padding: 2rem;
+        overflow-y: auto;
+      }
+
+      .inventory-content {
+        position: relative;
+        display: none;
+        height: 100%;
+        width: 100%;
+
+        &.active-content {
+          display: block;
+        }
+
+        .inventory-content-headingbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          border-bottom: 1px solid #ccc;
+          margin-bottom: 1rem;
+          padding: 0;
+
+          h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+            padding: 0;
+          }
+
+          h4 {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0;
+            padding: 0;
+          }
+        }
+
+        .inventory-content-body {
+          position: relative;
+          display: grid;
+          max-height: 500px;
+          overflow-y: auto;
+          scrollbar-width: none;
+        }
+
+        .inventory-content-line {
+          position: absolute;
+          height: 78%;
+          top: 20%;
+          left: 3.2%;
+
+          &::after {
+            content: "";
+            position: absolute;
+            z-index: 0;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            border-left: 3px dotted #222;
+          }
+        }
+
+        .inventory-content-timecard {
+            display: flex;
+          justify-content: space-between;
+            align-items: center;
+          background: #fff;
+          border: 1px solid #ddd;
+          padding: 1rem;
+          border-radius: 0.5rem;
+          margin-bottom: 1rem;
+
+          p {
+            margin: 0;
+
+            strong {
+              text-decoration: underline;
+              cursor: pointer;
+
+              &:hover {
+                color: $brand-color-tertiary;
+              }
+            }
+          }
+        }
+
+        .inventory-date {
+          font-family: "Roboto", sans-serif;
+          font-weight: 400;
+          font-size: 1.0rem;
+          color: #000;
+        }
+
+        .inventory-time {
+          font-family: "Roboto", sans-serif;
+          font-weight: 400;
+          font-size: 0.8125rem;
+          color: #000;
+        }
+      }
+    }
+  }
+
+  // ===========================
+  // Animation States
+  // ===========================
+
+  // Celebration pulse animation
+  .inv-inventory.celebrate {
+    animation: celebrate-pulse 1s ease-in-out;
+  }
+
+  @keyframes celebrate-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+    }
+  }
+
+  // Portrait click animation
+  .inv-intro-portrait {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // Enhanced loading spinner
+  .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(58, 124, 202, 0.3);
+    border-radius: 50%;
+    border-top-color: $brand-color-tertiary;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}

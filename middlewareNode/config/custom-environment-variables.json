@@ -1,0 +1,32 @@
+{
+  "mongoURI": "MONGO_URI",
+  "jwtSecret": "JWT_SECRET",
+  "indexKey": "INDEX_KEY",
+
+  "corsOptions": { "origin": "CORS_ORIGIN" },
+
+  "email": {
+    "user": "EMAIL_USER",
+    "pass": "EMAIL_PASS"
+  },
+
+  "user": "EMAIL_USER",
+  "senderEmail": "SENDER_EMAIL",
+
+  "clientId": "GOOGLE_CLIENT_ID",
+  "clientSecret": "GOOGLE_CLIENT_SECRET",
+  "redirectUri": "GOOGLE_REDIRECT_URI",
+  "refreshToken": "GOOGLE_REFRESH_TOKEN",
+
+  "basepath": "BASEPATH",
+
+  "awsAccessKey": "AWS_ACCESS_KEY_ID",
+  "awsSecretKey": "AWS_SECRET_ACCESS_KEY",
+
+  "appID": "AGORA_APP_ID",
+  "uid": "AGORA_UID",
+  "customerId": "AGORA_CUSTOMER_ID",
+  "customerCertificate": "AGORA_CUSTOMER_CERT",
+
+  "server": { "port": "PORT" }
+}

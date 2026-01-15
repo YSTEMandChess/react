@@ -1,0 +1,544 @@
+* {
+  font-family: sans-serif;
+}
+
+.home-container {
+  width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+
+/* FIRST SECTOR OF LANDING PAGE*/
+.home-content1 {
+  width: 85%;
+  height: 460px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 50px;
+}
+
+.info {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.donateButton {
+  margin-top: 2rem;
+  background-color: #1a1a1a;
+  border: solid 0.1rem white;
+  color: white;
+  border-radius: 1rem;
+}
+
+.info h1 {
+  padding-top: 5%;
+  font-size: 30px;
+  text-align: left;
+}
+
+.info p {
+  font-size: 25px;
+  padding-top: 40px;
+  text-align: left;
+}
+
+/* .donate-button {
+  text-align: center;
+  margin-right: 30%;
+  margin-top: 5%;
+  width: 25%;
+  font-size: 140%;
+  border: none;
+  border-radius: 20px;
+  height: 10%;
+  background-color: rgb(182, 180, 180);
+  box-shadow: 5px 5px 1px greenyellow;
+}
+
+.donate-button:hover {
+  background-color: rgb(211, 209, 209);
+  cursor: pointer;
+  transform: scale(1.05);
+  transition: 0.2s;
+} */
+
+#tree-group-img {
+    height: 100%;
+}
+
+/* Logo Line Break */
+
+.logo-break {
+  width: 100%;
+  justify-self: center;
+}
+
+#floating-h1 {
+  text-align: center;
+  font-size: 24px;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 3rem;
+}
+
+/* SECTOR 2 -- Cards for subscription plans */
+.home-content2 {
+  width: 85%;
+  height: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10em;
+  justify-content: center;
+}
+
+.card1 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 35%;
+  height: 43.75rem;
+  background-color: rgb(115, 179, 19);
+  border-radius: 1.25rem;
+  box-shadow: 1.25rem 1.25rem 0.063rem rgb(209, 230, 28);
+}
+
+.card1 img {
+  width: 25%;
+}
+
+#h1-home {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  font-size: 2rem;
+}
+
+.card1 p {
+  font-size: 180%;
+  margin-top: 5%;
+  margin-bottom: 2rem;
+}
+
+/* .card1 button {
+  width: 40%;
+  height: 10%;
+  font-size: 160%;
+  border: none;
+  border-radius: 20px;
+  background-color: rgb(209, 230, 28);
+  box-shadow: 5px 5px 1px rgb(255, 255, 255);
+}
+
+.card1 button:hover {
+  background-color: rgb(228, 243, 96);
+  transform: scale(1.1);
+  transition: 0.2s;
+  cursor: pointer;
+} */
+
+.card2 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 35%;
+  height: 43.75rem;
+  background-color: rgb(255, 255, 255);
+  border-radius: 1.25rem;
+  box-shadow: 1.25rem 1.25rem 0.063rem rgb(115, 179, 19);
+}
+
+.card2 img {
+  width: 25%;
+}
+
+.card2 h1 {
+  margin-bottom: -7%;
+}
+
+.card2 p {
+  font-size: 180%;
+  margin-top: 5%;
+  margin-bottom: 2rem;
+}
+
+/* .card2 button {
+  width: 40%;
+  height: 10%;
+  font-size: 160%;
+  border: none;
+  border-radius: 20px;
+  background-color: rgb(201, 200, 200);
+  box-shadow: 5px 5px 1px rgb(115, 179, 19);
+}
+
+.card2 button:hover {
+  background-color: rgb(238, 238, 238);
+  transform: scale(1.1);
+  cursor: pointer;
+  transition: 0.2s;
+} */
+
+/* ------------------------------------------------------------*/
+
+/* SECTOR 3 -- Introduction (Play, Learn, Donate) */
+
+.home-content3 {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+.home-content3 img {
+  width: 100%;
+}
+
+/* SECTION Video */
+
+.home-video-container {
+  display: flex;
+  width: 100%;
+  height: 90vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-video {
+  width: 85%;
+  height: 90%;
+}
+
+/* Section 4 -- Labels */
+
+.home-content4 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 55vh;
+  margin-top: 5%;
+  margin-bottom: 5%;
+}
+
+.home-content4-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 70%;
+  height: 100%;
+  border: 4px solid rgb(54, 206, 54);
+  padding-top: 50px;
+}
+
+.home-content4-box button {
+  margin-top: 0.6rem;
+}
+
+.lesson-link-text {
+  margin-top: 2rem;
+  font-size: 2.5rem;
+}
+
+/* .home-content4-box button {
+  width: 20%;
+  height: 10%;
+  border: none;
+  border-radius: 20px;
+  font-size: 120%;
+  margin-top: 2%;
+  background-color: rgb(235, 235, 12);
+  box-shadow: 5px 5px 1px rgb(153, 153, 153);
+}
+
+.home-content4-box button:hover {
+  background-color: rgb(248, 246, 115);
+  cursor: pointer;
+  transform: scale(1.1);
+  transition: 0.2s;
+} */
+
+/* Logo Line Break */
+
+.logo-break {
+  width: 85%;
+  margin-top: 40px;
+}
+
+/* Section 5 -- Books by Devin Nakano */
+
+.home-content5 {
+  width: 100%;
+  height: 55vh;
+  margin-top: 5%;
+  margin-bottom: 30%;
+}
+
+#h1-home {
+  text-align: center;
+  margin-bottom: 5%;
+}
+
+footer {
+  text-align: center;
+}
+
+.book {
+  display: flex;
+  align-items: flex-start;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.book-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 5%;
+  margin-right: 5%;
+}
+
+.book-image {
+  max-width: 150px;
+  margin-right: 5%;
+}
+
+.book-details {
+  flex: 1;
+}
+
+.book-details h2 {
+  text-align: left;
+  font-size: 1.5em;
+  margin-top: 0;
+  margin-right: 10%;
+  margin-bottom: 1%;
+}
+
+.book-details h3 {
+  margin: 0;
+  text-align: left;
+  font-size: 1.2em;
+  margin-top: 0;
+  margin-right: 10%;
+  margin-bottom: 1%;
+  color: #555;
+}
+
+.book-details p {
+  text-align: left;
+  margin-top: 2.5%;
+  line-height: 1.5;
+}
+
+.buy-now {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-top: 5%;
+}
+
+.buy-now img {
+  width: 150px;
+  height: auto;
+}
+
+.buy-now:hover img {
+  filter: brightness(0.9);
+}
+
+/* ----------------------- Responsive Styles ----------------------- */
+
+/* MOBILE FIRST BASELINE ADJUSTMENTS */
+.home-content1,
+.home-content2,
+.home-content4,
+.book {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.home-content1,
+.home-content2 {
+  gap: 2rem;
+  height: auto;
+}
+
+.info,
+.card1,
+.card2 {
+  width: 90%;
+}
+
+.info h1,
+#floating-h1,
+.lesson-link-text,
+.card1 p,
+.card2 p {
+  font-size: 1.5rem;
+}
+
+.info p {
+  font-size: 1.2rem;
+}
+
+.logo-break,
+.home-video,
+.home-content3 img {
+  width: 100%;
+  height: auto;
+}
+
+.home-content5 {
+  height: auto;
+  padding-bottom: 3rem;
+}
+
+.book {
+  margin: 1rem 0;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.book-left {
+  margin: 0 auto 1rem auto;
+}
+
+.book-image {
+  max-width: 60vw;
+}
+
+.home-video-container {
+  height: auto;
+  padding: 2rem 0;
+}
+
+.home-content4 {
+  height: auto;
+  padding: 2rem 0;
+}
+
+.lesson-link-text {
+  font-size: 1.8rem;
+}
+
+/* ------------------- TABLET (min-width: 768px) ------------------- */
+@media screen and (min-width: 768px) {
+  .home-content1 {
+    flex-direction: row;
+    height: auto;
+  }
+
+  .info,
+  .pic {
+    width: 50%;
+  }
+
+  .info h1 {
+    font-size: 2.2rem;
+    text-align: left;
+  }
+
+  .info p {
+    font-size: 1.5rem;
+    text-align: left;
+  }
+
+  .home-content2 {
+    flex-direction: row;
+    gap: 4rem;
+    justify-content: space-evenly;
+  }
+
+  .card1,
+  .card2 {
+    width: 45%;
+    height: auto;
+  }
+
+  .card1 p,
+  .card2 p {
+    font-size: 1.4rem;
+  }
+
+  .book {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .book-left {
+    margin-left: 2rem;
+    margin-right: 2rem;
+  }
+
+  .book-image {
+    max-width: 150px;
+  }
+
+  .lesson-link-text {
+    font-size: 2.2rem;
+  }
+}
+
+/* ------------------ DESKTOP (min-width: 1024px) ------------------ */
+@media screen and (min-width: 1024px) {
+  .home-content1 {
+    width: 85%;
+    margin: 0 auto 4rem auto;
+    height: 460px;
+  }
+
+  .home-content2 {
+    width: 85%;
+    margin: 2rem auto;
+    gap: 10em;
+  }
+
+  .card1,
+  .card2 {
+    width: 35%;
+    height: 43.75rem;
+  }
+
+  .home-video-container {
+    height: 90vh;
+  }
+
+  .home-video {
+    width: 85%;
+    height: 90%;
+  }
+
+  .home-content4 {
+    height: 55vh;
+  }
+
+  .home-content5 {
+    margin-bottom: 10%;
+  }
+
+  #floating-h1 {
+    font-size: 3rem;
+  }
+
+  .lesson-link-text {
+    font-size: 2.5rem;
+  }
+
+  .book-image {
+    max-width: 150px;
+  }
+}
