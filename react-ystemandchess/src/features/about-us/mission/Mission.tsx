@@ -1,9 +1,9 @@
-import React from "react";
-import "./Mission.scss";
 import ImageOne from "../../../assets/images/mission-image.png";
 import LogoLineBreak from "../../../assets/images/LogoLineBreak.png";
 import FounderStory from "../../../assets/images/founder-story.png";
-import Images from "../../../assets/images/imageImporter";
+import Heart from "../../../assets/images/heart-regular.svg";
+import Gem from "../../../assets/images/gem-regular.svg";
+import "./Mission.scss";
 
 const Mission = () => {
   return (
@@ -43,7 +43,7 @@ const Mission = () => {
 
       <div className="home-content2" role="region">
         <div className="card1">
-          <img src={Images.Heart} alt="Heart icon"></img>
+          <img src={Heart} alt="Heart icon"></img>
           <h1 id="h1-home">Free</h1>
           <p>
           For students who qualify for <br /> free and reduced lunch.
@@ -57,7 +57,7 @@ const Mission = () => {
           </button>
         </div>
         <div className="card2">
-          <img src={Images.Gem} alt="Gem icon"></img>
+          <img src={Gem} alt="Gem icon"></img>
           <h1 id="h1-home">Premium</h1>
           <p>
             For students who don't qualify <br /> for free and reduced lunch.{" "}

@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import "./NewMentorProfile.scss";
-import Images from "../../../../assets/images/imageImporter";
 import { SetPermissionLevel } from '../../../../globals'; 
 import { useCookies } from 'react-cookie';
 import { environment } from "../../../../environments/environment";
@@ -10,6 +8,30 @@ import Lessons from "../../../lessons/lessons-main/Lessons";
 import LessonSelection from "../../../lessons/lessons-selection/LessonsSelection";
 import LessonOverlay from "../../../lessons/piece-lessons/lesson-overlay/Lesson-overlay";
 import Puzzles from "../../../puzzles/puzzles-page/Puzzles";
+import "./NewMentorProfile.scss";
+
+import userPortraitCamera from "../../../assets/images/camera.svg";
+import activityIcon from "../../../assets/images/StudentInventoryIcons/activity-icon.svg";
+import mentorIcon from "../../../assets/images/StudentInventoryIcons/mentor-icon.svg";
+import learningIcon from "../../../assets/images/StudentInventoryIcons/learning-icon.svg";
+import chessLessonsIcon from "../../../assets/images/StudentInventoryIcons/chess-lessons-icon.svg";
+import gamesIcon from "../../../assets/images/StudentInventoryIcons/games-icon.svg";
+import puzzlesIcon from "../../../assets/images/StudentInventoryIcons/puzzles-icon.svg";
+import playComputerIcon from "../../../assets/images/StudentInventoryIcons/play-computer-icon.svg";
+import recordingsIcon from "../../../assets/images/StudentInventoryIcons/recordings-icon.svg";
+import backpackIcon from "../../../assets/images/StudentInventoryIcons/backpack-icon.svg"; 
+
+const TAB_ICONS = {
+  activity: activityIcon,
+  mentor: mentorIcon,
+  learning: learningIcon,
+  chessLessons: chessLessonsIcon,
+  games: gamesIcon,
+  puzzles: puzzlesIcon,
+  playComputer: playComputerIcon,
+  recordings: recordingsIcon,
+  backpack: backpackIcon,
+} as const;
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
@@ -365,7 +387,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
           ></img>
           <img
             className="inv-intro-portrait-camera"
-            src={Images.userPortraitCamera}
+            src={userPortraitCamera}
             alt="user portrait camera icon"
           ></img>
         </div>
@@ -413,7 +435,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
                       className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
                       onClick={() => handleTabClick(tab)}
                     >
-                      <img src={Images[`${tab}Icon` as keyof typeof Images]} alt={`${tab} icon`} />
+                      <img src={TAB_ICONS[tab]} alt={`${tab} icon`} />
                       <li>{displayName}</li>
                     </div>
                   );

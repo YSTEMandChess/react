@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
-import "./NewStudentProfile.scss";
-import Images from "../../../assets/images/imageImporter";
 import { SetPermissionLevel } from '../../../globals';
 import { useCookies } from 'react-cookie';
 import { environment } from "../../../environments/environment";
@@ -14,6 +12,7 @@ import ActivitiesModal from "./Modals/ActivitiesModal";
 import BadgesModal from "./Modals/BadgesModal";
 import LeaderboardModal from "./Modals/LeaderboardModal";
 import Confetti from "../../../components/animations/Confetti/Confetti";
+import "./NewStudentProfile.scss";
 
 // Toolbar buttons
 import { ReactComponent as StreakIcon } from "../../../assets/images/student/streak_button.svg";
@@ -21,7 +20,56 @@ import { ReactComponent as ActivitiesIcon } from "../../../assets/images/student
 import { ReactComponent as BadgesIcon } from "../../../assets/images/student/badges_button.svg";
 import { ReactComponent as LeaderboardIcon } from "../../../assets/images/student/leaderboard_button.svg";
 
-// Tab images - using Images from imageImporter (same as mentor)
+import userPortraitCamera from "../../../assets/images/camera.svg";
+import activityIcon from "../../../assets/images/StudentInventoryIcons/activity-icon.svg";
+import mentorIcon from "../../../assets/images/StudentInventoryIcons/mentor-icon.svg";
+import learningIcon from "../../../assets/images/StudentInventoryIcons/learning-icon.svg";
+import chessLessonsIcon from "../../../assets/images/StudentInventoryIcons/chess-lessons-icon.svg";
+import gamesIcon from "../../../assets/images/StudentInventoryIcons/games-icon.svg";
+import puzzlesIcon from "../../../assets/images/StudentInventoryIcons/puzzles-icon.svg";
+import playComputerIcon from "../../../assets/images/StudentInventoryIcons/play-computer-icon.svg";
+import recordingsIcon from "../../../assets/images/StudentInventoryIcons/recordings-icon.svg";
+
+const TABS = {
+  activity: {
+    label: "Activity",
+    icon: activityIcon,
+  },
+  mentor: {
+    label: "Mentor",
+    icon: mentorIcon,
+  },
+  prodev: {
+    label: "Learning",
+    icon: learningIcon,
+  },
+  chessLessons: {
+    label: "Chess Lessons",
+    icon: chessLessonsIcon,
+  },
+  mathLessons: {
+    label: "Math Lessons",
+    icon: learningIcon,
+  },
+  games: {
+    label: "Games",
+    icon: gamesIcon,
+  },
+  puzzles: {
+    label: "Puzzles",
+    icon: puzzlesIcon,
+  },
+  playComputer: {
+    label: "Play with Computer",
+    icon: playComputerIcon,
+  },
+  recordings: {
+    label: "Recordings",
+    icon: recordingsIcon,
+  },
+} as const;
+
+type TabKey = keyof typeof TABS;
 
 const Lessons = lazy(() => import("../../lessons/lessons-main/Lessons"));
 const LessonsSelection = lazy(() => import("../../lessons/lessons-selection/LessonsSelection"));
@@ -72,9 +120,6 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   // Animation states
   const [showConfetti, setShowConfetti] = useState(false);
   const [celebrateAction, setCelebrateAction] = useState(false);
-
-  // Tab keys - using Images from imageImporter (same pattern as mentor)
-  const tabKeys = ["activity", "mentor", "prodev", "chessLessons", "mathLessons", "games", "puzzles", "playComputer", "recordings"];
 
   // states for lessons tab
   const [lessonSelected, setLessonSelected] = useState(false); // whether user has navigated into a lesson
@@ -217,7 +262,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   }
 
   // Handle tab switch
-  const handleTabClick = (tab: any) => {
+  const handleTabClick = (tab: TabKey) => {
     setActiveTab(tab);
     // Add celebration animation for learning tabs
     if (tab === "prodev" || tab === "chessLessons") {
@@ -343,7 +388,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
           </div>
         );
       case "playComputer":
-        return <div id="inventory-content-computer" className="inventory-content active-content"> <PlayComputer/> </div>;
+        return <div id="inventory-content-computer" className="inventory-content active-content"> <PlayComputer /> </div>;
       case "recordings":
         return <div id="inventory-content-recordings" className="inventory-content active-content"><h2>Recordings</h2><p>This is the content for the Recordings tab.</p></div>;
       default:
@@ -397,7 +442,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       <section className="inv-intro">
         <div className="inv-intro-portrait" onClick={handlePortraitClick}>
           <img className="inv-intro-portrait-face" src={userPortraitSrc} alt="user portrait" />
-          <img className="inv-intro-portrait-camera" src={Images.userPortraitCamera} alt="user portrait camera icon" />
+          <img className="inv-intro-portrait-camera" src={userPortraitCamera} alt="user portrait camera icon" />
         </div>
         <div className="inv-intro-welcome">
           <h1>Hello, {firstName} {lastName}!</h1>
@@ -429,25 +474,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         <div className="inv-inventory-content-section">
           <nav className="inv-inventory-content-tabs">
             <ul>
-              {tabKeys.map((tab) => {
-                // Map tab names to icon names (prodev -> learning, mathLessons -> learning)
-                const iconName = tab === "prodev"
-                  ? "learningIcon"
-                  : tab === "mathLessons"
-                    ? "learningIcon"
-                    : `${tab}Icon`;
-
-                // Create display name for the tab
-                const displayName =
-                  tab === "chessLessons"
-                    ? "Chess Lessons"
-                    : tab === "mathLessons"
-                      ? "Math Lessons"
-                      : tab === "playComputer"
-                        ? "Play with Computer"
-                        : tab === "prodev"
-                          ? "Learning"
-                          : tab.charAt(0).toUpperCase() + tab.slice(1);
+              {(Object.keys(TABS) as TabKey[]).map((tab) => {
+                const { label, icon } = TABS[tab];
 
                 return (
                   <div
@@ -456,8 +484,8 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
                     onClick={() => handleTabClick(tab)}
                     aria-label={tab}
                   >
-                    <img src={Images[iconName as keyof typeof Images]} alt={`${tab} icon`} />
-                    <li>{displayName}</li>
+                    <img src={icon} alt={`${label} icon`} />
+                    <li>{label}</li>
                   </div>
                 );
               })}

@@ -1,9 +1,31 @@
-import React, { useState, useEffect } from "react";
-import "./StudentInventory.scss";
-import Images from "../../../../assets/images/imageImporter";
+import { useState, useEffect } from "react";
 import { createChessBoard, isInBounds, getPawnMoves, getRookMoves, getKnightMoves, getBishopMoves, getKingMoves, getQueenMoves } from '../../../lessons/lessons-main/Lessons'
 import LessonSelection from "../../../lessons/lessons-selection/LessonsSelection";
 import Lessons from '../../../lessons/lessons-main/Lessons';
+import "./StudentInventory.scss";
+
+import userPortraitCamera from "../../../assets/images/camera.svg";
+import activityIcon from "../../../assets/images/StudentInventoryIcons/activity-icon.svg";
+import mentorIcon from "../../../assets/images/StudentInventoryIcons/mentor-icon.svg";
+import learningIcon from "../../../assets/images/StudentInventoryIcons/learning-icon.svg";
+import chessLessonsIcon from "../../../assets/images/StudentInventoryIcons/chess-lessons-icon.svg";
+import gamesIcon from "../../../assets/images/StudentInventoryIcons/games-icon.svg";
+import puzzlesIcon from "../../../assets/images/StudentInventoryIcons/puzzles-icon.svg";
+import playComputerIcon from "../../../assets/images/StudentInventoryIcons/play-computer-icon.svg";
+import recordingsIcon from "../../../assets/images/StudentInventoryIcons/recordings-icon.svg";
+import backpackIcon from "../../../assets/images/StudentInventoryIcons/backpack-icon.svg"; 
+
+const TAB_ICONS = {
+  activity: activityIcon,
+  mentor: mentorIcon,
+  learning: learningIcon,
+  chessLessons: chessLessonsIcon,
+  games: gamesIcon,
+  puzzles: puzzlesIcon,
+  playComputer: playComputerIcon,
+  recordings: recordingsIcon,
+  backpack: backpackIcon,
+} as const;
 
 type Board = (string | null)[][];
 type Piece = {
@@ -771,7 +793,7 @@ const StudentInventory = ({ userPortraitSrc, userName }: any) => {
           ></img>
           <img
             className="inv-intro-portrait-camera"
-            src={Images.userPortraitCamera}
+            src={userPortraitCamera}
             alt="user portrait camera icon"
           ></img>
         </div>
@@ -802,7 +824,7 @@ const StudentInventory = ({ userPortraitSrc, userName }: any) => {
                       className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
                       onClick={() => handleTabClick(tab)}
                     >
-                <img src={Images[`${tab}Icon` as keyof typeof Images]} alt={`${tab} icon`} />
+                <img src={TAB_ICONS[tab]} alt={`${tab} icon`} />
                 <li>{displayName}</li>
                     </div>
                   );
