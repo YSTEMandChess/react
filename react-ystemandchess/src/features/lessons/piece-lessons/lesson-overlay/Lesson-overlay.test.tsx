@@ -44,7 +44,26 @@ jest.mock("../../../../components/ChessBoard/ChessBoard", () => {
       reset: jest.fn(),
       undo: jest.fn(),
     }));
-    return <div data-testid="chess-board">ChessBoard Mock</div>;
+    return (
+      <div>
+        <div data-testid="chess-board">ChessBoard Mock</div>
+        <button
+          data-testid="simulate-move"
+          onClick={() => props.onMove?.({ from: "e2", to: "e4" })}
+        >
+          Simulate Move
+        </button>
+        <button
+          data-testid="simulate-promotion"
+          onClick={() => props.onPromotion?.("e8", "Q")}
+        >
+          Simulate Promotion
+        </button>
+        <div data-testid="board-disabled">
+          {props.disabled ? "true" : "false"}
+        </div>
+      </div>
+    );
   });
 });
 
@@ -258,5 +277,196 @@ describe("LessonOverlay", () => {
     expect(mockSocket.setGameState).toHaveBeenCalledWith(
       mockUseLessonManager.lessonData.startFen
     );
+  });
+
+  test("handles drag and drop move via onMove", async () => {
+    render(
+      <MemoryRouter>
+        <LessonOverlay />
+      </MemoryRouter>
+    );
+
+    const moveBtn = await screen.findByTestId("simulate-move");
+    fireEvent.click(moveBtn);
+
+    expect(mockUseChessGameLogic.processMove).toHaveBeenCalled();
+    expect(mockSocket.sendMove).toHaveBeenCalledWith({ from: "e2", to: "e4" });
+    expect(mockSocket.sendLastMove).toHaveBeenCalledWith("e2", "e4");
+  });
+
+  test("handles pawn promotion via onPromotion", async () => {
+    render(
+      <MemoryRouter>
+        <LessonOverlay />
+      </MemoryRouter>
+    );
+
+    const promoBtn = await screen.findByTestId("simulate-promotion");
+    fireEvent.click(promoBtn);
+
+    const lastCallArg = mockSocket.sendMove.mock.calls.slice(-1)[0][0];
+    expect(lastCallArg.promotion).toBe("q");
+    expect(mockUseChessGameLogic.processMove).toHaveBeenCalled();
+  });
+
+  test("does not initialize when socket is disconnected and board is disabled", async () => {
+    mockSocket.connected = false;
+    render(
+      <MemoryRouter>
+        <LessonOverlay />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(mockSocket.setGameStateWithColor).not.toHaveBeenCalled();
+    });
+
+    const disabledIndicator = await screen.findByTestId("board-disabled");
+    expect(disabledIndicator.textContent).toBe("true");
+  });
+
+  test("initializes after reconnecting to socket", async () => {
+    mockSocket.connected = false;
+    const { rerender } = render(
+      <MemoryRouter>
+        <LessonOverlay />
+      </MemoryRouter>
+    );
+
+    mockSocket.connected = true;
+    rerender(
+      <MemoryRouter>
+        <LessonOverlay />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(mockSocket.setGameStateWithColor).toHaveBeenCalled();
+    });
+  });
+
+  test("shows error popup on socket error", async () => {
+    render(
+      <MemoryRouter>
+        <LessonOverlay />
+      </MemoryRouter>
+    );
+
+    act(() => {
+      socketCallbacks.onError && socketCallbacks.onError("test-error");
+    });
+
+    expect(
+      await screen.findByText(/Failed to load content/i)
+    ).toBeInTheDocument();
+  });
+
+  test("lesson completion via promotion lesson type shows success popup", async () => {
+    (useLessonManager as jest.Mock).mockReturnValue({
+      ...mockUseLessonManager,
+      lessonData: {
+        ...mockUseLessonManager.lessonData,
+        info: "promote your pawn",
+      },
+    });
+
+    render(
+      <MemoryRouter>
+        <LessonOverlay />
+      </MemoryRouter>
+    );
+
+    act(() => {
+      socketCallbacks.onBoardStateChange &&
+        socketCallbacks.onBoardStateChange(
+          "rnbqkbnr/pppppppp/8/8/4Q3/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "white"
+        );
+    });
+
+    expect(await screen.findByText(/Lesson completed/i)).toBeInTheDocument();
+  });
+
+  test("lesson completion via checkmate lesson type shows success popup", async () => {
+    (useLessonManager as jest.Mock).mockReturnValue({
+      ...mockUseLessonManager,
+      lessonData: {
+        ...mockUseLessonManager.lessonData,
+        info: "checkmate the opponent",
+      },
+    });
+
+    const { Chess } = require("chess.js");
+    const game = new Chess();
+    game.move("f3");
+    game.move("e5");
+    game.move("g4");
+    game.move("Qh4#");
+    const mateFen = game.fen();
+
+    render(
+      <MemoryRouter>
+        <LessonOverlay />
+      </MemoryRouter>
+    );
+
+    act(() => {
+      socketCallbacks.onBoardStateChange &&
+        socketCallbacks.onBoardStateChange(mateFen, "white");
+    });
+
+    expect(await screen.findByText(/Lesson completed/i)).toBeInTheDocument();
+  });
+
+  test("lesson completion via draw lesson type shows success popup", async () => {
+    (useLessonManager as jest.Mock).mockReturnValue({
+      ...mockUseLessonManager,
+      lessonData: {
+        ...mockUseLessonManager.lessonData,
+        info: "hold the draw",
+      },
+    });
+
+    render(
+      <MemoryRouter>
+        <LessonOverlay />
+      </MemoryRouter>
+    );
+
+    act(() => {
+      socketCallbacks.onBoardStateChange &&
+        socketCallbacks.onBoardStateChange(
+          "8/8/8/8/8/8/7k/7K w - - 0 1",
+          "white"
+        );
+    });
+
+    expect(await screen.findByText(/Lesson completed/i)).toBeInTheDocument();
+  });
+
+  test("handles invalid FEN strings in position lesson without crashing", async () => {
+    const badFen = "invalid-fen-string";
+    (useLessonManager as jest.Mock).mockReturnValue({
+      ...mockUseLessonManager,
+      lessonData: {
+        ...mockUseLessonManager.lessonData,
+        info: "get a winning position",
+        endFen: badFen,
+      },
+    });
+
+    render(
+      <MemoryRouter>
+        <LessonOverlay />
+      </MemoryRouter>
+    );
+
+    act(() => {
+      socketCallbacks.onBoardStateChange &&
+        socketCallbacks.onBoardStateChange(badFen, "white");
+    });
+
+    expect(await screen.findByText(/Lesson completed/i)).toBeInTheDocument();
+    expect(screen.getByTestId("chess-board")).toBeInTheDocument();
   });
 });

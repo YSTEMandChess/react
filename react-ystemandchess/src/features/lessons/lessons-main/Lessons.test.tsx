@@ -1,9 +1,17 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import Lessons from "./Lessons";
 import { MemoryRouter } from "react-router";
 import * as Scenarios from "./Scenarios";
 import * as ReactRouter from "react-router";
+import { act } from "react-dom/test-utils";
+import { useChessSocket } from "../piece-lessons/lesson-overlay/hooks/useChessSocket";
 
 // Mock the Scenarios module
 jest.mock("./Scenarios", () => ({
@@ -35,9 +43,21 @@ jest.mock("./icon_next_inactive.svg", () => ({
 }));
 
 // Mock PromotionPopup
-jest.mock("./PromotionPopup", () => () => (
-  <div data-testid="promotion-popup" />
-));
+jest.mock("./PromotionPopup", () => {
+  const React = require("react");
+  return ({ position, promoteToPiece }: any) => {
+    React.useEffect(() => {
+      if (position) promoteToPiece(position, "Q");
+    }, [position, promoteToPiece]);
+    return <div data-testid="promotion-popup" />;
+  };
+});
+
+// Mock socket.io-client for socket lifecycle tests
+jest.mock("socket.io-client", () => {
+  const io = jest.fn();
+  return { io };
+});
 
 describe("Lessons Component", () => {
   const mockBoard = Array(8)
@@ -89,6 +109,232 @@ describe("Lessons Component", () => {
       if (index === 0) return mockScenario1;
       if (index === 1) return mockScenario2;
       return mockScenario1;
+    });
+  });
+
+  test("socket connection and disconnection handling via useChessSocket", async () => {
+    const { io } = require("socket.io-client");
+    const mockSocket = {
+      on: jest.fn(),
+      emit: jest.fn(),
+      disconnect: jest.fn(),
+    };
+    io.mockReturnValue(mockSocket);
+
+    const SocketStatus: React.FC = () => {
+      const socket = useChessSocket({
+        student: "student",
+        serverUrl: "http://localhost",
+        onMove: () => {},
+      });
+      return (
+        <div data-testid="socket-connected">{String(socket.connected)}</div>
+      );
+    };
+
+    const { unmount } = render(<SocketStatus />);
+
+    const connectHandler = mockSocket.on.mock.calls.find(
+      (c: any[]) => c[0] === "connect"
+    )?.[1];
+    const disconnectHandler = mockSocket.on.mock.calls.find(
+      (c: any[]) => c[0] === "disconnect"
+    )?.[1];
+
+    expect(screen.getByTestId("socket-connected")).toHaveTextContent("false");
+
+    act(() => {
+      connectHandler && connectHandler();
+    });
+    expect(screen.getByTestId("socket-connected")).toHaveTextContent("true");
+
+    act(() => {
+      disconnectHandler && disconnectHandler("io client disconnect");
+    });
+    expect(screen.getByTestId("socket-connected")).toHaveTextContent("false");
+
+    unmount();
+    expect(mockSocket.disconnect).toHaveBeenCalled();
+  });
+
+  test("handles network failures: connect_error and gameerror", async () => {
+    const { io } = require("socket.io-client");
+    const mockSocket = {
+      on: jest.fn(),
+      emit: jest.fn(),
+      disconnect: jest.fn(),
+    };
+    io.mockReturnValue(mockSocket);
+
+    const onError = jest.fn();
+
+    const SocketStatus: React.FC = () => {
+      useChessSocket({
+        student: "student",
+        serverUrl: "http://localhost",
+        onMove: () => {},
+        onError,
+      });
+      return null;
+    };
+
+    render(<SocketStatus />);
+
+    const connectErrorHandler = mockSocket.on.mock.calls.find(
+      (c: any[]) => c[0] === "connect_error"
+    )?.[1];
+    const gameErrorHandler = mockSocket.on.mock.calls.find(
+      (c: any[]) => c[0] === "gameerror"
+    )?.[1];
+
+    act(() => {
+      connectErrorHandler && connectErrorHandler(new Error("Network down"));
+    });
+    expect(onError).toHaveBeenCalledWith("Connection failed");
+
+    act(() => {
+      gameErrorHandler && gameErrorHandler("Bad move");
+    });
+    expect(onError).toHaveBeenCalledWith("Bad move");
+  });
+
+  test("normalizes empty FEN to starting position", async () => {
+    const { io } = require("socket.io-client");
+    const mockSocket = {
+      on: jest.fn(),
+      emit: jest.fn(),
+      disconnect: jest.fn(),
+    };
+    io.mockReturnValue(mockSocket);
+
+    const onBoardStateChange = jest.fn();
+
+    const FenStatus: React.FC = () => {
+      const socket = useChessSocket({
+        student: "student",
+        serverUrl: "http://localhost",
+        onBoardStateChange,
+      });
+      return <div data-testid="fen">{socket.fen}</div>;
+    };
+
+    render(<FenStatus />);
+
+    const boardstateHandler = mockSocket.on.mock.calls.find(
+      (c: any[]) => c[0] === "boardstate"
+    )?.[1];
+
+    act(() => {
+      boardstateHandler &&
+        boardstateHandler(JSON.stringify({ boardState: "" }));
+    });
+
+    const defaultFen =
+      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    await waitFor(() => {
+      expect(screen.getByTestId("fen")).toHaveTextContent(defaultFen);
+    });
+    expect(onBoardStateChange).toHaveBeenCalledWith(defaultFen, undefined);
+  });
+
+  test("normalizes non-string FEN to starting position", async () => {
+    const { io } = require("socket.io-client");
+    const mockSocket = {
+      on: jest.fn(),
+      emit: jest.fn(),
+      disconnect: jest.fn(),
+    };
+    io.mockReturnValue(mockSocket);
+
+    const onBoardStateChange = jest.fn();
+
+    const FenStatus: React.FC = () => {
+      const socket = useChessSocket({
+        student: "student",
+        serverUrl: "http://localhost",
+        onBoardStateChange,
+      });
+      return <div data-testid="fen">{socket.fen}</div>;
+    };
+
+    render(<FenStatus />);
+
+    const boardstateHandler = mockSocket.on.mock.calls.find(
+      (c: any[]) => c[0] === "boardstate"
+    )?.[1];
+
+    act(() => {
+      boardstateHandler &&
+        boardstateHandler(JSON.stringify({ boardState: null }));
+    });
+
+    const defaultFen =
+      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    await waitFor(() => {
+      expect(screen.getByTestId("fen")).toHaveTextContent(defaultFen);
+    });
+    expect(onBoardStateChange).toHaveBeenCalledWith(defaultFen, undefined);
+  });
+
+  test("shows lesson completion popup and advances after confirm", async () => {
+    render(
+      <MemoryRouter>
+        <Lessons />
+      </MemoryRouter>
+    );
+
+    const okButton = await screen.findByRole("button", { name: "OK" });
+    fireEvent.click(okButton);
+
+    expect(screen.getByTestId("subheading")).toHaveTextContent("Lesson 1.2");
+  });
+
+  test("promotes a pawn to a new piece upon reaching last rank", async () => {
+    render(
+      <MemoryRouter>
+        <Lessons />
+      </MemoryRouter>
+    );
+
+    const dataTransfer = {
+      setData: jest.fn(),
+      getData: jest.fn(),
+      setDragImage: jest.fn(),
+    };
+
+    // Move pawn step-by-step from 6-0 to 1-0
+    for (let row = 6; row > 1; row--) {
+      const sourceSquare = screen.getByTestId(`square-${row}-0`);
+      fireEvent.mouseEnter(sourceSquare);
+      const pawnImg = within(sourceSquare).getByTestId("piece-wP");
+      fireEvent.dragStart(pawnImg, { dataTransfer });
+
+      const targetSquare = screen.getByTestId(`square-${row - 1}-0`);
+      fireEvent.dragOver(targetSquare, { preventDefault: () => {} });
+      fireEvent.drop(targetSquare);
+
+      await waitFor(() => {
+        expect(
+          within(targetSquare).getByTestId("piece-wP")
+        ).toBeInTheDocument();
+      });
+    }
+
+    // Final move from 1-0 to 0-0 triggers promotion
+    const preFinalSource = screen.getByTestId("square-1-0");
+    fireEvent.mouseEnter(preFinalSource);
+    const pawnImg = within(preFinalSource).getByTestId("piece-wP");
+    fireEvent.dragStart(pawnImg, { dataTransfer });
+    const finalSquare = screen.getByTestId("square-0-0");
+    fireEvent.dragOver(finalSquare, { preventDefault: () => {} });
+    fireEvent.drop(finalSquare);
+
+    // Mocked PromotionPopup auto-selects Queen; verify a queen now occupies the promotion square
+    await waitFor(() => {
+      const queenImg =
+        within(finalSquare).queryByTestId("piece-wQ") ||
+        within(finalSquare).queryByTestId("piece-bQ");
+      expect(queenImg).not.toBeNull();
     });
   });
 
@@ -244,6 +490,86 @@ describe("Lessons Component", () => {
 
     expect(moveSquare1).toHaveStyle("filter: brightness(80%)");
     expect(moveSquare2).toHaveStyle("filter: brightness(80%)");
+  });
+
+  test("drags and drops a chess piece onto a valid square", async () => {
+    render(
+      <MemoryRouter>
+        <Lessons />
+      </MemoryRouter>
+    );
+
+    // Source square contains a white pawn at 6-0 by default in mockScenario1
+    const sourceSquare = screen.getByTestId("square-6-0");
+
+    // Hover to populate highlightedSquares (valid targets for the pawn)
+    fireEvent.mouseEnter(sourceSquare);
+
+    // Create a compatible dataTransfer stub used in drag events
+    const dataTransfer = {
+      setData: jest.fn(),
+      getData: jest.fn(),
+      setDragImage: jest.fn(),
+    };
+
+    // Drag the pawn image
+    const pawnImg = within(sourceSquare).getByTestId("piece-wP");
+    fireEvent.dragStart(pawnImg, { dataTransfer });
+
+    // Drop on the valid forward square (5-0)
+    const targetSquare = screen.getByTestId("square-5-0");
+    fireEvent.dragOver(targetSquare, { preventDefault: () => {} });
+    fireEvent.drop(targetSquare);
+
+    // Assert the pawn moved: now present in target square, absent in source
+    await waitFor(() => {
+      expect(within(targetSquare).getByTestId("piece-wP")).toBeInTheDocument();
+    });
+    expect(within(sourceSquare).queryByTestId("piece-wP")).toBeNull();
+  });
+
+  test("does not move piece when dropping onto a non-highlighted square", async () => {
+    render(
+      <MemoryRouter>
+        <Lessons />
+      </MemoryRouter>
+    );
+
+    const dataTransfer = {
+      setData: jest.fn(),
+      getData: jest.fn(),
+      setDragImage: jest.fn(),
+    };
+
+    const sourceSquare = screen.getByTestId("square-6-0");
+    fireEvent.mouseEnter(sourceSquare);
+    const pawnImg = within(sourceSquare).getByTestId("piece-wP");
+    fireEvent.dragStart(pawnImg, { dataTransfer });
+
+    const invalidTarget = screen.getByTestId("square-6-1");
+    fireEvent.dragOver(invalidTarget, { preventDefault: () => {} });
+    fireEvent.drop(invalidTarget);
+
+    await waitFor(() => {
+      expect(within(sourceSquare).getByTestId("piece-wP")).toBeInTheDocument();
+    });
+    expect(within(invalidTarget).queryByTestId("piece-wP")).toBeNull();
+  });
+
+  test("drop without draggingPiece does nothing gracefully", async () => {
+    render(
+      <MemoryRouter>
+        <Lessons />
+      </MemoryRouter>
+    );
+
+    const sourceSquare = screen.getByTestId("square-6-0");
+    const targetSquare = screen.getByTestId("square-5-0");
+
+    fireEvent.drop(targetSquare);
+
+    expect(within(sourceSquare).getByTestId("piece-wP")).toBeInTheDocument();
+    expect(within(targetSquare).queryByTestId("piece-wP")).toBeNull();
   });
 
   test("handles invalid location state gracefully", () => {

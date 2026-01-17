@@ -184,6 +184,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   };
 
   const startLesson = (puzzle: any, color: "white" | "black") => {
+    console.log("StartLesson called... ");
+    
     const fen = puzzle.FEN;
 
     if (!fen || fen.split("/").length !== 8) {
@@ -582,7 +584,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       {!currentFEN ? (
         <div>Loading puzzle...</div>
       ) : (
-        <div className={styles.chessBoardContainer}>
+        <div className={styles.chessBoardContainer} data-testid="chess-board-container">
           <ChessBoard
             mode="puzzle"
             ref={chessBoardRef}
@@ -599,7 +601,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       <div className={styles.hintMenu}>
         <div className={styles.hintButtonRow}>
           <button
-            className={styles.puzzleButton}
+            className={styles.puzzleButton} data-testid="next-puzzle-button"
             onClick={() => {
               isPuzzleEndRef.current = false;
               socket.sendMessage("next puzzle");
@@ -610,7 +612,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
           </button>
 
           <button
-            className={styles.puzzleButton}
+            className={styles.puzzleButton} data-testid="hint-button"
             onClick={openDialog}
             disabled={!socket.connected}
           >
