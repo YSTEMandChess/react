@@ -10,7 +10,7 @@ html, body {
 }
 
 body {
-  @apply font-sans bg-background-soft text-text-primary leading-normal;
+  @apply font-sans bg-soft text-dark leading-normal;
 }
 
 *, *::before, *::after {
@@ -25,4 +25,22 @@ a {
 button {
   font-family: inherit;
   cursor: pointer;
+}
+
+@layer components {
+  .btn-primary {
+    @apply
+      bg-dark text-light font-bold leading-relaxed
+      py-3 px-8
+      rounded-full
+      border-2 border-dark
+      transition-transform transition-shadow transition-colors duration-500
+      hover:scale-105
+      hover:shadow-lg
+      hover:bg-black
+      active:scale-95
+      focus-visible:outline-none
+      focus-visible:ring-2
+      focus-visible:ring-primary;
+  }
 }

@@ -9,26 +9,16 @@ module.exports = {
       colors: {
         primary: "#7FCC26",
         secondary: "#EAD94C",
+        soft: "#E5F3D2",
 
-        background: {
-          DEFAULT: "#F9FAF7",
-          soft: "#E5F3D2",
-        },
+        dark: "#1F1F1F",
+        gray: "#5C5C5C",
+        muted: "#8A8A8A",
+        borderLight: "#D6D6D6",
+        light: "#F9FAF7",
 
-        text: {
-          primary: "#1F1F1F",
-          secondary: "#5C5C5C",
-          muted: "#8A8A8A",
-        },
-
-        border: {
-          light: "#E0E0E0",        
-        },
-
-        error: {
-          text: "#D64545",
-          background: "#f4cacaff",
-        },
+        red: "#D64545",
+        lightRed: "#f4cacaff",
       },
 
       fontFamily: {
@@ -39,6 +29,11 @@ module.exports = {
           "BlinkMacSystemFont",
           "sans-serif",
         ],
+      },
+      
+      boxShadow: {
+        'card-yellow': '1.25rem 1.25rem 0.063rem rgb(209, 230, 28)',
+        'card-green': '1.25rem 1.25rem 0.063rem rgb(115, 179, 19)',
       },
     },
   },

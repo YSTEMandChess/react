@@ -1,5 +1,12 @@
 import { useNavigate } from "react-router";
-import Images from "../../assets/images/imageImporter";
+import Book1 from "../../assets/images/book-howtostart.png";
+import Book2 from "../../assets/images/book-thezerodollar.png";
+import TreesGroup from "../../assets/images/Trees-Group.png";
+import LogoLineBr from "../../assets/images/LogoLineBreak.png";
+import Heart from "../../assets/images/heart-regular.svg";
+import Gem from "../../assets/images/gem-regular.svg";
+import LargeInfo from "../../assets/images/large_info.png";
+import ChessGroup from "../../assets/images/chessGroup.png";
 import Ventive from "../../assets/images/sponsors/ventive.png";
 import Kount from "../../assets/images/sponsors/kount.png";
 import IdahoCentral from "../../assets/images/sponsors/idahoCentral.jpg";
@@ -63,7 +70,7 @@ const partners = [
 
 const books = [
   {
-    image: Images.Book1,
+    image: Book1,
     title: "How to Start a Tech-Based Nonprofit",
     subtitle:
       "Bridging the Opportunity Gap: Building a STEM Nonprofit to Change the Trajectory of Underserved Children's Lives",
@@ -71,7 +78,7 @@ const books = [
       "How to start tech-based Nonprofit details the steps of Devin Nakano as he builds Y STEM and Chess (YSC) Inc. The first in its series covers the first 4 years of YSC. Each chapter brings unique perspective of an entrepreneur building a nonprofit that uses technology to fulfill the Company Mission.",
   },
   {
-    image: Images.Book2,
+    image: Book2,
     title: "The Zero Dollar Workforce",
     subtitle: "Hire a Team, Run Your Company, and Don't Spend Any Money",
     description:
@@ -107,30 +114,35 @@ const Home = () => {
   return (
     <div role="main" className="w-full h-auto mt-2">
       {/* HERO SECTION */}
-      <div role="region" className="w-full md:w-[85%] h-auto md:h-[460px] mx-auto flex flex-col md:flex-row gap-8 mb-12 px-6">
-        <div className="w-full md:w-1/2 h-full flex justify-center items-center flex-col gap-6">
-          <h1 className="pt-[5%] text-3xl md:text-4xl text-left w-full text-text-primary font-bold">
-            Helping your child develop <br/> critical thinking skills!
+      <div role="region" className="w-full max-w-7xl mx-auto flex flex-col md:flex-row gap-8 mb-1 px-6 md:px-8 py-10">
+        <div className="w-full md:w-1/2 flex justify-center items-center flex-col gap-6">
+          <h1 className="text-3xl md:text-4xl text-left w-full text-dark font-bold pt-8">
+            <span className="block leading-relaxed">
+              Helping your child develop
+            </span>
+            <span className="block leading-relaxed">
+              critical thinking skills!
+            </span>
           </h1>
 
-          <p className="text-xl md:text-2xl/10 pt-4 text-left w-full text-text-secondary">
-            We are a nonprofit organization empowering children <br/> to find
-            their own success in STEM <br/> through Chess, Math and Computer
+          <p className="text-xl md:text-2xl/10 pt-2 text-left w-full text-gray">
+            We are a nonprofit organization empowering children <br /> to find
+            their own success in STEM <br /> through Chess, Math and Computer
             Science.
           </p>
 
           <button
-            className="mt-8 bg-text-primary border-2 border-background text-background rounded-2xl py-3 px-8 hover:bg-text-secondary transition-colors font-bold self-start"
+            className="btn-primary mt-4 self-start"
             onClick={handleDonateButton}
             aria-label="Donate to Y STEM and Chess"
           >
             Donate
           </button>
         </div>
-        
+
         <div className="w-full md:w-1/2 flex items-center justify-center">
           <img
-            src={Images.TreesGroup}
+            src={TreesGroup}
             alt="Group of Y STEM mascots playing chess"
             className="w-full h-full object-contain"
           />
@@ -139,29 +151,29 @@ const Home = () => {
 
       {/* LOGO BREAK */}
       <img
-        src={Images.LogoLineBr}
+        src={LogoLineBr}
         className="w-full mx-auto"
         alt=""
         role="presentation"
       />
 
       {/* "EVERYONE IS INCLUDED" HEADING */}
-      <h2 className="text-center text-3xl md:text-5xl md:my-8 font-bold text-text-primary">
+      <h2 className="text-center text-3xl md:text-4xl md:my-12 font-bold text-dark">
         Everyone is included. Everyone is welcome.
       </h2>
 
       {/* FREE/PREMIUM CARDS */}
-      <div role="region" className="w-full md:w-[85%] h-auto mx-auto mt-5 flex flex-col md:flex-row items-stretch gap-8 md:gap-16 lg:gap-40 justify-center px-6 md:px-0 mb-12">
+      <div role="region" className="w-full mx-auto flex flex-col md:flex-row items-stretch gap-12 md:gap-16 lg:gap-40 justify-center px-6 md:px-8 mt-16 mb-12">
         {/* Free Card */}
-        <div className="flex flex-col justify-center items-center w-full md:w-[35%] min-h-[600px] md:h-[700px] bg-primary rounded-[1.25rem] shadow-[1.25rem_1.25rem_0.063rem_rgb(209,230,28)] p-8 gap-4">
-          <img src={Images.Heart} alt="" className="w-16 h-16 md:w-20 md:h-20" />
-          <h3 className="text-3xl md:text-4xl font-bold text-white mt-4 mb-4">Free</h3>
-          <p className="text-lg md:text-xl text-center text-white leading-relaxed mt-[5%] mb-8">
+        <div className="flex flex-col justify-center items-center w-full md:w-1/2 lg:w-1/4 bg-primary rounded-3xl shadow-card-yellow p-8 gap-4">
+          <img src={Heart} alt="" className="w-16 h-16 md:w-20 md:h-20" />
+          <h3 className="text-3xl md:text-4xl font-bold text-dark mt-4 mb-4">Free</h3>
+          <p className="text-lg md:text-xl/9 text-center text-dark leading-relaxed">
             For students who qualify for <br />free and reduced lunch.<br />
             Our lessons are free.
           </p>
-          <button 
-            className="mt-auto bg-[#1a1a1a] text-white font-bold py-3 px-8 rounded-full hover:bg-[#2a2a2a] transition-colors border-2 border-white"
+          <button
+            className="btn-primary mt-auto mb-4"
             aria-label="Join now for free"
           >
             Join Now!
@@ -169,15 +181,15 @@ const Home = () => {
         </div>
 
         {/* Premium Card */}
-        <div className="flex flex-col justify-center items-center w-full md:w-[35%] min-h-[600px] md:h-[700px] bg-white rounded-[1.25rem] shadow-[1.25rem_1.25rem_0.063rem_rgb(115,179,19)] p-8 gap-4">
-          <img src={Images.Gem} alt="" className="w-16 h-16 md:w-20 md:h-20" />
-          <h3 className="text-3xl md:text-4xl font-bold text-text-primary mt-4 mb-4">Premium</h3>
-          <p className="text-lg md:text-xl text-center text-text-primary leading-relaxed mt-[5%] mb-8">
-            For students who don't qualify <br />for free and reduced lunch.{" "}
+        <div className="flex flex-col justify-center items-center w-full md:w-1/2 lg:w-1/4 bg-light rounded-3xl shadow-card-green p-8 gap-4">
+          <img src={Gem} alt="" className="w-16 h-16 md:w-20 md:h-20" />
+          <h3 className="text-3xl md:text-4xl font-bold text-dark mt-4 mb-4">Premium</h3>
+          <p className="text-lg md:text-xl/9 text-center text-dark leading-relaxed mb-20">
+            For students who don't qualify <br />for free and reduced lunch.
             <br />$25 / Week <br />First lesson is FREE. <br />Cancel anytime.
           </p>
-          <button 
-            className="mt-auto bg-[#1a1a1a] text-white font-bold py-3 px-8 rounded-full hover:bg-[#2a2a2a] transition-colors border-2 border-white"
+          <button
+            className="btn-primary mt-auto mb-4"
             aria-label="Join now premium"
           >
             Join Now!
@@ -186,9 +198,9 @@ const Home = () => {
       </div>
 
       {/* MISSION STATEMENT IMAGE */}
-      <div role="region" className="flex w-full justify-center items-center">
+      <div role="region" className="flex w-full justify-center items-center py-12">
         <img
-          src={Images.LargeInfo}
+          src={LargeInfo}
           alt="Y STEM mission statement emphasising Play, Learn and Donate"
           className="w-full h-auto"
         />
@@ -200,24 +212,23 @@ const Home = () => {
           title="Y STEM and Chess Introduction Video"
           className="w-[90%] md:w-[85%] h-[300px] md:h-[90%]"
           src="https://www.youtube.com/embed/SBr0bGgddIc"
-          style={{ border: "0" }}
           allowFullScreen
         />
       </div>
 
       {/* CTA SECTION - "START NOW" */}
-      <div role="region" className="flex justify-center items-center w-full h-auto py-12 md:py-16 mt-8 mb-8">
-        <div className="flex justify-center items-center flex-col w-[90%] md:w-[70%] h-full border-4 border-primary py-12 px-6 gap-6">
+      <div className="flex justify-center items-center w-full px-6 md:px-8 py-12 md:py-16">
+        <div className="flex justify-center items-center flex-col w-full max-w-7xl border-4 border-primary rounded-lg py-12 px-6 gap-6">
           <img
-            src={Images.ChessGroup}
+            src={ChessGroup}
             alt="Chess pieces lined up next to each other"
             className="w-full max-w-md h-auto"
           />
-          <div className="text-2xl md:text-4xl font-bold text-text-primary text-center">
+          <div className="text-xl md:text-4xl font-bold text-dark text-center mt-4 mb-4">
             Start now and sign up later!
           </div>
           <button
-            className="bg-[#1a1a1a] text-white font-bold py-3 px-8 rounded-full hover:bg-[#2a2a2a] transition-colors border-2 border-white"
+            className="btn-primary"
             onClick={() => navigate("./play")}
             aria-label="Get started"
           >
@@ -228,65 +239,64 @@ const Home = () => {
 
       {/* LOGO BREAK */}
       <img
-        src={Images.LogoLineBr}
-        className="w-full md:w-[85%] mx-auto mt-10"
+        src={LogoLineBr}
+        className="w-full mx-auto"
         alt=""
         role="presentation"
       />
 
       {/* BOOKS SECTION */}
       <div role="region" className="w-full h-auto my-12 px-6 md:px-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-text-primary text-center mb-12">
+        <h2 className="text-center text-3xl md:text-4xl md:my-12 font-bold text-dark">
           Books by Devin Nakano
         </h2>
-        
+
         {books.map((book, index) => (
-          <div key={index} className="flex flex-col md:flex-row items-start border border-border-light p-4 md:p-6 rounded-md mb-8">
+          <div key={index} className="flex flex-col md:flex-row items-start border-2 border-secondary p-4 md:p-6 rounded-md mb-8">
             <div className="flex flex-col items-center mx-auto md:mx-8 mb-6 md:mb-0">
               <img
                 src={book.image}
-                alt={`${book.title} cover image`}
-                className="w-[150px] h-auto mb-4"
+                alt={`${book.title} cover`}
+                className="w-[160px] h-auto mb-4"
               />
               <button
-                className="bg-transparent border-none p-0 cursor-pointer hover:opacity-90 transition-opacity"
+                className="btn-primary"
                 aria-label={`Buy now ${book.title}`}
                 onClick={() => handleBuyNow(book.title)}
-              >
-                <img src={Images.BuyNow} alt="Buy now" className="w-[150px] h-auto" />
+              >Buy Now!
               </button>
             </div>
-            
+
             <div className="flex-1">
-              <h3 className="text-xl md:text-2xl font-bold text-text-primary text-left mb-2">
+              <h3 className="text-xl md:text-2xl font-bold text-dark text-left mb-2">
                 {book.title}
               </h3>
-              <h4 className="text-lg md:text-xl text-text-secondary text-left mb-4">
+              <h4 className="text-lg md:text-xl text-dark text-left mb-4">
                 {book.subtitle}
               </h4>
-              <p className="text-base text-text-secondary text-left leading-relaxed">
+              <p className="text-base text-gray text-left leading-relaxed">
                 {book.description}
               </p>
             </div>
           </div>
         ))}
-        
+
         <footer role="contentinfo" className="text-center mt-8">
-          <p className="text-text-secondary">All proceeds will be donated to the organization</p>
+          <p className="text-lg text-dark leading-relaxed">All proceeds will be donated to the organization</p>
         </footer>
       </div>
 
       {/* LOGO BREAK */}
       <img
-        src={Images.LogoLineBr}
-        className="w-full md:w-[85%] mx-auto mt-10"
+        src={LogoLineBr}
+        className="w-full mx-auto my-10"
         alt=""
         role="presentation"
       />
 
       {/* SPONSORS */}
-      <div className="px-6 md:px-12 mb-16 mt-12">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-text-primary text-center mb-8">
+      <div className="ml-5 mr-5 mb-12">
+        <h3 className="text-center text-2xl md:text-3xl md:my-8 font-bold text-dark">
           Sponsors
         </h3>
         <div className="flex flex-wrap justify-center items-center gap-12">
@@ -309,9 +319,9 @@ const Home = () => {
         </div>
       </div>
 
-      {/* PARTNERS */}
-      <div className="px-6 md:px-12 mb-16">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-text-primary text-center mb-8">
+      {/* PARTNERS  */}
+      <div className="ml-5 mr-5 mb-36">
+        <h3 className="text-center text-2xl md:text-3xl md:my-8 font-bold text-dark">
           Partners
         </h3>
         <div className="flex flex-wrap justify-center items-center gap-8">
@@ -327,12 +337,13 @@ const Home = () => {
               <img
                 src={partner.logo}
                 alt={`${partner.name} logo`}
-                className="h-20 w-32 object-contain"
+                className="h-16 w-37 object-contain"
               />
             </a>
           ))}
         </div>
       </div>
+
     </div>
   );
 };
