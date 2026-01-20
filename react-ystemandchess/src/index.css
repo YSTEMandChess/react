@@ -43,4 +43,15 @@ button {
       focus-visible:ring-2
       focus-visible:ring-primary;
   }
+  
+  .btn-toolbar {
+    @apply relative flex-1 max-w-xs p-0 bg-transparent rounded-lg cursor-pointer
+      transition-all duration-200 hover:scale-105 active:scale-95
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent;
+  }
+  
+  .activity-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #7FCC26 #E5F3D2;
+  }
 }

@@ -3,7 +3,6 @@ import { SetPermissionLevel } from '../../../globals';
 import { useCookies } from 'react-cookie';
 import { environment } from "../../../environments/environment";
 import { useNavigate } from "react-router";
-import { useLocation } from "react-router";
 import StatsChart from "./StatsChart";
 import Puzzles from "../../puzzles/puzzles-page/Puzzles";
 import PlayComputer from "../../engine/PlayComputer";
@@ -14,7 +13,6 @@ import LeaderboardModal from "./Modals/LeaderboardModal";
 import Confetti from "../../../components/animations/Confetti/Confetti";
 import "./NewStudentProfile.scss";
 
-// Toolbar buttons
 import { ReactComponent as StreakIcon } from "../../../assets/images/student/streak_button.svg";
 import { ReactComponent as ActivitiesIcon } from "../../../assets/images/student/activities_button.svg";
 import { ReactComponent as BadgesIcon } from "../../../assets/images/student/badges_button.svg";
@@ -75,21 +73,12 @@ const Lessons = lazy(() => import("../../lessons/lessons-main/Lessons"));
 const LessonsSelection = lazy(() => import("../../lessons/lessons-selection/LessonsSelection"));
 const LessonOverlay = lazy(() => import("../../lessons/piece-lessons/lesson-overlay/Lesson-overlay"));
 
-// Main Student Profile Component
 const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
-  // State for managing currently open modal
   const [activeModal, setActiveModal] = useState<null | "streak" | "activities" | "badges" | "leaderboard">(null);
-
-  // State for managing active content tab
   const [activeTab, setActiveTab] = useState("activity");
-
-  // Cookie state to get login token
   const [cookies] = useCookies(['login']);
-
-  // Hooks for routing
   const navigate = useNavigate();
-  const location = useLocation();
 
   // User info
   const [username, setUsername] = useState(" ");
@@ -273,9 +262,9 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   // Redirect user when clicking on an activity item (e.g., lesson)
   const handleNavigateEvent = (type: string, name: string) => {
-    if (type == "lesson") {
+    if (type === "lesson") {
       navigate("/lessons", { state: { piece: name } });
-    } else if (type == "puzzle") {
+    } else if (type === "puzzle") {
       navigate("/puzzles");
     }
   }
@@ -288,221 +277,337 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
   // Render content based on active tab
   const renderTabContent = () => {
-    switch (activeTab) {
-      case "activity":
-        return (
-          <div id="inventory-content-activity" className="inventory-content active-content">
-            <div className="inventory-content-headingbar">
-              <h2>Activity</h2>
-              <h4>{date}</h4>
-            </div>
-            <div className="inventory-content-line"></div>
-            <div className="inventory-content-body" ref={containerRef}>
-              {events && events.map((event, index) => {
-                const dateObj = new Date(event.startTime);
-                const dateStr = dateObj.toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric'
-                });
-                const timeStr = dateObj.toLocaleTimeString('en-US', {
-                  hour: 'numeric',
-                  minute: '2-digit'
-                });
+  switch (activeTab) {
+    case "activity":
+      return (
+        <div className="w-full h-full">
+          <div className="flex justify-between items-baseline border-b border-borderLight mb-4 pb-2">
+            <h2 className="text-2xl font-bold text-dark">Activity</h2>
+            <h4 className="text-sm text-gray">{date}</h4>
+          </div>
+          <div className="relative">
+            <div 
+              ref={containerRef}
+              className="relative max-h-[700px] overflow-y-auto pr-2 activity-scrollbar"
+            >
+              {/* Timeline line */}
+              <div className="absolute left-4 top-0 bottom-0 w-0.5">
+                <div className="absolute top-0 bottom-0 left-0 w-full border-l-[3px] border-dotted border-gray" />
+              </div>
 
-                return (
-                  <article key={index} className="inventory-content-timecard">
-                    <div className="inventory-content-col1"></div>
-                    <div className="inventory-content-col2">
-                      <p>
-                        <span className="inventory-date">{dateStr}</span>
-                        <br />
-                        <span className="inventory-time">{timeStr}</span>
-                      </p>
-                    </div>
-                    <div className="inventory-content-col3">
-                      <p>
-                        Working on :{' '}
-                        {event.eventName == "Untitled event" ? (
-                          <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventType}</strong>
-                        ) : (
-                          <strong onClick={() => handleNavigateEvent(event.eventType, event.eventName)}>{event.eventName}</strong>
-                        )}
-                      </p>
-                    </div>
-                  </article>
-                );
-              })}
+              {/* Activity cards */}
+              <div className="space-y-4 pl-12">
+                {events && events.map((event, index) => {
+                  const dateObj = new Date(event.startTime);
+                  const dateStr = dateObj.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                  const timeStr = dateObj.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit'
+                  });
+
+                  return (
+                    <article 
+                      key={index}
+                      className="relative bg-light border border-borderLight p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      {/* Timeline dot */}
+                      <div className="absolute -left-9 top-6 w-3 h-3 bg-primary rounded-full border-2 border-light shadow-sm" />
+                      
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 min-w-[120px]">
+                          <p className="m-0">
+                            <span className="block text-base font-medium text-dark">{dateStr}</span>
+                            <span className="block text-sm text-gray mt-1">{timeStr}</span>
+                          </p>
+                        </div>
+                        <div className="flex-1 pt-1">
+                          <p className="m-0 text-base text-dark">
+                            Working on:{' '}
+                            <strong 
+                              className="text-primary underline cursor-pointer hover:text-secondary transition-colors"
+                              onClick={() => handleNavigateEvent(event.eventType, event.eventName)}
+                            >
+                              {event.eventName === "Untitled event" ? event.eventType : event.eventName}
+                            </strong>
+                          </p>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+              
               {loading && (
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <div className="loading-spinner"></div>
-                  <p>Loading more activities...</p>
+                <div className="text-center p-4 pl-12">
+                  <div className="inline-block w-5 h-5 border-[3px] border-primary/30 border-t-primary rounded-full animate-spin 1s linear infinite" />
+                  <p className="mt-2 text-gray">Loading more activities...</p>
                 </div>
               )}
+              
               {!hasMore && events.length > 0 && (
-                <p style={{ textAlign: 'center', padding: '1rem', color: '#666' }}>
+                <p className="text-center p-4 pl-12 text-gray">
                   🎉 You've seen all your activities!
                 </p>
               )}
             </div>
           </div>
-        );
-      case "mentor":
-        return <div id="inventory-content-mentor" className="inventory-content active-content"><h2>Mentor</h2><p>This is the content for the Mentor tab.</p></div>;
-      case "prodev":
-        return (
-          <div id="inventory-content-learning" className="inventory-content active-content">
-            <Suspense fallback={<h2>Loading learning page...</h2>}>
-              <Lessons styleType={"profile"} />
+        </div>
+      );
+    
+    case "mentor":
+      return (
+        <div className="w-full h-full">
+          <h2 className="text-2xl font-bold text-dark mb-4">Mentor</h2>
+          <p className="text-gray">This is the content for the Mentor tab.</p>
+        </div>
+      );
+    
+    case "prodev":
+      return (
+        <div className="w-full h-full">
+          <Suspense fallback={<h2 className="text-xl text-gray">Loading learning page...</h2>}>
+            <Lessons styleType={"profile"} />
+          </Suspense>
+        </div>
+      );
+    
+    case "chessLessons":
+      return (
+        <div className="w-full h-full">
+          {lessonSelected ? (
+            <Suspense fallback={<h2 className="text-xl text-gray">Loading lessons page...</h2>}>
+              <LessonOverlay 
+                propPieceName={piece} 
+                propLessonNumber={lessonNum} 
+                navigateFunc={() => setLessonSelected(false)} 
+                styleType="profile" 
+              />
             </Suspense>
-          </div>
-        );
-      case "chessLessons":
-        return (
-          <div id="inventory-content-lessons" className="inventory-content active-content">
-            {lessonSelected ? (
-              <Suspense fallback={<h2>Loading lessons page...</h2>}>
-                <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum} navigateFunc={() => {
-                  setLessonSelected(false);
-                }} styleType="profile" />
-              </Suspense>
-            ) : (
-              <Suspense fallback={<h2>Loading lesson selection page...</h2>}>
-                <LessonsSelection styleType="profile" onGo={(selectedScenario, lessonNum) => {
+          ) : (
+            <Suspense fallback={<h2 className="text-xl text-gray">Loading lesson selection page...</h2>}>
+              <LessonsSelection 
+                styleType="profile" 
+                onGo={(selectedScenario, lessonNum) => {
                   setLessonSelected(true);
                   setPiece(selectedScenario);
                   setLessonNum(lessonNum);
-                }} />
-              </Suspense>
-            )}
-          </div>
-        );
-      case "mathLessons":
-        return <div id="inventory-content-games" className="inventory-content active-content"><h2>Math lessons</h2><p>This is the content for the Math lessons tab.</p></div>;
-      case "games":
-        return <div id="inventory-content-games" className="inventory-content active-content"><h2>Games</h2><p>This is the content for the Games tab.</p></div>;
-      case "puzzles":
-        return (
-          <div id="inventory-content-puzzles" className="inventory-content active-content">
-            <Puzzles student={username} mentor={mentorUsername} role={"student"} styleType="profile" />
-          </div>
-        );
-      case "playComputer":
-        return <div id="inventory-content-computer" className="inventory-content active-content"> <PlayComputer /> </div>;
-      case "recordings":
-        return <div id="inventory-content-recordings" className="inventory-content active-content"><h2>Recordings</h2><p>This is the content for the Recordings tab.</p></div>;
-      default:
-        return <div className="inventory-content active-content"><h2>Select a tab to view its content.</h2></div>;
-    }
-  };
+                }} 
+              />
+            </Suspense>
+          )}
+        </div>
+      );
+    
+    case "mathLessons":
+      return (
+        <div className="w-full h-full">
+          <h2 className="text-2xl font-bold text-dark mb-4">Math lessons</h2>
+          <p className="text-gray">This is the content for the Math lessons tab.</p>
+        </div>
+      );
+    
+    case "games":
+      return (
+        <div className="w-full h-full">
+          <h2 className="text-2xl font-bold text-dark mb-4">Games</h2>
+          <p className="text-gray">This is the content for the Games tab.</p>
+        </div>
+      );
+    
+    case "puzzles":
+      return (
+        <div className="w-full h-full">
+          <Puzzles student={username} mentor={mentorUsername} role={"student"} styleType="profile" />
+        </div>
+      );
+    
+    case "playComputer":
+      return (
+        <div className="w-full h-full">
+          <PlayComputer />
+        </div>
+      );
+    
+    case "recordings":
+      return (
+        <div className="w-full h-full">
+          <h2 className="text-2xl font-bold text-dark mb-4">Recordings</h2>
+          <p className="text-gray">This is the content for the Recordings tab.</p>
+        </div>
+      );
+    
+    default:
+      return (
+        <div className="w-full h-full">
+          <h2 className="text-xl text-gray">Select a tab to view its content.</h2>
+        </div>
+      );
+  }
+};
 
   const tabContent = useMemo(() => renderTabContent(), [activeTab, lessonSelected, piece, lessonNum, events, loading, hasMore]);
 
-  // Final render return block
   return (
-    <main id="main-inventory-content">
-      {/* Toolbar with modal triggers */}
-      <section className="inv-toolbar">
-        <div className="inv-toolbar-buttons">
-          <button
-            className={`toolbar-button ${activeModal === "streak" ? "active" : ""}`}
-            aria-label="Streak"
-            onClick={() => setActiveModal("streak")}
-          >
-            <StreakIcon className="toolbar-icon" />
-          </button>
-          <button
-            className={`toolbar-button ${activeModal === "activities" ? "active" : ""}`}
-            aria-label="Activities"
-            onClick={() => setActiveModal("activities")}
-          >
-            <ActivitiesIcon className="toolbar-icon" />
-          </button>
-          <button
-            className={`toolbar-button ${activeModal === "badges" ? "active" : ""}`}
-            aria-label="Badges"
-            onClick={() => setActiveModal("badges")}
-          >
-            <BadgesIcon className="toolbar-icon" />
-          </button>
-          <button
-            className={`toolbar-button ${activeModal === "leaderboard" ? "active" : ""}`}
-            aria-label="Leaderboard"
-            onClick={() => setActiveModal("leaderboard")}
-          >
-            <LeaderboardIcon className="toolbar-icon" />
-          </button>
-        </div>
-      </section>
+  <main className="bg-soft min-h-screen relative mb-12">
+    {/* Toolbar with modal triggers */}
+    <section className="w-full bg-primary py-4">
+      <div className="w-full max-w-screen-2xl mx-auto px-6 flex justify-center gap-4">
+        <button
+          className="btn-toolbar"
+          aria-label="Streak"
+          onClick={() => setActiveModal(activeModal === "streak" ? null : "streak")}
+        >
+          <StreakIcon className={`w-full h-20 transition-colors duration-200 ${
+            activeModal === "streak" ? "text-accent" : "text-secondary hover:text-accent"
+          }`} />
+        </button>
+        <button
+          className="btn-toolbar"
+          aria-label="Activities"
+          onClick={() => setActiveModal(activeModal === "activities" ? null : "activities")}
+        >
+          <ActivitiesIcon className={`w-full h-20 transition-colors duration-200 ${
+            activeModal === "activities" ? "text-accent" : "text-secondary hover:text-accent"
+          }`} />
+        </button>
+        <button
+          className="btn-toolbar"
+          aria-label="Badges"
+          onClick={() => setActiveModal(activeModal === "badges" ? null : "badges")}
+        >
+          <BadgesIcon className={`w-full h-20 transition-colors duration-200 ${
+            activeModal === "badges" ? "text-accent" : "text-secondary hover:text-accent"
+          }`} />
+        </button>
+        <button
+          className="btn-toolbar"
+          aria-label="Leaderboard"
+          onClick={() => setActiveModal(activeModal === "leaderboard" ? null : "leaderboard")}
+        >
+          <LeaderboardIcon className={`w-full h-20 transition-colors duration-200 ${
+            activeModal === "leaderboard" ? "text-accent" : "text-secondary hover:text-accent"
+          }`} />
+        </button>
+      </div>
+    </section>
 
-      {/* Confetti effect */}
-      <Confetti show={showConfetti} />
+    {/* Confetti effect */}
+    <Confetti show={showConfetti} />
 
-      {/* Welcome section with portrait */}
-      <section className="inv-intro">
-        <div className="inv-intro-portrait" onClick={handlePortraitClick}>
-          <img className="inv-intro-portrait-face" src={userPortraitSrc} alt="user portrait" />
-          <img className="inv-intro-portrait-camera" src={userPortraitCamera} alt="user portrait camera icon" />
+    {/* Compact header with avatar */}
+    <section className="bg-light border-b border-borderLight">
+      <div className="w-full max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-dark">
+          Hello {firstName}!
+        </h1>
+        <div 
+          className="relative w-14 h-14 rounded-full bg-light border-2 border-primary flex items-center justify-center shadow-sm cursor-pointer transition-transform hover:scale-105 active:scale-95"
+          onClick={handlePortraitClick}
+        >
+          <img 
+            className="w-8 h-8 object-contain"
+            src={userPortraitSrc} 
+            alt="Profile" 
+          />
+          <img 
+            className="absolute -bottom-1 -right-1 w-5 h-5 bg-light border-2 border-primary rounded-full p-0.5"
+            src={userPortraitCamera} 
+            alt="" 
+          />
         </div>
-        <div className="inv-intro-welcome">
-          <h1>Hello, {firstName} {lastName}!</h1>
-        </div>
-      </section>
+      </div>
+    </section>
 
-      {/* Analytics section: graph and metrics */}
-      <section className={`inv-inventory ${celebrateAction ? 'celebrate' : ''}`}>
-        <div className="inv-inventory-topbar">
-          <h2 className="progress-heading">Your Progress</h2>
+    {/* Main section */}
+    <section className={`w-full max-w-screen-2xl mx-auto my-8 px-6 transition-transform ${
+      celebrateAction ? 'celebrate-pulse 1s ease-in-out' : ''
+    }`}>
+      <div className="bg-light rounded-2xl overflow-hidden shadow-lg">
+        <div className="bg-primary p-6">
+          <h2 className="font-bold text-3xl text-light m-0">Your Progress</h2>
         </div>
-        <div className="inv-inventory-analytics">
-          <div className="inv-inventory-analytics-graph">
+        
+        <div className="flex flex-wrap items-center justify-center border-b-2 border-primary p-8 gap-12">
+          <div className="h-72 w-full max-w-2xl">
             <StatsChart key={monthAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis} />
           </div>
-          <div className="inv-inventory-analytics-metrics">
-            <h3>Time Spent:</h3>
-            <ul>
-              <li>Website: <strong>{webTime} min</strong></li>
-              <li>Playing: <strong>{playTime} min</strong></li>
-              <li>Lessons: <strong>{lessonTime} min</strong></li>
-              <li>Puzzle: <strong>{puzzleTime} min</strong></li>
-              <li>Mentoring: <strong>{mentorTime} min</strong></li>
+          
+          <div className="text-left">
+            <h3 className="text-xl font-bold mb-4 text-dark">Time Spent:</h3>
+            <ul className="list-none p-0 space-y-2">
+              <li className="text-dark font-medium">
+                Website: <strong className="text-primary">{webTime} min</strong>
+              </li>
+              <li className="text-dark font-medium">
+                Playing: <strong className="text-primary">{playTime} min</strong>
+              </li>
+              <li className="text-dark font-medium">
+                Lessons: <strong className="text-primary">{lessonTime} min</strong>
+              </li>
+              <li className="text-dark font-medium">
+                Puzzle: <strong className="text-primary">{puzzleTime} min</strong>
+              </li>
+              <li className="text-dark font-medium">
+                Mentoring: <strong className="text-primary">{mentorTime} min</strong>
+              </li>
             </ul>
           </div>
         </div>
 
-        {/* Tab buttons and tab content section */}
-        <div className="inv-inventory-content-section">
-          <nav className="inv-inventory-content-tabs">
-            <ul>
+        {/* Tab section */}
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr]">
+          <nav className="relative bg-primary border-r border-borderLight">
+            <ul className="list-none p-4 m-0 space-y-2">
               {(Object.keys(TABS) as TabKey[]).map((tab) => {
                 const { label, icon } = TABS[tab];
+                const isActive = activeTab === tab;
 
                 return (
-                  <div
-                    key={tab}
-                    className={`inventory-tab ${activeTab === tab ? "active-tab" : ""}`}
-                    onClick={() => handleTabClick(tab)}
-                    aria-label={tab}
-                  >
-                    <img src={icon} alt={`${label} icon`} />
-                    <li>{label}</li>
-                  </div>
+                  <li key={tab}>
+                    <button
+                      className={`w-full flex items-center gap-3 p-4 rounded-lg transition-all ${
+                        isActive 
+                          ? 'bg-light shadow-sm' 
+                          : 'hover:bg-light'
+                      }`}
+                      onClick={() => handleTabClick(tab)}
+                      aria-label={tab}
+                    >
+                      <img 
+                        src={icon} 
+                        alt={`${label} icon`}
+                        className={`w-12 h-12 object-contain flex-shrink-0 transition-all ${
+                          isActive ? 'grayscale-0' : 'grayscale'
+                        }`}
+                      />
+                      <span className="text-base font-bold text-dark">
+                        {label}
+                      </span>
+                    </button>
+                  </li>
                 );
               })}
             </ul>
           </nav>
-          <div className="inv-inventory-content-content">{tabContent}</div>
+          
+          <div className="bg-light p-8 overflow-y-auto min-h-[600px]">
+            {tabContent}
+          </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      {/* Render modals conditionally */}
-      {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} />}
-      {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username} />}
-      {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} />}
-      {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
-
-    </main>
-  );
+    {/* Modals */}
+    {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} />}
+    {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username} />}
+    {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} />}
+    {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
+  </main>
+);
 };
 
 export default NewStudentProfile;

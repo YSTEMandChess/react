@@ -7,18 +7,22 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Brand colors
         primary: "#7FCC26",
-        secondary: "#EAD94C",
+        secondary: "#BFD99E",
         soft: "#E5F3D2",
+        accent: "#EAD94C",
 
+        // Neutrals
         dark: "#1F1F1F",
         gray: "#5C5C5C",
         muted: "#8A8A8A",
         borderLight: "#D6D6D6",
         light: "#F9FAF7",
 
+        // Error colors
         red: "#D64545",
-        lightRed: "#f4cacaff",
+        redLight: "#F4CACAFF",
       },
 
       fontFamily: {
@@ -30,7 +34,7 @@ module.exports = {
           "sans-serif",
         ],
       },
-      
+
       boxShadow: {
         'card-yellow': '1.25rem 1.25rem 0.063rem rgb(209, 230, 28)',
         'card-green': '1.25rem 1.25rem 0.063rem rgb(115, 179, 19)',
@@ -39,4 +43,3 @@ module.exports = {
   },
   plugins: [],
 }
-

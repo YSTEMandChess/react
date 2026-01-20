@@ -252,7 +252,7 @@ const Home = () => {
         </h2>
 
         {books.map((book, index) => (
-          <div key={index} className="flex flex-col md:flex-row items-start border-2 border-secondary p-4 md:p-6 rounded-md mb-8">
+          <div key={index} className="flex flex-col md:flex-row items-start border-2 border-accent p-4 md:p-6 rounded-md mb-8">
             <div className="flex flex-col items-center mx-auto md:mx-8 mb-6 md:mb-0">
               <img
                 src={book.image}
@@ -281,8 +281,8 @@ const Home = () => {
           </div>
         ))}
 
-        <footer role="contentinfo" className="text-center mt-8">
-          <p className="text-lg text-dark leading-relaxed">All proceeds will be donated to the organization</p>
+        <footer role="contentinfo" className="bg-secondary text-center mt-8">
+          <p className="text-lg text-dark font-bold leading-relaxed">All proceeds will be donated to the organization</p>
         </footer>
       </div>
 
@@ -297,7 +297,7 @@ const Home = () => {
       {/* SPONSORS */}
       <div className="ml-5 mr-5 mb-12">
         <h3 className="text-center text-2xl md:text-3xl md:my-8 font-bold text-dark">
-          Sponsors
+          Our Sponsors
         </h3>
         <div className="flex flex-wrap justify-center items-center gap-12">
           {sponsors.map((sponsor) => (
@@ -322,7 +322,7 @@ const Home = () => {
       {/* PARTNERS  */}
       <div className="ml-5 mr-5 mb-36">
         <h3 className="text-center text-2xl md:text-3xl md:my-8 font-bold text-dark">
-          Partners
+          Our Partners
         </h3>
         <div className="flex flex-wrap justify-center items-center gap-8">
           {partners.map((partner) => (
