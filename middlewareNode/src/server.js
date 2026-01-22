@@ -7,7 +7,7 @@ require("./config/passport.js");
 const app = express();
 const cors = require("cors");
 const config = require("config");
-const streakRoutes = require('./routes/streak');
+const streakRoutes = require("./routes/streak");
 
 // Enable scheduler
 require("./scheduler/activitiesScheduler.js");
@@ -44,9 +44,8 @@ app.use("/timeTracking", require("./routes/timeTracking"));
 app.use("/puzzles", require("./routes/puzzles"));
 app.use("/lessons", require("./routes/lessons"));
 app.use("/activities", require("./routes/activities"));
-app.use('/streak', streakRoutes);
+app.use("/streak", streakRoutes);
 app.use("/badges", require("./routes/badges"));
-
 
 // Start server on specified port
 const PORT = process.env.PORT || 8000;

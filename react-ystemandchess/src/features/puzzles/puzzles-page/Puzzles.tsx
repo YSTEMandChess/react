@@ -1,14 +1,19 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import pageStyles from "./Puzzles.module.scss";
 import profileStyles from "./Puzzles-profile.module.scss";
-import { themesName, themesDescription } from "../../../core/services/themesService";
-import Swal from 'sweetalert2';
+import {
+  themesName,
+  themesDescription,
+} from "../../../core/services/themesService";
+import Swal from "sweetalert2";
 import { environment } from "../../../environments/environment";
 import { v4 as uuidv4 } from "uuid";
 import { SetPermissionLevel } from "../../../globals";
-import { useCookies } from 'react-cookie';
-import ChessBoard, { ChessBoardRef } from '../../../components/ChessBoard/ChessBoard';
-import { useChessSocket } from '../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket';
+import { useCookies } from "react-cookie";
+import ChessBoard, {
+  ChessBoardRef,
+} from "../../../components/ChessBoard/ChessBoard";
+import { useChessSocket } from "../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket";
 import { Move } from "../../../core/types/chess";
 
 type PuzzlesProps = {
@@ -20,7 +25,7 @@ type PuzzlesProps = {
 
 // Helper function to normalize FEN (same as in socket)
 const normalizeFen = (fen: string): string => {
-  if (!fen || typeof fen !== 'string') {
+  if (!fen || typeof fen !== "string") {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   }
 
@@ -46,7 +51,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   student = null,
   mentor = null,
   role = "student",
-  styleType = "page"
+  styleType = "page",
 }) => {
   const styles = styleType === "profile" ? profileStyles : pageStyles;
 
@@ -57,7 +62,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const isPuzzleEndRef = useRef(false);
   const currentPuzzleRef = useRef<any>(null);
   const isInitializingRef = useRef(false);
-  const handleUnloadRef = useRef(() => { });
+  const handleUnloadRef = useRef(() => {});
   const puzzleArrayRef = useRef<any[]>([]);
   const dbIndexRef = useRef(0);
   const getNextPuzzleRef = useRef<() => void>();
@@ -65,13 +70,13 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   // State
   const [puzzleArray, setPuzzleArray] = useState<any[]>([]);
-  const [currentFEN, setCurrentFEN] = useState<string>('');
-  const [playerColor, setPlayerColor] = useState<'white' | 'black'>('white');
+  const [currentFEN, setCurrentFEN] = useState<string>("");
+  const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
   const [themeList, setThemeList] = useState<string[]>([]);
   const [status, setStatus] = useState<string>("");
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [cookies] = useCookies(['login']);
+  const [cookies] = useCookies(["login"]);
 
   // Time tracking
   const [eventID, setEventID] = useState(null);
@@ -82,24 +87,25 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const studentId = student || cookies.login?.studentId || uuidv4();
   const mentorId = mentor || "puzzle_mentor_" + studentId;
 
-
   // ============================================================================
   // PUZZLE LOADING
   // ============================================================================
 
   const initPuzzleArray = async () => {
     try {
-      const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
+      const response = await fetch(
+        `${environment.urls.middlewareURL}/puzzles/random?limit=20`
+      );
       if (response.ok) {
         const jsonData = await response.json();
         setPuzzleArray(jsonData);
         puzzleArrayRef.current = jsonData;
         return jsonData;
       } else {
-        throw new Error('Failed to fetch puzzles from backend');
+        throw new Error("Failed to fetch puzzles from backend");
       }
     } catch (error) {
-      console.error('Error fetching puzzles:', error);
+      console.error("Error fetching puzzles:", error);
       setPuzzleArray([]);
       puzzleArrayRef.current = [];
       return [];
@@ -108,23 +114,28 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   const prefetchPuzzles = async () => {
     try {
-      const response = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=20`);
+      const response = await fetch(
+        `${environment.urls.middlewareURL}/puzzles/random?limit=20`
+      );
       if (response.ok) {
         const jsonData = await response.json();
-        setPuzzleArray(prev => {
+        setPuzzleArray((prev) => {
           const newArray = [...prev, ...jsonData];
           puzzleArrayRef.current = newArray;
           return newArray;
         });
       }
     } catch (error) {
-      console.error('Error prefetching puzzles:', error);
+      console.error("Error prefetching puzzles:", error);
     }
   };
 
   // Prefetch when running low
   useEffect(() => {
-    if (puzzleArray.length > 0 && dbIndexRef.current >= puzzleArray.length - 5) {
+    if (
+      puzzleArray.length > 0 &&
+      dbIndexRef.current >= puzzleArray.length - 5
+    ) {
       prefetchPuzzles();
     }
   }, [puzzleArray.length]);
@@ -165,14 +176,16 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     }
 
     const sideToMove = state.FEN.split(" ")[1];
-    const newPlayerColor = sideToMove === 'w' ? 'black' : 'white';
+    const newPlayerColor = sideToMove === "w" ? "black" : "white";
     setPlayerColor(newPlayerColor);
 
     currentPuzzleRef.current = state;
     startLesson(state, newPlayerColor);
   };
 
-  const startLesson = (puzzle: any, color: 'white' | 'black') => {
+  const startLesson = (puzzle: any, color: "white" | "black") => {
+    console.log("StartLesson called... ");
+    
     const fen = puzzle.FEN;
 
     if (!fen || fen.split("/").length !== 8) {
@@ -202,7 +215,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   getNextPuzzleRef.current = () => {
     if (!puzzleArrayRef.current || puzzleArrayRef.current.length === 0) {
       console.error("Puzzle array is empty - reinitializing");
-      initPuzzleArray().then(puzzles => {
+      initPuzzleArray().then((puzzles) => {
         if (puzzles && puzzles.length > 0) {
           dbIndexRef.current = 0;
           setStateAsActive(puzzles[0]);
@@ -212,7 +225,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       return;
     }
 
-    dbIndexRef.current = (dbIndexRef.current + 1) % puzzleArrayRef.current.length;
+    dbIndexRef.current =
+      (dbIndexRef.current + 1) % puzzleArrayRef.current.length;
     const nextPuzzle = puzzleArrayRef.current[dbIndexRef.current];
 
     if (!nextPuzzle?.Moves) {
@@ -242,7 +256,10 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     const computerMove: Move = {
       from: computerMoveStr.substring(0, 2),
       to: computerMoveStr.substring(2, 4),
-      promotion: computerMoveStr.length > 4 ? computerMoveStr[4] as 'q' | 'r' | 'b' | 'n' : undefined
+      promotion:
+        computerMoveStr.length > 4
+          ? (computerMoveStr[4] as "q" | "r" | "b" | "n")
+          : undefined,
     };
 
     socket.sendMove(computerMove);
@@ -257,14 +274,19 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   };
 
   const handlePlayerMove = (move: Move) => {
-    if (isPuzzleEndRef.current || !moveListRef.current || moveListRef.current.length === 0) {
+    if (
+      isPuzzleEndRef.current ||
+      !moveListRef.current ||
+      moveListRef.current.length === 0
+    ) {
       return;
     }
 
-    const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ''}`;
+    const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ""}`;
     const expectedPlayerMove = moveListRef.current[0];
 
-    const isCorrect = playerAttemptedMove === expectedPlayerMove ||
+    const isCorrect =
+      playerAttemptedMove === expectedPlayerMove ||
       playerAttemptedMove === expectedPlayerMove.substring(0, 4);
 
     if (isCorrect) {
@@ -285,11 +307,13 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         isPuzzleEndRef.current = true;
         socket.sendMessage("puzzle completed");
         setTimeout(() => {
-          Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
-            if (result.isConfirmed) {
-              socket.sendMessage("next puzzle");
+          Swal.fire("Puzzle completed", "Good Job", "success").then(
+            (result) => {
+              if (result.isConfirmed) {
+                socket.sendMessage("next puzzle");
+              }
             }
-          });
+          );
         }, 200);
       } else {
         setTimeout(() => {
@@ -298,7 +322,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       }
     } else {
       // Wrong move - reset to current position
-      Swal.fire('Incorrect move', 'Try again!', 'error').then(() => {
+      Swal.fire("Incorrect move", "Try again!", "error").then(() => {
         if (currentPuzzleRef.current) {
           startLesson(currentPuzzleRef.current, playerColor);
         }
@@ -306,62 +330,66 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     }
   };
 
-  const handleInvalidMove = () => {
-  };
+  const handleInvalidMove = () => {};
 
   // ============================================================================
   // SOCKET HANDLERS
   // ============================================================================
 
-  const handleSocketMessage = useCallback((msg: string) => {
-    if (msg === "puzzle completed") {
-      if (status === "guest") {
-        Swal.fire('Puzzle completed', 'Good Job', 'success').then((result) => {
-          if (result.isConfirmed) {
-            socket.sendMessage("next puzzle");
-          }
-        });
-      }
-    } else if (msg === "next puzzle") {
-      Swal.close();
+  const handleSocketMessage = useCallback(
+    (msg: string) => {
+      if (msg === "puzzle completed") {
+        if (status === "guest") {
+          Swal.fire("Puzzle completed", "Good Job", "success").then(
+            (result) => {
+              if (result.isConfirmed) {
+                socket.sendMessage("next puzzle");
+              }
+            }
+          );
+        }
+      } else if (msg === "next puzzle") {
+        Swal.close();
 
-      if (status === "guest") {
-        Swal.fire({
-          title: 'Loading next puzzle',
-          text: 'Please wait...',
-          allowOutsideClick: false,
-          allowEscapeKey: false,
-          showConfirmButton: false,
-          didOpen: () => {
-            Swal.showLoading();
-            swalRef.current = "loading";
-          },
-          willClose: () => {
-            swalRef.current = "";
-          }
-        });
-      }
+        if (status === "guest") {
+          Swal.fire({
+            title: "Loading next puzzle",
+            text: "Please wait...",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+              Swal.showLoading();
+              swalRef.current = "loading";
+            },
+            willClose: () => {
+              swalRef.current = "";
+            },
+          });
+        }
 
-      getNextPuzzleRef.current?.();
-    } else if (msg === "new game received") {
-      if (swalRef.current === "loading") Swal.close();
-    } else if (msg.startsWith("<div")) {
-      if (status === "guest") {
-        const hintText = document.getElementById("hint-text");
-        if (hintText) {
-          hintText.innerHTML = msg;
-          hintText.style.display = "none";
+        getNextPuzzleRef.current?.();
+      } else if (msg === "new game received") {
+        if (swalRef.current === "loading") Swal.close();
+      } else if (msg.startsWith("<div")) {
+        if (status === "guest") {
+          const hintText = document.getElementById("hint-text");
+          if (hintText) {
+            hintText.innerHTML = msg;
+            hintText.style.display = "none";
+          }
         }
       }
-    }
-  }, [status]);
+    },
+    [status]
+  );
 
   const socket = useChessSocket({
     student: studentId,
     mentor: mentorId,
     role: role,
     serverUrl: environment.urls.chessServerURL,
-    mode: 'puzzle',
+    mode: "puzzle",
 
     onBoardStateChange: (newFEN) => {
       setCurrentFEN(newFEN);
@@ -376,25 +404,40 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         initializeComponentRef.current?.();
 
         if (styleType === "profile" && status !== "") {
-          const message = role === "student"
-            ? 'Your mentor has left! Creating a new puzzle for you'
-            : 'Your student has left! Creating a new puzzle for you';
-          Swal.fire(message.split('!')[0] + '!', message.split('!')[1], 'success');
+          const message =
+            role === "student"
+              ? "Your mentor has left! Creating a new puzzle for you"
+              : "Your student has left! Creating a new puzzle for you";
+          Swal.fire(
+            message.split("!")[0] + "!",
+            message.split("!")[1],
+            "success"
+          );
         }
       } else if (assignedRole === "guest") {
         const wasHost = status === "host";
         setStatus("guest");
 
         if (wasHost) {
-          const message = role === "student"
-            ? 'Your mentor has joined you! You can now also see their moves'
-            : 'Your student has joined you! You can now also see their moves';
-          Swal.fire(message.split('!')[0] + '!', message.split('!')[1], 'success');
+          const message =
+            role === "student"
+              ? "Your mentor has joined you! You can now also see their moves"
+              : "Your student has joined you! You can now also see their moves";
+          Swal.fire(
+            message.split("!")[0] + "!",
+            message.split("!")[1],
+            "success"
+          );
         } else {
-          const message = role === "student"
-            ? 'You joined your mentor\'s puzzle! Have fun collaborating.'
-            : 'You joined your student\'s puzzle! Have fun collaborating.';
-          Swal.fire(message.split('!')[0] + '!', message.split('!')[1], 'success');
+          const message =
+            role === "student"
+              ? "You joined your mentor's puzzle! Have fun collaborating."
+              : "You joined your student's puzzle! Have fun collaborating.";
+          Swal.fire(
+            message.split("!")[0] + "!",
+            message.split("!")[1],
+            "success"
+          );
         }
       }
     },
@@ -419,7 +462,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     const currentThemes = themes || themeList;
     if (!currentThemes || currentThemes.length === 0) return;
 
-    const rating = currentPuzzleRef.current?.Rating || 'N/A';
+    const rating = currentPuzzleRef.current?.Rating || "N/A";
 
     let hints = `<div style="margin-bottom: 14px;"><b>Puzzle Rating:</b> ${rating}</div>`;
 
@@ -441,9 +484,10 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   };
 
   const openDialog = () => {
-    const hintText = document.getElementById('hint-text');
+    const hintText = document.getElementById("hint-text");
     if (hintText) {
-      hintText.style.display = hintText.style.display === "block" ? "none" : "block";
+      hintText.style.display =
+        hintText.style.display === "block" ? "none" : "block";
     }
   };
 
@@ -461,8 +505,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       const response = await fetch(
         `${environment.urls.middlewareURL}/timeTracking/start?username=${uInfo.username}&eventType=puzzle`,
         {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${cookies.login}` }
+          method: "POST",
+          headers: { Authorization: `Bearer ${cookies.login}` },
         }
       );
 
@@ -485,13 +529,15 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     try {
       const startDate = new Date(startTime);
       const endDate = new Date();
-      const diffInSeconds = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
+      const diffInSeconds = Math.floor(
+        (endDate.getTime() - startDate.getTime()) / 1000
+      );
 
       const response = await fetch(
         `${environment.urls.middlewareURL}/timeTracking/update?username=${username}&eventType=puzzle&eventId=${eventID}&totalTime=${diffInSeconds}`,
         {
-          method: 'PUT',
-          headers: { 'Authorization': `Bearer ${cookies.login}` }
+          method: "PUT",
+          headers: { Authorization: `Bearer ${cookies.login}` },
         }
       );
 
@@ -509,17 +555,22 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   useEffect(() => {
     startRecording();
-    window.addEventListener('beforeunload', handleUnloadRef.current);
+    window.addEventListener("beforeunload", handleUnloadRef.current);
 
     return () => {
-      window.removeEventListener('beforeunload', handleUnloadRef.current);
+      window.removeEventListener("beforeunload", handleUnloadRef.current);
       handleUnloadRef.current();
       Swal.close();
     };
   }, []);
 
   useEffect(() => {
-    if (socket.connected && status === "" && !isInitialized && !isInitializingRef.current) {
+    if (
+      socket.connected &&
+      status === "" &&
+      !isInitialized &&
+      !isInitializingRef.current
+    ) {
       socket.startNewPuzzle();
     }
   }, [socket.connected, status, isInitialized, socket]);
@@ -533,7 +584,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       {!currentFEN ? (
         <div>Loading puzzle...</div>
       ) : (
-        <div className={styles.chessBoardContainer}>
+        <div className={styles.chessBoardContainer} data-testid="chess-board-container">
           <ChessBoard
             mode="puzzle"
             ref={chessBoardRef}
@@ -550,7 +601,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       <div className={styles.hintMenu}>
         <div className={styles.hintButtonRow}>
           <button
-            className={styles.puzzleButton}
+            className={styles.puzzleButton} data-testid="next-puzzle-button"
             onClick={() => {
               isPuzzleEndRef.current = false;
               socket.sendMessage("next puzzle");
@@ -561,7 +612,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
           </button>
 
           <button
-            className={styles.puzzleButton}
+            className={styles.puzzleButton} data-testid="hint-button"
             onClick={openDialog}
             disabled={!socket.connected}
           >
@@ -572,7 +623,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         <div
           id="hint-text"
           className={styles.hintText}
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
         ></div>
       </div>
     </div>

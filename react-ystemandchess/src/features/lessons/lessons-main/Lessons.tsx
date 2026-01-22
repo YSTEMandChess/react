@@ -1,11 +1,11 @@
 import pageStyles from "./Lessons.module.scss";
 import profileStyles from "./Lessons-profile.module.scss";
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { ReactComponent as RedoIcon } from './icon_redo.svg';
-import { ReactComponent as BackIcon } from './icon_back.svg';
-import { ReactComponent as BackIconInactive } from './icon_back_inactive.svg';
-import { ReactComponent as NextIcon } from './icon_next.svg';
-import { ReactComponent as NextIconInactive } from './icon_next_inactive.svg';
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { ReactComponent as RedoIcon } from "./icon_redo.svg";
+import { ReactComponent as BackIcon } from "./icon_back.svg";
+import { ReactComponent as BackIconInactive } from "./icon_back_inactive.svg";
+import { ReactComponent as NextIcon } from "./icon_next.svg";
+import { ReactComponent as NextIconInactive } from "./icon_next_inactive.svg";
 import { getScenario, getScenarioByName } from "./Scenarios";
 import { useLocation } from "react-router";
 // @ts-ignore
@@ -19,9 +19,11 @@ type LessonsProps = {
 };
 
 const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
-
   // Use memoization to maintain referential equality and avoid unnecessary re-renders
-  const styles = useMemo(() => styleType === 'profile' ? profileStyles : pageStyles, [styleType]);
+  const styles = useMemo(
+    () => (styleType === "profile" ? profileStyles : pageStyles),
+    [styleType]
+  );
 
   const [board, setBoard] = useState(getScenario(0).subSections[0].board); // Initialize the board with chess pieces
   const [highlightedSquares, setHighlightedSquares] = useState([]);
@@ -118,7 +120,9 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
             setRightEnded(lessonObj.right_ended);
             return;
           }
-          console.error(`Lesson ${passedLessonNum} not found in scenario "${passedScenarioName}".`);
+          console.error(
+            `Lesson ${passedLessonNum} not found in scenario "${passedScenarioName}".`
+          );
         } else {
           console.error(`Scenario "${passedScenarioName}" not found.`);
         }
@@ -136,7 +140,6 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
 
     initializeLesson();
   }, [location, passedScenarioName, passedLessonNum]);
-
 
   // Switching to previous / next scenario, x: -1 or 1
   const setupScenario = (x) => {
@@ -184,7 +187,12 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
 
   // Helper function to get possible moves for a piece
   const getPieceMoves = (piece: string | any[], position: any) => {
-    console.log("getPieceMoves called with piece:", piece, "at position:", position);
+    console.log(
+      "getPieceMoves called with piece:",
+      piece,
+      "at position:",
+      position
+    );
     const color = piece[0]; // Get color from the piece (first character)
     switch (piece[1]) {
       case "P":
@@ -210,7 +218,7 @@ const Lessons = ({ testOverrides, styleType = "page" }: LessonsProps) => {
     const piece = board[row][col];
 
     // Clear previous highlights
-    setHighlightedSquares(prev => {
+    setHighlightedSquares((prev) => {
       if (prev.length === 0) return prev; // Maintain referential equality to reduce board renders
       return [];
     });
@@ -475,7 +483,6 @@ export function createChessBoard(
   draggingPiece: any,
   styles: any
 ) {
-
   const rows = 8;
   const cols = 8;
   const chessBoard = [];
@@ -507,14 +514,13 @@ export function createChessBoard(
             position: "relative", // Allow positioning for labels and circles
             transition: "filter 0.4s ease",
           }}
-
           onMouseEnter={() => handleSquareHover(key)} // Show possible moves on hover
-
-          onMouseLeave={() => setHighlightedSquares(prev => {
-            if (prev.length === 0) return prev; // Maintain referential equality
-            return [];
-          })} // Clear highlights when mouse leaves
-
+          onMouseLeave={() =>
+            setHighlightedSquares((prev) => {
+              if (prev.length === 0) return prev; // Maintain referential equality
+              return [];
+            })
+          } // Clear highlights when mouse leaves
           onDrop={() => handleDrop(key)} // Handle drop
           onDragOver={handleDragOver} // Allow drag-over for dropping
         >
