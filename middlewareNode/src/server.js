@@ -41,6 +41,7 @@ app.use("/category", require("./routes/categorys"));
 app.use("/meetings", require("./routes/meetings"));
 app.use("/auth", require("./routes/auth"));
 app.use("/timeTracking", require("./routes/timeTracking"));
+app.use("/clickTracking", require("./routes/clickTracking"));
 app.use("/puzzles", require("./routes/puzzles"));
 app.use("/lessons", require("./routes/lessons"));
 app.use("/activities", require("./routes/activities"));

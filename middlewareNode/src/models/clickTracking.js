@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const timeTracking = require("./timeTracking");
 const {Schema, model} = mongoose;
 
 /**
@@ -70,4 +69,4 @@ clickTrackingSchema.index({page: 1, timestamp: -1});
 
 module.exports = 
     mongoose.models.clickTracking ||
-    model("timeTracking", clickTrackingSchema);
+    model("clickTracking", clickTrackingSchema);
