@@ -254,12 +254,31 @@ This project has been recently modularized for better organization and maintaina
 
 ## Docker Deployment
 
+### Full Platform Deployment
+
 To run all services using Docker:
 
 ```bash
 cd config
 docker-compose up
 ```
+
+### AI Tutor Feature (Standalone)
+
+To run just the AI Tutor feature with Docker:
+
+```bash
+docker-compose -f docker-compose.aitutor.yml up --build
+```
+
+This starts:
+- **React Frontend** on http://localhost:3001
+- **Chess Server API** on http://localhost:3000
+- **Stockfish Engine** on http://localhost:8080
+
+**✅ ARM64 (Apple Silicon) Support:** The AI Tutor now uses Stockfish 15.1 from Debian repositories, providing native ARM64 support with real-time analysis performance (1-2 seconds per move at depth 12).
+
+See [STOCKFISH_ARM64_SUCCESS.md](STOCKFISH_ARM64_SUCCESS.md) for detailed ARM64 setup and test results, or [DOCKER_SETUP.md](DOCKER_SETUP.md) for general Docker documentation.
 
 ---
 

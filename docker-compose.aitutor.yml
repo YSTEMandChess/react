@@ -1,0 +1,82 @@
+# Docker Compose configuration for AI Tutor feature
+# Includes: Frontend (React), Backend (Chess Server), and Stockfish Server
+#
+# Cross-platform: Works on both linux/amd64 (Windows/Intel) and linux/arm64 (Apple Silicon)
+
+services:
+  # React Frontend
+  react-frontend:
+    build:
+      context: ./react-ystemandchess
+      dockerfile: Dockerfile
+    container_name: aitutor-frontend
+    ports:
+      - "3001:80"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - chess-server
+    networks:
+      - aitutor-network
+
+  # Chess Server Backend (handles AI tutor logic)
+  chess-server:
+    build:
+      context: ./chessServer
+      dockerfile: Dockerfile
+    container_name: aitutor-backend
+    ports:
+      - "3000:3000"
+    # Load environment variables from .env file (includes OPENAI_API_KEY)
+    env_file:
+      - ./chessServer/.env
+    environment:
+      # Server configuration
+      - PORT=3000
+
+      # Stockfish server URL (internal Docker network)
+      - STOCKFISH_SERVER_URL=http://stockfish-server:8080
+
+      # Metrics logging
+      - METRICS_LOG_ENABLED=true
+      # These can be overridden by .env file or command line:
+      # - OPENAI_API_KEY (loaded from .env)
+      # - LLM_MODE (loaded from .env, defaults to 'mock' if not set)
+      # - OPENAI_MODEL (loaded from .env, defaults to 'gpt-4o')
+    depends_on:
+      - stockfish-server
+    networks:
+      - aitutor-network
+
+  # Stockfish Chess Engine Server
+  # Uses Debian's stockfish package which supports both amd64 and arm64
+  stockfish-server:
+    build:
+      context: ./stockfishServer
+      dockerfile: Dockerfile
+    container_name: stockfish-server
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    networks:
+      - aitutor-network
+
+networks:
+  aitutor-network:
+    driver: bridge
+
+# Usage:
+# 1. Configure your OpenAI API key in chessServer/.env:
+#    OPENAI_API_KEY=sk-your-key-here
+#    LLM_MODE=openai
+#
+# 2. Start all services: docker-compose -f docker-compose.aitutor.yml up --build
+# 3. Stop all services: docker-compose -f docker-compose.aitutor.yml down
+# 4. View logs: docker-compose -f docker-compose.aitutor.yml logs -f
+# 5. Run backend tests: docker-compose -f docker-compose.aitutor.yml exec chess-server npm test
+#
+# Cross-Platform Notes:
+# - Works on Windows (amd64), Linux (amd64), and macOS (arm64/Apple Silicon)
+# - Stockfish is installed from Debian repositories (supports both architectures)
+# - No hardcoded paths or platform-specific binaries

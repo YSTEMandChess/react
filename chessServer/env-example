@@ -1,0 +1,50 @@
+# Chess Server Environment Variables
+# Copy this file to .env and fill in your values
+#
+# For Docker: cp env-example .env && edit .env
+# For Local:  cp env-example .env && edit .env
+
+# =============================================================================
+# OpenAI Configuration
+# =============================================================================
+
+# Your OpenAI API key (required for real AI responses)
+# Get one at: https://platform.openai.com/api-keys
+OPENAI_API_KEY= <your-openai-api-key-here>
+
+# LLM Mode: "openai" or "mock"
+# - "openai": Uses real OpenAI API (requires valid OPENAI_API_KEY)
+# - "mock": Uses sample responses for testing (no API key needed)
+LLM_MODE=openai
+
+# OpenAI Model to use
+OPENAI_MODEL=gpt-4o
+
+# Timeout for OpenAI requests (milliseconds)
+OPENAI_TIMEOUT_MS=7000
+
+# Max retries for failed OpenAI requests
+OPENAI_MAX_RETRIES=0
+
+# Rate limit (requests per minute)
+OPENAI_RATE_LIMIT_RPM=60
+
+# =============================================================================
+# Stockfish Server Configuration
+# =============================================================================
+
+# For Docker deployment (use internal Docker network):
+STOCKFISH_SERVER_URL=http://stockfish-server:8080
+
+# For local development (uncomment this, comment out the above):
+# STOCKFISH_SERVER_URL=http://localhost:4002
+
+# =============================================================================
+# Server Configuration
+# =============================================================================
+
+# Server port
+PORT=3000
+
+# Enable metrics logging
+METRICS_LOG_ENABLED=true

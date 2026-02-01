@@ -125,9 +125,9 @@ function validateTutorResponse(obj) {
  */
 function generateFallbackResponse(stockfishFacts) {
   const moveIndicator = stockfishFacts?.classify || "Good";
-  
+
   const analysis = `I'm having trouble providing a detailed analysis right now, but based on the engine evaluation, this appears to be a ${moveIndicator.toLowerCase()} move. Consider the position carefully and look for tactical opportunities.`;
-  
+
   const nextStepHint = "Continue developing your pieces and controlling key squares.";
 
   return {
@@ -145,10 +145,10 @@ function generateFallbackResponse(stockfishFacts) {
  * @returns {string} Cache key
  */
 function getCacheKey(fenAfter, moveUci, analysisSettings) {
-  const depth = analysisSettings?.depth ?? 15;
+  const depth = analysisSettings?.depth ?? 8;
   const movetime = analysisSettings?.movetime ?? 2000;
   const multipv = analysisSettings?.multipv ?? 1;
-  
+
   return `analysis:v1:${fenAfter}:${moveUci}:depth${depth}:movetime${movetime}:multipv${multipv}`;
 }
 
@@ -271,7 +271,7 @@ function buildPromptFromDoc({
     "ENGINE SUMMARY (PRE-INTERPRETED — TRUST THIS)",
     `- Move quality label: ${stockfish.classify}`,
     "",
-     "BEST MOVE CONTEXT (BEFORE PLAYER MOVE)",
+    "BEST MOVE CONTEXT (BEFORE PLAYER MOVE)",
     "- The following moves represented stronger or weaker strategic ideas:",
     ...stockfish.topBestMoves.map(
       m => `- ${m.move} → represents a ${m.rank <= 3 ? "strong" : m.rank <= 7 ? "playable" : "inferior"} idea`
@@ -373,7 +373,7 @@ function buildQuestionPrompt({ fen, question, stockfish }) {
  */
 async function callOpenAI(stockfishFacts, moveContext) {
   const client = openai.getClient ? openai.getClient() : openai;
-  
+
   if (!client) {
     console.error("[AnalysisService] OpenAI client not available. This should not happen - check openai.js configuration.");
     throw new Error("OpenAI client not configured. Set OPENAI_API_KEY or use LLM_MODE=mock");
@@ -416,7 +416,7 @@ async function callOpenAI(stockfishFacts, moveContext) {
 
     const responseContent = resp.choices?.[0]?.message?.content ?? "";
     const duration_ms = Date.now() - startTime;
-    
+
     // Log timing metric
     logMetric("openai_latency", duration_ms, true);
 
@@ -479,7 +479,7 @@ async function callOpenAIWithHistory(stockfishFacts, context, mode) {
   if (openai.isMockMode && openai.isMockMode() && mode === "move") {
     const mockResponse = mockTutor.buildMockMoveTutorResponse(stockfishFacts, context);
     console.log(`[AnalysisService] Mock tutor response (move mode):`, mockResponse);
-    
+
     // Return normalized response (same format as OpenAI response)
     return {
       moveIndicator: mockResponse.moveIndicator,
@@ -490,7 +490,7 @@ async function callOpenAIWithHistory(stockfishFacts, context, mode) {
 
   // Continue with OpenAI (or mock client for question mode)
   const client = openai.getClient ? openai.getClient() : openai;
-  
+
   if (!client) {
     console.error("[AnalysisService] OpenAI client not available. This should not happen - check openai.js configuration.");
     throw new Error("OpenAI client not configured. Set OPENAI_API_KEY or use LLM_MODE=mock");
@@ -559,7 +559,7 @@ async function callOpenAIWithHistory(stockfishFacts, context, mode) {
   });
 
   const responseContent = resp.choices?.[0]?.message?.content ?? "";
-  
+
   // Log response if in mock mode
   if (openai.isMockMode && openai.isMockMode()) {
     console.log(`[AnalysisService] Sample response (mock mode, ${mode}):`, responseContent);
@@ -608,9 +608,9 @@ async function analyzeMoveWithHistory({
   fen_after,
   move,
   uciHistory,
-  depth = 15,
+  depth = 8,
   chatHistory = [],
-  multipv = 15
+  multipv = 3
 }) {
   const analysisSettings = { depth, movetime: 2000, multipv: 1 };
   const cacheKey = getCacheKey(fen_after, move, analysisSettings);
@@ -643,15 +643,15 @@ async function analyzeMoveWithHistory({
         6000,
         "Stockfish /analysis"
       );
-      
+
       if (!stockFishResponse.ok) {
         throw new Error(`Stockfish server error: ${stockFishResponse.status}`);
       }
-      
+
       const stockfishFacts = await stockFishResponse.json();
       const duration_ms = Date.now() - startTime;
       logMetric("stockfish_latency", duration_ms, true);
-      
+
       return {
         explanation: cache.get(cacheKey),
         cached: true,
@@ -688,7 +688,7 @@ async function analyzeMoveWithHistory({
         }),
       },
       6000, //timeout ms
-      "Stockfish /analysis"  
+      "Stockfish /analysis"
     );
 
     if (!stockFishResponse.ok) {
@@ -721,7 +721,7 @@ async function analyzeMoveWithHistory({
   };
 
   // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/faac9266-bc5f-4ac8-89ce-7169defbdfc0',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AnalysisService.js:712',message:'before OpenAI call',data:{chatHistoryLength:chatHistory?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C,D'})}).catch(()=>{});
+  fetch('http://127.0.0.1:7243/ingest/faac9266-bc5f-4ac8-89ce-7169defbdfc0', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'AnalysisService.js:712', message: 'before OpenAI call', data: { chatHistoryLength: chatHistory?.length }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'C,D' }) }).catch(() => { });
   // #endregion
 
   // 4) Call OpenAI with chat history
@@ -740,7 +740,7 @@ async function analyzeMoveWithHistory({
     if (error.message === "OPENAI_RATE_LIMIT") {
       logMetric("openai_rate_limit", null, false, { retryAfter: error.retryAfter });
     }
-    
+
     // If OpenAI fails but Stockfish succeeded, use fallback
     // Stockfish succeeded if stockFishfacts exists and has required data
     if (stockFishfacts && stockFishfacts.classify) {
@@ -790,7 +790,7 @@ async function answerQuestion({
     // Log cache hit
     const stats = cache.getStats();
     logMetric("cache_hit", null, true, { key: questionCacheKey, stats });
-    
+
     return {
       answer: cache.get(questionCacheKey),
       cached: true,
@@ -814,8 +814,8 @@ async function answerQuestion({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fen,
-          depth: 15,
-          multipv: 15,
+          depth: 8,
+          multipv: 3,
         }),
       },
       6000,
@@ -870,7 +870,7 @@ module.exports = {
   // Public API
   analyzeMoveWithHistory,
   answerQuestion,
-  
+
   // Internal functions (exposed for testing/debugging)
   callOpenAI,
   callOpenAIWithHistory,

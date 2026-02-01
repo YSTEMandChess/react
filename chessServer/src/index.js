@@ -62,9 +62,9 @@ app.post("/api/analyze", async (req, res) => {
           fen_after: data.fen_after,
           move: data.move,
           uciHistory: data.uciHistory,
-          depth: data.depth || 15,
+          depth: data.depth || 8,
           chatHistory: data.chatHistory || [],
-          multipv: data.multipv || 15,
+          multipv: data.multipv || 3,
         }),
         TOTAL_MS,
         "Move analysis"
@@ -105,7 +105,7 @@ app.post("/api/analyze", async (req, res) => {
   } catch (error) {
     const msg = error?.message || "Internal server error";
     const msgLower = msg.toLowerCase();
-    
+
     // Classify error types
     let errorCode = "INTERNAL_ERROR";
     let retryable = false;

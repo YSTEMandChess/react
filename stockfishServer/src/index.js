@@ -24,7 +24,7 @@ app.use(express.json());
 // CORS headers
 app.use((req, res, next) => {
   // WARNING: allow only selected access for production
-  res.setHeader("Access-Control-Allow-Origin", "*");  
+  res.setHeader("Access-Control-Allow-Origin", "*");
 
   res.setHeader("Content-Type", "application/json");
   next();
@@ -179,32 +179,48 @@ function runStockfish({ fen, moves = "", depth = 15, multipv }) {
   });
 }
 
+// Helper to find the first line with a score (multipv 1)
+function findScoreLine(infoLines) {
+  // Find lines with "multipv 1" and a score
+  const scoreLine = infoLines.find(line =>
+    line.includes("multipv 1") && (line.includes("score cp") || line.includes("score mate"))
+  );
+  // Fallback: find any line with a score
+  return scoreLine || infoLines.find(line =>
+    line.includes("score cp") || line.includes("score mate")
+  );
+}
+
 //Takes request from middleware and sends back the stockfish engine response
-app.post("/analysis",async (req, res) => {
-  try{
+app.post("/analysis", async (req, res) => {
+  try {
     console.log(req.body);
-    const { fen, moves="", depth=12, multipv } = req.body;
-    
+    // Reduced defaults: depth 8, multipv 3 for faster analysis on ARM64
+    const { fen, moves = "", depth = 8, multipv = 3 } = req.body;
+
     if (!fen) return res.status(400).json({ error: "fen required" });
+
+    const actualDepth = Math.min(Number(depth || 8), 12); // Cap at 12 for safety
+    const actualMultipv = Math.min(Number(multipv || 3), 5); // Cap at 5
 
     const currentPositionAnalysis = await runStockfish({
       fen,
-      depth: Number(depth || 15),
-      multipv
+      depth: actualDepth,
+      multipv: actualMultipv
     });
 
     const playerMoveAnalysis = await runStockfish({
       fen,
       moves,
-      depth: Number(depth || 15),
-      multipv
+      depth: actualDepth,
+      multipv: actualMultipv
     })
 
     const CPUMoveAnalysis = await runStockfish({
       fen,
-      moves : `${moves} ${playerMoveAnalysis.bestMove}`,
-      depth: Number(depth || 15),
-      multipv
+      moves: `${moves} ${playerMoveAnalysis.bestMove}`,
+      depth: actualDepth,
+      multipv: actualMultipv
     })
     console.log(`${moves} ${playerMoveAnalysis.bestMove}`);
     console.log("current position");
@@ -216,27 +232,36 @@ app.post("/analysis",async (req, res) => {
 
     const topBestMoves = extractTopBestMoves(currentPositionAnalysis.infoLines);
     const nextBestMoves = extractTopBestMoves(CPUMoveAnalysis.infoLines);
-    
+
+    // Find lines with actual scores (not currmove lines)
+    const beforeLine = findScoreLine(currentPositionAnalysis.infoLines);
+    const afterLine = findScoreLine(playerMoveAnalysis.infoLines);
+    const pvLine = playerMoveAnalysis.infoLines.find(line => line.includes(" pv "));
+
+    const beforeScore = beforeLine ? extractScore(beforeLine) : { type: "cp", value: 0 };
+    const afterScore = afterLine ? extractScore(afterLine) : { type: "cp", value: 0 };
+    const delta = (-1 * afterScore.value) - beforeScore.value;
+
     const stockFishAnalysis = {
-      fen : fen,
-      topBestMoves : topBestMoves,
-      player_moves : moves,
-      evaluation : {
-        "before" : extractScore(currentPositionAnalysis.infoLines[0]),
-        "after" : extractScore(playerMoveAnalysis.infoLines[0]),
-        "delta" : (-1* extractScore(playerMoveAnalysis.infoLines[0]).value ) - extractScore(currentPositionAnalysis.infoLines[0]).value
+      fen: fen,
+      topBestMoves: topBestMoves,
+      player_moves: moves,
+      evaluation: {
+        "before": beforeScore,
+        "after": afterScore,
+        "delta": delta
       },
-      classify : classifyMove((-1* extractScore(playerMoveAnalysis.infoLines[0]).value ) - extractScore(currentPositionAnalysis.infoLines[0]).value),
-      cpuMove : playerMoveAnalysis.bestMove,
-      cpuPV : playerMoveAnalysis.infoLines[0].split(" pv ")[1],
-      nextBestMoves : nextBestMoves
+      classify: classifyMove(delta),
+      cpuMove: playerMoveAnalysis.bestMove,
+      cpuPV: pvLine ? pvLine.split(" pv ")[1] : playerMoveAnalysis.bestMove,
+      nextBestMoves: nextBestMoves
     };
 
     console.log(stockFishAnalysis)
-    
+
     res.json(stockFishAnalysis);
   }
-  catch(err){
+  catch (err) {
     console.error(err);
     res.status(500).json({ error: "Stockfish error" });
   }
