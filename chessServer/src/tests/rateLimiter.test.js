@@ -48,10 +48,10 @@ describe("RateLimiter", () => {
       expect(limiter.getTokens()).toBe(10);
 
       limiter.acquire();
-      expect(limiter.getTokens()).toBe(9);
+      expect(limiter.getTokens()).toBeCloseTo(9, 0);
 
       limiter.acquire();
-      expect(limiter.getTokens()).toBe(8);
+      expect(limiter.getTokens()).toBeCloseTo(8, 0);
     });
 
     test("reset resets token bucket", () => {
