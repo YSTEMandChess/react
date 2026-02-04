@@ -150,10 +150,14 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     mode: 'lesson',
 
     onBoardStateChange: (newFEN, color) => {
-      gameRef.current.load(newFEN);
-      setCurrentFEN(newFEN);
-      if (color) setBoardOrientation(color);
-      if (onChessMove) onChessMove(newFEN);
+      try {
+        gameRef.current.load(newFEN);
+        setCurrentFEN(newFEN);
+        if (color) setBoardOrientation(color);
+        if (onChessMove) onChessMove(newFEN);
+      } catch (e) {
+        console.error("Invalid FEN received", e);
+      }
     },
 
     onLastMove: (from, to) => {

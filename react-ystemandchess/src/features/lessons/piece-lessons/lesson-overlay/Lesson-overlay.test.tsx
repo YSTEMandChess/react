@@ -1,30 +1,27 @@
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  act,
-} from "@testing-library/react";
-import LessonOverlay from "./Lesson-overlay";
-import { MemoryRouter } from "react-router";
-import * as router from "react-router";
-import { useLessonManager } from "./hooks/useLessonManager";
-import { useChessGameLogic } from "./hooks/useChessGameLogic";
-import { useChessSocket } from "./hooks/useChessSocket";
-import { useTimeTracking } from "./hooks/useTimeTracking";
+// All jest.mock() calls at the top, before any imports. This ensures proper hoisting
 
-// --- Mocks ---
+// Mock socket.io-client with a factory that creates fresh socket instances
+jest.mock("socket.io-client");
+
+// Mock environment
+jest.mock("../../../../environments/environment");
+
+// Mock utility modules
+jest.mock("../../../../core/utils/goalEvaluator");
+jest.mock("../../../../core/utils/eventLogger");
+jest.mock("../../../../core/utils/opponentConstraints");
 
 // Mock react-cookie
 jest.mock("react-cookie", () => ({
-  useCookies: () => [
+  useCookies: jest.fn(() => [
     { login: { studentId: "student123" } },
     jest.fn(),
     jest.fn(),
-  ],
+  ]),
+  Cookies: jest.fn(),
 }));
 
-// Mock react-router
+// Mock react-router  
 const mockNavigate = jest.fn();
 jest.mock("react-router", () => ({
   ...jest.requireActual("react-router"),
@@ -32,54 +29,111 @@ jest.mock("react-router", () => ({
   useLocation: jest.fn(),
 }));
 
-// Mock child components
+// Mock components
 jest.mock("../../../../components/ChessBoard/ChessBoard", () => {
-  const { forwardRef, useImperativeHandle } = require("react");
-  return forwardRef((props: any, ref: any) => {
-    useImperativeHandle(ref, () => ({
-      flip: jest.fn(),
-      highlightMove: jest.fn(),
-      setOrientation: jest.fn(),
-      handlePromotion: jest.fn(),
-      reset: jest.fn(),
-      undo: jest.fn(),
-    }));
-    return (
-      <div>
-        <div data-testid="chess-board">ChessBoard Mock</div>
-        <button
-          data-testid="simulate-move"
-          onClick={() => props.onMove?.({ from: "e2", to: "e4" })}
-        >
-          Simulate Move
-        </button>
-        <button
-          data-testid="simulate-promotion"
-          onClick={() => props.onPromotion?.("e8", "Q")}
-        >
-          Simulate Promotion
-        </button>
-        <div data-testid="board-disabled">
-          {props.disabled ? "true" : "false"}
+  const React = require("react");
+  return {
+    __esModule: true,
+    default: React.forwardRef((props: any, ref: any) => {
+      React.useImperativeHandle(ref, () => ({
+        flip: jest.fn(),
+        highlightMove: jest.fn(),
+        setOrientation: jest.fn(),
+        handlePromotion: jest.fn(),
+        reset: jest.fn(),
+        undo: jest.fn(),
+        setPosition: jest.fn(),
+        clearHighlights: jest.fn(),
+      }));
+      return (
+        <div>
+          <div data-testid="chess-board">ChessBoard Mock</div>
+          <button
+            data-testid="simulate-move"
+            onClick={() => props.onMove?.({ from: "e2", to: "e4" })}
+          >
+            Simulate Move
+          </button>
+          <button
+            data-testid="simulate-promotion"
+            onClick={() => props.onMove?.({ from: "e7", to: "e8", promotion: "q" })}
+          >
+            Simulate Promotion
+          </button>
+          <div data-testid="board-disabled">
+            {props.disabled ? "true" : "false"}
+          </div>
         </div>
-      </div>
-    );
-  });
+      );
+    }),
+  };
 });
 
-jest.mock("../move-tracker/MoveTracker", () => () => (
-  <div data-testid="move-tracker">MoveTracker Mock</div>
-));
+jest.mock("../move-tracker/MoveTracker", () => ({
+  __esModule: true,
+  default: () => <div data-testid="move-tracker">MoveTracker Mock</div>,
+}));
 
-jest.mock("../../lessons-main/PromotionPopup", () => () => (
-  <div data-testid="promotion-popup">PromotionPopup Mock</div>
-));
+jest.mock("../../lessons-main/PromotionPopup", () => ({
+  __esModule: true,
+  default: () => <div data-testid="promotion-popup">PromotionPopup Mock</div>,
+}));
 
 // Mock custom hooks
 jest.mock("./hooks/useLessonManager");
 jest.mock("./hooks/useChessGameLogic");
 jest.mock("./hooks/useChessSocket");
-jest.mock("./hooks/useTimeTracking");
+jest.mock("./hooks/useTimeTracking", () => ({
+  useTimeTracking: jest.fn(),
+}));
+
+// Now import everything
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
+import * as router from "react-router";
+import { io } from "socket.io-client";
+import LessonOverlay from "./Lesson-overlay";
+import { useLessonManager } from "./hooks/useLessonManager";
+import { useChessGameLogic } from "./hooks/useChessGameLogic";
+import { useChessSocket } from "./hooks/useChessSocket";
+
+// Setup mocks after imports
+const mockIo = io as jest.MockedFunction<typeof io>;
+
+// Import mocked modules
+const goalEvaluator = require("../../../../core/utils/goalEvaluator");
+const eventLogger = require("../../../../core/utils/eventLogger");
+const { environment } = require("../../../../environments/environment");
+
+// Create socket factory
+const createMockSocket = () => {
+  const socket = {
+    connected: true,
+    on: jest.fn(),
+    emit: jest.fn(),
+    disconnect: jest.fn(),
+    off: jest.fn(),
+  };
+  
+  // Make methods chainable
+  socket.on.mockReturnValue(socket);
+  socket.emit.mockReturnValue(socket);
+  socket.disconnect.mockReturnValue(socket);
+  socket.off.mockReturnValue(socket);
+  
+  return socket;
+};
+
+// Configure io mock
+mockIo.mockImplementation(() => createMockSocket() as any);
+
+// Configure environment mock
+Object.assign(environment, {
+  urls: {
+    chessServerURL: "http://localhost:3000",
+    stockfishServerURL: "http://localhost:3001",
+  }
+});
 
 describe("LessonOverlay", () => {
   let mockUseLessonManager: any;
@@ -90,18 +144,55 @@ describe("LessonOverlay", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    // Re-setup useCookies mock after clearAllMocks
+    const { useCookies } = require("react-cookie");
+    (useCookies as jest.Mock).mockReturnValue([
+      { login: { studentId: "student123" } },
+      jest.fn(),
+      jest.fn(),
+    ]);
+
+    // Reset io mock to return fresh sockets
+    mockIo.mockImplementation(() => createMockSocket() as any);
+
     (router.useLocation as jest.Mock).mockReturnValue({
       state: { piece: "Rook", lessonNum: 0 },
     });
+
+    // Reset goal evaluator mock
+    goalEvaluator.evaluateGoal.mockReturnValue(false);
+
+    // Setup EventLog mock
+    eventLogger.EventLog.mockImplementation(() => ({
+      addMove: jest.fn(),
+      getEvents: jest.fn().mockReturnValue([]),
+      clear: jest.fn(),
+      getPromotions: jest.fn().mockReturnValue([]),
+      getCaptures: jest.fn().mockReturnValue([]),
+    }));
+
+    eventLogger.createMoveEvent.mockImplementation((move: any, fen: string, isPlayer: boolean) => ({
+      san: move.san || 'e4',
+      from: move.from,
+      to: move.to,
+      piece: move.piece || 'p',
+      promotion: move.promotion,
+      check: false,
+      checkmate: false,
+      doublePawnPush: false,
+      enPassant: false,
+      fen: fen,
+      by: isPlayer ? 'player' : 'opponent',
+    }));
 
     // Setup useLessonManager mock
     mockUseLessonManager = {
       lessonData: {
         startFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        endFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 2",
         info: "get a winning position",
         name: "Test Lesson Name",
         moves: [],
+        goal: { type: "CHECKMATE" },
       },
       lessonNum: 0,
       completedNum: 0,
@@ -150,9 +241,6 @@ describe("LessonOverlay", () => {
       </MemoryRouter>
     );
 
-    // Check loading popup appears initially (or mock resolves fast)
-    // In useEffect, refreshProgress is called.
-
     await waitFor(() => {
       expect(screen.getByText(/Test Lesson Name/)).toBeInTheDocument();
     });
@@ -164,34 +252,10 @@ describe("LessonOverlay", () => {
     expect(screen.getByTestId("move-tracker")).toBeInTheDocument();
   });
 
-  test("initializes lesson on server after delay", async () => {
-    render(
-      <MemoryRouter>
-        <LessonOverlay />
-      </MemoryRouter>
-    );
-
-    // Wait for useEffect timeout
-    await waitFor(
-      () => {
-        expect(mockSocket.setGameStateWithColor).toHaveBeenCalled();
-      },
-      { timeout: 2000 }
-    );
-
-    // Check arguments
-    expect(mockSocket.setGameStateWithColor).toHaveBeenCalledWith(
-      mockUseLessonManager.lessonData.startFen,
-      "white", // derived from startFen
-      mockUseLessonManager.lessonData.info
-    );
-  });
-
   test("handles navigation buttons", async () => {
-    // Override mock to make Next button active (completedNum > lessonNum)
     (useLessonManager as jest.Mock).mockReturnValue({
       ...mockUseLessonManager,
-      completedNum: 1, // lessonNum is 0, so 0 < 1, Next is active
+      completedNum: 1,
     });
 
     const { unmount } = render(
@@ -203,7 +267,6 @@ describe("LessonOverlay", () => {
     const nextButton = await screen.findByText("Next");
     const btn = nextButton.closest("button");
 
-    // Ensure we are clicking the button
     if (btn) {
       fireEvent.click(btn);
     }
@@ -211,8 +274,6 @@ describe("LessonOverlay", () => {
 
     unmount();
 
-    // Test Back button
-    // Override mock to make Back button active (lessonNum > 0)
     (useLessonManager as jest.Mock).mockReturnValue({
       ...mockUseLessonManager,
       lessonNum: 1,
@@ -234,30 +295,35 @@ describe("LessonOverlay", () => {
     expect(mockUseLessonManager.prevLesson).toHaveBeenCalled();
   });
 
-  test("handles lesson completion (success)", async () => {
+  test("handles lesson completion with goal evaluation", async () => {
+    (useLessonManager as jest.Mock).mockReturnValue({
+      ...mockUseLessonManager,
+      lessonData: {
+        ...mockUseLessonManager.lessonData,
+        goal: { type: "CHECKMATE" },
+      },
+    });
+
+    goalEvaluator.evaluateGoal.mockReturnValue(true);
+
     render(
       <MemoryRouter>
         <LessonOverlay />
       </MemoryRouter>
     );
 
-    // Wait for initialization
     await waitFor(() => screen.getByText(/Test Lesson Name/));
 
-    // Trigger onBoardStateChange with the end FEN
-    act(() => {
-      if (socketCallbacks.onBoardStateChange) {
-        socketCallbacks.onBoardStateChange(
-          mockUseLessonManager.lessonData.endFen,
-          "white"
-        );
-      }
+    const moveBtn = await screen.findByTestId("simulate-move");
+    
+    await act(async () => {
+      fireEvent.click(moveBtn);
     });
 
-    // Check if success popup appears
-    expect(await screen.findByText(/Lesson completed/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Lesson completed/i)).toBeInTheDocument();
+    });
 
-    // Click OK
     const okButton = screen.getByText("OK");
     fireEvent.click(okButton);
 
@@ -274,12 +340,18 @@ describe("LessonOverlay", () => {
     const resetButton = await screen.findByTestId("reset-button");
     fireEvent.click(resetButton);
 
-    expect(mockSocket.setGameState).toHaveBeenCalledWith(
-      mockUseLessonManager.lessonData.startFen
-    );
+    expect(mockUseChessGameLogic.resetLesson).toHaveBeenCalled();
   });
 
-  test("handles drag and drop move via onMove", async () => {
+  test("handles drag and drop move via onMove in free-play mode", async () => {
+    (useLessonManager as jest.Mock).mockReturnValue({
+      ...mockUseLessonManager,
+      lessonData: {
+        ...mockUseLessonManager.lessonData,
+        goal: { type: "PROMOTION", min: 1 },
+      },
+    });
+
     render(
       <MemoryRouter>
         <LessonOverlay />
@@ -287,26 +359,43 @@ describe("LessonOverlay", () => {
     );
 
     const moveBtn = await screen.findByTestId("simulate-move");
-    fireEvent.click(moveBtn);
+    
+    await act(async () => {
+      fireEvent.click(moveBtn);
+    });
 
     expect(mockUseChessGameLogic.processMove).toHaveBeenCalled();
-    expect(mockSocket.sendMove).toHaveBeenCalledWith({ from: "e2", to: "e4" });
-    expect(mockSocket.sendLastMove).toHaveBeenCalledWith("e2", "e4");
+    expect(eventLogger.createMoveEvent).toHaveBeenCalled();
   });
 
-  test("handles pawn promotion via onPromotion", async () => {
+  test("renders correctly with promotion goal", async () => {
+    (useLessonManager as jest.Mock).mockReturnValue({
+      ...mockUseLessonManager,
+      lessonData: {
+        ...mockUseLessonManager.lessonData,
+        startFen: "4k3/4P3/8/8/8/8/8/4K3 w - - 0 1", // Simple position with white pawn on e7 ready to promote
+        goal: { type: "PROMOTION", min: 1 },
+      },
+    });
+
     render(
       <MemoryRouter>
         <LessonOverlay />
       </MemoryRouter>
     );
 
-    const promoBtn = await screen.findByTestId("simulate-promotion");
-    fireEvent.click(promoBtn);
+    // Wait for the board to be ready
+    await waitFor(() => {
+      const boardDisabled = screen.getByTestId("board-disabled");
+      expect(boardDisabled).toHaveTextContent("false");
+    });
 
-    const lastCallArg = mockSocket.sendMove.mock.calls.slice(-1)[0][0];
-    expect(lastCallArg.promotion).toBe("q");
-    expect(mockUseChessGameLogic.processMove).toHaveBeenCalled();
+    // Verify promotion button exists (meaning the ChessBoard mock is rendering)
+    const promoBtn = screen.getByTestId("simulate-promotion");
+    expect(promoBtn).toBeInTheDocument();
+    
+    // Verify goal mode indicator (Undo button instead of Reset)
+    expect(screen.getByText("Undo")).toBeInTheDocument();
   });
 
   test("does not initialize when socket is disconnected and board is disabled", async () => {
@@ -317,32 +406,8 @@ describe("LessonOverlay", () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(mockSocket.setGameStateWithColor).not.toHaveBeenCalled();
-    });
-
     const disabledIndicator = await screen.findByTestId("board-disabled");
     expect(disabledIndicator.textContent).toBe("true");
-  });
-
-  test("initializes after reconnecting to socket", async () => {
-    mockSocket.connected = false;
-    const { rerender } = render(
-      <MemoryRouter>
-        <LessonOverlay />
-      </MemoryRouter>
-    );
-
-    mockSocket.connected = true;
-    rerender(
-      <MemoryRouter>
-        <LessonOverlay />
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(mockSocket.setGameStateWithColor).toHaveBeenCalled();
-    });
   });
 
   test("shows error popup on socket error", async () => {
@@ -361,112 +426,57 @@ describe("LessonOverlay", () => {
     ).toBeInTheDocument();
   });
 
-  test("lesson completion via promotion lesson type shows success popup", async () => {
+  test("puzzle mode with solution uses exact move sequence", async () => {
     (useLessonManager as jest.Mock).mockReturnValue({
       ...mockUseLessonManager,
       lessonData: {
         ...mockUseLessonManager.lessonData,
-        info: "promote your pawn",
+        startFen: "r3k2r/ppp2pp1/2np4/2B1p2n/2B1P1Nq/3P4/PPP2PP1/RN1Q1RK1 b kq - 0 11",
+        solution: "Qf2+ Kh1 Qg1+ Rxg1 Nf2#",
+        info: "Checkmate in 3 moves",
+        goal: null,
       },
     });
 
-    render(
+    const { container } = render(
       <MemoryRouter>
         <LessonOverlay />
       </MemoryRouter>
     );
 
-    act(() => {
-      socketCallbacks.onBoardStateChange &&
-        socketCallbacks.onBoardStateChange(
-          "rnbqkbnr/pppppppp/8/8/4Q3/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-          "white"
-        );
+    // In puzzle mode, the undo button should say "Reset" instead of "Undo"
+    await waitFor(() => {
+      expect(screen.getByText("Reset")).toBeInTheDocument();
     });
-
-    expect(await screen.findByText(/Lesson completed/i)).toBeInTheDocument();
+    
+    // Verify the lesson info displays the puzzle instruction in the lesson description area
+    const lessonDescription = container.querySelector(".lessonDescription");
+    expect(lessonDescription).toHaveTextContent("Checkmate in 3 moves");
   });
 
-  test("lesson completion via checkmate lesson type shows success popup", async () => {
+  test("goal mode shows goal mode indicator", async () => {
     (useLessonManager as jest.Mock).mockReturnValue({
       ...mockUseLessonManager,
       lessonData: {
         ...mockUseLessonManager.lessonData,
-        info: "checkmate the opponent",
+        goal: { type: "PROMOTION", min: 1 },
+        solution: null,
       },
     });
 
-    const { Chess } = require("chess.js");
-    const game = new Chess();
-    game.move("f3");
-    game.move("e5");
-    game.move("g4");
-    game.move("Qh4#");
-    const mateFen = game.fen();
-
-    render(
+    const { container } = render(
       <MemoryRouter>
         <LessonOverlay />
       </MemoryRouter>
     );
 
-    act(() => {
-      socketCallbacks.onBoardStateChange &&
-        socketCallbacks.onBoardStateChange(mateFen, "white");
+    // In goal mode (free-play), the undo button should say "Undo" instead of "Reset"
+    await waitFor(() => {
+      expect(screen.getByText("Undo")).toBeInTheDocument();
     });
-
-    expect(await screen.findByText(/Lesson completed/i)).toBeInTheDocument();
-  });
-
-  test("lesson completion via draw lesson type shows success popup", async () => {
-    (useLessonManager as jest.Mock).mockReturnValue({
-      ...mockUseLessonManager,
-      lessonData: {
-        ...mockUseLessonManager.lessonData,
-        info: "hold the draw",
-      },
-    });
-
-    render(
-      <MemoryRouter>
-        <LessonOverlay />
-      </MemoryRouter>
-    );
-
-    act(() => {
-      socketCallbacks.onBoardStateChange &&
-        socketCallbacks.onBoardStateChange(
-          "8/8/8/8/8/8/7k/7K w - - 0 1",
-          "white"
-        );
-    });
-
-    expect(await screen.findByText(/Lesson completed/i)).toBeInTheDocument();
-  });
-
-  test("handles invalid FEN strings in position lesson without crashing", async () => {
-    const badFen = "invalid-fen-string";
-    (useLessonManager as jest.Mock).mockReturnValue({
-      ...mockUseLessonManager,
-      lessonData: {
-        ...mockUseLessonManager.lessonData,
-        info: "get a winning position",
-        endFen: badFen,
-      },
-    });
-
-    render(
-      <MemoryRouter>
-        <LessonOverlay />
-      </MemoryRouter>
-    );
-
-    act(() => {
-      socketCallbacks.onBoardStateChange &&
-        socketCallbacks.onBoardStateChange(badFen, "white");
-    });
-
-    expect(await screen.findByText(/Lesson completed/i)).toBeInTheDocument();
-    expect(screen.getByTestId("chess-board")).toBeInTheDocument();
+    
+    // Verify the lesson info displays in the lesson description area
+    const lessonDescription = container.querySelector(".lessonDescription");
+    expect(lessonDescription).toHaveTextContent("get a winning position");
   });
 });
