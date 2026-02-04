@@ -4,15 +4,25 @@ export const scenariosArray = [
     subSections: [
       {
         name: 'Basic',
-        fen: '7k/8/8/P7/8/5p2/8/K7 w - - 0 1',
-        info: `Pawns move one square only.
-        But when they reach the other side of the board, they become a stronger piece!`,
+        fen: '7k/8/8/P7/8/5p2/8/K7 w - - 0 1', // startFen
+        info: 'Pawns move one square only. But when they reach the other side of the board, they become a stronger piece!',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'AVOID_SQUARES', squares: ['a6', 'a7', 'a8'] }
+        ],
       },
       {
         name: 'Capture',
         fen: '8/3p4/2p5/3p4/8/4P3/8/K6k w - - 0 1',
-        info: `Pawns move forward,
-        but capture diagonally!`,
+        info: 'Pawns move forward, but capture diagonally!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 1 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: ['d7'] }
+        ],
       },
       {
         name: 'Training 1',
@@ -22,18 +32,18 @@ export const scenariosArray = [
       {
         name: 'Training 2',
         fen: '2p5/3p4/1p2p3/1p1p4/2p5/3P4/8/K6k w - - 0 1',
-        info: `Capture, then promote!`,
+        info: 'Capture, then promote!',
       },
       {
         name: 'Traning 3',
         fen: '8/8/8/1pp1p3/3p2p1/P1PP3P/8/K6k w - - 0 1',
-        info: `Use all the pawns!
-        No need to promote.`,
+        info: 'Use all the pawns! No need to promote.',
       },
       {
         name: 'Special Move',
         fen: '8/8/3p4/8/8/8/4P3/K6k w - - 0 1',
-        info: `A pawn on the second rank can move 2 squares at once!`,
+        info: 'A pawn on the second rank can move 2 squares at once!',
+        solution: "e4",
       },
     ],
   },
@@ -958,8 +968,9 @@ export const scenariosArray = [
     subSections: [
       {
         name: "Double Check Introduction",
-        fen: "k1q5/1pp5/8/8/N7/8/8/R5K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves. A Double Check is when two pieces are delivering check simultaneously. A Double Check is generally more powerful than a normal check, because the opponent can only respond with a king move. (The pieces that are delivering check cannot both be captured or blocked with one move.)"
+        fen: "8/k1p5/1p6/5B2/N7/8/8/R5K1 w - - 0 1",
+        info: "Checkmate the opponent in 2 moves. A Double Check is when two pieces are delivering check simultaneously. A Double Check is generally more powerful than a normal check, because the opponent can only respond with a king move. (The pieces that are delivering check cannot both be captured or blocked with one move.)",
+        solution: "Nc5+ Kb8 Nd7#",
       },
       {
         name: "Double Check #1",
