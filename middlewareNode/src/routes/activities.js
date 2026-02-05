@@ -108,12 +108,13 @@ router.put("/:username/activity", async (req, res) => {
             { activities: {$elemMatch: { name: activityName }}, _id:0},
         );
         if(activityIncomplete) {
-            console.log(username + ' submitted: ', activityName, (new Date()));
+          console.log(username, 'submitted activity:', activityName, new Date());
+          await activities.updateOne(
+              { userId, "activities.name": activityName },
+              { $set: { "activities.$.completed": true } }
+          );
         }
-        await activities.updateOne(
-            { userId, "activities.name": activityName },
-            { $set: { "activities.$.completed": true } }
-        );
+
         return res.status(200).json({message:'success'});
     } catch (err) {
         console.error('Error updating activities: ', err);
