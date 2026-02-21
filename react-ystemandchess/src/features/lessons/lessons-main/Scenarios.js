@@ -4,36 +4,72 @@ export const scenariosArray = [
     subSections: [
       {
         name: 'Basic',
-        fen: '7k/8/8/P7/8/5p2/8/K7 w - - 0 1',
-        info: `Pawns move one square only.
-        But when they reach the other side of the board, they become a stronger piece!`,
+        fen: '7k/8/8/P7/8/5p2/8/K7 w - - 0 1', // startFen
+        info: 'Pawns move one square only. But when they reach the other side of the board, they become a stronger piece!',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'AVOID_SQUARES', squares: ['a6', 'a7', 'a8'] }
+        ],
       },
       {
         name: 'Capture',
         fen: '8/3p4/2p5/3p4/8/4P3/8/K6k w - - 0 1',
-        info: `Pawns move forward,
-        but capture diagonally!`,
+        info: 'Pawns move forward, but capture diagonally!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 1 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: ['d7'] }
+        ],
       },
       {
         name: 'Training 1',
         fen: '8/2p5/1ppp4/8/1pp5/1P6/8/K6k w - - 0 1',
         info: 'Capture, then promote!',
+        solution: null,
+        goal: {
+          type: 'SEQUENCE',
+          goals: [ { type: 'CAPTURE', min: 1 }, { type: 'PROMOTION', min: 1 } ]
+        },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'ONLY_MOVE_PIECES', pieces: [ 'p' ] }
+        ],
       },
       {
         name: 'Training 2',
         fen: '2p5/3p4/1p2p3/1p1p4/2p5/3P4/8/K6k w - - 0 1',
-        info: `Capture, then promote!`,
+        info: 'Capture, then promote!',
+        solution: null,
+        goal: {
+          type: 'SEQUENCE',
+          goals: [ { type: 'CAPTURE', min: 1 }, { type: 'PROMOTION', min: 1 } ]
+        },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'ONLY_MOVE_PIECES', pieces: [ 'p' ] }
+        ],
       },
       {
-        name: 'Traning 3',
+        name: 'Training 3',
         fen: '8/8/8/1pp1p3/3p2p1/P1PP3P/8/K6k w - - 0 1',
-        info: `Use all the pawns!
-        No need to promote.`,
+        info: 'Use all the pawns! No need to promote.',
+        solution: null,
+        goal: { type: 'ALL_PAWNS_MOVED' },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'ONLY_MOVE_PIECES', pieces: [ 'p' ] }
+        ],
       },
       {
         name: 'Special Move',
         fen: '8/8/3p4/8/8/8/4P3/K6k w - - 0 1',
-        info: `A pawn on the second rank can move 2 squares at once!`,
+        info: 'A pawn on the second rank can move 2 squares at once!',
+        solution: 'e4',
+        goal: null,
+        opponentConstraints: null,
       },
     ],
   },
@@ -43,32 +79,83 @@ export const scenariosArray = [
       {
         name: 'The Basic',
         fen: '7k/7p/8/8/4p3/8/6B1/K7 w - - 0 1',
-        info: 'Grab all the black pawns! ',
+        info: 'Grab all the black pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 2 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'h7', 'e4' ] }
+        ],
       },
       {
         name: 'Training 1',
-        fen: '7k/8/8/1p6/8/1B1p4/p3p3/Kp1p4 w - - 0 1',
-        info: `The fewer moves you make, the better!`,
+        fen: '7k/8/8/1p6/2p5/1B1p4/p3p3/K7 w - - 0 1',
+        info: 'The fewer moves you make, the better!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 5 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'b5', 'c4', 'd3', 'a2', 'e2' ]
+          }
+        ],
       },
       {
         name: 'Training 2',
-        fen: '7k/8/8/8/p1B5/1p1p4/2p1p3/Kp6 w - - 0 1',
+        fen: '7k/8/8/7p/p1B5/1p1p4/2p1p3/7K w - - 0 1',
         info: 'Grab all the black pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 6 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'h5', 'a4', 'b3', 'd3', 'c2', 'e2' ]
+          }
+        ],
       },
       {
         name: 'Training 3',
         fen: '7k/8/8/3pp3/3pp3/3pp3/8/K2B2B1 w - - 0 1',
-        info: `One light-squared bishop, one dark-squared bishop. You need both!`,
+        info: 'One light-squared bishop, one dark-squared bishop. You need both!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 6 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'd5', 'e5', 'd4', 'e4', 'd3', 'e3' ]
+          }
+        ],
       },
       {
         name: 'Training 4',
-        fen: '7k/6p1/1p5p/8/3B4/4p3/8/K1p1p3 w - - 0 1',
+        fen: '7k/6p1/1p5p/8/3B4/4p3/Kp1p4/8 w - - 0 1',
         info: 'Grab all the black pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 6 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'g7', 'b6', 'h6', 'e3', 'b2', 'd2' ]
+          }
+        ],
       },
       {
         name: 'Final',
-        fen: '6pk/3Bp2p/5p2/5p2/7p/p1B5/2p5/K7 w - - 0 1',
-        info: `One light-squared bishop, one dark-squared bishop. You need both!`,
+        fen: '7k/3Bp2p/5p2/5p2/7p/p1B5/2p5/K7 w - - 0 1',
+        info: 'One light-squared bishop, one dark-squared bishop. You need both!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 7 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'e7', 'h7', 'f6', 'f5', 'h4', 'a3', 'c2' ]
+          }
+        ],
       },
     ],
   },
@@ -78,32 +165,83 @@ export const scenariosArray = [
       {
         name: 'The Basic',
         fen: '7k/3p4/8/2p5/4N3/8/8/K7 w - - 0 1',
-        info: `Knights have a fancy way of jumping around!`,
+        info: 'Knights have a fancy way of jumping around!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 2 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'd7', 'c5' ] }
+        ],
       },
       {
         name: 'Training 1',
         fen: 'k7/5p2/8/6p1/3p4/2p2p2/4p3/KN6 w - - 0 1',
-        info: `Grab all the pawns!`,
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 6 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'f7', 'g5', 'd4', 'c3', 'f3', 'e2' ]
+          }
+        ],
       },
       {
         name: 'Training 2',
         fen: '7k/2Np4/1p2p3/3p4/5p2/8/8/K7 w - - 0 1',
-        info: `Grab all the pawns!`,
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 5 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'd7', 'b6', 'e6', 'd5', 'f4' ]
+          }
+        ],
       },
       {
         name: 'Training 3',
         fen: '7k/8/8/8/4ppp1/4pNp1/4ppp1/K7 w - - 0 1',
-        info: `Knights can jump over obstacles! Escape and vanquish the pawns!`,
+        info: 'Knights can jump over obstacles! Escape and vanquish the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 8 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'e4', 'f4', 'g4', 'e3', 'g3', 'e2', 'f2', 'g2' ]
+          }
+        ],
       },
       {
         name: 'Training 4',
         fen: '7k/8/6p1/8/4pp2/2pN4/4pp2/K7 w - - 0 1',
-        info: `Grab all the pawns!`,
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 6 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'g6', 'e4', 'f4', 'c3', 'e2', 'f2' ]
+          }
+        ],
       },
       {
         name: 'Final',
-        fen: 'k1p5/2N1p3/2p5/1p1p1p2/1p1p4/4p3/8/K7 w - - 0 1',
-        info: `Grab all the pawns!`,
+        fen: 'k7/2N1p1p1/8/1p1p1p2/1p1p4/4p1p1/8/K7 w - - 0 1',
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 9 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'e7', 'g7', 'b5', 'd5', 'f5', 'b4', 'd4', 'e3', 'g3' ]
+          }
+        ],
       },
     ],
   },
@@ -113,32 +251,68 @@ export const scenariosArray = [
       {
         name: 'The Basic',
         fen: 'k7/8/4p3/8/8/8/4R3/7K w - - 0 1',
-        info: `Click on the rook to bring it to the pawn!`,
+        info: 'Click on the rook to bring it to the pawn!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 1 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'e6' ] }
+        ],
       },
       {
         name: 'Training 1',
         fen: 'k7/2R5/8/2p2p2/8/8/8/7K w - - 0 1',
-        info: `Grab all the pawns!`,
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 2 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'c5', 'f5' ] }
+        ],
       },
       {
         name: 'Training 2',
         fen: 'k7/8/8/8/8/1p2R2p/7p/7K w - - 0 1',
-        info: `The fewer moves you make, the better!`,
+        info: 'The fewer moves you make, the better!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 3 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'b3', 'h3', 'h2' ] }
+        ],
       },
       {
         name: 'Training 3',
-        fen: 'k4ppR/6pp/8/8/8/8/8/6pK w - - 0 1',
-        info: `The fewer moves you make, the better!`,
+        fen: 'k6R/4pppp/8/8/8/8/5p1p/7K w - - 0 1',
+        info: 'The fewer moves you make, the better!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 6 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'e7', 'f7', 'g7', 'h7', 'f2', 'h2' ] }
+        ],
       },
       {
         name: 'Training 4',
         fen: 'k7/2R3p1/8/8/p3R2p/6p1/8/7K w - - 0 1',
-        info: `Use two rooks to speed things up!`,
+        info: 'Use two rooks to speed things up!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 4 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'g7', 'a4', 'h4', 'g3' ] }
+        ],
       },
       {
         name: 'Final',
-        fen: 'k7/1p3pp1/8/3p4/6p1/5R2/5p2/R2p3K w - - 0 1',
-        info: `Use two rooks to speed things up!`,
+        fen: 'k7/1p3pp1/8/3p4/6p1/5R2/3p1p2/R6K w - - 0 1',
+        info: 'Use two rooks to speed things up!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 7 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'b7', 'f7', 'g7', 'd5', 'g4', 'd2', 'f2' ] }
+        ],
       },
     ],
   },
@@ -148,27 +322,57 @@ export const scenariosArray = [
       {
         name: 'The Basic',
         fen: 'k7/2p5/8/4p3/8/8/4Q3/7K w - - 0 1',
-        info: `Grab all the pawns!`,
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 2 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'c7', 'e5' ] }
+        ],
       },
       {
         name: 'Training 1',
-        fen: 'k4p2/8/8/8/3Q4/p6p/5p2/7K w - - 0 1',
-        info: `Grab all the pawns!`,
+        fen: 'k7/5p2/8/8/3Q4/p6p/5p2/7K w - - 0 1',
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 4 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'f7', 'a3', 'h3', 'f2' ] }
+        ],
       },
       {
         name: 'Training 2',
-        fen: 'k4p2/8/3p3p/8/2Q5/p5p1/8/5p1K w - - 0 1',
-        info: `Grab all the pawns!`,
+        fen: 'k7/5p2/3p3p/8/2Q5/p5p1/5p2/7K w - - 0 1',
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 6 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'f7', 'd6', 'h6', 'a3', 'g3', 'f2' ] }
+        ],
       },
       {
         name: 'Training 3',
-        fen: 'k5p1/6Q1/8/1p5p/8/3p4/p6p/6pK w - - 0 1',
-        info: `Grab all the pawns!`,
+        fen: 'k7/5pQ1/8/1p5p/8/3p4/p5pp/4K3 w - - 0 1',
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 7 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'f7', 'b5', 'h5', 'd3', 'a2', 'g2', 'h2' ] }
+        ],
       },
       {
         name: 'Final',
-        fen: 'k5p1/8/p4pp1/8/7p/8/5p2/K2pQ2p w - - 0 1',
-        info: `Grab all the pawns!`,
+        fen: 'k7/6p1/p4pp1/8/7p/8/3p1p1p/K3Q3 w - - 0 1',
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 8 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'g7', 'a6', 'f6', 'g6', 'h4', 'd2', 'f2', 'h2' ] }
+        ],
       },
     ],
   },
@@ -178,17 +382,38 @@ export const scenariosArray = [
       {
         name: 'The Basic',
         fen: '7k/8/3p4/8/8/8/3K4/8 w - - 0 1',
-        info: 'The king is slow.  ',
+        info: 'The king is slow.',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 1 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'd6' ] }
+        ],
       },
       {
         name: 'Training',
         fen: '7k/8/8/8/8/3p4/2p1p3/4K3 w - - 0 1',
-        info: `Grab all the pawns!`,
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 3 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          { type: 'DONT_MOVE_FROM', squares: [ 'd3', 'c2', 'e2' ] }
+        ],
       },
       {
         name: 'Final',
         fen: '7k/8/8/2ppK3/2p3p1/4pp2/8/8 w - - 0 1',
-        info: `Grab all the pawns!`,
+        info: 'Grab all the pawns!',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 6 },
+        opponentConstraints: [
+          { type: 'AVOID_CAPTURING' },
+          {
+            type: 'DONT_MOVE_FROM',
+            squares: [ 'c5', 'd5', 'c4', 'g4', 'e3', 'f3' ]
+          }
+        ],
       },
     ],
   },
@@ -958,8 +1183,9 @@ export const scenariosArray = [
     subSections: [
       {
         name: "Double Check Introduction",
-        fen: "k1q5/1pp5/8/8/N7/8/8/R5K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves. A Double Check is when two pieces are delivering check simultaneously. A Double Check is generally more powerful than a normal check, because the opponent can only respond with a king move. (The pieces that are delivering check cannot both be captured or blocked with one move.)"
+        fen: "8/k1p5/1p6/5B2/N7/8/8/R5K1 w - - 0 1",
+        info: "Checkmate the opponent in 2 moves. A Double Check is when two pieces are delivering check simultaneously. A Double Check is generally more powerful than a normal check, because the opponent can only respond with a king move. (The pieces that are delivering check cannot both be captured or blocked with one move.)",
+        solution: "Nc5+ Kb8 Nd7#",
       },
       {
         name: "Double Check #1",
