@@ -1,9 +1,9 @@
 /**
  * Footer Component
- * 
+ *
  * This component displays the website footer with contact information,
  * social media links, sponsors, and partners.
- * 
+ *
  * Features:
  * - Contact information (email and phone)
  * - Social media icon links
@@ -42,14 +42,14 @@ const Footer = () => {
             <a href="/">
               <img src={TwitterIcon} alt="twitter-icon" id="twitter-icon" />
             </a>
-            <a href="/">
+            <a href="https://www.instagram.com/stemwithstemy/">
               <img
                 src={InstagramIcon}
                 alt="instagram-icon"
                 id="instagram-icon"
               />
             </a>
-            <a href="/">
+            <a href="https://www.facebook.com/YSTEMandChess/">
               <img src={FacebookIcon} alt="facebook-icon" id="facebook-icon" />
             </a>
             <a href="/">
