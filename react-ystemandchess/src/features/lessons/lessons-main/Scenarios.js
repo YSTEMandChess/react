@@ -464,6 +464,9 @@ export const scenariosArray = [
         name: 'Rook mate',
         fen: '8/8/3k4/8/8/4K3/8/4R3 w - - 0 1',
         info: `Use your rook to restrict the king, force it to the edge of the board and deliver checkmate. The rook can't do it alone, so use your king to help. Mate in 11 if played perfectly.`,
+        solution: null,
+        goal: {type: 'CHECKMATE' },
+        opponentConstraints: null
       },
     ],
   },
