@@ -440,6 +440,9 @@ export const scenariosArray = [
         name: 'Queen and bishop mate',
         fen: '8/8/3k4/8/8/2QBK3/8/8 w - - 0 1',
         info: `Use your queen and bishop to restrict the king and deliver checkmate. Mate in 5 if played perfectly.`,
+        solution: null,
+        goal: {type: 'CHECKMATE' },
+        opponentConstraints: null
       },
       {
         name: 'Queen and knight mate',
