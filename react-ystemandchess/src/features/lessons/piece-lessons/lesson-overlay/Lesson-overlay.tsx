@@ -384,6 +384,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     // Determine player color from FEN
     const turn = getTurnFromFEN(lessonData.startFen);
     setBoardOrientation(turn);
+    playerColorRef.current = turn;
 
     // Initialize game position
     gameRef.current = new Chess(lessonData.startFen);
