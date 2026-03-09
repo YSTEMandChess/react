@@ -46,6 +46,7 @@ app.use("/lessons", require("./routes/lessons"));
 app.use("/activities", require("./routes/activities"));
 app.use("/streak", streakRoutes);
 app.use("/badges", require("./routes/badges"));
+app.use("/bot", require("./routes/bot"));
 
 // Start server on specified port
 const PORT = process.env.PORT || 8000;
