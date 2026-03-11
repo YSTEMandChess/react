@@ -508,32 +508,50 @@ export const scenariosArray = [
       {
         name: "Hook mate #1",
         fen: "R7/4kp2/5N2/4P3/8/8/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. The Hook Mate involves the use of a rook, knight, and pawn along with one blockading piece to limit the opponent's king's escape. In this mate, the rook is protected by the knight and the knight is protected by the pawn."
+        info: "Checkmate the opponent in 1 move. The Hook Mate involves the use of a rook, knight, and pawn along with one blockading piece to limit the opponent's king's escape. In this mate, the rook is protected by the knight and the knight is protected by the pawn.",
+        solution: "Rh8#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Hook mate #2",
         fen: "5r1b/2R1R3/P4r2/2p2Nkp/2b3pN/6P1/4PP2/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: "Rg7+ Kh6 Nf4 Rxf4 Rh7#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Hook mate #3",
         fen: "2b1Q3/1kp5/p1Nb4/3P4/1P5p/p6P/K3R1P1/5q2 w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: "Qe5 Kc8 Nb4 Kb7 Qd6#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Anastasia’s mate #1",
         fen: "5r2/1b2Nppk/8/2R5/8/8/5PPP/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. In Anastasia's Mate, a knight and rook team up to trap the opposing king between the side of the board on one side and a friendly piece on the other. This checkmate got its name from the novel 'Anastasia und das Schachspiel' by Johann Jakob Wilhelm Heinse."
+        info: "Checkmate the opponent in 1 move. In Anastasia's Mate, a knight and rook team up to trap the opposing king between the side of the board on one side and a friendly piece on the other. This checkmate got its name from the novel 'Anastasia und das Schachspiel' by Johann Jakob Wilhelm Heinse.",
+        solution: "Rh5#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Anastasia’s mate #2",
         fen: "5r1k/1b2Nppp/8/2R5/4Q3/8/5PPP/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: "Qh4+ Kg8 Rh5#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Anastasia’s mate #3",
         fen: "5rk1/1b3ppp/8/2RN4/8/8/2Q2PPP/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: "Nf6+ Kh8 Qh7+ Kxh7 Rh5#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Anastasia’s mate #4",
