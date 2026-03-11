@@ -596,17 +596,26 @@ export const scenariosArray = [
       {
         name: "Smothered Mate #2",
         fen: "6rk/6pp/6q1/6N1/8/7Q/6PP/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: "Qxh7+ Kxh7 Nf7#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Smothered Mate #3",
         fen: "3r3k/1p1b1Qbp/1n2B1p1/p5N1/Pq6/8/1P4PP/R6K w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: "Qg8+ Rxg8 Nf7#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Smothered Mate #4",
         fen: "r1k4r/ppp1bq1p/2n1N3/6B1/3p2Q1/8/PPP2PPP/R5K1 w - - 0 1",
-        info: "Checkmate the opponent in 6 moves"
+        info: "Checkmate the opponent in 6 moves",
+        solution: "Qxg7 Qf1+ Rxf1 Bxg7 Rxf1+ Kb7 Nd8+ Kb6 Rf6#",
+        goal: null,
+        opponentConstraints: null
       },
     ]
   },
