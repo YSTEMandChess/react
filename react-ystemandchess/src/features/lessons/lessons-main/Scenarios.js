@@ -500,7 +500,10 @@ export const scenariosArray = [
       {
         name: "Back-Rank  Mate #4",
         fen: "6k1/3qb1pp/4p3/ppp1P3/8/2PP1Q2/PP4PP/5RK1 w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: "Qf6 Qf8 Rxf8+ Bxf8 Qxf8#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Hook mate #1",
