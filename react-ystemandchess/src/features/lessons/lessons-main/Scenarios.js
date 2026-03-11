@@ -424,21 +424,30 @@ export const scenariosArray = [
         name: 'Queen and rook mate',
         fen: '8/8/3k4/8/8/4K3/8/Q6R w - - 0 1',
         info: 'Use your queen and rook to restrict the king and deliver checkmate. Mate in 3 if played perfectly.',
+        solution: null,
+        goal: { type: 'CHECKMATE', by: 'player'},
+
       },
       {
         name: 'Two rook mate',
         fen: '8/8/3k4/8/8/4K3/8/R6R w - - 0 1',
         info: `Use your rooks to restrict the king and deliver checkmate. Mate in 4 if played perfectly.`,
+        solution: null,
+          goal: { type: 'CHECKMATE', by: 'player'},
       },
       {
         name: 'Queen and bishop mate',
         fen: '8/8/3k4/8/8/2QBK3/8/8 w - - 0 1',
         info: `Use your queen and bishop to restrict the king and deliver checkmate. Mate in 5 if played perfectly.`,
+        solution: null,
+          goal: { type: 'CHECKMATE', by: 'player'},
       },
       {
         name: 'Queen and knight mate',
         fen: '8/8/3k4/8/8/2QNK3/8/8 w - - 0 1',
         info: `Use your queen and knight to restrict the king and deliver checkmate. Mate in 5 if played perfectly.`,
+        solution: null,
+          goal: { type: 'CHECKMATE', by: 'player'},
       },
       {
         name: 'Queen mate',
@@ -948,6 +957,7 @@ export const scenariosArray = [
       },
     ]
   },
+    //TODO: WORK ON THIS RIGHT NOW
   {
     name: "The Pin Pin it to win it",
     subSections: [
@@ -964,7 +974,9 @@ export const scenariosArray = [
       {
         name: "Set up a relative pin #1",
         fen: "1k6/ppp3q1/8/4r3/8/8/3B1PPP/R4QK1 w - - 0 1",
-        info: "Get a winning position in 1 move. A relative pin is one where the piece shielded by the pinned piece is a piece other than the king, but it's typically more valuable than the pinned piece. Moving such a pinned piece is legal but may not be prudent, as the shielded piece would then be vulnerable to capture. Do you see the immediate relative pin?"
+        info: "Get a winning position in 1 move. A relative pin is one where the piece shielded by the pinned piece is a piece other than the king, but it's typically more valuable than the pinned piece. Moving such a pinned piece is legal but may not be prudent, as the shielded piece would then be vulnerable to capture. Do you see the immediate relative pin?",
+        // UPDATE: the best move is Bishop to c3.
+        solution: 'Bc3',
       },
       {
         name: "Exploit the pin #1",
@@ -974,17 +986,24 @@ export const scenariosArray = [
       {
         name: "Exploit the pin #2",
         fen: "r4rk1/pp1p1ppp/1qp2n2/8/4P3/1P1P2Q1/PBP2PPP/R4RK1 w - - 0 1",
-        info: "Get a winning position in 1 move. Use your knowledge of pins to win a piece."
+        info: "Get a winning position in 1 move. Use your knowledge of pins to win a piece.",
+        // UPDATE: the best move is Bishop to f6.
+        solution: 'Bxf6',
       },
       {
         name: "Exploit the pin #3",
         fen: "4r1r1/2p5/1p1kn3/p1p1R1p1/P6p/5N1P/1PP1R1PK/8 w - - 0 1",
-        info: "Get a winning position in 1 move. Use your knowledge of pins to win a pawn. From Magnus Carlsen - Arkadij Naiditsch, 2009."
+        info: "Get a winning position in 1 move. Use your knowledge of pins to win a pawn. From Magnus Carlsen - Arkadij Naiditsch, 2009.",
+        // UPDATE: the best move is Knight to g5.
+        solution: 'Nxg5',
+
       },
       {
         name: "Exploit the pin #4",
         fen: "1r1n1rk1/ppq2p2/2b2bp1/2pB3p/2P4P/4P3/PBQ2PP1/1R3RK1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        goal: "CHECKMATE",
+        //TODO: find the solution to this one.
       },
       {
         name: "Exploit the pin #5",
