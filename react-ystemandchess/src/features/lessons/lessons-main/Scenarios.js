@@ -580,12 +580,18 @@ export const scenariosArray = [
       {
         name: "Blind swine mate #3",
         fen: "5rk1/1R1R1p1p/4N1p1/p7/5p2/1P4P1/r2nP1KP/8 w - - 0 1",
-        info: "Checkmate the opponent in 5 moves"
+        info: "Checkmate the opponent in 5 moves",
+        solution: "Rxf7 Rxf7 Rxf7 Kxf7 Ng5+ Kg8 Rh7#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Smothered Mate #1",
         fen: "6rk/6pp/8/6N1/8/8/8/7K w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Smothered Mate occurs when a knight checkmates a king that is smothered (surrounded) by his friendly pieces and he has nowhere to move nor is there any way to capture the knight. It is also known as 'Philidor's Legacy' after François-André Danican Philidor, though its documentation predates Philidor by several hundred years."
+        info: "Checkmate the opponent in 1 move. Smothered Mate occurs when a knight checkmates a king that is smothered (surrounded) by his friendly pieces and he has nowhere to move nor is there any way to capture the knight. It is also known as 'Philidor's Legacy' after François-André Danican Philidor, though its documentation predates Philidor by several hundred years.",
+        solution: "Nf7#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Smothered Mate #2",
