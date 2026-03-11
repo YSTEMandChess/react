@@ -484,7 +484,10 @@ export const scenariosArray = [
       {
         name: "Back-Rank  Mate #2",
         fen: "2r1r1k1/5ppp/8/8/Q7/8/5PPP/4R1K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: "Qg4+ Kh8 Qg7#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Back-Rank  Mate #3",
