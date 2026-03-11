@@ -476,7 +476,10 @@ export const scenariosArray = [
       {
         name: "Back-Rank  Mate #1",
         fen: "6k1/4Rppp/8/8/8/8/5PPP/6K1 w - - 0 1",
-        info: "A Back-Rank Mate is a checkmate delivered by a rook or queen along the back rank in which the mated king is unable to move up the board because the king is blocked by friendly pieces (usually pawns) on the second rank."
+        info: "A Back-Rank Mate is a checkmate delivered by a rook or queen along the back rank in which the mated king is unable to move up the board because the king is blocked by friendly pieces (usually pawns) on the second rank.",
+        solution: "Re8#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Back-Rank  Mate #2",
