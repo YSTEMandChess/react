@@ -556,17 +556,26 @@ export const scenariosArray = [
       {
         name: "Anastasia’s mate #4",
         fen: "1r5k/6pp/2pr4/P1Q3bq/1P2Bn2/2P5/5PPP/R3NRK1 b - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: "Qxh2+ Kxh2 Rh6+ Kg1 Rh1#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Blind swine mate #1",
         fen: "1r5k/6pp/2pr4/P1Q3bq/1P2Bn2/2P5/5PPP/R3NRK1 b - - 0 1",
-        info: "Checkmate the opponent in 3 moves. The name of this pattern was coined by Polish master Dawid Janowski, referring to coupled rooks on a player's 7th rank as swine. For this type of mate, the rooks on white's 7th rank can start out on any two of the files from a to e, and although black pawns are commonly present, they are not necessary to affect the mate."
+        info: "Checkmate the opponent in 3 moves. The name of this pattern was coined by Polish master Dawid Janowski, referring to coupled rooks on a player's 7th rank as swine. For this type of mate, the rooks on white's 7th rank can start out on any two of the files from a to e, and although black pawns are commonly present, they are not necessary to affect the mate.",
+        solution: "Qxh2+ Kxh2 Rh6+ Kg1 Rh1#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Blind swine mate #2",
         fen: "r4rk1/2R5/1n2N1pp/2Rp4/p2P4/P3P2P/qP3PPK/8 w - - 0 1",
-        info: "Checkmate the opponent in 6 moves"
+        info: "Checkmate the opponent in 6 moves",
+        solution: "Rxg7+ Kh8 Rh7+ Kg8 Rcg7+ Kf8 Ng5 Qxe2 Rh8#",
+        goal: null,
+        opponentConstraints: null
       },
       {
         name: "Blind swine mate #3",
