@@ -957,7 +957,7 @@ export const scenariosArray = [
       },
     ]
   },
-    //TODO: WORK ON THIS RIGHT NOW
+    //NOTE: Noah DeMent is working on this section, so the content is not finalized yet.
   {
     name: "The Pin Pin it to win it",
     subSections: [
