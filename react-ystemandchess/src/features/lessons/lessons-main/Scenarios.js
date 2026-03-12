@@ -474,94 +474,148 @@ export const scenariosArray = [
     name: 'Checkmate Pattern 1 Recognize the patterns',
     subSections: [
       {
-        name: "Back-Rank  Mate #1",
-        fen: "6k1/4Rppp/8/8/8/8/5PPP/6K1 w - - 0 1",
-        info: "A Back-Rank Mate is a checkmate delivered by a rook or queen along the back rank in which the mated king is unable to move up the board because the king is blocked by friendly pieces (usually pawns) on the second rank."
+        name: 'Back-Rank  Mate #1',
+        fen: '6k1/4Rppp/8/8/8/8/5PPP/6K1 w - - 0 1',
+        info: 'A Back-Rank Mate is a checkmate delivered by a rook or queen along the back rank in which the mated king is unable to move up the board because the king is blocked by friendly pieces (usually pawns) on the second rank.',
+        solution: 'Re8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Back-Rank  Mate #2",
-        fen: "2r1r1k1/5ppp/8/8/Q7/8/5PPP/4R1K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        name: 'Back-Rank  Mate #2',
+        fen: '2r1r1k1/5ppp/8/8/Q7/8/5PPP/4R1K1 w - - 0 1',
+        info: 'Checkmate the opponent in 2 moves',
+        solution: 'Rxe8+ Rxe8 Qxe8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Back-Rank  Mate #3",
-        fen: "8/1p6/kp6/1p6/8/8/5PPP/5RK1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move"
+        name: 'Back-Rank  Mate #3',
+        fen: '8/1p6/kp6/1p6/8/8/5PPP/5RK1 w - - 0 1',
+        info: 'Checkmate the opponent in 1 move',
+        solution: 'Ra1#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Back-Rank  Mate #4",
-        fen: "6k1/3qb1pp/4p3/ppp1P3/8/2PP1Q2/PP4PP/5RK1 w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        name: 'Back-Rank  Mate #4',
+        fen: '6k1/3qb1pp/4p3/ppp1P3/8/2PP1Q2/PP4PP/5RK1 w - - 0 1',
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Qf7+ Kh8 Qf8+ Bxf8 Rxf8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Hook mate #1",
-        fen: "R7/4kp2/5N2/4P3/8/8/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. The Hook Mate involves the use of a rook, knight, and pawn along with one blockading piece to limit the opponent's king's escape. In this mate, the rook is protected by the knight and the knight is protected by the pawn."
+        name: 'Hook mate #1',
+        fen: 'R7/4kp2/5N2/4P3/8/8/8/6K1 w - - 0 1',
+        info: 'Checkmate the opponent in 1 move. The Hook Mate involves the use of a rook, knight, and pawn along with one blockading piece to limit the opponent’s king’s escape. In this mate, the rook is protected by the knight and the knight is protected by the pawn.',
+        solution: 'Re8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Hook mate #2",
-        fen: "5r1b/2R1R3/P4r2/2p2Nkp/2b3pN/6P1/4PP2/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        name: 'Hook mate #2',
+        fen: '5r1b/2R1R3/P4r2/2p2Nkp/2b3pN/6P1/4PP2/6K1 w - - 0 1',
+        info: 'Checkmate the opponent in 2 moves',
+        solution: 'Reg7+ Bxg7 f4#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Hook mate #3",
-        fen: "2b1Q3/1kp5/p1Nb4/3P4/1P5p/p6P/K3R1P1/5q2 w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        name: 'Hook mate #3',
+        fen: '2b1Q3/1kp5/p1Nb4/3P4/1P5p/p6P/K3R1P1/5q2 w - - 0 1',
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Qxc8+ Kxc8 Re8+ Kb7 Rb8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Anastasia’s mate #1",
-        fen: "5r2/1b2Nppk/8/2R5/8/8/5PPP/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. In Anastasia's Mate, a knight and rook team up to trap the opposing king between the side of the board on one side and a friendly piece on the other. This checkmate got its name from the novel 'Anastasia und das Schachspiel' by Johann Jakob Wilhelm Heinse."
+        name: 'Anastasia’s mate #1',
+        fen: '5r2/1b2Nppk/8/2R5/8/8/5PPP/6K1 w - - 0 1',
+        info: 'Checkmate the opponent in 1 move. In Anastasia’s Mate, a knight and rook team up to trap the opposing king between the side of the board on one side and a friendly piece on the other. This checkmate got its name from the novel ’Anastasia und das Schachspiel’ by Johann Jakob Wilhelm Heinse.',
+        solution: 'Rh5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Anastasia’s mate #2",
-        fen: "5r1k/1b2Nppp/8/2R5/4Q3/8/5PPP/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        name: 'Anastasia’s mate #2',
+        fen: '5r1k/1b2Nppp/8/2R5/4Q3/8/5PPP/6K1 w - - 0 1',
+        info: 'Checkmate the opponent in 2 moves',
+        solution: 'Qxh7+ Kxh7 Rh5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Anastasia’s mate #3",
-        fen: "5rk1/1b3ppp/8/2RN4/8/8/2Q2PPP/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        name: 'Anastasia’s mate #3',
+        fen: '5rk1/1b3ppp/8/2RN4/8/8/2Q2PPP/6K1 w - - 0 1',
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Ne7+ Kh8 Qxh7+ Kxh7 Rh5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Anastasia’s mate #4",
-        fen: "1r5k/6pp/2pr4/P1Q3bq/1P2Bn2/2P5/5PPP/R3NRK1 b - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        name: 'Anastasia’s mate #4',
+        fen: '1r5k/6pp/2pr4/P1Q3bq/1P2Bn2/2P5/5PPP/R3NRK1 b - - 0 1',
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Ne2+ Kh1 Qxh2+ Kxh2 Rh6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Blind swine mate #1",
-        fen: "1r5k/6pp/2pr4/P1Q3bq/1P2Bn2/2P5/5PPP/R3NRK1 b - - 0 1",
-        info: "Checkmate the opponent in 3 moves. The name of this pattern was coined by Polish master Dawid Janowski, referring to coupled rooks on a player's 7th rank as swine. For this type of mate, the rooks on white's 7th rank can start out on any two of the files from a to e, and although black pawns are commonly present, they are not necessary to affect the mate."
+        name: 'Blind swine mate #1',
+        fen: '1r5k/6pp/2pr4/P1Q3bq/1P2Bn2/2P5/5PPP/R3NRK1 b - - 0 1',
+        info: 'Checkmate the opponent in 3 moves. The name of this pattern was coined by Polish master Dawid Janowski, referring to coupled rooks on a player’s 7th rank as swine. For this type of mate, the rooks on white’s 7th rank can start out on any two of the files from a to e, and although black pawns are commonly present, they are not necessary to affect the mate.',
+        solution: 'Ne2+ Kh1 Qxh2+ Kxh2 Rh6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Blind swine mate #2",
-        fen: "r4rk1/2R5/1n2N1pp/2Rp4/p2P4/P3P2P/qP3PPK/8 w - - 0 1",
-        info: "Checkmate the opponent in 6 moves"
+        name: 'Blind swine mate #2',
+        fen: 'r4rk1/2R5/1n2N1pp/2Rp4/p2P4/P3P2P/qP3PPK/8 w - - 0 1',
+        info: 'Checkmate the opponent in 6 moves',
+        solution: 'Rg7+ Kh8 Rcc7 Ra7 Rxa7 Nd7 Raxd7 g5 Rh7+ Kg8 Rdg7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Blind swine mate #3",
-        fen: "5rk1/1R1R1p1p/4N1p1/p7/5p2/1P4P1/r2nP1KP/8 w - - 0 1",
-        info: "Checkmate the opponent in 5 moves"
+        name: 'Blind swine mate #3',
+        fen: '5rk1/1R1R1p1p/4N1p1/p7/5p2/1P4P1/r2nP1KP/8 w - - 0 1',
+        info: 'Checkmate the opponent in 5 moves',
+        solution: 'Rxf7 f3+ Kh3 Rd8 Rg7+ Kh8 Rxh7+ Kg8 Rbg7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Smothered Mate #1",
-        fen: "6rk/6pp/8/6N1/8/8/8/7K w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Smothered Mate occurs when a knight checkmates a king that is smothered (surrounded) by his friendly pieces and he has nowhere to move nor is there any way to capture the knight. It is also known as 'Philidor's Legacy' after François-André Danican Philidor, though its documentation predates Philidor by several hundred years."
+        name: 'Smothered Mate #1',
+        fen: '6rk/6pp/8/6N1/8/8/8/7K w - - 0 1',
+        info: 'Checkmate the opponent in 1 move. Smothered Mate occurs when a knight checkmates a king that is smothered (surrounded) by his friendly pieces and he has nowhere to move nor is there any way to capture the knight. It is also known as ’Philidor’s Legacy’ after François-André Danican Philidor, though its documentation predates Philidor by several hundred years.',
+        solution: 'Nf7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Smothered Mate #2",
-        fen: "6rk/6pp/6q1/6N1/8/7Q/6PP/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        name: 'Smothered Mate #2',
+        fen: '6rk/6pp/6q1/6N1/8/7Q/6PP/6K1 w - - 0 1',
+        info: 'Checkmate the opponent in 2 moves',
+        solution: 'Qxh7+ Qxh7 Nf7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Smothered Mate #3",
-        fen: "3r3k/1p1b1Qbp/1n2B1p1/p5N1/Pq6/8/1P4PP/R6K w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        name: 'Smothered Mate #3',
+        fen: '3r3k/1p1b1Qbp/1n2B1p1/p5N1/Pq6/8/1P4PP/R6K w - - 0 1',
+        info: 'Checkmate the opponent in 2 moves',
+        solution: 'Qg8+ Rxg8 Nf7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: "Smothered Mate #4",
-        fen: "r1k4r/ppp1bq1p/2n1N3/6B1/3p2Q1/8/PPP2PPP/R5K1 w - - 0 1",
-        info: "Checkmate the opponent in 6 moves"
+        name: 'Smothered Mate #4',
+        fen: 'r1k4r/ppp1bq1p/2n1N3/6B1/3p2Q1/8/PPP2PPP/R5K1 w - - 0 1',
+        info: 'Checkmate the opponent in 6 moves',
+        solution: 'Nc5+ Qe6 Qxe6+ Kb8 Nd7+ Kc8 Nb6+ Kb8 Qc8+ Rxc8 Nd7#',
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -571,117 +625,186 @@ export const scenariosArray = [
       {
         name: "Double Bishop Mate #1",
         fen: "7k/5B1p/8/8/8/8/8/5KB1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move."
+        info: "Checkmate the opponent in 1 move.",
+        solution: 'Bd4#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Double Bishop Mate #2",
         fen: "r1bq3k/pp2R2p/3B2p1/2pBbp2/2Pp4/3P4/P1P3PP/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move"
+        info: "Checkmate the opponent in 1 move",
+        solution: 'Bxe5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Double Bishop Mate #3",
         fen: "r3k2r/pbpp1ppp/1p6/2bBPP2/8/1QPp1P1q/PP1P3P/RNBR3K b kq - 0 1",
-        info: "Checkmate the opponent in 2 move"
+        info: "Checkmate the opponent in 2 move",
+        solution: 'Qxf3+ Bxf3 Bxf3#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Boden's Mate #1",
         fen: "2kr4/3p4/8/8/5B2/8/8/5BK1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. In Boden's Mate, two attacking bishops on criss-crossing diagonals deliver mate to a king obstructed by friendly pieces, usually a rook and a pawn."
+        info: "Checkmate the opponent in 1 move. In Boden's Mate, two attacking bishops on criss-crossing diagonals deliver mate to a king obstructed by friendly pieces, usually a rook and a pawn.",
+        solution: 'Ba6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Boden's Mate #2",
         fen: "2k1rb1r/ppp3pp/2n2q2/3B1b2/5P2/2P1BQ2/PP1N1P1P/2KR3R b - - 0 1",
-        info: "Checkmate the opponent in 2 move"
+        info: "Checkmate the opponent in 2 move",
+        solution: 'Qxc3+ bxc3 Ba3#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Boden's Mate #3",
         fen: "2kr1b1r/pp1npppp/2p1bn2/7q/5B2/2NB1Q1P/PPP1N1P1/2KR3R w - - 0 1",
-        info: "Checkmate the opponent in 2 move"
+        info: "Checkmate the opponent in 2 move",
+        solution: 'Qxc6+ bxc6 Ba6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Balestra Mate #1",
         fen: "5k2/8/6Q1/8/8/6B1/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. The Balestra Mate is similar to Boden's Mate, but instead of two bishops, a bishop and a queen is used. The bishop delivers the checkmate, while the queen blocks the remaining escape squares."
+        info: "Checkmate the opponent in 1 move. The Balestra Mate is similar to Boden's Mate, but instead of two bishops, a bishop and a queen is used. The bishop delivers the checkmate, while the queen blocks the remaining escape squares.",
+        solution: 'Bd6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Arabian Mate #1",
         fen: "7k/5R2/5N2/8/8/8/8/7K w - - 0 1",
-        info: "Checkmate the opponent in 1 move. In the Arabian Mate, the knight and the rook team up to trap the opposing king on a corner of the board. The rook sits on a square adjacent to the king both to prevent escape along the diagonal and to deliver checkmate while the knight sits two squares away diagonally from the king to prevent escape on the square next to the king and to protect the rook."
+        info: "Checkmate the opponent in 1 move. In the Arabian Mate, the knight and the rook team up to trap the opposing king on a corner of the board. The rook sits on a square adjacent to the king both to prevent escape along the diagonal and to deliver checkmate while the knight sits two squares away diagonally from the king to prevent escape on the square next to the king and to protect the rook.",
+        solution: 'Rh7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Arabian Mate #2",
         fen: "r4nk1/pp2r1p1/2p1P2p/3p1P1N/8/8/PPPK4/6RR w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: 'Nf6+ Kh8 Rxh6+ Nh7 Rxh7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Arabian Mate #3",
         fen: "3qrk2/p1r2pp1/1p2pb2/nP1bN2Q/3PN3/P6R/5PPP/R5K1 w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: 'Qxf7+ Rxf7 Ng6+ Kg8 Rh8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Corner Mate #1",
         fen: "7k/7p/8/6N1/8/8/8/6RK w - - 0 1",
-        info: "Checkmate the opponent in 1 move. The Corner Mate works by confining the king to the corner using a rook or queen and using a knight to engage the checkmate."
+        info: "Checkmate the opponent in 1 move. The Corner Mate works by confining the king to the corner using a rook or queen and using a knight to engage the checkmate.",
+        solution: 'Nf7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Corner Mate #2",
         fen: "5rk1/3Q1p2/6p1/P5r1/R1q1n3/7B/7P/5R1K b - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: 'Qxf1+ Bxf1 Nf2#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Morphy's Mate #1",
         fen: "7k/5p1p/8/8/7B/8/8/6RK w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Morphy's Mate is named after Paul Morphy. It works by using the bishop to attack the enemy king while your rook and an enemy pawn helps to confine it."
+        info: "Checkmate the opponent in 1 move. Morphy's Mate is named after Paul Morphy. It works by using the bishop to attack the enemy king while your rook and an enemy pawn helps to confine it.",
+        solution: 'Bf6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Morphy's Mate #2",
         fen: "5rk1/p4p1p/1p1rpp2/3qB3/3PR3/7P/PP3PP1/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: 'Rg4+ Kh8 Bxf6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Morphy's Mate #3",
         fen: "2r2rk1/5ppp/pp6/2q5/2P2P2/3pP1RP/P5P1/B1R3K1 w - - 0 1",
-        info: "Checkmate the opponent in 6 moves"
+        info: "Checkmate the opponent in 6 moves",
+        solution: 'Rxg7+ Kh8 Rxf7+ Kg8 Rg7+ Kh8 Rg5+ Qe5 Bxe5+ Rf6 Bxf6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Pillsbury's Mate #1",
         fen: "5rk1/5p1p/8/8/8/8/1B6/4K2R w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Pillsbury's Mate is named for Harry Nelson Pillsbury and is a variation of Morphy's Mate. The rook delivers checkmate while the bishop prevents the King from fleeing to the corner square."
+        info: "Checkmate the opponent in 1 move. Pillsbury's Mate is named for Harry Nelson Pillsbury and is a variation of Morphy's Mate. The rook delivers checkmate while the bishop prevents the King from fleeing to the corner square.",
+        solution: 'Rg1#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Pillsbury's Mate #2",
         fen: "2rqnrk1/pp3ppp/1b1p4/3p2Q1/2n1P3/3B1P2/PB2NP1P/R5RK w - - 0 1",
-        info: "Checkmate the opponent in 5 moves"
+        info: "Checkmate the opponent in 5 moves",
+        solution: 'Qxg7+ Nxg7 Rxg7+ Kh8 Rg8+ Kxg8 Rg1+ Qg5 Rxg5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Damiano's Mate #1",
         fen: "5rk1/6p1/6P1/7Q/8/8/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Damiano's Mate is a classic method of checkmating and one of the oldest. It works by confining the king with a pawn or bishop and using a queen to initiate the final blow. Damiano's mate is often arrived at by first sacrificing a rook on the h-file, then checking the king with the queen on the h-file, and then moving in for the mate. The checkmate was first published by Pedro Damiano in 1512."
+        info: "Checkmate the opponent in 1 move. Damiano's Mate is a classic method of checkmating and one of the oldest. It works by confining the king with a pawn or bishop and using a queen to initiate the final blow. Damiano's mate is often arrived at by first sacrificing a rook on the h-file, then checking the king with the queen on the h-file, and then moving in for the mate. The checkmate was first published by Pedro Damiano in 1512.",
+        solution: 'Qh7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Damiano's Mate #2",
         fen: "4rk2/1p1q1p2/3p1Bn1/p1pP1p2/P1P5/1PK3Q1/8/7R w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: 'Rh8+ Nxh8 Qg7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Damiano's Mate #3",
         fen: "q1r4r/1b2kpp1/p3p3/P1b5/1pN1P3/3BBPp1/1P4P1/R3QRK1 b - - 0 1",
-        info: "Checkmate the opponent in 5 moves"
+        info: "Checkmate the opponent in 5 moves",
+        solution: 'Rh1+ Kxh1 Rh8+ Kg1 Rh1+ Kxh1 Qh8+ Kg1 Qh2#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Lolli's Mate #1",
         fen: "6k1/5p2/5PpQ/8/8/8/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Lolli's Mate involves infiltrating Black's fianchetto position using both a pawn and queen. The queen often gets to the h6 square by means of sacrifices on the h-file. It is named after Giambattista Lolli."
+        info: "Checkmate the opponent in 1 move. Lolli's Mate involves infiltrating Black's fianchetto position using both a pawn and queen. The queen often gets to the h6 square by means of sacrifices on the h-file. It is named after Giambattista Lolli.",
+        solution: 'Qg7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Lolli's Mate #2",
         fen: "r4r2/1q3pkp/p1b1p1n1/1p4QP/4P3/1BP3P1/P4P2/R2R2K1 w - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: 'h6+ Kh8 Qf6+ Kg8 Qg7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Lolli's Mate #3",
         fen: "4r1qk/5p1p/pp2rPpR/2pbP1Q1/3pR3/2P5/P5PP/2B3K1 w - - 0 1",
-        info: "Checkmate the opponent in 6 moves"
+        info: "Checkmate the opponent in 6 moves",
+        solution: 'Reh4 Rxe5 Rxh7+ Qxh7 Rxh7+ Kg8 Rh8+ Kxh8 Qh6+ Kg8 Qg7#',
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -691,92 +814,146 @@ export const scenariosArray = [
       {
         name: "Opera Mate #1",
         fen: "4k3/5p2/8/6B1/8/8/8/3R2K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. The Opera Mate works by attacking the king on the back rank with a rook using a bishop to protect it. A pawn or other piece other than a knight of the enemy king's is used to restrict its movement. The checkmate was named after its implementation by Paul Morphy in 1858 at a game at the Paris opera against Duke Karl of Brunswick and Count Isouard, known as the 'The Opera Game'."
+        info: "Checkmate the opponent in 1 move. The Opera Mate works by attacking the king on the back rank with a rook using a bishop to protect it. A pawn or other piece other than a knight of the enemy king's is used to restrict its movement. The checkmate was named after its implementation by Paul Morphy in 1858 at a game at the Paris opera against Duke Karl of Brunswick and Count Isouard, known as the 'The Opera Game'.",
+        solution: 'Rd8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Opera Mate #2",
         fen: "rn1r2k1/ppp2ppp/3q1n2/4b1B1/4P1b1/1BP1Q3/PP3PPP/RN2K1NR b KQ - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: 'Qd1+ Bxd1 Rxd1#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Opera Mate #3",
         fen: "rn3rk1/p5pp/2p5/3Ppb2/2q5/1Q6/PPPB2PP/R3K1NR b KQ - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: 'Qf1+ Kxf1 Bd3+ Ke1 Rf1#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Anderssen's Mate #1",
         fen: "6k1/6P1/5K1R/8/8/8/8/8 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. In Anderssen's mate, named for Adolf Anderssen, the rook or queen is supported by a diagonally-attacking piece such as a pawn or bishop as it checkmates the opposing king along the eighth rank."
+        info: "Checkmate the opponent in 1 move. In Anderssen's mate, named for Adolf Anderssen, the rook or queen is supported by a diagonally-attacking piece such as a pawn or bishop as it checkmates the opposing king along the eighth rank.",
+        solution: 'Rh8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Anderssen's Mate #2",
         fen: "1k2r3/pP3pp1/8/3P1B1p/5q2/N1P2b2/PP3Pp1/R5K1 b - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: 'Qh4 Bh3 Qxh3 b3 Qh1#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Anderssen's Mate #3",
         fen: "2r1nrk1/p4p1p/1p2p1pQ/nPqbRN2/8/P2B4/1BP2PPP/3R2K1 w - - 0 1",
-        info: "Checkmate the opponent in 4 moves"
+        info: "Checkmate the opponent in 4 moves",
+        solution: 'Ne7+ Qxe7 Qxh7+ Kxh7 Rh5+ Kg8 Rh8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Dovetail Mate #1",
         fen: "1r6/pk6/4Q3/3P4/8/8/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. In the Dovetail Mate, the mating queen is one square diagonally from the mated king which escape is blocked by two friendly non-Knight pieces."
+        info: "Checkmate the opponent in 1 move. In the Dovetail Mate, the mating queen is one square diagonally from the mated king which escape is blocked by two friendly non-Knight pieces.",
+        solution: 'Qc6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Dovetail Mate #2",
         fen: "r1b1q1r1/ppp3kp/1bnp4/4p1B1/3PP3/2P2Q2/PP3PPP/RN3RK1 w - - 0 1",
-        info: "Checkmate the opponent in 1 moves"
+        info: "Checkmate the opponent in 1 moves",
+        solution: 'Qf6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Dovetail Mate #3",
         fen: "6k1/1p1b3p/2pp2p1/p7/2Pb2Pq/1P1PpK2/P1N3RP/1RQ5 b - - 0 1",
-        info: "Checkmate the opponent in 4 moves"
+        info: "Checkmate the opponent in 4 moves",
+        solution: 'Bxg4+ Rxg4 Qf2+ Ke4 Qf5+ Kxd4 Qe5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Dovetail Mate #4",
         fen: "rR6/5k2/2p3q1/4Qpb1/2PB1Pb1/4P3/r5R1/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Other variations of the Dovetail Mate can occur if a queen delivers mate by checking the king from a diagonally adjacent square while supported by a friendly piece and you also control the two potential escape squares with other pieces, typically a bishop."
+        info: "Checkmate the opponent in 1 move. Other variations of the Dovetail Mate can occur if a queen delivers mate by checking the king from a diagonally adjacent square while supported by a friendly piece and you also control the two potential escape squares with other pieces, typically a bishop.",
+        solution: 'Qe8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Cozio's Mate #1",
         fen: "8/8/1Q6/8/6pk/5q2/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves. Cozio's Mate is an upside down version of the Dovetail Mate. It was named after a study by Carlo Cozio that was published in 1766."
+        info: "Checkmate the opponent in 2 moves. Cozio's Mate is an upside down version of the Dovetail Mate. It was named after a study by Carlo Cozio that was published in 1766.",
+        solution: 'Qh6+ Kg3 Qh2#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Swallow's Tail Mate #1",
         fen: "3r1r2/4k3/R7/3Q4/8/8/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. The Swallow's Tail Mate works by attacking the enemy king with a queen that is protected by a rook or other piece. The enemy king's own pieces block its means of escape. It is also known as the Guéridon Mate."
+        info: "Checkmate the opponent in 1 move. The Swallow's Tail Mate works by attacking the enemy king with a queen that is protected by a rook or other piece. The enemy king's own pieces block its means of escape. It is also known as the Guéridon Mate.",
+        solution: 'Qe6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Swallow's Tail Mate #2",
         fen: "8/8/2P5/3K1k2/2R3p1/2q5/8/8 b - - 0 1",
-        info: "Checkmate the opponent in 1 moves"
+        info: "Checkmate the opponent in 1 moves",
+        solution: 'Qe5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Epaulette Mate #1",
         fen: "3rkr2/8/5Q2/8/8/8/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. The Epaulette Mate is a checkmate where two parallel retreat squares for a checked king are occupied by its own pieces, preventing its escape."
+        info: "Checkmate the opponent in 1 move. The Epaulette Mate is a checkmate where two parallel retreat squares for a checked king are occupied by its own pieces, preventing its escape.",
+        solution: 'Qe6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Epaulette Mate #2",
         fen: "1k1r4/pp1q1B1p/3bQp2/2p2r2/P6P/2BnP3/1P6/5RKR b - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: 'Rg8+ Bxg8 Qg7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Epaulette Mate #3",
         fen: "5r2/pp3k2/5r2/q1p2Q2/3P4/6R1/PPP2PP1/1K6 w - - 0 1",
-        info: "Checkmate the opponent in 1 moves"
+        info: "Checkmate the opponent in 1 moves",
+        solution: 'Qd7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Pawn Mate #1",
         fen: "8/7R/1pkp4/2p5/1PP5/8/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Although the Pawn Mate can take many forms, it is generally characterized as a mate in which a pawn is the final attacking piece and where enemy pawns are nearby. The Pawn Mate is sometimes also called the David and Goliath Mate, named after the biblical account of David and Goliath."
+        info: "Checkmate the opponent in 1 move. Although the Pawn Mate can take many forms, it is generally characterized as a mate in which a pawn is the final attacking piece and where enemy pawns are nearby. The Pawn Mate is sometimes also called the David and Goliath Mate, named after the biblical account of David and Goliath.",
+        solution: 'b5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Pawn Mate #2",
         fen: "r1b3nr/ppp3qp/1bnpk3/4p1BQ/3PP3/2P5/PP3PPP/RN3RK1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: 'Qe8+ Qe7 d5#',
+        goal: null,
+        opponentConstraints: null,
       }
     ]
   },
@@ -786,77 +963,122 @@ export const scenariosArray = [
       {
         name: "Suffocation Mate #1",
         fen: "5rk1/5p1p/8/3N4/8/8/1B6/7K w - - 0 1",
-        info: "Checkmate the opponent in 1 move. The Suffocation Mate works by using the knight to attack the enemy king and the bishop to confine the king's escape routes."
+        info: "Checkmate the opponent in 1 move. The Suffocation Mate works by using the knight to attack the enemy king and the bishop to confine the king's escape routes.",
+        solution: 'Ne7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Suffocation Mate #2",
         fen: "r4k1r/1q3p1p/p1N2p2/1pp5/8/1PPP4/1P3PPP/R1B1R1K1 w - - 0 1",
-        info: "Checkmate the opponent in 4 moves"
+        info: "Checkmate the opponent in 4 moves",
+        solution: 'Bh6+ Kg8 Re3 Qc7 Rg3+ Qxg3 Ne7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Greco's Mate #1",
         fen: "7k/6p1/6Q1/8/8/1B6/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Greco's Mate is named after the famous Italian checkmate cataloguer Gioachino Greco. It works by using the bishop to contain the black king by use of the black g-pawn and subsequently using the queen or a rook to checkmate the king by moving it to the edge of the board."
+        info: "Checkmate the opponent in 1 move. Greco's Mate is named after the famous Italian checkmate cataloguer Gioachino Greco. It works by using the bishop to contain the black king by use of the black g-pawn and subsequently using the queen or a rook to checkmate the king by moving it to the edge of the board.",
+        solution: 'Qh5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Greco's Mate #2",
         fen: "r4r1k/ppn1NBpp/4b3/4P3/3p1R2/1P6/P1P3PP/R5K1 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: 'Ng6+ hxg6 Rh4#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Greco's Mate #3",
         fen: "r2q1rk1/pbp3pp/1p1b4/3N1p2/2B5/P3PPn1/1P3P1P/2RQK2R w K - 0 1",
-        info: "Checkmate the opponent in 4 moves"
+        info: "Checkmate the opponent in 4 moves",
+        solution: 'Ne7+ Kh8 Ng6+ hxg6 hxg3+ Qh4 Rxh4#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Max Lange's Mate #1",
         fen: "2Q5/5Bpk/7p/8/8/8/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Max Lange's Mate is named after German chess player and problem composer Max Lange. It works by using the bishop and queen in combination to checkmate the king."
+        info: "Checkmate the opponent in 1 move. Max Lange's Mate is named after German chess player and problem composer Max Lange. It works by using the bishop and queen in combination to checkmate the king.",
+        solution: 'Qg8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Max Lange's Mate #2",
         fen: "r3k3/ppp2pp1/8/2bpP2P/4q3/1B1p1Q2/PPPP2P1/RNB4K b q - 0 1",
-        info: "Checkmate the opponent in 5 moves"
+        info: "Checkmate the opponent in 5 moves",
+        solution: 'Qh4+ Qh3 Qe1+ Kh2 Bg1+ Kh1 Bf2+ Kh2 Qg1#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Blackburne's Mate #1",
         fen: "5rk1/7p/8/6N1/8/8/1BB5/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Blackburne's Mate is named for Joseph Henry Blackburne. This checkmate utilizes an enemy rook (or bishop or queen) to confine the black king's escape to the f8 square. One of the bishops confines the black king's movement by operating at a distance, while the knight and the other bishop operate within close range."
+        info: "Checkmate the opponent in 1 move. Blackburne's Mate is named for Joseph Henry Blackburne. This checkmate utilizes an enemy rook (or bishop or queen) to confine the black king's escape to the f8 square. One of the bishops confines the black king's movement by operating at a distance, while the knight and the other bishop operate within close range.",
+        solution: 'Bxh7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Réti's Mate #1",
         fen: "1nb5/1pk5/2p5/8/7B/8/8/3R3K w - - 0 1",
-        info: "Checkmate the opponent in 1 move. Réti's Mate is named after Richard Réti, who delivered it in an 11-move game against Savielly Tartakower in 1910 in Vienna. It works by trapping the enemy king with four of its own pieces that are situated on flight squares and then attacking it with a bishop that is protected by a rook or queen."
+        info: "Checkmate the opponent in 1 move. Réti's Mate is named after Richard Réti, who delivered it in an 11-move game against Savielly Tartakower in 1910 in Vienna. It works by trapping the enemy king with four of its own pieces that are situated on flight squares and then attacking it with a bishop that is protected by a rook or queen.",
+        solution: 'Bd8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Légal's Mate #1",
         fen: "3q1b2/4kB2/3p4/4N3/8/2N5/8/6K1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. In Légal's Mate, the knight moves into a position to check the king. The bishop is guarded by the other knight, and the enemy pieces block the king's escape."
+        info: "Checkmate the opponent in 1 move. In Légal's Mate, the knight moves into a position to check the king. The bishop is guarded by the other knight, and the enemy pieces block the king's escape.",
+        solution: 'Nd5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Kill Box Mate #1",
         fen: "2kr4/8/1Q6/8/8/8/5PPP/3R1RK1 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. The Kill Box Mate occurs when a rook is next to the enemy king and supported by a queen that also blocks the king's escape squares. The rook and the queen catch the enemy king in a 3 by 3 'kill box'."
+        info: "Checkmate the opponent in 1 move. The Kill Box Mate occurs when a rook is next to the enemy king and supported by a queen that also blocks the king's escape squares. The rook and the queen catch the enemy king in a 3 by 3 'kill box'.",
+        solution: 'Rxd8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Triangle Mate #1",
         fen: "8/3p4/3k4/2R4Q/8/4K3/8/8 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. A Triangle Mate is delivered by a queen attacking an enemy king, while it is supported by a rook. The queen and rook are one square away from the enemy king. They are on the same rank or file, separated by one square, with the enemy king being between them one square away, forming a triangle. The king must be restricted from escaping to the middle square behind it away from the queen and rook, by the edge of the board, a piece blocking it, or by controlling that square with a third piece."
+        info: "Checkmate the opponent in 1 move. A Triangle Mate is delivered by a queen attacking an enemy king, while it is supported by a rook. The queen and rook are one square away from the enemy king. They are on the same rank or file, separated by one square, with the enemy king being between them one square away, forming a triangle. The king must be restricted from escaping to the middle square behind it away from the queen and rook, by the edge of the board, a piece blocking it, or by controlling that square with a third piece.",
+        solution: 'Qe5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Vukovic Mate #1",
         fen: "4k3/R7/4N3/3r4/8/B7/4K3/8 w - - 0 1",
-        info: "Checkmate the opponent in 1 move. In the Vukovic Mate, a rook and knight team up to mate the king on the edge of the board. The rook delivers mate while supported by a third piece, and the knight is used to block the king's escape squares."
+        info: "Checkmate the opponent in 1 move. In the Vukovic Mate, a rook and knight team up to mate the king on the edge of the board. The rook delivers mate while supported by a third piece, and the knight is used to block the king's escape squares.",
+        solution: 'Re7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Vukovic Mate #2",
         fen: "R7/8/8/7p/6n1/6k1/3r4/5K2 b - - 0 1",
-        info: "Checkmate the opponent in 3 moves"
+        info: "Checkmate the opponent in 3 moves",
+        solution: 'Nh2+ Ke1 Nf3+ Kf1 Rf2#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Vukovic Mate #3",
         fen: "2r5/8/8/5K1k/4N1R1/7P/8/8 w - - 0 1",
-        info: "Checkmate the opponent in 2 moves"
+        info: "Checkmate the opponent in 2 moves",
+        solution: 'Nf6+ Kh6 Rg6#',
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -866,37 +1088,58 @@ export const scenariosArray = [
       {
         name: "Queen vs bishop mate",
         fen: "8/8/3kb3/8/8/3KQ3/8/8 w - - 0 1",
-        info: "Keep your pieces on the opposite color squares from the enemy bishop to stay safe. Use your queen to encroach on the king and look for double attacks. Mate in 10 if played perfectly."
+        info: "Keep your pieces on the opposite color squares from the enemy bishop to stay safe. Use your queen to encroach on the king and look for double attacks. Mate in 10 if played perfectly.",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Queen vs knight mate",
         fen: "8/8/3kn3/8/8/3KQ3/8/8 w - - 0 1",
-        info: "Force the enemy king to the edge of the board while avoiding tricky knight forks. Mate in 12 if played perfectly."
+        info: "Force the enemy king to the edge of the board while avoiding tricky knight forks. Mate in 12 if played perfectly.",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Queen vs rook mate",
         fen: "8/3kr3/8/3KQ3/8/8/8/8 w - - 0 1",
-        info: "Normally the winning process involves the queen first winning the rook by a fork and then checkmating with the king and queen, but forced checkmates with the rook still on the board are possible in some positions or against incorrect defense. Mate in 18 if played perfectly."
+        info: "Normally the winning process involves the queen first winning the rook by a fork and then checkmating with the king and queen, but forced checkmates with the rook still on the board are possible in some positions or against incorrect defense. Mate in 18 if played perfectly.",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Two bishop mate",
         fen: "8/8/3k4/8/8/2BBK3/8/8 w - - 0 1",
-        info: "When trying to checkmate with two bishops, there are two important principles to follow. One, the bishops are best when they are near the center of the board and on adjacent diagonals. This cuts off the opposing king. Two, the king must be used aggressively, in conjunction with the bishops.Mate in 13 if played perfectly."
+        info: "When trying to checkmate with two bishops, there are two important principles to follow. One, the bishops are best when they are near the center of the board and on adjacent diagonals. This cuts off the opposing king. Two, the king must be used aggressively, in conjunction with the bishops.Mate in 13 if played perfectly.",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Knight and bishop mate #1",
         fen: "8/8/1k1K4/8/2BN4/8/8/8 w - - 0 1",
-        info: "Of the basic checkmates, this is the most difficult one to force, because the knight and bishop cannot form a linear barrier to the enemy king from a distance. The checkmate can be forced only in a corner that the bishop controls. The mating process often requires accurate play, since a few errors could result in a draw either by the fifty-move rule or stalemate.Mate in 10 if played perfectly."
+        info: "Of the basic checkmates, this is the most difficult one to force, because the knight and bishop cannot form a linear barrier to the enemy king from a distance. The checkmate can be forced only in a corner that the bishop controls. The mating process often requires accurate play, since a few errors could result in a draw either by the fifty-move rule or stalemate.Mate in 10 if played perfectly.",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Knight and bishop mate #2",
         fen: "8/8/3k4/3B4/3K4/8/3N4/8 w - - 0 1",
-        info: "Of the basic checkmates, this is the most difficult one to force, because the knight and bishop cannot form a linear barrier to the enemy king from a distance. The checkmate can be forced only in a corner that the bishop controls. The mating process often requires accurate play, since a few errors could result in a draw either by the fifty-move rule or stalemate.Mate in 19 if played perfectly."
+        info: "Of the basic checkmates, this is the most difficult one to force, because the knight and bishop cannot form a linear barrier to the enemy king from a distance. The checkmate can be forced only in a corner that the bishop controls. The mating process often requires accurate play, since a few errors could result in a draw either by the fifty-move rule or stalemate.Mate in 19 if played perfectly.",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Two knights vs pawn",
         fen: "6k1/6p1/8/4K3/4NN2/8/8/8 w - - 0 1",
-        info: "Two knights can't force checkmate by themselves, but if the enemy has a pawn, we can avoid stalemate and force mate.Mate in 15 if played perfectly."
+        info: "Two knights can't force checkmate by themselves, but if the enemy has a pawn, we can avoid stalemate and force mate.Mate in 15 if played perfectly.",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       }
     ]
   },
@@ -907,62 +1150,98 @@ export const scenariosArray = [
       {
         name: "Introduction",
         fen: "4k3/8/8/8/8/8/8/4KBN1 w - - 0 1",
-        info: "In this Study, we will look at how to checkmate a lone King with a Knight and Bishop.The first thing to note, is that we can only checkmate the King in the corner of the board which is the same color as our Bishop, which in this example is a8 and h1. If we had a dark squared Bishop, we could only checkmate Black on a1 or h8.Black will therefore try to stay in the center of the board, and if they can't, then they will move towards the 'wrong' corner, meaning a corner in which we can't checkmate the King.White however, wants to force Black's King to a8 or h1. To accomplish this, there are two well-known methods that can be used. One is called 'Delétang's triangle method' and the other is called 'the W method'. You only have to know one of these methods. In this Study, we will learn the first one.The basic idea is to restrict Black's King to smaller and smaller areas of the board."
+        info: "In this Study, we will look at how to checkmate a lone King with a Knight and Bishop.The first thing to note, is that we can only checkmate the King in the corner of the board which is the same color as our Bishop, which in this example is a8 and h1. If we had a dark squared Bishop, we could only checkmate Black on a1 or h8.Black will therefore try to stay in the center of the board, and if they can't, then they will move towards the 'wrong' corner, meaning a corner in which we can't checkmate the King.White however, wants to force Black's King to a8 or h1. To accomplish this, there are two well-known methods that can be used. One is called 'Delétang's triangle method' and the other is called 'the W method'. You only have to know one of these methods. In this Study, we will learn the first one.The basic idea is to restrict Black's King to smaller and smaller areas of the board.",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Epic Failure",
         fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        info: "KBN vs K is a fairly rare endgame. A 2001 study showed that it happens in about 0.02% of games. Even so, it can be useful to study because the technique is hard to find OTB as this game shows.This game took place in Geneva, Switzerland in 2013. It was Round 4 in a FIDE Women Grand Prix tournament. The Women's World Chess Champion, Anna Ushenina, failed to mate with Knight and Bishop and her opponent claimed a draw due to the 50 move rule.The relevant part of the game starts at 72. Nxc3. Scroll through the moves and watch the video below. Move on to the next chapter when you're ready.www.youtube.com/watch?v=YFF5ibgB6eA"
+        info: "KBN vs K is a fairly rare endgame. A 2001 study showed that it happens in about 0.02% of games. Even so, it can be useful to study because the technique is hard to find OTB as this game shows.This game took place in Geneva, Switzerland in 2013. It was Round 4 in a FIDE Women Grand Prix tournament. The Women's World Chess Champion, Anna Ushenina, failed to mate with Knight and Bishop and her opponent claimed a draw due to the 50 move rule.The relevant part of the game starts at 72. Nxc3. Scroll through the moves and watch the video below. Move on to the next chapter when you're ready.www.youtube.com/watch?v=YFF5ibgB6eA",
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Restricting the king to the first triangle",
         fen: "4k3/8/8/8/8/8/8/4KBN1 w - - 0 1",
-        info: "You will have to use all of your pieces to push Black's king to a corner. Black will first try to stay in the center. Continue the lesson by moving your King towards the center."
+        info: "You will have to use all of your pieces to push Black's king to a corner. Black will first try to stay in the center. Continue the lesson by moving your King towards the center.",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Exercise: Restricting the king to the first triangle",
         fen: "6k1/5N2/5K2/8/2B5/8/8/8 w - - 20 11",
-        info: "In the previous chapter, Black replied to Nf7+ with Kh7. Here, Black replies Kg8 instead. Based on what we have learned so far, what move should White now play?"
+        info: "In the previous chapter, Black replied to Nf7+ with Kh7. Here, Black replies Kg8 instead. Based on what we have learned so far, what move should White now play?",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Restricting the king to the second triangle",
         fen: "8/8/3k2K1/8/8/1B1N4/8/8 b - - 29 15",
-        info: "Before we can transition our Bishop to the second triangle by playing Ba4, we must further restrict the Black King. Start by taking away the f8 square"
+        info: "Before we can transition our Bishop to the second triangle by playing Ba4, we must further restrict the Black King. Start by taking away the f8 square",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Exercise: Restricting the king to the second triangle",
         fen: "8/4k1K1/8/8/2B5/3N4/8/8 w - - 34 18",
-        info: "What would you play in this position?"
+        info: "What would you play in this position?",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Restricting the king to the third triangle",
         fen: "8/1k2K3/8/1B1N4/8/8/8/8 b - - 61 31",
-        info: "Before you can safely transition your Bishop to the third triangle by playing Ba6, you must further restrict the Black King. Restrict the Black King further in a way that does not allow Black to take the opposition."
+        info: "Before you can safely transition your Bishop to the third triangle by playing Ba6, you must further restrict the Black King. Restrict the Black King further in a way that does not allow Black to take the opposition.",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Delivering Mate",
         fen: "2B5/k1K5/8/3N4/8/8/8/8 b - - 0 1",
-        info: "When we reach the third triangle, our King and Bishop is restricting the enemy King which frees up our Knight to deliver mate."
+        info: "When we reach the third triangle, our King and Bishop is restricting the enemy King which frees up our Knight to deliver mate.",
+        solution: 'Ka8 Nb4 Ka7 Nc6+ Ka8 Bb7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Exercise: Delivering Mate",
         fen: "2B5/k1K5/8/3N4/8/8/8/8 w - - 1 2",
-        info: "In this position, the King is on a7 instead of a8 which means you must checkmate Black slightly differently. Mate in three."
+        info: "In this position, the King is on a7 instead of a8 which means you must checkmate Black slightly differently. Mate in three.",
+        solution: 'Nc3 Ka8 Bb7+ Ka7 Nb5#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: "Exercise: Checkmate the Engine",
         fen: "4k3/8/8/8/8/8/8/4KBN1 w - - 0 1",
-        info: "Checkmate the opponent"
+        info: "Checkmate the opponent",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Exercise: Checkmate the Engine- DSB Edition",
         fen: "4k3/8/8/8/8/8/8/4KNB1 w - - 0 1",
-        info: "Checkmate the opponent"
+        info: "Checkmate the opponent",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: "Exercise: Checkmate the Engine- Rotated Edition",
         fen: "1NBK4/8/8/8/8/8/8/3k4 w - - 0 1",
-        info: "Checkmate the opponent"
+        info: "Checkmate the opponent",
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
     ]
   },

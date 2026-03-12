@@ -132,6 +132,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   const playerColorRef = useRef<'white' | 'black'>('white');
   const isInitializedRef = useRef<boolean>(false);
   const gameRef = useRef<Chess>(new Chess());
+  const playOpponentMoveRef = useRef<(index: number) => void>(() => {});
 
   // Stockfish socket for free-play mode
   const stockfishSocketRef = useRef<any>(null);
@@ -151,6 +152,12 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
     onBoardStateChange: (newFEN, color) => {
       try {
+        // In puzzle mode, ignore server FEN updates after initialization
+        // to prevent the server echo from resetting client-side game state
+        if (isInitializedRef.current && lessonStartFENRef.current) {
+          console.log('[Socket] Ignoring boardstate during puzzle - using client game state');
+          return;
+        }
         gameRef.current.load(newFEN);
         setCurrentFEN(newFEN);
         if (color) setBoardOrientation(color);
@@ -384,6 +391,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     // Determine player color from FEN
     const turn = getTurnFromFEN(lessonData.startFen);
     setBoardOrientation(turn);
+    playerColorRef.current = turn;
 
     // Initialize game position
     gameRef.current = new Chess(lessonData.startFen);
@@ -546,15 +554,17 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   };
 
   const handlePuzzleMove = useCallback((move: Move) => {
+    console.log('[Puzzle] handlePuzzleMove called', { move, currentSolutionIndex, solutionMovesLen: solutionMoves.length });
+
     if (currentSolutionIndex >= solutionMoves.length) {
-      console.error('Solution index out of bounds');
+      console.error('[Puzzle] Solution index out of bounds:', currentSolutionIndex, '>=', solutionMoves.length);
       return;
     }
 
     const expectedSolutionMove = solutionMoves[currentSolutionIndex];
 
     if (!expectedSolutionMove.isPlayerMove) {
-      console.error('Not player turn in solution');
+      console.error('[Puzzle] Not player turn in solution');
       return;
     }
 
@@ -562,7 +572,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     const expectedMove = sanToMove(expectedSolutionMove.san, tempGame);
 
     if (!expectedMove) {
-      console.error('Could not parse solution move:', expectedSolutionMove.san);
+      console.error('[Puzzle] Could not parse solution move:', expectedSolutionMove.san);
       setShowError(true);
       return;
     }
@@ -578,6 +588,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     try {
       gameRef.current.move(move);
       const newFen = gameRef.current.fen();
+      console.log('[Puzzle] Player move applied:', expectedSolutionMove.san, '→ FEN:', newFen);
       setCurrentFEN(newFen);
 
       processMove();
@@ -601,35 +612,39 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
       // Auto-play opponent's response if there is one
       const nextSolutionMove = solutionMoves[nextIndex];
       if (nextSolutionMove && !nextSolutionMove.isPlayerMove) {
+        console.log('[Puzzle] Scheduling opponent move:', nextSolutionMove.san, 'at index', nextIndex);
         setTimeout(() => {
-          playOpponentSolutionMove(nextIndex);
+          playOpponentMoveRef.current(nextIndex);
         }, 500);
       }
 
     } catch (error) {
-      console.error("Error applying puzzle move:", error);
+      console.error("[Puzzle] Error applying puzzle move:", error);
       setShowError(true);
     }
   }, [currentSolutionIndex, solutionMoves, currentFEN, processMove, onChessMove]);
 
   // Play opponent's predetermined move from solution
   const playOpponentSolutionMove = useCallback((index: number) => {
-    if (index >= solutionMoves.length) return;
+    console.log('[Puzzle] playOpponentSolutionMove called', { index, solutionMovesLen: solutionMoves.length, gameFen: gameRef.current.fen() });
+
+    if (index >= solutionMoves.length) {
+      console.error('[Puzzle] Opponent move index out of bounds');
+      return;
+    }
 
     const opponentSolutionMove = solutionMoves[index];
     if (opponentSolutionMove.isPlayerMove) {
-      console.error('Expected opponent move but got player move');
+      console.error('[Puzzle] Expected opponent move but got player move');
       return;
     }
 
     try {
+      console.log('[Puzzle] Applying opponent SAN:', opponentSolutionMove.san);
       const move = gameRef.current.move(opponentSolutionMove.san);
-      if (!move) {
-        console.error('Could not play opponent move:', opponentSolutionMove.san);
-        return;
-      }
 
       const newFen = gameRef.current.fen();
+      console.log('[Puzzle] Opponent move applied → FEN:', newFen);
       setCurrentFEN(newFen);
       setHighlightSquares([move.from, move.to]);
 
@@ -654,10 +669,13 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
       }
 
     } catch (error) {
-      console.error("Error playing opponent move:", error);
+      console.error("[Puzzle] Error playing opponent move:", error, "SAN:", opponentSolutionMove.san, "Current FEN:", gameRef.current.fen());
       setShowError(true);
     }
   }, [solutionMoves, onChessMove]);
+
+  // Keep ref in sync so setTimeout always calls the latest version
+  playOpponentMoveRef.current = playOpponentSolutionMove;
 
   // Handle move in free-play mode (with Stockfish opponent)
   const handleFreePlayMove = useCallback(async (move: Move) => {
