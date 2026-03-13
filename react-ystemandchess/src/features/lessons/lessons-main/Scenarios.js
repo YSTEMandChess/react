@@ -1003,7 +1003,8 @@ export const scenariosArray = [
         fen: "1r1n1rk1/ppq2p2/2b2bp1/2pB3p/2P4P/4P3/PBQ2PP1/1R3RK1 w - - 0 1",
         info: "Checkmate the opponent in 2 moves",
         goal: "CHECKMATE",
-        //TODO: find the solution to this one.
+        solution: 'Qxg6+ Kh8 Bxf6#',
+        // UPDATE: the best move is Queen to g6. Mate in two, with Bishop to f6 securing the win.
       },
       {
         name: "Exploit the pin #5",
