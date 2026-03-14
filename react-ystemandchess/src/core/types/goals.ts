@@ -1,34 +1,27 @@
 import type { Chess } from 'chess.js';
 import { PieceSymbol } from './chess';
 
-export type Actor = 'player' | 'opponent';
-
 export type AtomicGoal =
   | {
     type: 'PROMOTION';
     min?: number;
     piece?: 'q' | 'r' | 'b' | 'n';
-    by?: Actor; // Defaults to 'player'
   }
   | {
     type: 'CAPTURE';
     min?: number;
     piece?: 'p' | 'n' | 'b' | 'r' | 'q';
     square?: string;
-    by?: Actor;
   }
   | {
     type: 'CHECKMATE';
-    by?: Actor;
   }
   | {
     type: 'PAWN_DOUBLE_PUSH';
     min?: number;
-    by?: Actor;
   }
   | {
     type: 'ALL_PAWNS_MOVED';
-    by?: Actor;
   }
   | {
     type: 'MATERIAL_ADVANTAGE';
@@ -93,7 +86,6 @@ export interface MoveEvent {
   enPassant: boolean;
   castling?: 'kingside' | 'queenside';
   fen: string;
-  by?: Actor;
 }
 
 export interface EvaluationContext {

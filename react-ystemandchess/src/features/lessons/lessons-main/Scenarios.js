@@ -425,7 +425,7 @@ export const scenariosArray = [
         fen: '8/8/3k4/8/8/4K3/8/Q6R w - - 0 1',
         info: 'Use your queen and rook to restrict the king and deliver checkmate. Mate in 3 if played perfectly.',
         solution: null,
-        goal: { type: 'CHECKMATE', by: 'player' },
+        goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
       },
       {
@@ -433,7 +433,7 @@ export const scenariosArray = [
         fen: '8/8/3k4/8/8/4K3/8/R6R w - - 0 1',
         info: 'Use your rooks to restrict the king and deliver checkmate. Mate in 4 if played perfectly.',
         solution: null,
-        goal: { type: 'CHECKMATE', by: 'player' },
+        goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
       },
       {
@@ -441,7 +441,7 @@ export const scenariosArray = [
         fen: '8/8/3k4/8/8/2QBK3/8/8 w - - 0 1',
         info: 'Use your queen and bishop to restrict the king and deliver checkmate. Mate in 5 if played perfectly.',
         solution: null,
-        goal: { type: 'CHECKMATE', by: 'player' },
+        goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
       },
       {
@@ -449,7 +449,7 @@ export const scenariosArray = [
         fen: '8/8/3k4/8/8/2QNK3/8/8 w - - 0 1',
         info: 'Use your queen and knight to restrict the king and deliver checkmate. Mate in 5 if played perfectly.',
         solution: null,
-        goal: { type: 'CHECKMATE', by: 'player' },
+        goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
       },
       {
@@ -457,7 +457,7 @@ export const scenariosArray = [
         fen: '8/8/3k4/8/8/4K3/8/4Q3 w - - 0 1',
         info: 'Use your queen to restrict the king, force it to the edge of the board and deliver checkmate. The queen can\'t do it alone, so use your king to help. Mate in 6 if played perfectly.',
         solution: null,
-        goal: { type: 'CHECKMATE', by: 'player' },
+        goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
       },
       {
@@ -465,7 +465,7 @@ export const scenariosArray = [
         fen: '8/8/3k4/8/8/4K3/8/4R3 w - - 0 1',
         info: 'Use your rook to restrict the king, force it to the edge of the board and deliver checkmate. The rook can\'t do it alone, so use your king to help. Mate in 11 if played perfectly.',
         solution: null,
-        goal: { type: 'CHECKMATE', by: 'player' },
+        goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
       },
     ],
