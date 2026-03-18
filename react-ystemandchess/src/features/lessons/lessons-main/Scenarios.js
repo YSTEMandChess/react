@@ -964,12 +964,14 @@ export const scenariosArray = [
       {
         name: "Set up an absolute pin #1",
         fen: "7k/8/8/4n3/4P3/8/8/6BK w - - 0 1",
-        info: "Get a winning position in 2 moves. An absolute pin is when a piece is pinned to its king and can't move without exposing its king to a check from an opposing piece on the same line or diagonal. Pin the knight to win it."
+        info: "Get a winning position in 2 moves. An absolute pin is when a piece is pinned to its king and can't move without exposing its king to a check from an opposing piece on the same line or diagonal. Pin the knight to win it.",
+        solution: 'Bd4 Kg8 Bxe5',
       },
       {
         name: "Set up an absolute pin #2",
         fen: "5k2/p1p2pp1/7p/2r5/8/1P3P2/PBP3PP/1K6 w - - 0 1",
-        info: "Get a winning position in 2 moves. Can you set up an immediate absolute pin?"
+        info: "Get a winning position in 2 moves. Can you set up an immediate absolute pin?",
+          solution: 'Ba3 Ke8 Bxc5',
       },
       {
         name: "Set up a relative pin #1",
@@ -981,20 +983,19 @@ export const scenariosArray = [
       {
         name: "Exploit the pin #1",
         fen: "4k3/6p1/5p1p/4n3/8/7P/5PP1/4R1K1 w - - 0 1",
-        info: "Get a winning position in 2 moves. Use your knowledge of pins to win a piece."
+        info: "Get a winning position in 2 moves. Use your knowledge of pins to win a piece.",
+        solution: 'f4 Kf7 fxe5',
       },
       {
         name: "Exploit the pin #2",
         fen: "r4rk1/pp1p1ppp/1qp2n2/8/4P3/1P1P2Q1/PBP2PPP/R4RK1 w - - 0 1",
         info: "Get a winning position in 1 move. Use your knowledge of pins to win a piece.",
-        // UPDATE: the best move is Bishop to f6.
         solution: 'Bxf6',
       },
       {
         name: "Exploit the pin #3",
         fen: "4r1r1/2p5/1p1kn3/p1p1R1p1/P6p/5N1P/1PP1R1PK/8 w - - 0 1",
         info: "Get a winning position in 1 move. Use your knowledge of pins to win a pawn. From Magnus Carlsen - Arkadij Naiditsch, 2009.",
-        // UPDATE: the best move is Knight to g5.
         solution: 'Nxg5',
 
       },
@@ -1009,10 +1010,13 @@ export const scenariosArray = [
       {
         name: "Exploit the pin #5",
         fen: "q5k1/5pp1/8/1pb1P3/2p4p/2P2r1P/1P3PQ1/1N3R1K b - - 0 1",
-        info: "Get a winning position in 3 moves"
+        info: "Get a winning position in 3 moves",
+        solution: 'Kh2 Qe4 Nd2 Qxe5+ Kh1',
+        // UPDATE: this seems to be the best move, according to nextchessmove.com, but I could use some confirmation.
       },
     ]
   },
+    //NOTE: Noah DeMent is ALSO working on this section, so the content is not finalized yet.
   {
     name: "The Skewer Yum - Skewers!",
     subSections: [
