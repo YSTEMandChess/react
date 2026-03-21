@@ -55,6 +55,7 @@ function evaluatePromotion(
   // Filter by actor (player vs opponent)
   const relevantEvents = context.events.filter((e, i) => {
     const isPlayerMove = i % 2 === 0; // Even indices = player moves
+    return isPlayerMove;
   });
 
   let promotionCount = relevantEvents.filter(e => e.promotion).length;
@@ -78,6 +79,7 @@ function evaluateCapture(
 
   const relevantEvents = context.events.filter((e, i) => {
     const isPlayerMove = i % 2 === 0;
+    return isPlayerMove;
   });
 
   let captures = relevantEvents.filter(e => e.captured);
