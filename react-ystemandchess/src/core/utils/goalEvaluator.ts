@@ -1,5 +1,5 @@
 import { Chess } from 'chess.js';
-import { Goal, AtomicGoal, Actor, EvaluationContext } from '../types/goals';
+import { Goal, AtomicGoal, EvaluationContext } from '../types/goals';
 
 /**
  * Main goal evaluation function
@@ -47,16 +47,15 @@ export function evaluateGoal(goal: Goal, context: EvaluationContext): boolean {
 // ============================================
 
 function evaluatePromotion(
-  goal: { type: 'PROMOTION'; min?: number; piece?: string; by?: Actor },
+  goal: { type: 'PROMOTION'; min?: number; piece?: string; },
   context: EvaluationContext
 ): boolean {
   const minRequired = goal.min ?? 1;
-  const by = goal.by ?? 'player';
 
   // Filter by actor (player vs opponent)
   const relevantEvents = context.events.filter((e, i) => {
     const isPlayerMove = i % 2 === 0; // Even indices = player moves
-    return by === 'player' ? isPlayerMove : !isPlayerMove;
+    return isPlayerMove;
   });
 
   let promotionCount = relevantEvents.filter(e => e.promotion).length;
@@ -68,20 +67,19 @@ function evaluatePromotion(
     ).length;
   }
 
-  console.log(`[PROMOTION] Required: ${minRequired}, Found: ${promotionCount}, By: ${by}`);
+  console.log(`[PROMOTION] Required: ${minRequired}, Found: ${promotionCount}`);
   return promotionCount >= minRequired;
 }
 
 function evaluateCapture(
-  goal: { type: 'CAPTURE'; min?: number; piece?: string; square?: string; by?: Actor },
+  goal: { type: 'CAPTURE'; min?: number; piece?: string; square?: string },
   context: EvaluationContext
 ): boolean {
   const minRequired = goal.min ?? 1;
-  const by = goal.by ?? 'player';
 
   const relevantEvents = context.events.filter((e, i) => {
     const isPlayerMove = i % 2 === 0;
-    return by === 'player' ? isPlayerMove : !isPlayerMove;
+    return isPlayerMove;
   });
 
   let captures = relevantEvents.filter(e => e.captured);

@@ -115,6 +115,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   // Popups
   const [showVPopup, setShowVPopup] = useState(false);
   const [showXPopup, setShowXPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("Game Over!")
   const [ShowError, setShowError] = useState(false);
   const [showLPopup, setShowLPopup] = useState(true);
   const [showInstruction, setShowInstruction] = useState(false);
@@ -570,7 +571,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
     // Check if player's move matches expected move
     if (!movesMatch(move, expectedMove)) {
-      // Wrong move!
+      setPopupMessage("Wrong Move!")
       setShowXPopup(true);
       return;
     }
@@ -650,6 +651,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
           (playerColorRef.current === 'black' && turn === 'b');
 
         if (playerLost) {
+          setPopupMessage("Game Over!")
           setShowXPopup(true);
         }
       }
@@ -686,6 +688,13 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
       if (onChessMove) onChessMove(afterFen);
 
+      const moveCount = eventLogRef.current.getEvents().length;
+      if (lessonData?.maxMoves && moveCount > lessonData.maxMoves) {
+        setPopupMessage('Too many moves!');
+        setShowXPopup(true);
+        return;
+      }
+
       if (lessonGoal) {
         const context: EvaluationContext = {
           events: eventLogRef.current.getEvents(),
@@ -699,7 +708,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         const goalAchieved = evaluateGoal(lessonGoal, context);
 
         if (goalAchieved) {
-          console.log('🎉 Goal achieved!');
           setShowVPopup(true);
           return;
         }
@@ -717,6 +725,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         if (playerWon) {
           setShowVPopup(true);
         } else {
+          setPopupMessage("Game Over!")
           setShowXPopup(true);
         }
         return;
@@ -833,6 +842,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   };
 
   const handleXPopup = () => {
+    setPopupMessage("Game Over!")
     setShowXPopup(false);
     handleReset();
   };
@@ -985,8 +995,8 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                 <path className={styles.checkmark} d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <p className={styles.popupHeader}>Lesson completed</p>
-            <p className={styles.popupSubheading}>Good job</p>
+            <p className={styles.popupHeader}>Lesson completed!</p>
+            <p className={styles.popupSubheading}>Good job!</p>
             <button className={styles.popupButton} onClick={handleVPopup}>OK</button>
           </div>
         </div>
@@ -1003,7 +1013,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                 <path d="M80 40 L40 80" fill="none" stroke="#f57c7c" strokeWidth="8" strokeLinecap="round" />
               </svg>
             </div>
-            <p className={styles.popupHeader}>Wrong move!</p>
+            <p className={styles.popupHeader}>{popupMessage}</p>
             <p className={styles.popupSubheading}>Please try again.</p>
             <button className={styles.popupButton} onClick={handleXPopup}>OK</button>
           </div>

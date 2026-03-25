@@ -182,7 +182,6 @@ describe("LessonOverlay", () => {
       doublePawnPush: false,
       enPassant: false,
       fen: fen,
-      by: isPlayer ? 'player' : 'opponent',
     }));
 
     // Setup useLessonManager mock
