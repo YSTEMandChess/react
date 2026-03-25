@@ -53,10 +53,7 @@ function evaluatePromotion(
   const minRequired = goal.min ?? 1;
 
   // Filter by actor (player vs opponent)
-  const relevantEvents = context.events.filter((e, i) => {
-    const isPlayerMove = i % 2 === 0; // Even indices = player moves
-    return isPlayerMove;
-  });
+  const relevantEvents = context.events.filter((_, i) => i % 2 === 0);
 
   let promotionCount = relevantEvents.filter(e => e.promotion).length;
 
@@ -77,10 +74,7 @@ function evaluateCapture(
 ): boolean {
   const minRequired = goal.min ?? 1;
 
-  const relevantEvents = context.events.filter((e, i) => {
-    const isPlayerMove = i % 2 === 0;
-    return isPlayerMove;
-  });
+  const relevantEvents = context.events.filter((_, i) => i % 2 === 0);
 
   let captures = relevantEvents.filter(e => e.captured);
 
@@ -120,7 +114,7 @@ function evaluatePawnDoublePush(
   context: EvaluationContext
 ): boolean {
   const minRequired = goal.min ?? 1;
-  const doublePushCount = context.events.filter(e => e.doublePawnPush).length;
+  const doublePushCount = context.events.filter((e, i) => i % 2 === 0 && e.doublePawnPush).length;
 
   console.log(`[PAWN_DOUBLE_PUSH] Required: ${minRequired}, Found: ${doublePushCount}`);
   return doublePushCount >= minRequired;
@@ -237,8 +231,8 @@ function getPawnPositions(game: Chess, color: 'white' | 'black'): string[] {
 
 function calculateMaterialDifference(fen: string): number {
   const pieceValues: { [key: string]: number } = {
-    'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9,
-    'P': -1, 'N': -3, 'B': -3, 'R': -5, 'Q': -9
+    'P': 1, 'N': 3, 'B': 3, 'R': 5, 'Q': 9,
+    'p': -1, 'n': -3, 'b': -3, 'r': -5, 'q': -9
   };
 
   return fen
