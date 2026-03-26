@@ -1158,10 +1158,11 @@ export const scenariosArray = [
       {
         name: 'Epic Failure',
         fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-        info: 'KBN vs K is a fairly rare endgame. A 2001 study showed that it happens in about 0.02% of games. Even so, it can be useful to study because the technique is hard to find OTB as this game shows. This game took place in Geneva, Switzerland in 2013. It was Round 4 in a FIDE Women Grand Prix tournament. The Women\'s World Chess Champion, Anna Ushenina, failed to mate with Knight and Bishop and her opponent claimed a draw due to the 50 move rule. The relevant part of the game starts at 72. Nxc3. Scroll through the moves and watch the video below. Move on to the next chapter when you\'re ready. www.youtube.com/watch?v=YFF5ibgB6eA',
+        info: 'KBN vs K is a fairly rare endgame. A 2001 study showed that it happens in about 0.02% of games. Even so, it can be useful to study because the technique is hard to find OTB as the game below shows. This game took place in Geneva, Switzerland in 2013. It was Round 4 in a FIDE Women Grand Prix tournament. The Women\'s World Chess Champion, Anna Ushenina, failed to mate with Knight and Bishop and her opponent claimed a draw due to the 50 move rule. The relevant part of the game starts at 72. Nxc3. Watch the video below to see how it unfolded, then click Continue to move on to the next lesson.',
         solution: null,
         goal: null,
         opponentConstraints: null,
+        videoUrl: 'https://www.youtube.com/watch?v=YFF5ibgB6eA',
       },
       {
         name: 'Restricting the king to the first triangle',

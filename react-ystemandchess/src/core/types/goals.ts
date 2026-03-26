@@ -106,4 +106,5 @@ export interface LessonData {
   goal?: Goal;
   maxMoves?: number;
   opponentConstraints?: OpponentConstraint[];
+  videoUrl?: string;
 }
