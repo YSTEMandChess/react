@@ -1868,54 +1868,84 @@ export const scenariosArray = [
     name: 'Underpromotion Promote - but not to a queen!',
     subSections: [
       {
-        name: 'Introduction',
-        fen: '7n/r4P1k/5b2/5N1p/8/1q6/PP6/K5R1 w - - 0 1',
-        info: 'Checkmate the opponent in 1 move. Underpromoting means promoting a pawn to a piece with a lower value than a queen (rook, bishop and knight). Underpromoting can be useful to deliver a checkmate, prevent a stalemate, prevent a checkmate or in certain cases, gain a material advantage.We usually underpromote to a bishop or rook only to prevent stalemate since the queen can move the same way as the two pieces combined, while underpromoting to a knight can be used for all the reasons stated above.'
+        name: "Introduction",
+        fen: "7n/r4P1k/5b2/5N1p/8/1q6/PP6/K5R1 w - - 0 1",
+        info: "Checkmate the opponent in 1 move. Underpromoting means promoting a pawn to a piece with a lower value than a queen (rook, bishop and knight). Underpromoting can be useful to deliver a checkmate, prevent a stalemate, prevent a checkmate or in certain cases, gain a material advantage.We usually underpromote to a bishop or rook only to prevent stalemate since the queen can move the same way as the two pieces combined, while underpromoting to a knight can be used for all the reasons stated above.",
+        solution: "f8=N#",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Underpromotion #1',
-        fen: '8/5P1k/8/7K/8/8/8/8 w - - 0 1',
-        info: 'Get a winning position in 1 move'
+        name: "Underpromotion #1",
+        fen: "8/5P1k/8/7K/8/8/8/8 w - - 0 1",
+        info: "Get a winning position in 1 move",
+        solution: "f8=R",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Underpromotion #2',
-        fen: '3B4/1P6/k7/8/8/5K2/8/8 w - - 0 1',
-        info: 'Get a winning position in 1 move'
+        name: "Underpromotion #2",
+        fen: "3B4/1P6/k7/8/8/5K2/8/8 w - - 0 1",
+        info: "Get a winning position in 1 move",
+        solution: "b8=R",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Underpromotion #3',
-        fen: '5r2/6Pk/5K2/8/8/8/8/8 w - - 0 1',
-        info: 'Get a winning position in 1 move'
+        name: "Underpromotion #3",
+        fen: "5r2/6Pk/5K2/8/8/8/8/8 w - - 0 1",
+        info: "Get a winning position in 1 move",
+        solution: "gxf8=R",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Underpromotion #4',
-        fen: '8/5P1p/6kr/7p/7P/5K2/8/8 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        name: "Underpromotion #4",
+        fen: "8/5P1p/6kr/7p/7P/5K2/8/8 w - - 0 1",
+        info: "Get a winning position in 2 moves",
+        solution: "f8=B Kf5 Bxh6",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Underpromotion #5',
-        fen: '8/8/8/8/2n5/k7/2p5/KB6 b - - 0 1',
-        info: 'Checkmate the opponent in 3 moves. In this position, promoting to a queen or rook would result in an immediate stalemate, and promoting to a knight would be insignificant. Therefore, the only winning move for black is to promote to a bishop.'
+        name: "Underpromotion #5",
+        fen: "8/8/8/8/2n5/k7/2p5/KB6 b - - 0 1",
+        info: "Checkmate the opponent in 3 moves. In this position, promoting to a queen or rook would result in an immediate stalemate, and promoting to a knight would be insignificant. Therefore, the only winning move for black is to promote to a bishop.",
+        solution: "Nd2 Ba2 c1=B Bb1 Bb2#",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Underpromotion #6',
-        fen: '4Q3/Pq4pk/5p1p/5P1K/6PP/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. Aron G Reshko - Oleg Kaminsky, 1972.'
+        name: "Underpromotion #6",
+        fen: "4Q3/Pq4pk/5p1p/5P1K/6PP/8/8/8 w - - 0 1",
+        info: "Safely promote your pawn. Aron G Reshko - Oleg Kaminsky, 1972.",
+        solution: "a8=B",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Underpromotion #7',
-        fen: '4r1k1/3q2P1/6Q1/8/6p1/6Pp/7P/5R1K w - - 0 1',
-        info: 'Get a winning position in 4 moves. In this position, white has a beautiful move combination that wins material, using underpromotion. Can you find this move combination?'
+        name: "Underpromotion #7",
+        fen: "4r1k1/3q2P1/6Q1/8/6p1/6Pp/7P/5R1K w - - 0 1",
+        info: "Get a winning position in 4 moves. In this position, white has a beautiful move combination that wins material, using underpromotion. Can you find this move combination?",
+        solution: "Qh7+ Kxh7 Rf8 Rxf8 gxf8=N+",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Underpromotion #8',
-        fen: '8/6PK/5k2/8/8/8/8/6r1 w - - 0 1',
-        info: 'Equalize in 2 moves. From Lawrence Day - Jan Timman, 1980.'
+        name: "Underpromotion #8",
+        fen: "8/6PK/5k2/8/8/8/8/6r1 w - - 0 1",
+        info: "Equalize in 2 moves. From Lawrence Day - Jan Timman, 1980.",
+        solution: "g8=N+ Rxg8 Kxg8",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Underpromotion #9',
-        fen: '3r4/k1P5/P7/1K6/8/8/8/8 w - - 0 1',
-        info: 'Get a winning position in 1 move. From Iroda Khamrakulova - Ekaterina Ubiennykh, 2001.'
+        name: "Underpromotion #9",
+        fen: "3r4/k1P5/P7/1K6/8/8/8/8 w - - 0 1",
+        info: "Get a winning position in 1 move. From Iroda Khamrakulova - Ekaterina Ubiennykh, 2001.",
+        solution: "cxd8=N",
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -1923,29 +1953,44 @@ export const scenariosArray = [
     name: 'Desperado A piece is lost, but it can still help',
     subSections: [
       {
-        name: 'Desperado #1',
-        fen: 'r3kb1r/pp3ppp/2N1pn2/q7/3P4/2N5/PP2bPPP/R1BQ1RK1 b - - 0 1',
-        info: 'Get a winning position in 2 moves. A desperado occurs when a piece is threatened or trapped but captures an opponent\'s piece before being captured itself, to gain as much material as possible, or alternatively when both sides have hanging pieces and we sacrifice a piece in order to gain more material at the end. From Julius Perlis - Savielly Tartakower, 1907.'
+        name: "Desperado #1",
+        fen: "r3kb1r/pp3ppp/2N1pn2/q7/3P4/2N5/PP2bPPP/R1BQ1RK1 b - - 0 1",
+        info: "Get a winning position in 2 moves. A desperado occurs when a piece is threatened or trapped but captures an opponent's piece before being captured itself, to gain as much material as possible, or alternatively when both sides have hanging pieces and we sacrifice a piece in order to gain more material at the end. From Julius Perlis - Savielly Tartakower, 1907.",
+        solution: "Qxc3 bxc3 Bxd1",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Desperado #2',
-        fen: 'r2q2rk/2p2p2/pb1p3p/1p1N4/3nP1nB/PB3P2/1P3P2/R2QRK2 w - - 0 1',
-        info: 'Get a winning position in 2 moves. From Magnus Carlsen - Levon Aronian, 2008.'
+        name: "Desperado #2",
+        fen: "r2q2rk/2p2p2/pb1p3p/1p1N4/3nP1nB/PB3P2/1P3P2/R2QRK2 w - - 0 1",
+        info: "Get a winning position in 2 moves. From Magnus Carlsen - Levon Aronian, 2008.",
+        solution: "Qxd4+ Bxd4 Bxd8",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Desperado #3',
-        fen: 'r5k1/ppp1p1rp/8/3P3Q/2nRPqb1/2N5/PP2N1P1/1K5R b - - 0 1',
-        info: 'Get a winning position in 3 moves. From Shakhriyar Mamedyarov - Igor Kurnosov, 2009.'
+        name: "Desperado #3",
+        fen: "r5k1/ppp1p1rp/8/3P3Q/2nRPqb1/2N5/PP2N1P1/1K5R b - - 0 1",
+        info: "Get a winning position in 3 moves. From Shakhriyar Mamedyarov - Igor Kurnosov, 2009.",
+        solution: "Qc1+ Kxc1 Bxh5 Rd2 Nxd2",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Desperado #4',
-        fen: 'r5rk/ppN2p1p/5PpQ/5q2/1p3Rn1/1P6/P5PP/3R1K2 w - - 0 1',
-        info: 'Get a winning position in 4 moves. From Peter Leko - Boris Gelfand, 2009.'
+        name: "Desperado #4",
+        fen: "r5rk/ppN2p1p/5PpQ/5q2/1p3Rn1/1P6/P5PP/3R1K2 w - - 0 1",
+        info: "Get a winning position in 4 moves. From Peter Leko - Boris Gelfand, 2009.",
+        solution: "Qg7+ Rxg7 fxg7+ Kg8 Rxf5 Ne3+ Ke2",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Desperado #5',
-        fen: '5rk1/3b2b1/4pnQp/1p1P4/p2BN2q/6P1/PPB2P2/6K1 b - - 0 1',
-        info: 'Get a winning position in 3 moves. From Vitaly Sergeevich Sherbakov - Semyon Furman, 1955.'
+        name: "Desperado #5",
+        fen: "5rk1/3b2b1/4pnQp/1p1P4/p2BN2q/6P1/PPB2P2/6K1 b - - 0 1",
+        info: "Get a winning position in 3 moves. From Vitaly Sergeevich Sherbakov - Semyon Furman, 1955.",
+        solution: "Qxe4 Qxg7+ Kxg7 Bxe4 Be8",
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -1953,29 +1998,44 @@ export const scenariosArray = [
     name: 'Counter Check Respond to a check with a check',
     subSections: [
       {
-        name: 'Counter-Check #1',
-        fen: 'k7/q7/Q7/3N4/8/8/8/6K1 w - - 0 1',
-        info: 'Checkmate the opponent in 2 moves. The Counter-Check is a powerful tactic that occurs when our king is in check, and we block that check while simultaneously giving a check to the opponent\'s king. This tactic can be useful to gain a tempo and eventually win the game, or to force trades. Daniel Abraham Yanofsky - Harry Golombek, 1951.'
+        name: "Counter-Check #1",
+        fen: "k7/q7/Q7/3N4/8/8/8/6K1 w - - 0 1",
+        info: "Checkmate the opponent in 2 moves. The Counter-Check is a powerful tactic that occurs when our king is in check, and we block that check while simultaneously giving a check to the opponent's king. This tactic can be useful to gain a tempo and eventually win the game, or to force trades. Daniel Abraham Yanofsky - Harry Golombek, 1951.",
+        solution: "Nb6+ Kb8 Qc8#",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Counter-Check #2',
-        fen: '8/6P1/8/8/1q2K3/8/5Q2/k7 w - - 0 1',
-        info: 'Get a winning position in 1 move.'
+        name: "Counter-Check #2",
+        fen: "8/6P1/8/8/1q2K3/8/5Q2/k7 w - - 0 1",
+        info: "Get a winning position in 1 move.",
+        solution: "Qd4+",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Counter-Check #3',
-        fen: '6r1/1p1np2k/p4b1p/q1pP4/2P1N3/4B3/PPQ4P/5RK1 w - - 0 1',
-        info: 'Checkmate the opponent in 3 moves. Use the Counter-Check tactic to win the game. Raimundo Garcia - Eduardo Figueroa, 1963.'
+        name: "Counter-Check #3",
+        fen: "6r1/1p1np2k/p4b1p/q1pP4/2P1N3/4B3/PPQ4P/5RK1 w - - 0 1",
+        info: "Checkmate the opponent in 3 moves. Use the Counter-Check tactic to win the game. Raimundo Garcia - Eduardo Figueroa, 1963.",
+        solution: "Ng5+ Kg7 Qh7+ Kf8 Qxf7#",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Counter-Check #4',
-        fen: '8/8/8/8/8/k5R1/2rn4/K7 b - - 55 94',
-        info: 'Get a winning position in 2 moves. From Jes West Knudsen - Bo Garner Christensen, 2004.'
+        name: "Counter-Check #4",
+        fen: "8/8/8/8/8/k5R1/2rn4/K7 b - - 55 94",
+        info: "Get a winning position in 2 moves. From Jes West Knudsen - Bo Garner Christensen, 2004.",
+        solution: "Nb3+ Rxb3+ Kxb3",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Counter-Check #5',
-        fen: '2b5/5Npp/p1P5/P1R4k/1p4r1/3r1pPK/4BP1P/7R b - - 1 31',
-        info: 'Get a winning position in 3 moves. Lajos Portisch - Jozsef Pinter, 1984.'
+        name: "Counter-Check #5",
+        fen: "2b5/5Npp/p1P5/P1R4k/1p4r1/3r1pPK/4BP1P/7R b - - 1 31",
+        info: "Get a winning position in 3 moves. Lajos Portisch - Jozsef Pinter, 1984.",
+        solution: "Rg5+ g4 Bxg4+ Kg3 fxe2+",
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -1983,29 +2043,44 @@ export const scenariosArray = [
     name: 'Undermining Remove the defending piece',
     subSections: [
       {
-        name: 'Undermining #1',
-        fen: '4rrk1/R5bp/3qp1p1/3p3n/2pB1P2/6PP/1P3PB1/3QR1K1 w - - 2 24',
-        info: 'Get a winning position in 1 move. Undermining occurs when we remove the defender of an important piece or square (usually by sacrificing a piece) to gain a material advantage or checkmate the opponent. From Johann Carlos Alvarez Marquez - Tomi Nyback, 2002.'
+        name: "Undermining #1",
+        fen: "4rrk1/R5bp/3qp1p1/3p3n/2pB1P2/6PP/1P3PB1/3QR1K1 w - - 2 24",
+        info: "Get a winning position in 1 move. Undermining occurs when we remove the defender of an important piece or square (usually by sacrificing a piece) to gain a material advantage or checkmate the opponent. From Johann Carlos Alvarez Marquez - Tomi Nyback, 2002.",
+        solution: "Qxh5",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Undermining #2',
-        fen: '1b3rk1/1p5p/8/1N1p4/P1nBn1q1/4P1P1/R4PKN/7Q b - - 1 30',
-        info: 'Checkmate the opponent in 3 moves. From Loek van Wely - Judit Polgar, 1997.'
+        name: "Undermining #2",
+        fen: "1b3rk1/1p5p/8/1N1p4/P1nBn1q1/4P1P1/R4PKN/7Q b - - 1 30",
+        info: "Checkmate the opponent in 3 moves. From Loek van Wely - Judit Polgar, 1997.",
+        solution: "Rxf2+ Rxf2 Qxg3+ Kf1 Qxf2#",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Undermining #3',
-        fen: '3qnrk1/1p3ppp/8/p4N2/8/P5QP/1P3PP1/4R1K1 w - - 0 1',
-        info: 'Get a winning position in 1 move'
+        name: "Undermining #3",
+        fen: "3qnrk1/1p3ppp/8/p4N2/8/P5QP/1P3PP1/4R1K1 w - - 0 1",
+        info: "Get a winning position in 1 move",
+        solution: "Rxe8",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Undermining #4',
-        fen: '1q3r1k/r4ppp/5n2/8/3Q1N2/p6R/PPP5/1K5R w - - 0 1',
-        info: 'Get a winning position in 1 move'
+        name: "Undermining #4",
+        fen: "1q3r1k/r4ppp/5n2/8/3Q1N2/p6R/PPP5/1K5R w - - 0 1",
+        info: "Get a winning position in 1 move",
+        solution: "Qxf6",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Undermining #5',
-        fen: '1q2rk2/1p3ppp/p4n2/2N5/1P6/6P1/P1Q3KP/5R2 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        name: "Undermining #5",
+        fen: "1q2rk2/1p3ppp/p4n2/2N5/1P6/6P1/P1Q3KP/5R2 w - - 0 1",
+        info: "Get a winning position in 2 moves",
+        solution: "Rxf6 Qc8 Rf3",
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -2013,29 +2088,44 @@ export const scenariosArray = [
     name: 'Clearance Get out of the way!',
     subSections: [
       {
-        name: 'Clearance #1',
-        fen: '4R3/2k5/3r1Np1/1p4K1/5P2/8/1n6/8 w - - 3 57',
-        info: 'Get a winning position in 2 moves. Clearance is a move that clears a square, file or diagonal for a follow-up tactical idea. Veselin Topalov - Peter Leko, 2006.'
+        name: "Clearance #1",
+        fen: "4R3/2k5/3r1Np1/1p4K1/5P2/8/1n6/8 w - - 3 57",
+        info: "Get a winning position in 2 moves. Clearance is a move that clears a square, file or diagonal for a follow-up tactical idea. Veselin Topalov - Peter Leko, 2006.",
+        solution: "Re2 Rd1 Rxb2",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Clearance #2',
-        fen: '8/k7/p1p5/2P1p3/1P2B3/P3P3/3K2p1/6n1 b - - 1 48',
-        info: 'Get a winning position in 2 moves. Loek van Wely - Shakhriyar Mamedyarov, 2004.'
+        name: "Clearance #2",
+        fen: "8/k7/p1p5/2P1p3/1P2B3/P3P3/3K2p1/6n1 b - - 1 48",
+        info: "Get a winning position in 2 moves. Loek van Wely - Shakhriyar Mamedyarov, 2004.",
+        solution: "Nf3+ Bxf3 g1=Q",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Clearance #3',
-        fen: '1k1r3r/ppqb4/5Ppp/3p4/P2np3/3BR1Q1/2PB1PPP/R5K1 w - - 0 23',
-        info: 'Get a winning position in 2 moves. Robert James Fischer - Samuel Schweber, 1970.'
+        name: "Clearance #3",
+        fen: "1k1r3r/ppqb4/5Ppp/3p4/P2np3/3BR1Q1/2PB1PPP/R5K1 w - - 0 23",
+        info: "Get a winning position in 2 moves. Robert James Fischer - Samuel Schweber, 1970.",
+        solution: "Rxe4 Qxg3 Rxd4",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Clearance #4',
-        fen: '5k1r/1p6/2b1pNpp/2q1P2N/5P1Q/pPp5/Pn4PK/4R3 w - - 0 40',
-        info: 'Get a winning position in 2 moves. Garry Kasparov - Evgeny Bareev, 2001.'
+        name: "Clearance #4",
+        fen: "5k1r/1p6/2b1pNpp/2q1P2N/5P1Q/pPp5/Pn4PK/4R3 w - - 0 40",
+        info: "Get a winning position in 2 moves. Garry Kasparov - Evgeny Bareev, 2001.",
+        solution: "Nd7+ Ke8 Nxc5",
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Clearance #5',
-        fen: '5r2/p2q1r1p/7k/3pQ1R1/5pbP/8/PP1B1PP1/4R1K1 w - - 3 28',
-        info: 'Checkmate the opponent in 2 moves. Louis Charles Mahe De La Bourdonnais - Alexander McDonnell, 1834.'
+        name: "Clearance #5",
+        fen: "5r2/p2q1r1p/7k/3pQ1R1/5pbP/8/PP1B1PP1/4R1K1 w - - 3 28",
+        info: "Checkmate the opponent in 2 moves. Louis Charles Mahe De La Bourdonnais - Alexander McDonnell, 1834.",
+        solution: "Rh5+ Kg6 Qg5#",
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -2043,59 +2133,92 @@ export const scenariosArray = [
     name: 'Key Squares Reach the key square',
     subSections: [
       {
-        name: 'Pawn on the 2nd rank',
-        fen: '8/8/8/1k6/8/4K3/2P5/8 w - - 0 1',
-        info: 'Safely promote your pawn. If the pawn is on the second, third, or fourth rank, there are three key squares – the square two squares in front of the pawn and the squares to the left and right of that square. Reach a key square with your king and win.'
+        name: "Pawn on the 2nd rank",
+        fen: "8/8/8/1k6/8/4K3/2P5/8 w - - 0 1",
+        info: "Safely promote your pawn. If the pawn is on the second, third, or fourth rank, there are three key squares – the square two squares in front of the pawn and the squares to the left and right of that square. Reach a key square with your king and win.",
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
-        name: 'Pawn on the 3rd rank',
-        fen: '4k3/8/8/8/8/1KP5/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. If the pawn is on the second, third, or fourth rank, there are three key squares – the square two squares in front of the pawn and the squares to the left and right of that square. Reach a key square with your king and win.'
+        name: "Pawn on the 3rd rank",
+        fen: "4k3/8/8/8/8/1KP5/8/8 w - - 0 1",
+        info: "Safely promote your pawn. If the pawn is on the second, third, or fourth rank, there are three key squares – the square two squares in front of the pawn and the squares to the left and right of that square. Reach a key square with your king and win.",
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
-        name: 'Pawn on the 4th rank',
-        fen: '8/8/k7/4K3/2P5/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. If the pawn is on the second, third, or fourth rank, there are three key squares – the square two squares in front of the pawn and the squares to the left and right of that square. Reach a key square with your king and win.'
+        name: "Pawn on the 4th rank",
+        fen: "8/8/k7/4K3/2P5/8/8/8 w - - 0 1",
+        info: "Safely promote your pawn. If the pawn is on the second, third, or fourth rank, there are three key squares – the square two squares in front of the pawn and the squares to the left and right of that square. Reach a key square with your king and win.",
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
-        name: 'Pawn on the 5th rank',
-        fen: '3k4/8/8/1KP5/8/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. If the pawn is on the fifth or sixth rank, there are six key squares: the square in front of the pawn and the squares to the left and right, as well as the square two squares in front of the pawn, and the squares to the left and right of it. Reach a key square with your king and win.'
+        name: "Pawn on the 5th rank",
+        fen: "3k4/8/8/1KP5/8/8/8/8 w - - 0 1",
+        info: "Safely promote your pawn. If the pawn is on the fifth or sixth rank, there are six key squares: the square in front of the pawn and the squares to the left and right, as well as the square two squares in front of the pawn, and the squares to the left and right of it. Reach a key square with your king and win.",
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
-        name: 'Pawn on the 6th rank',
-        fen: '2k5/8/1KP5/8/8/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. If the pawn is on the fifth or sixth rank, there are six key squares: the square in front of the pawn and the squares to the left and right, as well as the square two squares in front of the pawn, and the squares to the left and right of it. Reach a key square with your king and win.'
+        name: "Pawn on the 6th rank",
+        fen: "2k5/8/1KP5/8/8/8/8/8 w - - 0 1",
+        info: "Safely promote your pawn. If the pawn is on the fifth or sixth rank, there are six key squares: the square in front of the pawn and the squares to the left and right, as well as the square two squares in front of the pawn, and the squares to the left and right of it. Reach a key square with your king and win.",
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
-        name: 'Knight pawn on the 6th exception #1',
-        fen: 'k7/2K5/8/1P6/8/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. There is an exception to the key squares rule when a knight pawn is on its sixth rank, and the defending king is in the corner. Avoid the stalemate trick and win.'
+        name: "Knight pawn on the 6th exception #1",
+        fen: "k7/2K5/8/1P6/8/8/8/8 w - - 0 1",
+        info: "Safely promote your pawn. There is an exception to the key squares rule when a knight pawn is on its sixth rank, and the defending king is in the corner. Avoid the stalemate trick and win.",
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
-        name: 'Knight pawn on the 6th exception #2',
-        fen: '6k1/8/6K1/6P1/8/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn'
+        name: "Knight pawn on the 6th exception #2",
+        fen: "6k1/8/6K1/6P1/8/8/8/8 w - - 0 1",
+        info: "Safely promote your pawn",
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
-        name: 'Pawn on the 7th rank',
-        fen: '8/1kP1K3/8/8/8/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. When the pawn is on the seventh rank, the key squares are the squares on the seventh and eighth rank that touch the pawn\'s square. Reach a key square with your king and win.'
+        name: "Pawn on the 7th rank",
+        fen: "8/1kP1K3/8/8/8/8/8/8 w - - 0 1",
+        info: "Safely promote your pawn. When the pawn is on the seventh rank, the key squares are the squares on the seventh and eighth rank that touch the pawn's square. Reach a key square with your king and win.",
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
-        name: 'Rook pawn #1',
-        fen: '8/4k3/6K1/7P/8/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. An advanced rook pawn generally has two key squares: the two squares on the adjacent file that touch the promotion square. Reach a key square with your king and win.'
+        name: "Rook pawn #1",
+        fen: "8/4k3/6K1/7P/8/8/8/8 w - - 0 1",
+        info: "Safely promote your pawn. An advanced rook pawn generally has two key squares: the two squares on the adjacent file that touch the promotion square. Reach a key square with your king and win.",
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
-        name: 'Rook pawn #2',
-        fen: '8/8/8/8/pk6/8/3K4/8 w - - 0 1',
-        info: 'Hold the draw for 10 more moves. An advanced rook pawn generally has two key squares: the two squares on the adjacent file that touch the promotion square. Reach a key square and win. Prevent the black king from reaching a key square to draw the game.'
+        name: "Rook pawn #2",
+        fen: "8/8/8/8/pk6/8/3K4/8 w - - 0 1",
+        info: "Hold the draw for 10 more moves. An advanced rook pawn generally has two key squares: the two squares on the adjacent file that touch the promotion square. Reach a key square and win. Prevent the black king from reaching a key square to draw the game.",
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
       {
-        name: 'Any Key square by any route',
-        fen: '5k2/8/8/8/8/2P5/8/3K4 w - - 0 1',
-        info: 'Safely promote your pawn. With a king and pawn versus a lone king, it is important to get the attacking king to any key square and the path to a key square is not always direct. Reach a key square and win.'
+        name: "Any Key square by any route",
+        fen: "5k2/8/8/8/8/2P5/8/3K4 w - - 0 1",
+        info: "Safely promote your pawn. With a king and pawn versus a lone king, it is important to get the attacking king to any key square and the path to a key square is not always direct. Reach a key square and win.",
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
     ]
   },
