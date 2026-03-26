@@ -40,7 +40,6 @@ export function createMoveEvent(
         ? 'queenside'
         : undefined,
     fen: afterFen,
-    by: isPlayerMove ? 'player' : 'opponent'
   };
 }
 

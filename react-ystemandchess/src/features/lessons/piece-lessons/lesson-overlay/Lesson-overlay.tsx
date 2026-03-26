@@ -100,6 +100,8 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   const [boardOrientation, setBoardOrientation] = useState<"white" | "black">("white");
   const [name, setName] = useState("");
   const [info, setInfo] = useState("");
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [isInfoOnly, setIsInfoOnly] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isFading, setIsFading] = useState(false);
 
@@ -115,6 +117,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   // Popups
   const [showVPopup, setShowVPopup] = useState(false);
   const [showXPopup, setShowXPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("Game Over!")
   const [ShowError, setShowError] = useState(false);
   const [showLPopup, setShowLPopup] = useState(true);
   const [showInstruction, setShowInstruction] = useState(false);
@@ -384,6 +387,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     // Determine player color from FEN
     const turn = getTurnFromFEN(lessonData.startFen);
     setBoardOrientation(turn);
+    playerColorRef.current = turn;
 
     // Initialize game position
     gameRef.current = new Chess(lessonData.startFen);
@@ -392,6 +396,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     // Update lesson info
     setInfo(lessonData.info || "");
     setName(lessonData.name || "");
+    setVideoUrl(lessonData.videoUrl || null);
 
     // Determine lesson mode: puzzle (has solution) or free-play (has goal)
     const hasSolution = lessonData.solution && lessonData.solution.trim().length > 0;
@@ -401,6 +406,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
       // PUZZLE MODE: Exact move sequence required
       setIsPuzzleMode(true);
       setLessonGoal(null);
+      setIsInfoOnly(false);
 
       const parsedMoves = parsePGNSolution(lessonData.solution, turn, playerColorRef.current);
       setSolutionMoves(parsedMoves);
@@ -411,18 +417,20 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
       // FREE-PLAY MODE: Goal-based validation
       setIsPuzzleMode(false);
       setLessonGoal(lessonData.goal);
+      setIsInfoOnly(false);
       setSolutionMoves([]);
       setCurrentSolutionIndex(0);
 
       console.log('[Lesson Mode] Free-play mode - goal:', lessonData.goal);
     } else {
-      // LEGACY MODE: Fall back to text parsing (old lessons)
+      // INFO-ONLY MODE: No interaction required, student reads and continues
       setIsPuzzleMode(false);
       setLessonGoal(null);
+      setIsInfoOnly(true);
       setSolutionMoves([]);
       setCurrentSolutionIndex(0);
 
-      console.log('[Lesson Mode] Legacy mode - using text parsing');
+      console.log('[Lesson Mode] Info-only mode');
     }
 
     // Clear event log for new lesson
@@ -569,7 +577,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
     // Check if player's move matches expected move
     if (!movesMatch(move, expectedMove)) {
-      // Wrong move!
+      setPopupMessage("Wrong Move!")
       setShowXPopup(true);
       return;
     }
@@ -649,6 +657,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
           (playerColorRef.current === 'black' && turn === 'b');
 
         if (playerLost) {
+          setPopupMessage("Game Over!")
           setShowXPopup(true);
         }
       }
@@ -685,6 +694,13 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
       if (onChessMove) onChessMove(afterFen);
 
+      const moveCount = eventLogRef.current.getEvents().length;
+      if (lessonData?.maxMoves && moveCount > lessonData.maxMoves) {
+        setPopupMessage('Too many moves!');
+        setShowXPopup(true);
+        return;
+      }
+
       if (lessonGoal) {
         const context: EvaluationContext = {
           events: eventLogRef.current.getEvents(),
@@ -698,7 +714,6 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         const goalAchieved = evaluateGoal(lessonGoal, context);
 
         if (goalAchieved) {
-          console.log('🎉 Goal achieved!');
           setShowVPopup(true);
           return;
         }
@@ -716,6 +731,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
         if (playerWon) {
           setShowVPopup(true);
         } else {
+          setPopupMessage("Game Over!")
           setShowXPopup(true);
         }
         return;
@@ -832,8 +848,15 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   };
 
   const handleXPopup = () => {
+    setPopupMessage("Game Over!")
     setShowXPopup(false);
     handleReset();
+  };
+
+  const toAbsoluteUrl = (url: string): string => {
+    const markdownMatch = url.match(/\[.*?\]\((.*?)\)/);
+    const clean = markdownMatch ? markdownMatch[1] : url;
+    return clean.startsWith('http') ? clean : `https://${clean}`;
   };
 
   const promotePawn = (to: string, piece: string) => {
@@ -855,21 +878,23 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   return (
     <div className={styles.lessonContainer}>
       <div className={styles.buttonContainer}>
-        <div className={styles.controlButtonsWrapper}>
-          <button
-            className={styles.controlButton}
-            onClick={() => chessBoardRef.current?.flip()}
-          >
-            Flip board
-          </button>
-          <button
-            className={styles.controlButton}
-            onClick={undoMove}
-            disabled={moveHistory.length === 0}
-          >
-            {isPuzzleMode ? 'Reset' : 'Undo'}
-          </button>
-        </div>
+        {!isInfoOnly && (
+          <div className={styles.controlButtonsWrapper}>
+            <button
+              className={styles.controlButton}
+              onClick={() => chessBoardRef.current?.flip()}
+            >
+              Flip board
+            </button>
+            <button
+              className={styles.controlButton}
+              onClick={undoMove}
+              disabled={moveHistory.length === 0}
+            >
+              {isPuzzleMode ? 'Reset' : 'Undo'}
+            </button>
+          </div>
+        )}
         <div
           className={styles.switchLesson}
           onClick={() => {
@@ -900,6 +925,15 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
           </h1>
 
           <p className={styles.lessonDescription}>{info}</p>
+
+          {isInfoOnly && (
+            <button
+              className={styles.continueButton}
+              onClick={() => setShowVPopup(true)}
+            >
+              Continue
+            </button>
+          )}
 
           {/* Navigation buttons */}
           <div className={styles.prevNextContainer}>
@@ -938,21 +972,33 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
           {styleType !== 'profile' && <MoveTracker moves={moves} />}
         </div>
 
-        {/* Chessboard */}
-        <div className={`${styles.chessboardContainer} ${hidePieces ? styles.hidePieces : ""}`}>
-          <ChessBoard
-            mode="lesson"
-            ref={chessBoardRef}
-            fen={currentFEN}
-            orientation={boardOrientation}
-            lessonMoves={lessonData?.moves || []}
-            highlightSquares={highlightSquares}
-            onMove={handleMove}
-            onInvalidMove={handleInvalidMove}
-            onPromotion={promotePawn}
-            disabled={!socket.connected}
-          />
-        </div>
+        {/* Chessboard or video embed */}
+        {isInfoOnly && videoUrl ? (
+          <div className={styles.videoContainer}>
+            <div
+              className={styles.videoThumbnail}
+              onClick={() => window.open(toAbsoluteUrl(videoUrl), '_blank')}
+            >
+              <div className={styles.playButton}>▶</div>
+              <p className={styles.watchLabel}>Watch on YouTube</p>
+            </div>
+          </div>
+        ) : (
+          <div className={`${styles.chessboardContainer} ${hidePieces ? styles.hidePieces : ""}`}>
+            <ChessBoard
+              mode="lesson"
+              ref={chessBoardRef}
+              fen={currentFEN}
+              orientation={boardOrientation}
+              lessonMoves={lessonData?.moves || []}
+              highlightSquares={highlightSquares}
+              onMove={handleMove}
+              onInvalidMove={handleInvalidMove}
+              onPromotion={promotePawn}
+              disabled={!socket.connected}
+            />
+          </div>
+        )}
       </div>
 
       {/* POPUPS */}
@@ -984,8 +1030,8 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                 <path className={styles.checkmark} d="M35 60 L55 80 L85 40" fill="none" stroke="#beea8b" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <p className={styles.popupHeader}>Lesson completed</p>
-            <p className={styles.popupSubheading}>Good job</p>
+            <p className={styles.popupHeader}>Lesson completed!</p>
+            <p className={styles.popupSubheading}>Good job!</p>
             <button className={styles.popupButton} onClick={handleVPopup}>OK</button>
           </div>
         </div>
@@ -1002,7 +1048,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
                 <path d="M80 40 L40 80" fill="none" stroke="#f57c7c" strokeWidth="8" strokeLinecap="round" />
               </svg>
             </div>
-            <p className={styles.popupHeader}>Wrong move!</p>
+            <p className={styles.popupHeader}>{popupMessage}</p>
             <p className={styles.popupSubheading}>Please try again.</p>
             <button className={styles.popupButton} onClick={handleXPopup}>OK</button>
           </div>

@@ -187,6 +187,74 @@
   scrollbar-color: transparent transparent;
 }
 
+.videoContainer {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.videoThumbnail {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #1a1a1a;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 12px;
+  border: 2px solid #333;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: #f00;
+
+    .playButton {
+      background-color: #f00;
+    }
+  }
+}
+
+.playButton {
+  width: 70px;
+  height: 70px;
+  background-color: #333;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  color: #fff;
+  transition: background-color 0.2s;
+}
+
+.watchLabel {
+  color: #aaa;
+  font-size: 15px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.continueButton {
+  display: block;
+  margin-top: 12px;
+  padding: 10px 24px;
+  background-color: var(--green-color);
+  color: #333;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--dark-green-color);
+  }
+}
+
 .prevNextContainer {
   display: flex;
   justify-content: space-between;

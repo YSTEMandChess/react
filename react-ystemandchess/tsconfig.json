@@ -1,24 +1,25 @@
 {
   "compilerOptions": {
-    "jsx": "react-jsx", // JSX support for React
-    "target": "es5", // Target ECMAScript 5 for compatibility
-    "lib": ["dom", "es2015"], // Include DOM and ES2015 libraries
-    "esModuleInterop": true, // Enable ECMAScript module interoperability
-    "allowSyntheticDefaultImports": true, // Allow synthetic default imports
-    "module": "esnext", // Use the latest ES module system
-    "moduleResolution": "node", // Use Node.js module resolution strategy
-    "resolveJsonModule": true, // Allow importing JSON files
-    "noEmit": false, // Don't emit output (for type checking only)
-    "strict": false, // Disable strict type checking
+    "jsx": "react-jsx",
+    "target": "es5",
+    "lib": ["dom", "es2015"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "noEmit": false,
+    "strict": false,
+    "ignoreDeprecations": "6.0",
     "typeRoots": [
-      "node_modules/@types", // Include types from node_modules/@types
-      "src/types" // Custom types (if any) in the `src/types` folder
+      "node_modules/@types",
+      "src/types"
     ]
   },
-  "include": ["src/**/*", "src/lib", "babel.config.js"],
+  "include": ["src/**/*", "src/lib"],
   "exclude": [
-    "node_modules", // Exclude node_modules folder
-    "build", // Exclude build output folder (if any)
-    "dist" // Exclude dist folder (if any)
+    "node_modules",
+    "build",
+    "dist"
   ]
 }
