@@ -1246,51 +1246,66 @@ export const scenariosArray = [
       },
     ]
   },
+    //NOTE: Noah DeMent is working on this section, so the content is not finalized yet.
   {
     name: 'The Pin Pin it to win it',
     subSections: [
       {
-        name: 'Set up an absolute pin #1',
-        fen: '7k/8/8/4n3/4P3/8/8/6BK w - - 0 1',
-        info: 'Get a winning position in 2 moves. An absolute pin is when a piece is pinned to its king and can\'t move without exposing its king to a check from an opposing piece on the same line or diagonal. Pin the knight to win it.'
+        name: "Set up an absolute pin #1",
+        fen: "7k/8/8/4n3/4P3/8/8/6BK w - - 0 1",
+        info: "Get a winning position in 2 moves. An absolute pin is when a piece is pinned to its king and can't move without exposing its king to a check from an opposing piece on the same line or diagonal. Pin the knight to win it.",
+        solution: 'Bd4 Kg8 Bxe5',
       },
       {
-        name: 'Set up an absolute pin #2',
-        fen: '5k2/p1p2pp1/7p/2r5/8/1P3P2/PBP3PP/1K6 w - - 0 1',
-        info: 'Get a winning position in 2 moves. Can you set up an immediate absolute pin?'
+        name: "Set up an absolute pin #2",
+        fen: "5k2/p1p2pp1/7p/2r5/8/1P3P2/PBP3PP/1K6 w - - 0 1",
+        info: "Get a winning position in 2 moves. Can you set up an immediate absolute pin?",
+          solution: 'Ba3 Ke8 Bxc5',
       },
       {
-        name: 'Set up a relative pin #1',
-        fen: '1k6/ppp3q1/8/4r3/8/8/3B1PPP/R4QK1 w - - 0 1',
-        info: 'Get a winning position in 1 move. A relative pin is one where the piece shielded by the pinned piece is a piece other than the king, but it\'s typically more valuable than the pinned piece. Moving such a pinned piece is legal but may not be prudent, as the shielded piece would then be vulnerable to capture. Do you see the immediate relative pin?'
+        name: "Set up a relative pin #1",
+        fen: "1k6/ppp3q1/8/4r3/8/8/3B1PPP/R4QK1 w - - 0 1",
+        info: "Get a winning position in 1 move. A relative pin is one where the piece shielded by the pinned piece is a piece other than the king, but it's typically more valuable than the pinned piece. Moving such a pinned piece is legal but may not be prudent, as the shielded piece would then be vulnerable to capture. Do you see the immediate relative pin?",
+        // UPDATE: the best move is Bishop to c3.
+        solution: 'Bc3',
       },
       {
-        name: 'Exploit the pin #1',
-        fen: '4k3/6p1/5p1p/4n3/8/7P/5PP1/4R1K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves. Use your knowledge of pins to win a piece.'
+        name: "Exploit the pin #1",
+        fen: "4k3/6p1/5p1p/4n3/8/7P/5PP1/4R1K1 w - - 0 1",
+        info: "Get a winning position in 2 moves. Use your knowledge of pins to win a piece.",
+        solution: 'f4 Kf7 fxe5',
       },
       {
-        name: 'Exploit the pin #2',
-        fen: 'r4rk1/pp1p1ppp/1qp2n2/8/4P3/1P1P2Q1/PBP2PPP/R4RK1 w - - 0 1',
-        info: 'Get a winning position in 1 move. Use your knowledge of pins to win a piece.'
+        name: "Exploit the pin #2",
+        fen: "r4rk1/pp1p1ppp/1qp2n2/8/4P3/1P1P2Q1/PBP2PPP/R4RK1 w - - 0 1",
+        info: "Get a winning position in 1 move. Use your knowledge of pins to win a piece.",
+        solution: 'Bxf6',
       },
       {
-        name: 'Exploit the pin #3',
-        fen: '4r1r1/2p5/1p1kn3/p1p1R1p1/P6p/5N1P/1PP1R1PK/8 w - - 0 1',
-        info: 'Get a winning position in 1 move. Use your knowledge of pins to win a pawn. From Magnus Carlsen - Arkadij Naiditsch, 2009.'
+        name: "Exploit the pin #3",
+        fen: "4r1r1/2p5/1p1kn3/p1p1R1p1/P6p/5N1P/1PP1R1PK/8 w - - 0 1",
+        info: "Get a winning position in 1 move. Use your knowledge of pins to win a pawn. From Magnus Carlsen - Arkadij Naiditsch, 2009.",
+        solution: 'Nxg5',
+
       },
       {
-        name: 'Exploit the pin #4',
-        fen: '1r1n1rk1/ppq2p2/2b2bp1/2pB3p/2P4P/4P3/PBQ2PP1/1R3RK1 w - - 0 1',
-        info: 'Checkmate the opponent in 2 moves'
+        name: "Exploit the pin #4",
+        fen: "1r1n1rk1/ppq2p2/2b2bp1/2pB3p/2P4P/4P3/PBQ2PP1/1R3RK1 w - - 0 1",
+        info: "Checkmate the opponent in 2 moves",
+        goal: "CHECKMATE",
+        solution: 'Qxg6+ Kh8 Bxf6#',
+        // UPDATE: the best move is Queen to g6. Mate in two, with Bishop to f6 securing the win.
       },
       {
-        name: 'Exploit the pin #5',
-        fen: 'q5k1/5pp1/8/1pb1P3/2p4p/2P2r1P/1P3PQ1/1N3R1K b - - 0 1',
-        info: 'Get a winning position in 3 moves'
+        name: "Exploit the pin #5",
+        fen: "q5k1/5pp1/8/1pb1P3/2p4p/2P2r1P/1P3PQ1/1N3R1K b - - 0 1",
+        info: "Get a winning position in 3 moves",
+        solution: 'Kh2 Qe4 Nd2 Qxe5+ Kh1',
+        // UPDATE: this seems to be the best move, according to nextchessmove.com, but I could use some confirmation.
       },
     ]
   },
+    //NOTE: Noah DeMent is ALSO working on this section, so the content is not finalized yet.
   {
     name: 'The Skewer Yum - Skewers!',
     subSections: [
