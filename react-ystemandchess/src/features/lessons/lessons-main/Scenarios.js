@@ -1315,41 +1315,57 @@ export const scenariosArray = [
         name: 'Relative Skewer #1',
         fen: '8/1r3k2/2q1ppp1/8/5PB1/4P3/4QK2/5R2 w - - 0 1',
         info: 'Get a winning position in 2 moves. A skewer is an attack upon two pieces in a line and is similar to a pin. A skewer is sometimes described as a \'reverse pin\'; the difference is that in a skewer, the more valuable piece is in front of the piece of lesser value. If the piece being attacked is not a king, then it is a Relative Skewer.'
+        , solution: 'Bf3 Qc3 Bxb7',
+        goal: null
       },
       {
         name: 'Relative Skewer #2',
         fen: 'r2r2k1/2p2ppp/5n2/4p3/pB2P3/P2q3P/2R2PP1/2RQ2K1 w - - 0 1',
         info: 'Get a winning position in 2 moves'
+        , solution: 'Rd2 Qxd2 Bxd2',
+        goal: null
       },
       {
         name: 'Relative Skewer #3',
         fen: '4rr1k/ppqb2p1/3b4/2p2n2/2PpBP1P/PP4P1/2QBN3/R3K2R b KQ - 0 22',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Rxe4 Qxe4 Bc6 Qd3 Bxh1',
+        goal: null 
       },
       {
         name: 'Absolute Skewer #1',
         fen: '8/3qkb2/8/8/4KB2/5Q2/8/8 b - - 0 1',
-        info: 'Get a winning position in 2 moves. A skewer is an attack upon two pieces in a line and is similar to a pin. A skewer is sometimes described as a \'reverse pin\'; the difference is that in a skewer, the more valuable piece is in front of the piece of lesser value. If the piece being attacked is a king, then it is an Absolute Skewer. The king is said to be skewered.'
+        info: 'Get a winning position in 2 moves. A skewer is an attack upon two pieces in a line and is similar to a pin. A skewer is sometimes described as a \'reverse pin\'; the difference is that in a skewer, the more valuable piece is in front of the piece of lesser value. If the piece being attacked is a king, then it is an Absolute Skewer. The king is said to be skewered.' ,
+        solution: 'Bd5+ Ke3 Bxf3',
+        goal: null
       },
       {
         name: 'Absolute Skewer #2',
         fen: '2Q5/1p4q1/p4k2/6p1/P3b3/6BP/5PP1/6K1 w - - 4 51',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Be5+ Kxe5 Qc3+ Kd6 Qxg7',
+        goal: null
       },
       {
         name: 'Absolute Skewer #3',
         fen: '5Q2/2k2p2/3bqP2/R2p4/3P1p2/2p4P/2P3P1/7K w - - 1 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Qxf7+ Qxf7 Ra7+ Kd8 Rxf7',
+        goal: null
       },
       {
         name: 'Absolute Skewer #4',
         fen: '5k2/pp1b4/3N1pp1/3P4/2p5/q1P1QP2/5KP1/8 w - - 0 39',
-        info: 'Get a winning position in 4 moves.'
+        info: 'Get a winning position in 4 moves.',
+        solution: 'Qh6+ Ke7 Qg7+ Kxd6 Qf8+ Kxd5 Qxa3',
+        goal: null
       },
       {
         name: 'Absolute Skewer #5',
         fen: '6q1/6p1/2k4p/R6B/p7/8/2P3P1/2K5 w - - 0 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Ra8 Qxa8 Bf3+ Kb5 Bxa8',
+        goal: null
       },
     ]
   },
@@ -1359,82 +1375,114 @@ export const scenariosArray = [
       {
         name: 'Knight Fork #1',
         fen: '2q3k1/8/8/5N2/6P1/7K/8/8 w - - 0 1',
-        info: 'Get a winning position in 2 moves. A fork is a tactic whereby a single piece makes two or more direct attacks simultaneously. Most commonly two pieces are threatened, which is also sometimes called a double attack. The attacking piece is called the forking piece; the pieces attacked are said to be forked.'
+        info: 'Get a winning position in 2 moves. A fork is a tactic whereby a single piece makes two or more direct attacks simultaneously. Most commonly two pieces are threatened, which is also sometimes called a double attack. The attacking piece is called the forking piece; the pieces attacked are said to be forked.',
+        solution: 'Ne7+ Kf7 Nxc8',       
+        goal: null
       },
       {
         name: 'Knight Fork #2',
         fen: '6k1/5r1p/p2N4/nppP2q1/2P5/1P2N3/PQ5P/7K w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Qh8+ Kxh8 Nxf7+',     
+        goal: null
       },
       {
         name: 'Pawn Fork #1',
         fen: '7k/8/8/4b1n1/8/8/5PPP/5R1K w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'f4 Nf3 Rxf3 ',        
+        goal: null
       },
       {
         name: 'Pawn Fork #2',
         fen: 'r1bqkb1r/pppp1ppp/2n5/4p3/2B1N3/5N2/PPPP1PPP/R1BQK2R b KQkq - 0 2',
-        info: 'Equalize in 2 moves'
+        info: 'Equalize in 2 moves',
+        solution: 'd5 Bd3 dxe4',
+        goal: null
       },
       {
         name: 'Rook Fork #1',
         fen: '8/8/b5k1/8/8/8/1K6/3R4 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Rd6+ Kf5 Rxa6',       
+        goal: null
       },
       {
         name: 'Bishop Fork #1',
         fen: '5k2/8/8/8/8/r6P/5B2/6K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Bc5+ Kg8 Bxa3',       
+        goal: null
       },
       {
         name: 'Queen Fork #1',
         fen: '4k2r/2n2p1p/6p1/3n4/5Q2/8/5PPP/6K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Qe5+ Kd7 Qxh8',       
+        goal: null
       },
       {
         name: 'Double Attack #1',
         fen: 'r3k3/7p/6p1/5p2/5r2/2NP4/PPP2PPP/R5K1 w - - 0 1',
-        info: 'Get a winning position in 3 moves. A fork is often also called a double attack, because it usually attacks two targets. A fork can of course attack more than two targets, and the targets don\'t have to be pieces. Direct mating threats, or even an implied threat can also be excellent targets for a fork. In this position, you can fork an undefended piece and a second implied threat.'
+        info: 'Get a winning position in 3 moves. A fork is often also called a double attack, because it usually attacks two targets. A fork can of course attack more than two targets, and the targets don\'t have to be pieces. Direct mating threats, or even an implied threat can also be excellent targets for a fork. In this position, you can fork an undefended piece and a second implied threat.',
+        solution: 'Nd5 Rfa4 Nc7+ Kd7 Nxa8',
+        goal: null
       },
       {
         name: 'Double Attack #2',
         fen: '3r1k2/pp1n2pb/q1p1Qp2/2P2r2/3Pp1Np/P1P1B2P/6P1/1R1R2K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves. In this position, you can fork an undefended piece and a direct mate threat.'
+        info: 'Get a winning position in 2 moves. In this position, you can fork an undefended piece and a direct mate threat.',
+        solution: 'Nh6 Qc4 Qxc4',        
+        goal: null
       },
       {
         name: 'Fork Challenge #1 N',
         fen: '8/5pk1/8/4p3/pp1qPn2/5P2/PP2B3/2Q2K2 b - - 0 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Qg1+ Kxg1 Nxe2+ Kf2 Nxc1',
+        goal: null
       },
       {
         name: 'Fork Challenge #2 N',
         fen: '4k3/R4br1/8/p3P3/4N3/5K2/8/8 w - - 0 1',
-        info: 'Get a winning position in 4 moves.'
+        info: 'Get a winning position in 4 moves.',
+        solution: 'Nd6+ Kf8 Ra8+ Ke7 Nf5+ Ke6 Nxg7+',
+        goal: null
       },
       {
         name: 'Fork Challenge #3 N',
         fen: 'r5k1/ppp2p1p/6pB/4n2n/3bPp1q/2NB3P/PPP3PK/R2Q1R2 b - - 1 1',
-        info: 'Get a winning position in 4 moves.'
+        info: 'Get a winning position in 4 moves.',      
+        solution: 'f3 Rxf3 Ng4+ Kh1 Ng3+ Rxg3 Nf2+',
+        goal: null
       },
       {
         name: 'Fork Challenge #4 Q',
         fen: '8/1q6/p3p1k1/2P1Q2p/P3P2P/2P5/4r1PK/8 w - - 0 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Qg5+ Kf7 Qxh5+ Kg7 Qxe2',
+        goal: null
       },
       {
         name: 'Fork Challenge #5 Q',
         fen: '5Bk1/1b1r2p1/q4p1p/2Q5/2P5/6PP/P4P2/4R1K1 b - - 0 31',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Qe6 Qb4 Qxh3 Qxb7 Rxb7',
+        goal: null
       },
       {
         name: 'Fork Challenge #6 P',
         fen: 'r1bq1rk1/3np1bp/p2p1pp1/1PpP3n/4PP1B/2N2Q2/PP1N2PP/R3KB1R b KQ - 1 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Nxf4 Qxf4 g5 Qg3 gxh4',
+        goal: null
       },
       {
         name: 'Fork Challenge #7 P',
         fen: '4b1rr/4k1p1/4pp1n/pp1pP1RP/2pP1R2/P1P2B1N/2PK1P2/8 w - - 0 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',      
+        solution: 'Rxg7+ Rxg7 exf6+ Kf7 fxg7+',
+        goal: null
       },
     ]
   },
@@ -1444,22 +1492,30 @@ export const scenariosArray = [
       {
         name: 'Discovered Attacks #1',
         fen: '5q2/3k2pp/8/8/8/5N2/6PP/5RK1 w - - 0 1',
-        info: 'Get a winning position in 2 moves. A Discovered Attack is an attack that is revealed when one piece moves out of the way of another. Discovered Attacks can be extremely powerful, as the piece moved can make a threat independently of the piece it reveals. Like many chess tactics, they succeed because the opponent is unable to meet two threats at once. While typically the consequence of a discovered attack is the gain of material, they do not have to do this to be effective; the tactic can be used merely to gain a tempo.'
+        info: 'Get a winning position in 2 moves. A Discovered Attack is an attack that is revealed when one piece moves out of the way of another. Discovered Attacks can be extremely powerful, as the piece moved can make a threat independently of the piece it reveals. Like many chess tactics, they succeed because the opponent is unable to meet two threats at once. While typically the consequence of a discovered attack is the gain of material, they do not have to do this to be effective; the tactic can be used merely to gain a tempo.',
+        solution: 'Ne5+ Ke7 Rxf8',       
+        goal: null
       },
       {
         name: 'Discovered Check #1',
         fen: '5k2/3q2pp/8/8/8/5N2/6PP/5RK1 w - - 0 1',
-        info: 'Get a winning position in 2 moves. When a Discovered Attack is a check, it is called a Discovered Check.'
+        info: 'Get a winning position in 2 moves. When a Discovered Attack is a check, it is called a Discovered Check.',
+        solution: 'Ne5+ Ke8 Nxd7',       
+        goal: null
       },
       {
         name: 'Discovered Attacks #2',
         fen: 'r4k2/2r2pp1/7p/3P4/4B3/5N2/6PP/5RK1 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',  
+        solution: 'd6 Rd7 Bxa8',
+        goal: null
       },
       {
         name: 'Discovered Check #2',
         fen: 'r2q1bnr/pp2k1pp/3p1p2/1Bp1N1B1/8/2Pp4/PP3PPP/RN1bR1K1 w - - 0 12',
-        info: 'Checkmate the opponent in 2 moves'
+        info: 'Checkmate the opponent in 2 moves',
+        solution: 'Ng6+ Kf7 Nxh8#',      
+        goal: null
       },
       {
         name: 'Discovered Attacks #3',
@@ -1469,27 +1525,37 @@ export const scenariosArray = [
       {
         name: 'Discovered Check #3',
         fen: '3k4/7R/p2P4/2p1b3/8/2P3rB/P4r2/1K2R3 w - - 3 41',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Nxe4 fxe4 Bxd4+ Kh1 Qc3',
+        goal: null
       },
       {
         name: 'Discovered Attacks #4',
         fen: '8/8/4np2/4pk1p/RNr4P/P3KP2/1P6/8 w - - 1 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Nd5 Rxh4 Rxh4',       
+        goal: null
       },
       {
         name: 'Discovered Check #4',
         fen: 'r1bq2rk/1p1p4/p1n1pPQp/3n4/4N3/1N1Bb3/PPP3PP/R4R1K w - - 0 1',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves', 
+        solution: 'Qh7+ Kxh7 Ng5+ Kh8 Nf7#',
+        goal: null
       },
       {
         name: 'Discovered Attacks #5',
         fen: '8/1b1Q1ppk/p2bp2p/1p1q4/3Pp3/1P2B1P1/P6P/2R3K1 b - - 0 1',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Bf4 Qxd5 Bxe3+ Kf1 Bxd5',
+        goal: null
       },
       {
         name: 'Discovered Check #5',
         fen: '3r4/1R1P1k1p/1p1q2p1/1Pp5/2P5/6P1/4Q1KP/8 w - - 6 51',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Qe8+ Rxe8 d8=Q+ Qe7 Qxb6',
+        goal: null
       },
     ]
   },
@@ -1500,32 +1566,43 @@ export const scenariosArray = [
         name: 'Double Check Introduction',
         fen: '8/k1p5/1p6/5B2/N7/8/8/R5K1 w - - 0 1',
         info: 'Checkmate the opponent in 2 moves. A Double Check is when two pieces are delivering check simultaneously. A Double Check is generally more powerful than a normal check, because the opponent can only respond with a king move. (The pieces that are delivering check cannot both be captured or blocked with one move.)',
-        solution: 'Nc5+ Kb8 Nd7#',
+        solution: 'Nc5+ Kb8 Nd7#',       
+        goal: null
       },
       {
         name: 'Double Check #1',
         fen: 'r3k2r/ppp2pp1/2np4/2B1p2n/2B1P1Nq/3P4/PPP2PP1/RN1Q1RK1 b kq - 0 11',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Qh1+ Kxh1 Ng3+ Kg1 Rh1#',
+        goal: null
       },
       {
         name: 'Double Check #2',
         fen: 'rn2kb1r/pp2pp1p/2p2p2/8/8/3Q1N2/qPPB1PPP/2KR3R w kq - 0 13',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Qd8+ Kxd8 Ba5+ Ke8 Rd8#',
+        goal: null
       },
       {
         name: 'Double Check #3',
         fen: 'r4k2/pppb1Pp1/2np3p/2b5/2B2Bnq/2N5/PP2Q1PP/4RR1K w - - 6 17',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Qe8+ Bxe8 fxe8=Q+ Rxe8 Bxd6#',
+        goal: null
       },
       {
         name: 'Double Check #4',
         fen: '3r2k1/pp5p/6p1/2Ppq3/4Nr2/4B2b/PP2P2K/R1Q1R2B b - - 0 26',
-        info: 'Checkmate the opponent in 4 moves'
+        info: 'Checkmate the opponent in 4 moves',      
+        solution: 'Rf2+ Kxh3 Rh2+ Kg4 h5+ Kf3 dxe4#',
+        goal: null
       },
       {
         name: 'Double Check #5',
         fen: 'r3k2r/2q1np1p/p3P1p1/1p2p3/8/2PBB3/P1PR2PP/5RK1 w kq - 0 21',
-        info: 'Get a winning position in 5 moves'
+        info: 'Get a winning position in 5 moves',       
+        solution: 'exf7+ Kd7 Bf5+ Kc6 Be4+ Nd5 Bxd5+ Kd7 Bxa8+',
+        goal: null
       },
     ]
   },
@@ -1535,52 +1612,72 @@ export const scenariosArray = [
       {
         name: 'Overloaded #1',
         fen: '6k1/5pp1/4b1n1/8/8/3BR3/5PPP/6K1 w - - 0 1',
-        info: 'Get a winning position in 1 move. A piece is Overloaded (also known as \'overworked\') if it has more than one responsibility, e.g. defending a piece, defending a square, blocking a check, and blockading a piece. In this example, the f7 pawn has at least two responsibilities; it is protecting the bishop on e6, but it is also protecting the knight on g6. Can you exploit this double responsibility?'
+        info: 'Get a winning position in 1 move. A piece is Overloaded (also known as \'overworked\') if it has more than one responsibility, e.g. defending a piece, defending a square, blocking a check, and blockading a piece. In this example, the f7 pawn has at least two responsibilities; it is protecting the bishop on e6, but it is also protecting the knight on g6. Can you exploit this double responsibility?',
+        solution: 'Rxe6',
+        goal: null
       },
       {
         name: 'Overloaded #2',
         fen: '2r1rbk1/5pp1/3P1n2/8/8/3Q3P/2B2PPK/8 w - - 0 1',
-        info: 'Get a winning position in 1 move. In this example, the f6 knight has two responsibilities. One of those responsibilities is more important than the other. Can you exploit the situation?'
+        info: 'Get a winning position in 1 move. In this example, the f6 knight has two responsibilities. One of those responsibilities is more important than the other. Can you exploit the situation?',
+        solution: 'd7',
+        goal: null
       },
       {
         name: 'Overloaded #3',
         fen: '2b5/7p/3k2pP/1p1p1pP1/1P1P1K2/8/5P2/3B4 w - - 0 1',
-        info: 'Get a winning position in 4 moves'
+        info: 'Get a winning position in 4 moves',
+        solution: 'Bh5 Be6 Bxg6 Bg8 Bxf5 Ke7 Ke5',
+        goal: null
       },
       {
         name: 'Overloaded #4',
         fen: '3q3k/pp2b1pp/8/2P5/1P2RBQ1/2P5/P4rPp/7K w - - 2 29',
-        info: 'Get a winning position in 1 move'
+        info: 'Get a winning position in 1 move',
+        solution: 'Rxe7',
+        goal: null
       },
       {
         name: 'Overloaded #5',
         fen: '8/1Q1rkpp1/p3p3/3nB1r1/8/3q3P/PP3R2/K1R5 w - - 2 34',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Rxf7+ Kxf7 Qxd7+ Kg6 Qxg7+',
+        goal: null
       },
       {
         name: 'Overloaded #6',
         fen: '3r2k1/pb1r1pp1/1pn2q1p/3B4/6Q1/P4NP1/1P3PP1/3RR1K1 w - - 7 23',
-        info: 'Get a winning position in 4 moves'
+        info: 'Get a winning position in 4 moves',       
+        solution: 'Qxd7 Rxd7 Re8+ Kh7 Be4+ g6 Rxd7',
+        goal: null
       },
       {
         name: 'Overloaded #7',
         fen: '2Q5/1p3p1k/p2prPq1/8/7p/8/PP3RP1/6K1 w - - 0 1',
-        info: 'Get a winning position in 4 moves'
+        info: 'Get a winning position in 4 moves',
+        solution: 'Qxe6 fxe6 f7 Qxf7 Rxf7+ Kh8 Rf8+ Kh7',
+        goal: null
       },
       {
         name: 'Overloaded #8',
         fen: '5k1r/p4p2/3Np2p/3bP3/8/3RBPb1/1r4P1/2R3K1 w - - 0 1',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Rxd5 exd5 Nf5 Rb8 Nxg3',
+        goal: null
       },
       {
         name: 'Overloaded #9',
         fen: '3r2k1/1pp4p/p1n1q1p1/2Q5/1P2B3/P3P1Pb/3N1R1P/6K1 b - - 1 1',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Qxe4 Qf8+ Rxf8 Rxf8+ Kxf8',
+        goal: null
       },
       {
         name: 'Overloaded #10',
         fen: 'r7/2k1Pp1p/p1n2p2/P1b1r3/2p5/2P3P1/5P1P/1R1Q2K1 w - - 2 29',
-        info: 'Get a winning position in 4 moves'
+        info: 'Get a winning position in 4 moves',
+        solution: 'Rb7+ Kxb7 Qd7+ Kb8 e8=Q+ Rxe8 Qxe8+',
+        goal: null
       },
     ]
   },
