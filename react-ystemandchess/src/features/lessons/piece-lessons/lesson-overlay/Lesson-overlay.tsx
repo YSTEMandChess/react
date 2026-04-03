@@ -263,6 +263,23 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (
+      !isPuzzleMode &&
+      lessonGoal &&
+      stockfishConnected &&
+      !stockfishSessionStarted &&
+      stockfishSocketRef.current &&
+      lessonStartFENRef.current
+    ) {
+      console.log('[Stockfish] Starting session after lesson data available');
+      stockfishSocketRef.current.emit('start-session', {
+        sessionType: 'player-vs-computer',
+        fen: lessonStartFENRef.current,
+      });
+    }
+  }, [lessonGoal, stockfishConnected, stockfishSessionStarted, isPuzzleMode]);
+
 
   const handleStockfishMove = useCallback((move: string) => {
     try {

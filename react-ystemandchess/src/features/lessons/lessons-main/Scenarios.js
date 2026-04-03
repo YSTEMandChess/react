@@ -1314,15 +1314,15 @@ export const scenariosArray = [
       {
         name: 'Relative Skewer #1',
         fen: '8/1r3k2/2q1ppp1/8/5PB1/4P3/4QK2/5R2 w - - 0 1',
-        info: 'Get a winning position in 2 moves. A skewer is an attack upon two pieces in a line and is similar to a pin. A skewer is sometimes described as a \'reverse pin\'; the difference is that in a skewer, the more valuable piece is in front of the piece of lesser value. If the piece being attacked is not a king, then it is a Relative Skewer.'
-        , solution: 'Bf3 Qc3 Bxb7',
+        info: 'Get a winning position in 2 moves. A skewer is an attack upon two pieces in a line and is similar to a pin. A skewer is sometimes described as a \'reverse pin\'; the difference is that in a skewer, the more valuable piece is in front of the piece of lesser value. If the piece being attacked is not a king, then it is a Relative Skewer.', 
+        solution: 'Bf3 Qc3 Bxb7',
         goal: null
       },
       {
         name: 'Relative Skewer #2',
         fen: 'r2r2k1/2p2ppp/5n2/4p3/pB2P3/P2q3P/2R2PP1/2RQ2K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
-        , solution: 'Rd2 Qxd2 Bxd2',
+        info: 'Get a winning position in 2 moves', 
+        solution: 'Rd2 Qxd2 Bxd2',
         goal: null
       },
       {
@@ -2306,7 +2306,7 @@ export const scenariosArray = [
         fen: "8/8/8/8/pk6/8/3K4/8 w - - 0 1",
         info: "Hold the draw for 10 more moves. An advanced rook pawn generally has two key squares: the two squares on the adjacent file that touch the promotion square. Reach a key square and win. Prevent the black king from reaching a key square to draw the game.",
         solution: null,
-        goal: null,
+        goal: { type: 'SURVIVE', moves: 20 },
         opponentConstraints: null,
       },
       {

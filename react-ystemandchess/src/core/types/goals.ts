@@ -26,6 +26,10 @@ export type AtomicGoal =
   | {
     type: 'MATERIAL_ADVANTAGE';
     threshold: number;
+  }
+  | {
+    type: 'SURVIVE';
+    moves: number;
   };
 
 
