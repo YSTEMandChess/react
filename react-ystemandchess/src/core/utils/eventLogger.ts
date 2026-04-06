@@ -58,6 +58,10 @@ export class EventLog {
     this.events = [];
   }
 
+  popMove(): MoveEvent | undefined {
+    return this.events.pop();
+  }
+
   getPromotions(): MoveEvent[] {
     return this.events.filter(e => e.promotion);
   }

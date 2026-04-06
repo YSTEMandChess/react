@@ -15,6 +15,7 @@ export function useChessGameLogic() {
 
 	function resetLesson(startFen: string) {
 		setMoves([]);
+		prevFenRef.current = null;
 		currentFenRef.current = startFen;
 	}
 
@@ -34,5 +35,5 @@ export function useChessGameLogic() {
 		return fen.split(" ").slice(0, 3).join(" ");
 	}
 
-	return { moves, processMove, resetLesson, currentFenRef, prevFenRef };
+	return { moves, processMove, resetLesson, prevFenRef, currentFenRef };
 }

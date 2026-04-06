@@ -340,7 +340,8 @@
 
 .popupContent {
   width: 450px;
-  height: 250px;
+  min-height: 250px;
+  max-height: 85vh;
   background-color: white;
   border-radius: 10px;
   display: flex;
@@ -350,6 +351,7 @@
   padding: 30px;
   gap: 10px;
   text-align: center;
+  overflow-y: auto;
 }
 
 .popupButton {
@@ -407,8 +409,6 @@
 .popupSubheading {
   color: rgb(108, 107, 107);
   font-size: 20px;
-  max-height: 300px;
-  overflow: scroll;
 }
 
 .loadingSpinner {
@@ -590,7 +590,6 @@
 
   .popupSubheading {
     font-size: 18px;
-    max-height: 200px;
   }
 
   .moveList {
