@@ -5,22 +5,14 @@
  * It includes responsive design, dropdown menus, user authentication status,
  * and smooth animations. The navbar adapts its content based on user login
  * status and role permissions.
- * 
- * Features:
- * - Responsive design with mobile hamburger menu
- * - Animated dropdown menus for "About Us" section
- * - User authentication status display
- * - Role-based navigation options
- * - Smooth animations using Framer Motion
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import FullLogo from "../../assets/images/full_logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
-import "./NavBar.scss";
 import { SetPermissionLevel } from "../../globals";
 import { useCookies } from "react-cookie";
 
@@ -86,7 +78,6 @@ const NavBar = () => {
   const [profileDropdown, setProfileDropdown] = useState(false);        // User profile dropdown state
 
   // Navigation and user state variables
-  const [link, setLink] = useState("");          // Current active link (unused in current implementation)
   const [logged, setLogged] = useState(false);   // Whether user is currently logged in
   const [username, setUsername] = useState("");  // Current user's username
   const [role, setRole] = useState("");          // Current user's role (student, mentor, etc.)
@@ -192,26 +183,6 @@ const NavBar = () => {
   }, []); // Empty dependency array ensures this runs only once on mount
 
   /**
-   * Redirects user to the login page
-   * 
-   * This function performs a hard redirect to the login URL.
-   * Used when authentication is required but user is not logged in.
-   */
-  const redirectToURL = () => {
-    window.location.href = "/login";
-  };
-
-  /**
-   * Initializes navigation state
-   * 
-   * Sets the active link to home page. This function appears to be
-   * unused in the current implementation but may be for future use.
-   */
-  const init = () => {
-    setLink("/");
-  };
-
-  /**
    * Checks and updates user session information
    * 
    * This async function validates the user's authentication status
@@ -271,7 +242,7 @@ const NavBar = () => {
       {/* Programs page link */}
       <Link
         to="/programs"
-        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Programs
       </Link>
@@ -281,7 +252,7 @@ const NavBar = () => {
         {/* About Us dropdown trigger button */}
         <div
           onClick={toggleAboutUs}
-          className="flex items-center cursor-pointer justify-center text-gray-700 hover:text-black text-lg px-3 py-1 select-none"
+          className="flex items-center cursor-pointer justify-center px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
           aria-haspopup="true"
           aria-expanded={aboutUsDropDown}
           aria-controls="aboutus-menu"
@@ -290,7 +261,7 @@ const NavBar = () => {
           {/* Dropdown indicator icon that changes based on menu state */}
           <FontAwesomeIcon
             icon={aboutUsDropDown ? faCaretUp : faCaretDown}
-            className="ml-1"
+            className="ml-2 translate-y-[-1px]"
           />
         </div>
         
@@ -298,88 +269,88 @@ const NavBar = () => {
         {aboutUsDropDown && (
           <motion.div
             id="aboutus-menu"
-            className="absolute bg-white shadow-md p-4 z-20 mt-2 w-64 rounded-md"
+            className="absolute z-20 mt-3 w-64 rounded-md bg-background p-4 shadow-md"
             initial="parentInitial"
             animate="parentAnimate"
             variants={navbarVariants}
           >
             {/* Education section */}
-            <h3 className="font-bold mb-2 text-lg">Education</h3>
+            <h3 className="mb-2 text-md font-bold uppercase tracking-wide text-text-primary">Education</h3>
             <div className="flex flex-col gap-2">
               {/* Educational benefit pages */}
               <Link
                 to="/benefit-of-computer-science"
                 onClick={toggleAboutUs}
-                className="text-gray-700 hover:text-black text-base"
+                className="text-md text-text-secondary transition-colors hover:text-primary"
               >
                 Benefit of Computer Science
               </Link>
               <Link
                 to="/benefit-of-chess"
                 onClick={toggleAboutUs}
-                className="text-gray-700 hover:text-black text-base"
+                className="text-md text-text-secondary transition-colors hover:text-primary"
               >
                 Benefit of Chess
               </Link>
               <Link
                 to="/benefit-of-math-tutoring"
                 onClick={toggleAboutUs}
-                className="text-gray-700 hover:text-black text-base"
+                className="text-md text-text-secondary transition-colors hover:text-primary"
               >
                 Benefit of Math Tutoring
               </Link>
               <Link
                 to="/benefit-of-mentoring"
                 onClick={toggleAboutUs}
-                className="text-gray-700 hover:text-black text-base"
+                className="text-md text-text-secondary transition-colors hover:text-primary"
               >
                 Benefit of Mentoring
               </Link>
             </div>
 
             {/* What We Do section */}
-            <h3 className="font-bold mt-4 mb-2 text-lg">What We Do</h3>
+            <h3 className="mt-4 mb-2 text-md font-bold uppercase tracking-wide text-text-primary">What We Do</h3>
             <div className="flex flex-col gap-2">
               {/* Organizational information pages */}
               <Link
                 to="/online-expansion"
                 onClick={toggleAboutUs}
-                className="text-gray-700 hover:text-black text-base"
+                className="text-md text-text-secondary transition-colors hover:text-primary"
               >
                 Online Expansion
               </Link>
               <Link
                 to="/about-us"
                 onClick={toggleAboutUs}
-                className="text-gray-700 hover:text-black text-base"
+                className="text-md text-text-secondary transition-colors hover:text-primary"
               >
                 About Us
               </Link>
               <Link
                 to="/mission"
                 onClick={toggleAboutUs}
-                className="text-gray-700 hover:text-black text-base"
+                className="text-md text-text-secondary transition-colors hover:text-primary"
               >
                 Mission
               </Link>
               <Link
                 to="/financial"
                 onClick={toggleAboutUs}
-                className="text-gray-700 hover:text-black text-base"
+                className="text-md text-text-secondary transition-colors hover:text-primary"
               >
                 Financial
               </Link>
               <Link
                 to="/board"
                 onClick={toggleAboutUs}
-                className="text-gray-700 hover:text-black text-base"
+                className="text-md text-text-secondary transition-colors hover:text-primary"
               >
                 Board
               </Link>
               <Link
                 to="/sponsors&partners"
                 onClick={toggleAboutUs}
-                className="text-gray-700 hover:text-black text-base"
+                className="text-md text-text-secondary transition-colors hover:text-primary"
               >
                 Sponsors & Partners
               </Link>
@@ -391,31 +362,31 @@ const NavBar = () => {
       {/* Main navigation links */}
       <Link
         to="/mentor"
-        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Mentor
       </Link>
       <Link
         to="/learnings"
-        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Learn
       </Link>
       <Link
         to="/play"
-        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Play
       </Link>
       <Link
         to="/lessons-selection"
-        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Lessons
       </Link>
       <Link
         to="/puzzles"
-        className="text-gray-700 hover:text-black text-lg px-3 py-1"
+        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
       >
         Puzzles
       </Link>
@@ -424,7 +395,7 @@ const NavBar = () => {
       {!username && (
         <Link
           to="/login"
-          className="text-gray-700 hover:text-black text-lg px-3 py-1"
+          className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
         >
           Login
         </Link>
@@ -437,7 +408,7 @@ const NavBar = () => {
             {/* Profile dropdown trigger button showing username */}
             <button
               onClick={profileToggleDropdown}
-              className="bg-transparent flex items-center text-gray-700 hover:text-black text-lg px-3 py-1"
+              className="flex items-center gap-1 px-3 py-1 text-lg font-medium text-text-primary hover:text-primary"
               aria-haspopup="true"
               aria-expanded={profileDropdown}
               aria-controls="login-menu"
@@ -446,7 +417,7 @@ const NavBar = () => {
               {/* Dropdown indicator icon */}
               <FontAwesomeIcon
                 icon={profileDropdown ? faCaretUp : faCaretDown}
-                className="ml-1"
+                className="ml-1 translate-y-[-1px]"
               />
             </button>
 
@@ -454,7 +425,7 @@ const NavBar = () => {
             {profileDropdown && (
               <motion.div
                 id="login-menu"
-                className="absolute bg-white right-0 shadow-md mt-2 w-48 rounded-md p-3 z-20"
+                className="absolute bg-background right-0 shadow-md mt-2 w-48 rounded-md p-3 z-20"
                 initial="parentInitial"
                 animate="parentAnimate"
                 variants={navbarVariants}
@@ -464,7 +435,7 @@ const NavBar = () => {
                   <Link
                     to={`/${role}-profile`}
                     onClick={profileToggleDropdown}
-                    className="text-gray-700 hover:text-black text-base"
+                    className="text-md text-text-secondary transition-colors hover:text-primary"
                   >
                     Profile
                   </Link>
@@ -474,7 +445,7 @@ const NavBar = () => {
                     <Link
                       to="/parent-add-student"
                       onClick={profileToggleDropdown}
-                      className="text-gray-700 hover:text-black text-base"
+                      className="text-md text-text-secondary transition-colors hover:text-primary"
                     >
                       Add Student
                     </Link>
@@ -483,7 +454,7 @@ const NavBar = () => {
                   {/* Logout button */}
                   <button
                     onClick={logout}
-                    className="bg-transparent text-left text-gray-700 hover:text-black text-base"
+                    className="text-md text-text-secondary transition-colors hover:text-primary"
                   >
                     Log Out
                   </button>
@@ -512,9 +483,9 @@ const NavBar = () => {
    * @returns JSX element representing the complete navigation bar
    */
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
+    <header className="bg-background shadow-md sticky top-0 z-50">
       <div className="max-w-full mx-auto">
-        <div className="flex justify-between items-center h-24 lg:pr-8">
+        <div className="flex justify-between items-center h-24 pr-8">
           
           {/* Logo section - always visible, links to home page */}
           <div className="">
@@ -528,7 +499,7 @@ const NavBar = () => {
             <button
               ref={hamburgerRef}
               type="button"
-              className="text-gray-700 bg-transparent hover:text-black focus:outline-none"
+              className="text-text-primary hover:text-primary focus:outline-none"
               onClick={toggleMobileMenu}
               aria-label="Toggle menu"
             >
@@ -571,7 +542,7 @@ const NavBar = () => {
 
       {/* Mobile dropdown menu - conditionally rendered based on mobileMenuDropDown state */}
       {mobileMenuDropDown && (
-        <div ref={mobileMenuRef} className="md:hidden px-4 pb-4">
+        <div ref={mobileMenuRef} className="border-t border-border-light md:hidden px-4 py-4">
           {/* Mobile navigation using vertical layout */}
           <nav className="flex flex-col gap-4">{renderLinks()}</nav>
         </div>
