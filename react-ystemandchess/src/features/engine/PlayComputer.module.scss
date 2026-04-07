@@ -24,7 +24,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   padding: 3.5rem 3rem;
   border-radius: 20px;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25);
@@ -51,7 +50,6 @@
       transform: translateX(-50%);
       width: 60px;
       height: 4px;
-      background: linear-gradient(90deg, #7fcc26, #3a7cca);
       border-radius: 2px;
     }
   }
@@ -89,18 +87,15 @@
     overflow: hidden;
 
     &:first-child {
-      background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
       color: #1f2937;
       border-color: #d1d5db;
 
       &:hover {
-        background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
         transform: translateY(-3px);
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
       }
 
       &.active {
-        background: linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%);
         color: #111827;
         border-color: #7fcc26;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -109,18 +104,15 @@
     }
 
     &:last-child {
-      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
       color: #ffffff;
       border-color: #374151;
 
       &:hover {
-        background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
         transform: translateY(-3px);
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
       }
 
       &.active {
-        background: linear-gradient(135deg, #111827 0%, #000000 100%);
         color: #ffffff;
         border-color: #7fcc26;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -159,7 +151,6 @@
     }
 
     &.active {
-      background: linear-gradient(135deg, #3a7cca 0%, #2563eb 100%);
       color: white;
       border-color: #2563eb;
       box-shadow: 0 4px 16px rgba(58, 124, 202, 0.4);
@@ -181,7 +172,6 @@
 .startButton {
   width: 100%;
   padding: 1.4rem;
-  background: linear-gradient(135deg, #7fcc26 0%, #6fb31e 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -210,7 +200,6 @@
   }
 
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #6fb31e 0%, #5fa015 100%);
     transform: translateY(-3px);
     box-shadow: 0 8px 24px rgba(127, 204, 38, 0.45);
 
@@ -225,7 +214,6 @@
   }
 
   &:disabled {
-    background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
     cursor: not-allowed;
     box-shadow: none;
     transform: none;
@@ -366,7 +354,6 @@
 
     .move {
       padding: 0.5rem 1rem;
-      background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
       border-radius: 6px;
       font-size: 0.9rem;
       font-weight: 500;
@@ -375,7 +362,6 @@
       transition: all 0.2s ease;
 
       &:hover {
-        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
         border-color: #7fcc26;
         transform: translateY(-1px);
       }
@@ -388,14 +374,12 @@
   grid-template-columns: 40px 1fr 1fr;
   gap: 0.5rem;
   padding: 0.6rem 0.8rem;
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   align-items: center;
   transition: all 0.2s ease;
 
   &:hover {
-    background: linear-gradient(135deg, #e8f5e9 0%, #d1f0d3 100%);
     border-color: #7fcc26;
     transform: translateX(2px);
     box-shadow: 0 2px 8px rgba(127, 204, 38, 0.15);
@@ -456,7 +440,6 @@
 }
 
 .modal {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   padding: 50px 40px;
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
@@ -502,23 +485,19 @@
   }
 
   .primaryButton {
-    background: linear-gradient(135deg, #7fcc26 0%, #6fb31e 100%);
     color: white;
     box-shadow: 0 4px 15px rgba(127, 204, 38, 0.3);
 
     &:hover {
-      background: linear-gradient(135deg, #6fb31e 0%, #5fa015 100%);
       box-shadow: 0 6px 20px rgba(127, 204, 38, 0.4);
     }
   }
 
   .secondaryButton {
-    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
     color: #475569;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 
     &:hover {
-      background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
       color: #1e293b;
     }
   }
