@@ -11,8 +11,6 @@
  * - Partner organization logos
  */
 
-import React from "react";
-import "./Footer.css";
 import TwitterIcon from "../../assets/images/twitterIcon.svg";
 import InstagramIcon from "../../assets/images/instagramIcon.svg";
 import FacebookIcon from "../../assets/images/facebookIcon.svg";
@@ -26,6 +24,7 @@ import BoiseRescue from "../../assets/images/partners/boiseRescue.png";
 import BoysAndGirls from "../../assets/images/partners/boysAndGirls.png";
 import Possible from "../../assets/images/partners/possible.png";
 import Rotary from "../../assets/images/partners/Rotary.png";
+import "./Footer.css";
 
 /**
  * Footer component - displays contact info, social links, sponsors, and partners

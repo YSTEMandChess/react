@@ -6,21 +6,41 @@ module.exports = {
   darkMode: "class",
   theme: {
     extend: {
-      animation: {
-        shimmer: "shimmer 2s linear infinite",
-      },
-      keyframes: {
-        shimmer: {
-          from: {
-            backgroundPosition: "0 0",
-          },
-          to: {
-            backgroundPosition: "-200% 0",
-          },
+      colors: {
+        primary: "#7FCC26",
+        secondary: "#EAD94C",
+
+        background: {
+          DEFAULT: "#F9FAF7",
+          soft: "#E5F3D2",
         },
+
+        text: {
+          primary: "#1F1F1F",
+          secondary: "#5C5C5C",
+          muted: "#8A8A8A",
+        },
+
+        border: {
+          light: "#E0E0E0",
+        },
+
+        error: {
+          text: "#D64545",
+          background: "#f4cacaff",
+        },
+      },
+
+      fontFamily: {
+        sans: [
+          "Lato",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "sans-serif",
+        ],
       },
     },
   },
   plugins: [],
 }
-
