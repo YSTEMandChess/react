@@ -170,7 +170,7 @@ describe('NewStudentProfile', () => {
     await renderProfile();
 
     // check if name is rendered correctly
-    expect(await screen.findByText(/Hello, Mock Name!/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Hello Mock!/i)).toBeInTheDocument();
 
     // check if time spent is rendered
     expect(await screen.findByText(/Time Spent:/i)).toBeInTheDocument();
