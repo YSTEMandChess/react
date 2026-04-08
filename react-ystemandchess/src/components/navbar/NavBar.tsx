@@ -1,69 +1,44 @@
-/**
- * Navigation Bar Component
- * 
- * This component provides the main navigation interface for the application.
- * It includes responsive design, dropdown menus, user authentication status,
- * and smooth animations. The navbar adapts its content based on user login
- * status and role permissions.
- */
-
 import { useState, useEffect, useRef } from "react";
+import { useCookies } from "react-cookie";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import FullLogo from "../../assets/images/full_logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { SetPermissionLevel } from "../../globals";
-import { useCookies } from "react-cookie";
+import FullLogo from "../../assets/images/full_logo.png";
 
 /**
  * Animation variants configuration for Framer Motion
- * 
- * These variants define the animation states for dropdown menus and
- * other animated elements in the navigation bar. They provide smooth
- * transitions when menus appear and disappear.
  */
 const navbarVariants = {
-  // Initial state for parent containers (dropdown menus)
   parentInitial: {
-    opacity: 0,        // Start invisible
-    translateY: -25,   // Start 25px above final position
+    opacity: 0,
+    translateY: -25,
   },
   
-  // Animated state for parent containers
   parentAnimate: {
-    opacity: 1,        // Fade in to fully visible
-    translateY: -10,   // Move to 10px above final position
+    opacity: 1,
+    translateY: -10,
     transition: {
-      duration: 0.3,   // Animation duration in seconds
+      duration: 0.3,
     },
   },
 
-  // Initial state for child elements within dropdowns
   childInitial: {
-    opacity: 0,        // Start invisible
-    translateY: -25,   // Start 25px above final position
+    opacity: 0,
+    translateY: -25,
   },
   
-  // Animated state for child elements
   childAnimate: {
-    opacity: 1,        // Fade in to fully visible
-    translateY: 0,     // Move to final position
+    opacity: 1,
+    translateY: 0,
     transition: {
-      duration: 0.3,         // Animation duration in seconds
-      staggerChildren: 0.125, // Delay between child animations
+      duration: 0.3,
+      staggerChildren: 0.125,
     },
   },
 };
 
-/**
- * Main NavBar component function
- * 
- * This component manages the entire navigation bar state and behavior,
- * including user authentication, dropdown menus, and responsive design.
- * 
- * @returns JSX element representing the navigation bar
- */
 const NavBar = () => {
   // Cookie management hooks for handling user authentication tokens
   const [cookies, setCookie, removeCookie] = useCookies([
@@ -73,68 +48,35 @@ const NavBar = () => {
   ]);
 
   // State variables for managing dropdown menu visibility
-  const [mobileMenuDropDown, setMobileMenuDropDown] = useState(false);  // Mobile hamburger menu state
-  const [aboutUsDropDown, setAboutUsDropDown] = useState(false);        // "About Us" dropdown menu state
-  const [profileDropdown, setProfileDropdown] = useState(false);        // User profile dropdown state
+  const [mobileMenuDropDown, setMobileMenuDropDown] = useState(false);
+  const [aboutUsDropDown, setAboutUsDropDown] = useState(false);
+  const [profileDropdown, setProfileDropdown] = useState(false);
 
   // Navigation and user state variables
-  const [logged, setLogged] = useState(false);   // Whether user is currently logged in
-  const [username, setUsername] = useState("");  // Current user's username
-  const [role, setRole] = useState("");          // Current user's role (student, mentor, etc.)
+  const [logged, setLogged] = useState(false);
+  const [username, setUsername] = useState("");
+  const [role, setRole] = useState("");
 
   // Ref objects for managing click-outside behavior for dropdowns
-  // These refs allow us to detect clicks outside dropdown menus to close them
-  const aboutUsRef = useRef<any>(null);          // Reference to "About Us" dropdown container
-  const profileDropdownRef = useRef<any>(null);  // Reference to profile dropdown container
-  const mobileMenuRef = useRef<any>(null);       // Reference to mobile menu container
-  const hamburgerRef = useRef<any>(null);        // Reference to hamburger menu button
+  const aboutUsRef = useRef<any>(null);
+  const profileDropdownRef = useRef<any>(null);
+  const mobileMenuRef = useRef<any>(null);
+  const hamburgerRef = useRef<any>(null);
 
-  /**
-   * Toggles the mobile hamburger menu visibility
-   * 
-   * This function is called when the hamburger menu button is clicked
-   * on mobile devices. It toggles the dropdown menu state.
-   */
+
   const toggleMobileMenu = () => {
     setMobileMenuDropDown((prev) => !prev);
   };
 
-  /**
-   * Toggles the "About Us" dropdown menu visibility
-   * 
-   * This function controls the visibility of the "About Us" dropdown
-   * menu that contains links to various informational pages.
-   */
   const toggleAboutUs = () => {
     setAboutUsDropDown((prev) => !prev);
   };
 
-  /**
-   * Toggles the user profile dropdown menu visibility
-   * 
-   * This function controls the visibility of the user profile dropdown
-   * that appears when a logged-in user clicks on their username.
-   */
   const profileToggleDropdown = () => {
     setProfileDropdown((prevDropdown) => !prevDropdown);
   };
 
-  /**
-   * Effect hook for managing dropdown behavior and user session
-   * 
-   * This effect sets up event listeners for closing dropdowns when clicking
-   * outside of them, and initializes the user session check on component mount.
-   */
-  useEffect(() => {
-    /**
-     * Handles closing dropdowns when user clicks outside of them
-     * 
-     * This function checks if the click target is outside of the dropdown
-     * containers and closes the appropriate dropdowns if needed.
-     * 
-     * @param event - Mouse click event object
-     */
-    const closeDropdown = (event: { target: any }) => {
+  const closeDropdown = (event: { target: any }) => {
       // Close "About Us" dropdown if click is outside its container
       if (aboutUsRef.current && !aboutUsRef.current.contains(event.target)) {
         setAboutUsDropDown(false);
@@ -153,21 +95,13 @@ const NavBar = () => {
       }
     };
 
-    /**
-     * Handles closing the profile dropdown when user clicks outside
-     * 
-     * @param event - Mouse click event object
-     */
-    const closeProfileDropdown = (event: { target: any }) => {
-      // Close profile dropdown if click is outside its container
-      if (
-        profileDropdownRef.current &&
-        !profileDropdownRef.current.contains(event.target)
-      ) {
-        setProfileDropdown(false);
-      }
-    };
+  const closeProfileDropdown = (event: { target: any }) => {
+    if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+      setProfileDropdown(false);
+    }
+  };
 
+  useEffect(() => {
     // Check user authentication status on component mount
     checkSessionInfo();
 
@@ -182,13 +116,7 @@ const NavBar = () => {
     };
   }, []); // Empty dependency array ensures this runs only once on mount
 
-  /**
-   * Checks and updates user session information
-   * 
-   * This async function validates the user's authentication status
-   * using cookies and updates the component state with user information.
-   * It determines if the user is logged in and what role they have.
-   */
+
   async function checkSessionInfo() {
     // Default permission level for non-authenticated users
     let pLevel = "nLogged";
@@ -209,15 +137,7 @@ const NavBar = () => {
     }
   }
 
-  /**
-   * Logs out the current user
-   * 
-   * This function removes all authentication-related cookies and
-   * redirects the user to the login page. It performs a complete
-   * cleanup of the user session.
-   */
   const logout = () => {
-    // Remove all authentication and session cookies
     removeCookie("login");        // Remove JWT authentication token
     removeCookie("eventId");      // Remove current session event ID
     removeCookie("timerStatus");  // Remove timer status information
@@ -226,23 +146,13 @@ const NavBar = () => {
     window.location.pathname = "/login";
   };
 
-  /**
-   * Renders the navigation links for both desktop and mobile views
-   * 
-   * This function generates all the navigation links including:
-   * - Main navigation items (Programs, About Us, etc.)
-   * - Conditional authentication links (Login/Profile dropdown)
-   * - Role-based links for different user types
-   * - Animated dropdown menus with proper accessibility attributes
-   * 
-   * @returns JSX elements representing all navigation links
-   */
+
   const renderLinks = () => (
     <>
       {/* Programs page link */}
       <Link
         to="/programs"
-        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
         Programs
       </Link>
@@ -252,7 +162,7 @@ const NavBar = () => {
         {/* About Us dropdown trigger button */}
         <div
           onClick={toggleAboutUs}
-          className="flex items-center cursor-pointer justify-center px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
+          className="flex items-center cursor-pointer justify-center px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
           aria-haspopup="true"
           aria-expanded={aboutUsDropDown}
           aria-controls="aboutus-menu"
@@ -261,7 +171,7 @@ const NavBar = () => {
           {/* Dropdown indicator icon that changes based on menu state */}
           <FontAwesomeIcon
             icon={aboutUsDropDown ? faCaretUp : faCaretDown}
-            className="ml-2 translate-y-[-1px]"
+            className={`ml-2 ${aboutUsDropDown ? "translate-y-[2px]" : "translate-y-[-1px]"}`}
           />
         </div>
         
@@ -269,88 +179,86 @@ const NavBar = () => {
         {aboutUsDropDown && (
           <motion.div
             id="aboutus-menu"
-            className="absolute z-20 mt-3 w-64 rounded-md bg-background p-4 shadow-md"
+            className="absolute z-20 mt-3 w-64 rounded-md bg-light p-4 shadow-lg"
             initial="parentInitial"
             animate="parentAnimate"
             variants={navbarVariants}
           >
             {/* Education section */}
-            <h3 className="mb-2 text-md font-bold uppercase tracking-wide text-text-primary">Education</h3>
-            <div className="flex flex-col gap-2">
-              {/* Educational benefit pages */}
+            <h3 className="mb-2 text-base font-bold uppercase tracking-wide text-dark">Education</h3>
+            <div className="flex flex-col gap-3">
               <Link
                 to="/benefit-of-computer-science"
                 onClick={toggleAboutUs}
-                className="text-md text-text-secondary transition-colors hover:text-primary"
+                className="text-base text-gray transition-colors hover:text-primary"
               >
                 Benefit of Computer Science
               </Link>
               <Link
                 to="/benefit-of-chess"
                 onClick={toggleAboutUs}
-                className="text-md text-text-secondary transition-colors hover:text-primary"
+                className="text-base text-gray transition-colors hover:text-primary"
               >
                 Benefit of Chess
               </Link>
               <Link
                 to="/benefit-of-math-tutoring"
                 onClick={toggleAboutUs}
-                className="text-md text-text-secondary transition-colors hover:text-primary"
+                className="text-base text-gray transition-colors hover:text-primary"
               >
                 Benefit of Math Tutoring
               </Link>
               <Link
                 to="/benefit-of-mentoring"
                 onClick={toggleAboutUs}
-                className="text-md text-text-secondary transition-colors hover:text-primary"
+                className="text-base text-gray transition-colors hover:text-primary"
               >
                 Benefit of Mentoring
               </Link>
             </div>
 
             {/* What We Do section */}
-            <h3 className="mt-4 mb-2 text-md font-bold uppercase tracking-wide text-text-primary">What We Do</h3>
+            <h3 className="mt-4 mb-2 text-base font-bold uppercase tracking-wide text-dark">What We Do</h3>
             <div className="flex flex-col gap-2">
-              {/* Organizational information pages */}
               <Link
                 to="/online-expansion"
                 onClick={toggleAboutUs}
-                className="text-md text-text-secondary transition-colors hover:text-primary"
+                className="text-base text-gray transition-colors hover:text-primary"
               >
                 Online Expansion
               </Link>
               <Link
                 to="/about-us"
                 onClick={toggleAboutUs}
-                className="text-md text-text-secondary transition-colors hover:text-primary"
+                className="text-base text-gray transition-colors hover:text-primary"
               >
                 About Us
               </Link>
               <Link
                 to="/mission"
                 onClick={toggleAboutUs}
-                className="text-md text-text-secondary transition-colors hover:text-primary"
+                className="text-base text-gray transition-colors hover:text-primary"
               >
                 Mission
               </Link>
               <Link
                 to="/financial"
                 onClick={toggleAboutUs}
-                className="text-md text-text-secondary transition-colors hover:text-primary"
+                className="text-base text-gray transition-colors hover:text-primary"
               >
                 Financial
               </Link>
               <Link
                 to="/board"
                 onClick={toggleAboutUs}
-                className="text-md text-text-secondary transition-colors hover:text-primary"
+                className="text-base text-gray transition-colors hover:text-primary"
               >
                 Board
               </Link>
               <Link
                 to="/sponsors&partners"
                 onClick={toggleAboutUs}
-                className="text-md text-text-secondary transition-colors hover:text-primary"
+                className="text-base text-gray transition-colors hover:text-primary"
               >
                 Sponsors & Partners
               </Link>
@@ -362,31 +270,31 @@ const NavBar = () => {
       {/* Main navigation links */}
       <Link
         to="/mentor"
-        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
         Mentor
       </Link>
       <Link
         to="/learnings"
-        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
         Learn
       </Link>
       <Link
         to="/play"
-        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
         Play
       </Link>
       <Link
         to="/lessons-selection"
-        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
         Lessons
       </Link>
       <Link
         to="/puzzles"
-        className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
+        className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
         Puzzles
       </Link>
@@ -395,7 +303,7 @@ const NavBar = () => {
       {!username && (
         <Link
           to="/login"
-          className="px-3 text-lg font-medium text-text-primary transition-colors hover:text-primary"
+          className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
         >
           Login
         </Link>
@@ -408,7 +316,7 @@ const NavBar = () => {
             {/* Profile dropdown trigger button showing username */}
             <button
               onClick={profileToggleDropdown}
-              className="flex items-center gap-1 px-3 py-1 text-lg font-medium text-text-primary hover:text-primary"
+              className="flex items-center gap-1 px-3 py-1 text-lg font-medium text-dark hover:text-primary"
               aria-haspopup="true"
               aria-expanded={profileDropdown}
               aria-controls="login-menu"
@@ -417,7 +325,7 @@ const NavBar = () => {
               {/* Dropdown indicator icon */}
               <FontAwesomeIcon
                 icon={profileDropdown ? faCaretUp : faCaretDown}
-                className="ml-1 translate-y-[-1px]"
+                className={`ml-1 ${profileDropdown ? "translate-y-[2px]" : "translate-y-[-1px]"}`}
               />
             </button>
 
@@ -425,7 +333,7 @@ const NavBar = () => {
             {profileDropdown && (
               <motion.div
                 id="login-menu"
-                className="absolute bg-background right-0 shadow-md mt-2 w-48 rounded-md p-3 z-20"
+                className="absolute bg-light right-0 shadow-lg mt-2 w-48 rounded-lg p-3 z-20"
                 initial="parentInitial"
                 animate="parentAnimate"
                 variants={navbarVariants}
@@ -435,7 +343,7 @@ const NavBar = () => {
                   <Link
                     to={`/${role}-profile`}
                     onClick={profileToggleDropdown}
-                    className="text-md text-text-secondary transition-colors hover:text-primary"
+                    className="text-base text-gray transition-colors hover:text-primary"
                   >
                     Profile
                   </Link>
@@ -445,7 +353,7 @@ const NavBar = () => {
                     <Link
                       to="/parent-add-student"
                       onClick={profileToggleDropdown}
-                      className="text-md text-text-secondary transition-colors hover:text-primary"
+                      className="text-base text-gray transition-colors hover:text-primary"
                     >
                       Add Student
                     </Link>
@@ -454,7 +362,7 @@ const NavBar = () => {
                   {/* Logout button */}
                   <button
                     onClick={logout}
-                    className="text-md text-text-secondary transition-colors hover:text-primary"
+                    className="text-base text-gray transition-colors hover:text-primary"
                   >
                     Log Out
                   </button>
@@ -467,39 +375,22 @@ const NavBar = () => {
     </>
   );
 
-  /**
-   * Main render method for the NavBar component
-   * 
-   * This renders the complete navigation bar structure including:
-   * - Logo section with home page link
-   * - Desktop navigation menu (hidden on mobile)
-   * - Mobile hamburger menu button (hidden on desktop)
-   * - Mobile dropdown menu (conditionally rendered)
-   * 
-   * The component uses responsive design classes to show/hide elements
-   * based on screen size and provides a consistent navigation experience
-   * across all device types.
-   * 
-   * @returns JSX element representing the complete navigation bar
-   */
   return (
-    <header className="bg-background shadow-md sticky top-0 z-50">
+    <header className="bg-light border-b-2 border-dark sticky top-0 z-50">
       <div className="max-w-full mx-auto">
         <div className="flex justify-between items-center h-24 pr-8">
           
           {/* Logo section - always visible, links to home page */}
-          <div className="">
-            <Link to="/">
-              <img src={FullLogo} alt="YSTEM Logo" className="h-24 w-auto" />
-            </Link>
-          </div>
+          <Link to="/">
+            <img src={FullLogo} alt="YSTEM Logo" className="h-20 pl-4 w-auto" />
+          </Link>
 
           {/* Mobile hamburger menu button - only visible on mobile devices */}
           <div className="flex md:hidden">
             <button
               ref={hamburgerRef}
               type="button"
-              className="text-text-primary hover:text-primary focus:outline-none"
+              className="text-dark hover:text-primary focus:outline-none"
               onClick={toggleMobileMenu}
               aria-label="Toggle menu"
             >
@@ -542,7 +433,7 @@ const NavBar = () => {
 
       {/* Mobile dropdown menu - conditionally rendered based on mobileMenuDropDown state */}
       {mobileMenuDropDown && (
-        <div ref={mobileMenuRef} className="border-t border-border-light md:hidden px-4 py-4">
+        <div ref={mobileMenuRef} className="border-t border-light md:hidden px-4 py-4">
           {/* Mobile navigation using vertical layout */}
           <nav className="flex flex-col gap-4">{renderLinks()}</nav>
         </div>
