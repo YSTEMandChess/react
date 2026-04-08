@@ -1,38 +1,76 @@
-/**
- * Home Page Component
- * 
- * This is the main landing page component for the Y STEM and Chess application.
- * It serves as the entry point for visitors and provides an overview of the
- * organization's mission, featured content, and calls-to-action.
- * 
- * Features:
- * - Hero section with organization branding
- * - Featured books and publications
- * - Donation and purchase functionality
- * - Navigation to other sections of the site
- * - Responsive design for all device types
- */
-
-import "./Home.css";
-import Images from "../../assets/images/imageImporter";
 import { useNavigate } from "react-router";
+import Book1 from "../../assets/images/book-howtostart.png";
+import Book2 from "../../assets/images/book-thezerodollar.png";
+import TreesGroup from "../../assets/images/Trees-Group.png";
+import LogoLineBr from "../../assets/images/LogoLineBreak.png";
+import Heart from "../../assets/images/heart-regular.svg";
+import Gem from "../../assets/images/gem-regular.svg";
+import LargeInfo from "../../assets/images/large_info.png";
+import ChessGroup from "../../assets/images/chessGroup.png";
+import Ventive from "../../assets/images/sponsors/ventive.png";
+import Kount from "../../assets/images/sponsors/kount.png";
+import IdahoCentral from "../../assets/images/sponsors/idahoCentral.jpg";
+import PH from "../../assets/images/sponsors/PH.png";
+import BoiseRescue from "../../assets/images/partners/boiseRescue.png";
+import BoysAndGirls from "../../assets/images/partners/boysAndGirls.png";
+import Possible from "../../assets/images/partners/possible.png";
+import BoiseDistrict from "../../assets/images/partners/boiseDistrict.png";
+import Rotary from "../../assets/images/partners/Rotary.png";
 
-/**
- * Static data for featured books displayed on the home page
- * 
- * This array contains information about the organization's published books,
- * including cover images, titles, subtitles, and descriptions. The data
- * is used to render book cards with purchase functionality.
- * 
- * Each book object contains:
- * - image: Reference to the book cover image
- * - title: Main book title
- * - subtitle: Descriptive subtitle
- * - description: Detailed book description for marketing
- */
+const sponsors = [
+  {
+    name: "Ventive",
+    logo: Ventive,
+    href: "https://www.getventive.com",
+  },
+  {
+    name: "Kount",
+    logo: Kount,
+    href: "https://kount.com",
+  },
+  {
+    name: "Idaho Central",
+    logo: IdahoCentral,
+    href: "https://iccu.com",
+  },
+  {
+    name: "PH",
+    logo: PH,
+    href: "https://partnerhero.com",
+  },
+];
+
+const partners = [
+  {
+    name: "Boise Rescue Mission",
+    logo: BoiseRescue,
+    href: "https://boiserm.org",
+  },
+  {
+    name: "Boys and Girls Clubs of Ada County",
+    logo: BoysAndGirls,
+    href: "https://adaclubs.org",
+  },
+  {
+    name: "Everything's Possible",
+    logo: Possible,
+    href: "https://www.boiseschools.org",
+  },
+  {
+    name: "Boise District Community Schools",
+    logo: BoiseDistrict,
+    href: "https://community-schools.boiseschools.org",
+  },
+  {
+    name: "Boise Sunrise Rotary Club",
+    logo: Rotary,
+    href: "https://portal.clubrunner.ca/3864",
+  }
+];
+
 const books = [
   {
-    image: Images.Book1,
+    image: Book1,
     title: "How to Start a Tech-Based Nonprofit",
     subtitle:
       "Bridging the Opportunity Gap: Building a STEM Nonprofit to Change the Trajectory of Underserved Children's Lives",
@@ -40,7 +78,7 @@ const books = [
       "How to start tech-based Nonprofit details the steps of Devin Nakano as he builds Y STEM and Chess (YSC) Inc. The first in its series covers the first 4 years of YSC. Each chapter brings unique perspective of an entrepreneur building a nonprofit that uses technology to fulfill the Company Mission.",
   },
   {
-    image: Images.Book2,
+    image: Book2,
     title: "The Zero Dollar Workforce",
     subtitle: "Hire a Team, Run Your Company, and Don't Spend Any Money",
     description:
@@ -48,224 +86,264 @@ const books = [
   },
 ];
 
-/**
- * Main Home page component
- * 
- * This component renders the landing page with featured content, donation
- * options, and book purchases. It serves as the main entry point for
- * visitors to learn about the organization and take action.
- * 
- * @returns JSX element representing the complete home page
- */
+
 const Home = () => {
-  // Hook for programmatic navigation between pages
   const navigate = useNavigate();
 
-  /**
-   * Handles donation button click events
-   * 
-   * This function redirects users to the external donation platform
-   * (DonorBox) where they can make contributions to support the
-   * organization's mission and programs.
-   * 
-   * Uses window.location.href for external navigation to ensure
-   * proper handling of the third-party donation platform.
-   */
   const handleDonateButton = () => {
     window.location.href =
       "https://donorbox.org/y-stem-and-chess-inc-learning-platform";
   };
 
-  /**
-   * Handles book purchase button click events
-   * 
-   * This function opens the appropriate Amazon product page in a new tab
-   * based on the book title provided. It supports multiple books and
-   * can be easily extended for additional publications.
-   * 
-   * @param title - The title of the book to purchase (optional)
-   * 
-   * Supported books:
-   * - "How to Start a Tech-Based Nonprofit"
-   * - "The Zero Dollar Workforce"
-   */
   const handleBuyNow = (title = "") => {
-    // Handle purchase for "How to Start a Tech-Based Nonprofit"
     if (title === "How to Start a Tech-Based Nonprofit") {
       window.open(
         "https://www.amazon.com/How-Start-Tech-based-Nonprofit-Opportunity/dp/B0C4MML5WG",
-        "_blank"  // Open in new tab to preserve user's current session
+        "_blank"
       );
     }
 
-    // Handle purchase for "The Zero Dollar Workforce"
     if (title === "The Zero Dollar Workforce") {
       window.open(
         "https://www.amazon.com/Zero-Dollar-Workforce-Company-Spend/dp/B09NGVLQSS",
-        "_blank"  // Open in new tab to preserve user's current session
+        "_blank"
       );
     }
   };
+
   return (
-    <div role="main" className="home-container">
-      <div className="home-content1" role="region">
-        <div className="info">
-          <h1 id="h1-home">
-            Helping your child develop <br />
-            critical thinking skills!
+    <div role="main" className="w-full h-auto mt-2">
+      {/* HERO SECTION */}
+      <div role="region" className="w-full max-w-7xl mx-auto flex flex-col md:flex-row gap-8 mb-1 px-6 md:px-8 py-10">
+        <div className="w-full md:w-1/2 flex justify-center items-center flex-col gap-6">
+          <h1 className="text-3xl md:text-4xl text-left w-full text-dark font-bold pt-8">
+            <span className="block leading-relaxed">
+              Helping your child develop
+            </span>
+            <span className="block leading-relaxed">
+              critical thinking skills!
+            </span>
           </h1>
 
-          <p>
-            We are a nonprofit organization empowering <br></br>children to find
-            their own success in STEM through <br></br>Chess, Math and Computer
+          <p className="text-xl md:text-2xl/10 pt-2 text-left w-full text-gray">
+            We are a nonprofit organization empowering children <br /> to find
+            their own success in STEM <br /> through Chess, Math and Computer
             Science.
           </p>
 
-          {/* <button className="donate-button" onClick={handleDonateButton}> */}
-          {/* <strong>Donate</strong> */}
-          {/* </button> */}
-
           <button
-            className="donateButton"
+            className="btn-primary mt-4 self-start"
+            onClick={handleDonateButton}
             aria-label="Donate to Y STEM and Chess"
           >
             Donate
           </button>
         </div>
-        <div className="pic">
+
+        <div className="w-full md:w-1/2 flex items-center justify-center">
           <img
-            src={Images.TreesGroup}
-            id="tree-group-img"
+            src={TreesGroup}
             alt="Group of Y STEM mascots playing chess"
-          ></img>
+            className="w-full h-full object-contain"
+          />
         </div>
       </div>
 
+      {/* LOGO BREAK */}
       <img
-        src={Images.LogoLineBr}
-        className="logo-break"
+        src={LogoLineBr}
+        className="w-full mx-auto"
         alt=""
         role="presentation"
-      ></img>
+      />
 
-      <h1 id="floating-h1">Everyone is included. Everyone is welcome.</h1>
+      {/* "EVERYONE IS INCLUDED" HEADING */}
+      <h2 className="text-center text-3xl md:text-4xl md:my-12 font-bold text-dark">
+        Everyone is included. Everyone is welcome.
+      </h2>
 
-      <div className="home-content2" role="region">
-        <div className="card1">
-          <img src={Images.Heart} alt="Heart icon"></img>
-          <h1 id="h1-home">Free</h1>
-          <p>
-            For students who qualify for <br></br> free and reduced lunch.
-            <br></br>
+      {/* FREE/PREMIUM CARDS */}
+      <div role="region" className="w-full mx-auto flex flex-col md:flex-row items-stretch gap-12 md:gap-16 lg:gap-40 justify-center px-6 md:px-8 mt-16 mb-12">
+        {/* Free Card */}
+        <div className="flex flex-col justify-center items-center w-full md:w-1/2 lg:w-1/4 bg-primary rounded-3xl shadow-card-yellow p-8 gap-4">
+          <img src={Heart} alt="" className="w-16 h-16 md:w-20 md:h-20" />
+          <h3 className="text-3xl md:text-4xl font-bold text-dark mt-4 mb-4">Free</h3>
+          <p className="text-lg md:text-xl/9 text-center text-dark leading-relaxed">
+            For students who qualify for <br />free and reduced lunch.<br />
             Our lessons are free.
           </p>
           <button
-            className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-            aria-label="Join now for free button"
+            className="btn-primary mt-auto mb-4"
+            aria-label="Join now for free"
           >
-            {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" /> */}
-            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
-              Join Now !
-            </span>
+            Join Now!
           </button>
         </div>
-        <div className="card2">
-          <img src={Images.Gem} alt="Gem icon"></img>
-          <h1 id="h1-home">Premium</h1>
-          <p>
-            For students who don't qualify <br></br> for free and reduced lunch.{" "}
-            <br></br>
-            $25 / Week <br></br> First lesson is FREE. <br></br> Cancel anytime.
+
+        {/* Premium Card */}
+        <div className="flex flex-col justify-center items-center w-full md:w-1/2 lg:w-1/4 bg-light rounded-3xl shadow-card-green p-8 gap-4">
+          <img src={Gem} alt="" className="w-16 h-16 md:w-20 md:h-20" />
+          <h3 className="text-3xl md:text-4xl font-bold text-dark mt-4 mb-4">Premium</h3>
+          <p className="text-lg md:text-xl/9 text-center text-dark leading-relaxed mb-20">
+            For students who don't qualify <br />for free and reduced lunch.
+            <br />$25 / Week <br />First lesson is FREE. <br />Cancel anytime.
           </p>
           <button
-            className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-            aria-label="Join now premium button"
+            className="btn-primary mt-auto mb-4"
+            aria-label="Join now premium"
           >
-            {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" /> */}
-            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
-              Join Now !
-            </span>
+            Join Now!
           </button>
         </div>
       </div>
 
-      <div className="home-content3" role="region">
+      {/* MISSION STATEMENT IMAGE */}
+      <div role="region" className="flex w-full justify-center items-center py-12">
         <img
-          src={Images.LargeInfo}
+          src={LargeInfo}
           alt="Y STEM mission statement emphasising Play, Learn and Donate"
-          aria-label="Y STEM mission statement emphasising Play, Learn and Donate"
-        ></img>
+          className="w-full h-auto"
+        />
       </div>
 
-      <div className="home-video-container">
+      {/* VIDEO SECTION */}
+      <div className="flex w-full h-auto md:h-[90vh] justify-center items-center py-8 md:py-0">
         <iframe
           title="Y STEM and Chess Introduction Video"
-          className="home-video"
-          width="560"
-          height="315"
+          className="w-[90%] md:w-[85%] h-[300px] md:h-[90%]"
           src="https://www.youtube.com/embed/SBr0bGgddIc"
-          style={{ border: "0" }}
           allowFullScreen
-        ></iframe>
+        />
       </div>
 
-      <div className="home-content4" role="region">
-        <div className="home-content4-box">
+      {/* CTA SECTION - "START NOW" */}
+      <div className="flex justify-center items-center w-full px-6 md:px-8 py-12 md:py-16">
+        <div className="flex justify-center items-center flex-col w-full max-w-7xl border-4 border-primary rounded-lg py-12 px-6 gap-6">
           <img
-            src={Images.ChessGroup}
-            alt="Chess peices lined up next to eachother"
-            aria-label="Chess peices lined up next to eachother"
-          ></img>
-          <div className="lesson-link-text">Start now and sign up later!</div>
+            src={ChessGroup}
+            alt="Chess pieces lined up next to each other"
+            className="w-full max-w-md h-auto"
+          />
+          <div className="text-xl md:text-4xl font-bold text-dark text-center mt-4 mb-4">
+            Start now and sign up later!
+          </div>
           <button
-            className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
+            className="btn-primary"
             onClick={() => navigate("./play")}
             aria-label="Get started"
           >
-            {/* <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" /> */}
-            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-5 py-1 text-lg font-medium text-white backdrop-blur-3xl">
-              Get Started!
-            </span>
+            Get Started!
           </button>
         </div>
       </div>
 
+      {/* LOGO BREAK */}
       <img
-        src={Images.LogoLineBr}
-        className="logo-break"
-        alt="Y STEM styled line break"
+        src={LogoLineBr}
+        className="w-full mx-auto"
+        alt=""
         role="presentation"
-      ></img>
+      />
 
-      <div className="home-content5" role="region">
-        <h1 id="h1-home">Books by Devin Nakano</h1>
+      {/* BOOKS SECTION */}
+      <div role="region" className="w-full h-auto my-12 px-6 md:px-12">
+        <h2 className="text-center text-3xl md:text-4xl md:my-12 font-bold text-dark">
+          Books by Devin Nakano
+        </h2>
+
         {books.map((book, index) => (
-          <div key={index} className="book">
-            <div className="book-left">
+          <div key={index} className="flex flex-col md:flex-row items-start border-2 border-accent p-4 md:p-6 rounded-md mb-8">
+            <div className="flex flex-col items-center mx-auto md:mx-8 mb-6 md:mb-0">
               <img
                 src={book.image}
-                alt={`${book.title} cover image`}
-                className="book-image"
+                alt={`${book.title} cover`}
+                className="w-[160px] h-auto mb-4"
               />
               <button
-                className="buy-now"
+                className="btn-primary"
                 aria-label={`Buy now ${book.title}`}
                 onClick={() => handleBuyNow(book.title)}
-              >
-                <img src={Images.BuyNow} alt="Buy now" />
+              >Buy Now!
               </button>
             </div>
-            <div className="book-details">
-              <h2>{book.title}</h2>
-              <h3>{book.subtitle}</h3>
-              <p>{book.description}</p>
+
+            <div className="flex-1">
+              <h3 className="text-xl md:text-2xl font-bold text-dark text-left mb-2">
+                {book.title}
+              </h3>
+              <h4 className="text-lg md:text-xl text-dark text-left mb-4">
+                {book.subtitle}
+              </h4>
+              <p className="text-base text-gray text-left leading-relaxed">
+                {book.description}
+              </p>
             </div>
           </div>
         ))}
-        <footer role="contentinfo">
-          <p>All proceeds will be donated to the organization</p>
+
+        <footer role="contentinfo" className="bg-secondary text-center mt-8">
+          <p className="text-lg text-dark font-bold leading-relaxed">All proceeds will be donated to the organization</p>
         </footer>
       </div>
+
+      {/* LOGO BREAK */}
+      <img
+        src={LogoLineBr}
+        className="w-full mx-auto my-10"
+        alt=""
+        role="presentation"
+      />
+
+      {/* SPONSORS */}
+      <div className="ml-5 mr-5 mb-12">
+        <h3 className="text-center text-2xl md:text-3xl md:my-8 font-bold text-dark">
+          Our Sponsors
+        </h3>
+        <div className="flex flex-wrap justify-center items-center gap-12">
+          {sponsors.map((sponsor) => (
+            <a
+              key={sponsor.name}
+              href={sponsor.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={sponsor.name}
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src={sponsor.logo}
+                alt={`${sponsor.name} logo`}
+                className="h-20 w-40 object-contain rounded-md"
+              />
+            </a>
+          ))}
+        </div>
+      </div>
+
+      {/* PARTNERS  */}
+      <div className="ml-5 mr-5 mb-36">
+        <h3 className="text-center text-2xl md:text-3xl md:my-8 font-bold text-dark">
+          Our Partners
+        </h3>
+        <div className="flex flex-wrap justify-center items-center gap-8">
+          {partners.map((partner) => (
+            <a
+              key={partner.name}
+              href={partner.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={partner.name}
+              className="bg-white p-4 rounded-md transition-opacity hover:opacity-80"
+            >
+              <img
+                src={partner.logo}
+                alt={`${partner.name} logo`}
+                className="h-16 w-37 object-contain"
+              />
+            </a>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 };
