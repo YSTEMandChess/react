@@ -6,21 +6,40 @@ module.exports = {
   darkMode: "class",
   theme: {
     extend: {
-      animation: {
-        shimmer: "shimmer 2s linear infinite",
+      colors: {
+        // Brand colors
+        primary: "#7FCC26",
+        secondary: "#BFD99E",
+        soft: "#E5F3D2",
+        accent: "#EAD94C",
+
+        // Neutrals
+        dark: "#1F1F1F",
+        gray: "#5C5C5C",
+        muted: "#8A8A8A",
+        borderLight: "#D6D6D6",
+        light: "#F9FAF7",
+
+        // Error colors
+        red: "#D64545",
+        redLight: "#F4CACAFF",
       },
-      keyframes: {
-        shimmer: {
-          from: {
-            backgroundPosition: "0 0",
-          },
-          to: {
-            backgroundPosition: "-200% 0",
-          },
-        },
+
+      fontFamily: {
+        sans: [
+          "Lato",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "sans-serif",
+        ],
+      },
+      
+      boxShadow: {
+        'card-yellow': '1.25rem 1.25rem 0.063rem rgb(209, 230, 28)',
+        'card-green': '1.25rem 1.25rem 0.063rem rgb(115, 179, 19)',
       },
     },
   },
   plugins: [],
 }
-
