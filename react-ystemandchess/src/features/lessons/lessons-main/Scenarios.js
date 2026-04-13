@@ -2538,14 +2538,16 @@ export const scenariosArray = [
         solution: null,
         goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Not a Bishop or Rook pawn = Win',
         fen: '7K/8/1Q6/8/8/8/3kp3/8 w - - 0 1',
-        info: 'If the pawn on the 7th rank is NOT a Bishop or Rook pawn, the side with the Queen can win.The key to winning these positions is to get our King near the pawn so we can capture it safely. To do this, we must force Black to block their own pawn with their King. This will give us a free move which we can use to get our King closer.',
+        info: 'Checkmate the opponent. If the pawn on the 7th rank is NOT a Bishop or Rook pawn, the side with the Queen can win. The key to winning these positions is to get our King near the pawn so we can capture it safely. To do this, we must force Black to block their own pawn with their King. This will give us a free move which we can use to get our King closer.',
         solution: null,
-        goal: null,
+        goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Exercise: d-pawn = Win',
@@ -2554,6 +2556,7 @@ export const scenariosArray = [
         solution: null,
         goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Exercise: b-pawn = Win',
@@ -2562,22 +2565,33 @@ export const scenariosArray = [
         solution: null,
         goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Rook pawn, no King assistance = Draw',
         fen: '8/1K6/P7/8/3q4/8/8/7k w - - 0 1',
         info: 'If the pawn on the 7th rank is a Bishop or Rook pawn, and the side with the Queen does not have their King near the pawn, the side with the pawn can draw. When it\'s a Rook pawn, the side with the pawn just needs to promote it if allowed, or otherwise keep their King in or near the corner. The side with the Queen won\'t have any time to get their King closer.',
         solution: null,
-        goal: null,
-        opponentConstraints: null,
+        goal: {
+            type: "SURVIVE",
+            moves: 40
+          },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Bishop pawn, no King assistance = Draw',
         fen: '7K/8/4Q3/8/8/8/2p5/1k6 w - - 0 1',
         info: 'If the pawn on the 7th rank is a Bishop or Rook pawn, and the side with the Queen does not have their King near the pawn, the side with the pawn can draw. When it\'s a Bishop pawn, the side with the pawn just needs to promote it if allowed, or threaten to promote it, or exploit the possible stalemate situation. If played correctly, the side with the Queen won\'t have any time to get their King closer.',
         solution: null,
-        goal: null,
-        opponentConstraints: null,
+        goal: {
+            type: "SURVIVE",
+            moves: 40
+          },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Exercise: Bishop pawn, no King assistance',
@@ -2592,8 +2606,12 @@ export const scenariosArray = [
         fen: '8/8/8/K7/2Q5/8/p7/1k6 w - - 0 1',
         info: 'If the pawn on the 7th rank is a Rook pawn, and the side with the Queen has their King on one of the green squares (or closer) on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. White can accomplish this by having their Queen on the d2 square (other squares can also work) and the King on b3 when the pawn has promoted.',
         solution: null,
-        goal: null,
-        opponentConstraints: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Exercise: Rook pawn, King assistance on short side',
@@ -2608,8 +2626,12 @@ export const scenariosArray = [
         fen: '8/8/8/8/2QK4/8/p7/1k6 w - - 0 1',
         info: 'If the pawn on the 7th rank is a Rook pawn, and the side with the Queen has their King on one of the green squares (or closer) on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. White can accomplish this by having their Queen on the d2 square (other squares can also work) and the King on one of the orange squares (d3, d2, d1) when the pawn has promoted.',
         solution: null,
-        goal: null,
-        opponentConstraints: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Exercise: Rook pawn, King assistance on long side',
@@ -2624,16 +2646,24 @@ export const scenariosArray = [
         fen: '8/8/8/1K6/4Q3/8/2pk4/8 w - - 0 1',
         info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When the attacking King is on the short side, and the defending King is on the long side, the attacker can accomplish this by having their King on b3 when the pawn promotes.',
         solution: null,
-        goal: null,
-        opponentConstraints: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Bishop pawn, defending King on long side, King assistance on long side = Win',
         fen: '8/8/Q7/8/6K1/8/2pk4/8 w - - 0 1',
         info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When both Kings are on the long side, the attacker can accomplish this by having their King on one of the orange squares (f3, f2, f1) when the pawn promotes.',
         solution: null,
-        goal: null,
-        opponentConstraints: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Exercise: Bishop pawn, defending King on long side, King assistance on long side',
@@ -2648,16 +2678,24 @@ export const scenariosArray = [
         fen: '8/4Q3/8/8/K7/8/1kp5/8 w - - 0 1',
         info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When both Kings are on the short side, the attacker can accomplish this by having their King on b3 when the pawn promotes.',
         solution: null,
-        goal: null,
-        opponentConstraints: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Bishop pawn, defending King on short side, King assistance on long side = Win',
         fen: '8/4Q3/8/8/8/8/1kp5/4K3 w - - 0 1',
         info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When the attacking King is on the long side, and the defending King is on the short side, the attacker can accomplish this by having their King on d2 when the pawn promotes.',
         solution: null,
-        goal: null,
-        opponentConstraints: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Exercise: Bishop pawn, defending King on short side, King assistance on long side',
