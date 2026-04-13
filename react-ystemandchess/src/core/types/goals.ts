@@ -101,6 +101,9 @@ export interface EvaluationContext {
   moveCount: number;
 }
 
+export type FailCondition =
+  | { type: 'OPPONENT_PROMOTION' };
+
 export interface LessonData {
   lessonNum: number;
   name: string;
@@ -110,5 +113,6 @@ export interface LessonData {
   goal?: Goal;
   maxMoves?: number;
   opponentConstraints?: OpponentConstraint[];
+  failConditions?: FailCondition[];
   videoUrl?: string;
 }

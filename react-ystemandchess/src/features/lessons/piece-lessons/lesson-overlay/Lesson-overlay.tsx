@@ -301,6 +301,13 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
         if (onChessMove) onChessMove(newFen);
 
+        // Check if opponent promoted when that's a declared fail condition
+        if (moveResult.promotion && lessonData?.failConditions?.some(c => c.type === 'OPPONENT_PROMOTION')) {
+          setPopupMessage("The pawn promoted! Try again.");
+          setShowXPopup(true);
+          return;
+        }
+
         // Check if student lost after computer's move
         if (gameRef.current.isCheckmate() || gameRef.current.isStalemate()) {
           const turn = gameRef.current.turn();
@@ -315,7 +322,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     } catch (error) {
       console.error('Error applying Stockfish move:', error);
     }
-  }, [onChessMove]);
+  }, [onChessMove, lessonData]);
 
 
   // Fallback: Get random legal move
