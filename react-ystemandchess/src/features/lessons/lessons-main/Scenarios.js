@@ -2538,18 +2538,16 @@ export const scenariosArray = [
         solution: null,
         goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Not a Bishop or Rook pawn = Win',
         fen: '7K/8/1Q6/8/8/8/3kp3/8 w - - 0 1',
-        info: 'If the pawn on the 7th rank is NOT a Bishop or Rook pawn, the side with the Queen can win.The key to winning these positions is to get our King near the pawn so we can capture it safely. To do this, we must force Black to block their own pawn with their King. This will give us a free move which we can use to get our King closer.',
+        info: 'Checkmate the opponent. If the pawn on the 7th rank is NOT a Bishop or Rook pawn, the side with the Queen can win. The key to winning these positions is to get our King near the pawn so we can capture it safely. To do this, we must force Black to block their own pawn with their King. This will give us a free move which we can use to get our King closer.',
         solution: null,
-        goal: {
-            type: "CHECKMATE"
-        },
-        opponentConstraints: [
-          { type: "AVOID_CHECKING" },
-          { type: "ONLY_MOVE_PIECES", pieces: ["k", "p"] } ],
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Exercise: d-pawn = Win',
@@ -2558,6 +2556,7 @@ export const scenariosArray = [
         solution: null,
         goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Exercise: b-pawn = Win',
@@ -2566,6 +2565,7 @@ export const scenariosArray = [
         solution: null,
         goal: { type: 'CHECKMATE' },
         opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Rook pawn, no King assistance = Draw',
@@ -2610,8 +2610,7 @@ export const scenariosArray = [
           type: "CHECKMATE"
         },
         opponentConstraints: [
-          { type: "AVOID_CHECKING" },
-          { type: "ONLY_MOVE_PIECES", pieces: ["k", "p"] }
+          { type: "AVOID_CHECKING" }
         ],
       },
       {
@@ -2631,8 +2630,7 @@ export const scenariosArray = [
           type: "CHECKMATE"
         },
         opponentConstraints: [
-          { type: "AVOID_CHECKING" },
-          { type: "ONLY_MOVE_PIECES", pieces: ["k", "p"] }
+          { type: "AVOID_CHECKING" }
         ],
       },
       {
@@ -2652,8 +2650,7 @@ export const scenariosArray = [
           type: "CHECKMATE"
         },
         opponentConstraints: [
-          { type: "AVOID_CHECKING" },
-          { type: "ONLY_MOVE_PIECES", pieces: ["k", "p"] }
+          { type: "AVOID_CHECKING" }
         ],
       },
       {
@@ -2665,8 +2662,7 @@ export const scenariosArray = [
           type: "CHECKMATE"
         },
         opponentConstraints: [
-          { type: "AVOID_CHECKING" },
-          { type: "ONLY_MOVE_PIECES", pieces: ["k", "p"] }
+          { type: "AVOID_CHECKING" }
         ],
       },
       {
@@ -2686,8 +2682,7 @@ export const scenariosArray = [
           type: "CHECKMATE"
         },
         opponentConstraints: [
-          { type: "AVOID_CHECKING" },
-          { type: "ONLY_MOVE_PIECES", pieces: ["k", "p"] }
+          { type: "AVOID_CHECKING" }
         ],
       },
       {
@@ -2699,8 +2694,7 @@ export const scenariosArray = [
           type: "CHECKMATE"
         },
         opponentConstraints: [
-          { type: "AVOID_CHECKING" },
-          { type: "ONLY_MOVE_PIECES", pieces: ["k", "p"] }
+          { type: "AVOID_CHECKING" }
         ],
       },
       {
