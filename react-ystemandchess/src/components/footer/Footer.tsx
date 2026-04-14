@@ -4,20 +4,20 @@ const Footer = () => {
   return (
     <footer className="w-full bg-light border-t-2 border-dark pt-10 pb-8">
       <div className="mx-auto px-6 md:px-12 lg:px-24">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
           {/* Branding & Mission */}
-          <div className="flex flex-col items-center md:items-start">
+          <div className="flex flex-col items-center lg:items-start">
             <h2 className="text-2xl font-bold tracking-tight text-dark">
               YSTEM<span className="text-primary">&CHESS</span>
             </h2>
-            <p className="text-gray text-sm font-bold leading-relaxed text-center md:text-left">
+            <p className="text-gray text-sm font-bold leading-relaxed text-center lg:text-left">
               Empowering Tomorrow's STEM Leaders
             </p>
           </div>
 
           {/* Contact Info */}
-          <div className="flex flex-row flex-nowrap gap-4 md:gap-8 justify-center">
+          <div className="flex flex-row flex-wrap gap-4 md:gap-8 justify-center">
             <a href="tel:+12089965071" className="group flex items-center gap-4 hover:translate-x-1 transition-transform">
               <div className="flex-shrink-0 w-10 h-10 bg-soft rounded-md flex items-center justify-center border border-primary/20 group-hover:bg-primary group-hover:text-light transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
@@ -40,7 +40,7 @@ const Footer = () => {
           </div>
 
           {/* Socials */}
-          <div className="flex flex-col items-center md:items-end">
+          <div className="flex flex-col items-center lg:items-end">
             <h3 className="text-sm font-bold uppercase text-gray mr-2.5">
               Stay Connected
             </h3>
