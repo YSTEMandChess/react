@@ -24,7 +24,7 @@ const Footer = () => {
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-bold uppercase text-muted">Call Us</span>
-                <span className="text-sm font-bold text-dark group-hover:text-primary transition-colors whitespace-nowrap">+1 (208) 996-5071</span>
+                <span className="text-sm font-bold text-dark group-hover:text-primary transition-colors whitespace-nowrap"> +1 (208) 996-5071 </span>
               </div>
             </a>
 
