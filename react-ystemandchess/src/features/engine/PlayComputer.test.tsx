@@ -154,7 +154,7 @@ describe('PlayComputer', () => {
       const whiteButton = screen.getByText('White');
       fireEvent.click(whiteButton);
 
-      expect(whiteButton.className).toContain('active');
+      expect(whiteButton.className).toContain('border-primary');
     });
 
     it('should allow selecting black as player color', () => {
@@ -163,7 +163,7 @@ describe('PlayComputer', () => {
       const blackButton = screen.getByText('Black');
       fireEvent.click(blackButton);
 
-      expect(blackButton.className).toContain('active');
+      expect(blackButton.className).toContain('border-primary');
     });
 
     it('should allow selecting difficulty levels', () => {
@@ -176,10 +176,10 @@ describe('PlayComputer', () => {
       const masterButton = screen.getByText('Master');
 
       fireEvent.click(mediumButton);
-      expect(mediumButton.className).toContain('active');
+      expect(mediumButton.className).toContain('bg-primary');
 
       fireEvent.click(hardButton);
-      expect(hardButton.className).toContain('active');
+      expect(hardButton.className).toContain('bg-primary');
     });
 
     it('should start session when start button is clicked', () => {
