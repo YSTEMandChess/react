@@ -54,7 +54,7 @@ jest.mock('react-chartjs-2', () => ({
 }));
 
 // mock Puzzles component to avoid SweetAlert2 CSS parsing issues
-jest.mock('../../puzzles/puzzles-page/Puzzles', () => ({
+jest.mock('../../puzzles/Puzzles', () => ({
   __esModule: true,
   default: () => <div data-testid="mock-puzzles" />,
 }));

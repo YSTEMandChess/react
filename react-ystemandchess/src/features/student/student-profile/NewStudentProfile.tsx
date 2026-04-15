@@ -4,7 +4,7 @@ import { useCookies } from 'react-cookie';
 import { environment } from "../../../environments/environment";
 import { useNavigate } from "react-router";
 import StatsChart from "./StatsChart";
-import Puzzles from "../../puzzles/puzzles-page/Puzzles";
+import Puzzles from "../../puzzles/Puzzles";
 import PlayComputer from "../../engine/PlayComputer";
 import StreakModal from "./Modals/StreakModal";
 import ActivitiesModal from "./Modals/ActivitiesModal";
