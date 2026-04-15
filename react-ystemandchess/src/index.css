@@ -31,7 +31,7 @@ button {
 @layer components {
   .btn-primary {
     @apply
-      bg-dark text-light font-bold leading-relaxed
+      bg-dark text-light font-semibold leading-relaxed
       py-3 px-8
       rounded-full
       border-2 border-dark
@@ -45,6 +45,23 @@ button {
       focus-visible:ring-primary;
   }
   
+  .btn-green {
+    @apply
+      bg-primary text-light text-xl font-semibold
+      py-3 px-8
+      rounded-xl
+      shadow-md
+      transition-all duration-300
+      hover:opacity-90
+      hover:scale-105
+      active:scale-95
+      disabled:opacity-50
+      disabled:cursor-not-allowed
+      focus-visible:outline-none
+      focus-visible:ring-2
+      focus-visible:ring-primary/50;
+  }
+
   .btn-toolbar {
     @apply relative flex-1 max-w-xs p-0 bg-transparent rounded-lg cursor-pointer
       transition-all duration-200 hover:scale-105 active:scale-95
