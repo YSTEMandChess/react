@@ -9,36 +9,27 @@ import {
 import Puzzles from "./Puzzles";
 import { MemoryRouter } from "react-router";
 import { useCookies } from "react-cookie";
-import { useChessSocket } from "../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket";
-import Swal from "sweetalert2";
-import { useNavigate } from "react-router";
+import { useChessSocket } from "../lessons/piece-lessons/lesson-overlay/hooks/useChessSocket";
 
 // Mock dependencies
 jest.mock("react-cookie", () => ({
   useCookies: jest.fn(),
 }));
 
-jest.mock("sweetalert2", () => ({
-  fire: jest.fn(() => Promise.resolve({ isConfirmed: true })),
-  close: jest.fn(),
-  showLoading: jest.fn(),
-}));
-
 jest.mock(
-  "../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket",
+  "../lessons/piece-lessons/lesson-overlay/hooks/useChessSocket",
   () => ({
     useChessSocket: jest.fn(),
   })
 );
 
-// mock navigating to Puzzles
 jest.mock("react-router", () => ({
   ...jest.requireActual("react-router"),
   useNavigate: jest.fn(),
 }));
 
 // Mock ChessBoard component
-jest.mock("../../../components/ChessBoard/ChessBoard", () => {
+jest.mock("../../components/ChessBoard/ChessBoard", () => {
   const React = require("react");
   return React.forwardRef((props: any, ref: any) => (
     <div
@@ -95,8 +86,30 @@ jest.mock("../../../components/ChessBoard/ChessBoard", () => {
   ));
 });
 
+// Mock Modal — exposes data-type so tests can assert which variant is shown,
+// and a confirm button that fires both onClose and onConfirm (matching real behaviour).
+jest.mock("../../components/modal/Modal", () => {
+  const React = require("react");
+  return function MockModal({ type, title, message, onConfirm, onClose }: any) {
+    return (
+      <div data-testid="mock-modal" data-type={type}>
+        <span>{title}</span>
+        {message && <span>{message}</span>}
+        {type !== "loading" && (
+          <button
+            data-testid="modal-confirm-btn"
+            onClick={() => { onClose(); onConfirm?.(); }}
+          >
+            OK
+          </button>
+        )}
+      </div>
+    );
+  };
+});
+
 // Mock themes service
-jest.mock("../../../core/services/themesService", () => ({
+jest.mock("../../core/services/themesService", () => ({
   themesName: { theme1: "Theme 1" },
   themesDescription: { theme1: "Description 1" },
 }));
@@ -113,11 +126,8 @@ const mockSocket = {
 
 describe("Puzzles Component", () => {
   beforeEach(() => {
-    // Reset mocks
     jest.clearAllMocks();
-    (Swal.fire as jest.Mock).mockResolvedValue({ isConfirmed: true });
 
-    // Default cookie mock
     (useCookies as jest.Mock).mockReturnValue([
       {
         login:
@@ -127,7 +137,6 @@ describe("Puzzles Component", () => {
       jest.fn(),
     ]);
 
-    // Default socket mock
     (useChessSocket as jest.Mock).mockImplementation((props) => {
       React.useEffect(() => {
         if (props.onRoleAssigned) {
@@ -137,7 +146,6 @@ describe("Puzzles Component", () => {
       return mockSocket;
     });
 
-    // Mock global fetch
     global.fetch = jest.fn((url) => {
       if (typeof url === "string" && url.includes("puzzles/random")) {
         return Promise.resolve({
@@ -225,13 +233,11 @@ describe("Puzzles Component", () => {
       </MemoryRouter>
     );
 
+    // Board is always rendered; invalid FEN means the puzzle won't start
+    // but the board container is still present showing the start position.
     await waitFor(() => {
-      expect(screen.getByText(/Loading puzzle.../i)).toBeInTheDocument();
+      expect(screen.getByTestId("chess-board-container")).toBeInTheDocument();
     });
-    expect(
-      screen.queryByTestId("chess-board-container")
-    ).not.toBeInTheDocument();
-    expect(screen.queryByTestId("chess-board-mock")).not.toBeInTheDocument();
     expect(warnSpy).toHaveBeenCalledWith(
       "Invalid or missing FEN:",
       expect.any(String)
@@ -275,25 +281,21 @@ describe("Puzzles Component", () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText(/Loading puzzle.../i)).toBeInTheDocument();
-    });
-    expect(
-      screen.queryByTestId("chess-board-container")
-    ).not.toBeInTheDocument();
-    expect(screen.queryByTestId("chess-board-mock")).not.toBeInTheDocument();
+    // Board is always rendered, showing the start position while no puzzle is loaded.
+    expect(screen.getByTestId("chess-board-container")).toBeInTheDocument();
+    expect(screen.queryByText(/Loading puzzle.../i)).not.toBeInTheDocument();
   });
 
-  test("renders loading state initially", async () => {
-    // Simulate socket not yet providing a puzzle or FEN not set
+  test("renders board immediately with no loading text", () => {
     render(
       <MemoryRouter>
         <Puzzles />
       </MemoryRouter>
     );
 
-    // Initially it might show "Loading puzzle..." because currentFEN is empty
-    expect(screen.getByText(/Loading puzzle.../i)).toBeInTheDocument();
+    // Board is always present; pieces are hidden via CSS until the first FEN arrives.
+    expect(screen.getByTestId("chess-board-container")).toBeInTheDocument();
+    expect(screen.queryByText(/Loading puzzle.../i)).not.toBeInTheDocument();
   });
 
   test("renders Puzzles page", async () => {
@@ -303,20 +305,12 @@ describe("Puzzles Component", () => {
       </MemoryRouter>
     );
 
-    // Wait for the puzzle to be fetched and loaded
     await waitFor(() => {
-      expect(screen.queryByText(/Loading puzzle.../i)).not.toBeInTheDocument();
+      expect(screen.getByTestId("chess-board-container")).toBeInTheDocument();
     });
 
-    // Check if chessboard is present
-    const lessonTitle = screen.getByTestId("chess-board-container");
-    expect(lessonTitle).toBeInTheDocument();
-
-    // // Check if Get New Puzzle and Show Hint selectors are present
-    const scenarioSelector = screen.getByTestId("next-puzzle-button");
-    const lessonSelector = screen.getByTestId("hint-button");
-    expect(scenarioSelector).toBeInTheDocument();
-    expect(lessonSelector).toBeInTheDocument();
+    expect(screen.getByTestId("next-puzzle-button")).toBeInTheDocument();
+    expect(screen.getByTestId("hint-button")).toBeInTheDocument();
   });
 
   test("renders chess board when puzzle is loaded", async () => {
@@ -326,17 +320,12 @@ describe("Puzzles Component", () => {
       </MemoryRouter>
     );
 
-    // Wait for the puzzle to be fetched and loaded
     await waitFor(() => {
-      expect(screen.queryByText(/Loading puzzle.../i)).not.toBeInTheDocument();
+      expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
     });
-
-    expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
-    // how did Trae get here? This ID was never in puzzles.tsx
   });
 
   test("calls startNewPuzzle if connected and status is empty", async () => {
-    // Override mock for this test to NOT assign role immediately
     (useChessSocket as jest.Mock).mockReturnValue(mockSocket);
 
     render(
@@ -357,7 +346,6 @@ describe("Puzzles Component", () => {
       </MemoryRouter>
     );
 
-    // Wait for board to load
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
     });
@@ -382,17 +370,6 @@ describe("Puzzles Component", () => {
     const showHintBtn = screen.getByText("Show Hint");
     fireEvent.click(showHintBtn);
 
-    // The hint text div should become visible (display: block)
-    // Note: checking style visibility in jsdom can be tricky if it's done via inline styles.
-    // The component sets `style={{ display: 'none' }}` initially and toggles it.
-    // Let's check if the element exists and we can try to check style.
-
-    // However, the component modifies the DOM element directly using document.getElementById('hint-text')
-    // which might not work perfectly with React testing library's render container if not careful,
-    // but since we are rendering into the document, it should be findable.
-
-    // We can also check if socket.sendMessage was called with hints during initialization
-    // because updateInfoBox is called when puzzle loads.
     expect(mockSocket.sendMessage).toHaveBeenCalledWith(
       expect.stringContaining("Puzzle Rating:")
     );
@@ -409,12 +386,7 @@ describe("Puzzles Component", () => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
     });
 
-    // Simulate a move from the mock board
     const moveBtn = screen.getByTestId("mock-move-btn");
-
-    // The mock puzzle moves are "e2e4 e7e5"
-    // The button simulates sending { from: 'e2', to: 'e4' }
-    // This matches the first move.
 
     await act(async () => {
       fireEvent.click(moveBtn);
@@ -746,7 +718,7 @@ describe("Puzzles Component", () => {
     jest.useRealTimers();
   });
 
-  test("puzzle completion flow triggers success and loads next puzzle", async () => {
+  test("puzzle completion flow shows success modal and loads next puzzle", async () => {
     jest.useFakeTimers();
     render(
       <MemoryRouter>
@@ -766,16 +738,19 @@ describe("Puzzles Component", () => {
       expect.objectContaining({ from: "e7", to: "e5" })
     );
     expect(mockSocket.sendMessage).toHaveBeenCalledWith("puzzle completed");
+
     act(() => {
       jest.advanceTimersByTime(250);
     });
+
     await waitFor(() => {
-      expect(Swal.fire).toHaveBeenCalledWith(
-        "Puzzle completed",
-        "Good Job",
-        "success"
-      );
+      expect(screen.getByTestId("mock-modal")).toBeInTheDocument();
+      expect(screen.getByTestId("mock-modal")).toHaveAttribute("data-type", "success");
     });
+
+    // Clicking OK closes the modal and sends "next puzzle"
+    fireEvent.click(screen.getByTestId("modal-confirm-btn"));
+
     await waitFor(() => {
       expect(mockSocket.sendMessage).toHaveBeenCalledWith("next puzzle");
     });

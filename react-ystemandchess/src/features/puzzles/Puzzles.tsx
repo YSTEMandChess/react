@@ -1,20 +1,18 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import pageStyles from "./Puzzles.module.scss";
-import profileStyles from "./Puzzles-profile.module.scss";
 import {
   themesName,
   themesDescription,
-} from "../../../core/services/themesService";
-import Swal from "sweetalert2";
-import { environment } from "../../../environments/environment";
+} from "../../core/services/themesService";
+import Modal, { ModalProps } from "../../components/modal/Modal";
+import { environment } from "../../environments/environment";
 import { v4 as uuidv4 } from "uuid";
-import { SetPermissionLevel } from "../../../globals";
+import { SetPermissionLevel } from "../../globals";
 import { useCookies } from "react-cookie";
 import ChessBoard, {
   ChessBoardRef,
-} from "../../../components/ChessBoard/ChessBoard";
-import { useChessSocket } from "../../../features/lessons/piece-lessons/lesson-overlay/hooks/useChessSocket";
-import { Move } from "../../../core/types/chess";
+} from "../../components/ChessBoard/ChessBoard";
+import { useChessSocket } from "../lessons/piece-lessons/lesson-overlay/hooks/useChessSocket";
+import { Move } from "../../core/types/chess";
 
 type PuzzlesProps = {
   student?: any;
@@ -53,11 +51,10 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   role = "student",
   styleType = "page",
 }) => {
-  const styles = styleType === "profile" ? profileStyles : pageStyles;
+  const isProfile = styleType === "profile";
 
   // Refs
   const chessBoardRef = useRef<ChessBoardRef>(null);
-  const swalRef = useRef<string>("");
   const moveListRef = useRef<string[]>([]);
   const isPuzzleEndRef = useRef(false);
   const currentPuzzleRef = useRef<any>(null);
@@ -71,12 +68,15 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   // State
   const [puzzleArray, setPuzzleArray] = useState<any[]>([]);
   const [currentFEN, setCurrentFEN] = useState<string>("");
+  const [hidePieces, setHidePieces] = useState(true);
   const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
   const [themeList, setThemeList] = useState<string[]>([]);
   const [status, setStatus] = useState<string>("");
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [cookies] = useCookies(["login"]);
+  const [modal, setModal] = useState<Omit<ModalProps, "onClose"> | null>(null);
+  const closeModal = () => setModal(null);
 
   // Time tracking
   const [eventID, setEventID] = useState(null);
@@ -129,6 +129,13 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       console.error("Error prefetching puzzles:", error);
     }
   };
+
+  // Reveal pieces once the first puzzle FEN arrives
+  useEffect(() => {
+    if (currentFEN && hidePieces) {
+      setHidePieces(false);
+    }
+  }, [currentFEN, hidePieces]);
 
   // Prefetch when running low
   useEffect(() => {
@@ -185,7 +192,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   const startLesson = (puzzle: any, color: "white" | "black") => {
     console.log("StartLesson called... ");
-    
+
     const fen = puzzle.FEN;
 
     if (!fen || fen.split("/").length !== 8) {
@@ -307,13 +314,12 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         isPuzzleEndRef.current = true;
         socket.sendMessage("puzzle completed");
         setTimeout(() => {
-          Swal.fire("Puzzle completed", "Good Job", "success").then(
-            (result) => {
-              if (result.isConfirmed) {
-                socket.sendMessage("next puzzle");
-              }
-            }
-          );
+          setModal({
+            type: "success",
+            title: "Puzzle completed",
+            message: "Good job!",
+            onConfirm: () => socket.sendMessage("next puzzle"),
+          });
         }, 200);
       } else {
         setTimeout(() => {
@@ -322,10 +328,15 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       }
     } else {
       // Wrong move - reset to current position
-      Swal.fire("Incorrect move", "Try again!", "error").then(() => {
-        if (currentPuzzleRef.current) {
-          startLesson(currentPuzzleRef.current, playerColor);
-        }
+      setModal({
+        type: "error",
+        title: "Incorrect move",
+        message: "Try again!",
+        onConfirm: () => {
+          if (currentPuzzleRef.current) {
+            startLesson(currentPuzzleRef.current, playerColor);
+          }
+        },
       });
     }
   };
@@ -340,37 +351,23 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     (msg: string) => {
       if (msg === "puzzle completed") {
         if (status === "guest") {
-          Swal.fire("Puzzle completed", "Good Job", "success").then(
-            (result) => {
-              if (result.isConfirmed) {
-                socket.sendMessage("next puzzle");
-              }
-            }
-          );
+          setModal({
+            type: "success",
+            title: "Puzzle completed",
+            message: "Good job!",
+            onConfirm: () => socket.sendMessage("next puzzle"),
+          });
         }
       } else if (msg === "next puzzle") {
-        Swal.close();
+        closeModal();
 
         if (status === "guest") {
-          Swal.fire({
-            title: "Loading next puzzle",
-            text: "Please wait...",
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            showConfirmButton: false,
-            didOpen: () => {
-              Swal.showLoading();
-              swalRef.current = "loading";
-            },
-            willClose: () => {
-              swalRef.current = "";
-            },
-          });
+          setModal({ type: "loading", title: "Loading next puzzle", message: "Please wait…" });
         }
 
         getNextPuzzleRef.current?.();
       } else if (msg === "new game received") {
-        if (swalRef.current === "loading") Swal.close();
+        closeModal();
       } else if (msg.startsWith("<div")) {
         if (status === "guest") {
           const hintText = document.getElementById("hint-text");
@@ -404,40 +401,28 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         initializeComponentRef.current?.();
 
         if (styleType === "profile" && status !== "") {
-          const message =
-            role === "student"
-              ? "Your mentor has left! Creating a new puzzle for you"
-              : "Your student has left! Creating a new puzzle for you";
-          Swal.fire(
-            message.split("!")[0] + "!",
-            message.split("!")[1],
-            "success"
-          );
+          setModal({
+            type: "success",
+            title: role === "student" ? "Your mentor has left!" : "Your student has left!",
+            message: "Creating a new puzzle for you.",
+          });
         }
       } else if (assignedRole === "guest") {
         const wasHost = status === "host";
         setStatus("guest");
 
         if (wasHost) {
-          const message =
-            role === "student"
-              ? "Your mentor has joined you! You can now also see their moves"
-              : "Your student has joined you! You can now also see their moves";
-          Swal.fire(
-            message.split("!")[0] + "!",
-            message.split("!")[1],
-            "success"
-          );
+          setModal({
+            type: "success",
+            title: role === "student" ? "Your mentor has joined you!" : "Your student has joined you!",
+            message: "You can now also see their moves.",
+          });
         } else {
-          const message =
-            role === "student"
-              ? "You joined your mentor's puzzle! Have fun collaborating."
-              : "You joined your student's puzzle! Have fun collaborating.";
-          Swal.fire(
-            message.split("!")[0] + "!",
-            message.split("!")[1],
-            "success"
-          );
+          setModal({
+            type: "success",
+            title: role === "student" ? "You joined your mentor's puzzle!" : "You joined your student's puzzle!",
+            message: "Have fun collaborating.",
+          });
         }
       }
     },
@@ -560,7 +545,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     return () => {
       window.removeEventListener("beforeunload", handleUnloadRef.current);
       handleUnloadRef.current();
-      Swal.close();
     };
   }, []);
 
@@ -579,29 +563,46 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   // RENDER
   // ============================================================================
 
-  return (
-    <div className={styles.mainElements}>
-      {!currentFEN ? (
-        <div>Loading puzzle...</div>
-      ) : (
-        <div className={styles.chessBoardContainer} data-testid="chess-board-container">
-          <ChessBoard
-            mode="puzzle"
-            ref={chessBoardRef}
-            fen={currentFEN}
-            orientation={playerColor}
-            highlightSquares={highlightSquares}
-            onMove={handlePlayerMove}
-            onInvalidMove={handleInvalidMove}
-            disabled={isPuzzleEndRef.current || !socket.connected}
-          />
-        </div>
-      )}
+  const puzzleButtonClass = "btn-green w-full md:w-auto";
 
-      <div className={styles.hintMenu}>
-        <div className={styles.hintButtonRow}>
+  return (
+    <>
+    <div
+      className={
+        isProfile
+          ? "flex flex-col items-center justify-center mt-8 gap-8 px-4"
+          : "flex flex-wrap justify-center items-start mt-8 p-8 gap-12 w-full max-w-5xl mx-auto"
+      }
+    >
+      <div
+        className={`w-full max-w-[600px] aspect-square flex-shrink-0 [&_svg_*]:transition-opacity [&_svg_*]:duration-700 ${
+          hidePieces ? "[&_svg_*]:opacity-0" : "[&_svg_*]:opacity-100"
+        }`}
+        data-testid="chess-board-container"
+      >
+        <ChessBoard
+          mode="puzzle"
+          ref={chessBoardRef}
+          fen={currentFEN || "start"}
+          orientation={playerColor}
+          highlightSquares={highlightSquares}
+          onMove={handlePlayerMove}
+          onInvalidMove={handleInvalidMove}
+          disabled={isPuzzleEndRef.current || !socket.connected || hidePieces}
+        />
+      </div>
+
+      <div
+        className={
+          isProfile
+            ? "flex flex-col items-center gap-6 w-full max-w-[600px]"
+            : "flex flex-col items-center gap-4 flex-1 min-w-[250px]"
+        }
+      >
+        <div className="flex flex-col gap-4 w-full md:flex-row md:justify-center">
           <button
-            className={styles.puzzleButton} data-testid="next-puzzle-button"
+            className={puzzleButtonClass}
+            data-testid="next-puzzle-button"
             onClick={() => {
               isPuzzleEndRef.current = false;
               socket.sendMessage("next puzzle");
@@ -612,7 +613,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
           </button>
 
           <button
-            className={styles.puzzleButton} data-testid="hint-button"
+            className={puzzleButtonClass}
+            data-testid="hint-button"
             onClick={openDialog}
             disabled={!socket.connected}
           >
@@ -622,11 +624,14 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
         <div
           id="hint-text"
-          className={styles.hintText}
+          className="w-full max-w-[600px] p-6 bg-light rounded-lg shadow text-base leading-relaxed text-dark text-left"
           style={{ display: "none" }}
         ></div>
       </div>
     </div>
+
+    {modal && <Modal {...modal} onClose={closeModal} />}
+    </>
   );
 };
 
