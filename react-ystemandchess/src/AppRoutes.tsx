@@ -34,7 +34,7 @@ import AboutUs from "./features/about-us/aboutus/AboutUs";
 // Educational content pages
 import PlayComputer from "./features/engine/PlayComputer";
 import Lessons from "./features/lessons/lessons-main/Lessons";
-import Puzzles from './features/puzzles/puzzles-page/Puzzles';
+import Puzzles from './features/puzzles/Puzzles';
 import LessonSelection from "./features/lessons/lessons-selection/LessonsSelection";
 import LessonOverlay from "./features/lessons/piece-lessons/lesson-overlay/Lesson-overlay";
 

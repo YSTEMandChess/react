@@ -22,7 +22,7 @@ module.exports = {
 
         // Error colors
         red: "#D64545",
-        redLight: "#F4CACAFF",
+        redLight: "#F5E9E9",
       },
 
       fontFamily: {
@@ -38,6 +38,26 @@ module.exports = {
       boxShadow: {
         'card-yellow': '1.25rem 1.25rem 0.063rem rgb(209, 230, 28)',
         'card-green': '1.25rem 1.25rem 0.063rem rgb(115, 179, 19)',
+      },
+
+      keyframes: {
+        'modal-in': {
+          '0%':   { opacity: '0', transform: 'scale(0.95) translateY(8px)' },
+          '100%': { opacity: '1', transform: 'scale(1)   translateY(0)'    },
+        },
+        'fade-out': {
+          'to': { opacity: '0', transform: 'translateY(-5px)' },
+        },
+        'shake': {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '25%': { transform: 'translateX(-5px)' },
+          '75%': { transform: 'translateX(5px)' },
+        },
+      },
+      animation: {
+        'modal-in': 'modal-in 0.15s ease-out',
+        'fade-out': 'fade-out 0.4s ease 2.1s forwards',
+        'shake': 'shake 0.5s ease',
       },
     },
   },

@@ -142,9 +142,11 @@ function App() {
    */
   return (
     <Router>
-      <div className="App">
+      <div className="App flex flex-col min-h-screen">
         <NavBar />
-        <AppRoutes />
+        <main className="flex-1">
+          <AppRoutes />
+        </main>
         <Footer />
       </div>
     </Router>
