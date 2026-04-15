@@ -14,7 +14,7 @@
 
 // React and routing imports
 import React from "react";
-import { Route, Router, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 // Page component imports - organized by category
 // Home and main pages
@@ -33,7 +33,7 @@ import Financial from "./features/about-us/financial/Financial";
 import AboutUs from "./features/about-us/aboutus/AboutUs";
 
 // Educational content pages
-import PlayComputer from "./features/engine/PlayComputer";
+import PlayComputerWithTutor from "./features/engine/PlayComputerWithTutor";
 import Lessons from "./features/lessons/lessons-main/Lessons";
 import Puzzles from './features/puzzles/puzzles-page/Puzzles';
 import LessonSelection from "./features/lessons/lessons-selection/LessonsSelection";
@@ -100,7 +100,7 @@ const AppRoutes = () => {
       <Route path="/sponsors&partners" element={<SponsorsPartners />} />
       
       {/* Educational content and learning pages */}
-      <Route path="/play" element={<PlayComputer/>}/>
+      <Route path="/play" element={<PlayComputerWithTutor/>}/>
       <Route path="/puzzles" element={<Puzzles />} />
       <Route path="/lessons-selection" element={<LessonSelection />} />
       <Route path="/lessons" element={<LessonOverlay />} />
