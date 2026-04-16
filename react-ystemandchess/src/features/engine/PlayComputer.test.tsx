@@ -3,6 +3,15 @@ import '@testing-library/jest-dom';
 import PlayComputer from './PlayComputer';
 import { io } from 'socket.io-client';
 
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
+  useLocation: jest.fn(),
+}));
+
+import * as ReactRouter from 'react-router';
+
+const renderComponent = () => render(<PlayComputer />);
+
 // Mock socket.io-client
 jest.mock('socket.io-client');
 
@@ -51,6 +60,9 @@ describe('PlayComputer', () => {
     // Clear all mocks
     jest.clearAllMocks();
 
+    // Mock useLocation
+    (ReactRouter.useLocation as jest.Mock).mockReturnValue({ key: 'default', state: null });
+
     // Create mock socket methods
     mockOn = jest.fn();
     mockEmit = jest.fn();
@@ -73,19 +85,19 @@ describe('PlayComputer', () => {
 
   describe('Initialization', () => {
     it('should render the component', () => {
-      render(<PlayComputer />);
+      renderComponent();
       expect(screen.getByText('Play vs Computer')).toBeInTheDocument();
     });
 
     it('should show settings panel on initial render', () => {
-      render(<PlayComputer />);
+      renderComponent();
       expect(screen.getByText('Game Settings')).toBeInTheDocument();
       expect(screen.getByText('Play as')).toBeInTheDocument();
       expect(screen.getByText('Difficulty')).toBeInTheDocument();
     });
 
     it('should connect to Stockfish server on mount', () => {
-      render(<PlayComputer />);
+      renderComponent();
       expect(io).toHaveBeenCalledWith('http://localhost:8080', {
         transports: ['websocket'],
         reconnection: true,
@@ -93,7 +105,7 @@ describe('PlayComputer', () => {
     });
 
     it('should register socket event listeners', () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       const registeredEvents = mockOn.mock.calls.map(call => call[0]);
       expect(registeredEvents).toContain('connect');
@@ -107,7 +119,7 @@ describe('PlayComputer', () => {
 
   describe('Socket Connection', () => {
     it('should update connected state when socket connects', () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       // Find and call the 'connect' event handler
       const connectHandler = mockOn.mock.calls.find(call => call[0] === 'connect')?.[1];
@@ -121,14 +133,14 @@ describe('PlayComputer', () => {
     });
 
     it('should show connecting message when not connected', () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       // Before connect event, button should show "Connecting..."
       expect(screen.getByText('Connecting...')).toBeInTheDocument();
     });
 
     it('should handle disconnect event', () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       // Connect first
       const connectHandler = mockOn.mock.calls.find(call => call[0] === 'connect')?.[1];
@@ -149,7 +161,7 @@ describe('PlayComputer', () => {
 
   describe('Game Settings', () => {
     it('should allow selecting white as player color', () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       const whiteButton = screen.getByText('White');
       fireEvent.click(whiteButton);
@@ -158,7 +170,7 @@ describe('PlayComputer', () => {
     });
 
     it('should allow selecting black as player color', () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       const blackButton = screen.getByText('Black');
       fireEvent.click(blackButton);
@@ -167,7 +179,7 @@ describe('PlayComputer', () => {
     });
 
     it('should allow selecting difficulty levels', () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       const easyButton = screen.getByText('Easy');
       const mediumButton = screen.getByText('Medium');
@@ -183,7 +195,7 @@ describe('PlayComputer', () => {
     });
 
     it('should start session when start button is clicked', () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       // Connect socket first
       const connectHandler = mockOn.mock.calls.find(call => call[0] === 'connect')?.[1];
@@ -201,7 +213,7 @@ describe('PlayComputer', () => {
     });
 
     it('should hide settings panel after starting game', async () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       // Connect
       const connectHandler = mockOn.mock.calls.find(call => call[0] === 'connect')?.[1];
@@ -227,7 +239,7 @@ describe('PlayComputer', () => {
 
   describe('Session Management', () => {
     it('should handle session-started event', () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       const sessionStartedHandler = mockOn.mock.calls.find(call => call[0] === 'session-started')?.[1];
 
@@ -243,7 +255,7 @@ describe('PlayComputer', () => {
       // Mock window.alert
       const alertMock = jest.spyOn(window, 'alert').mockImplementation();
 
-      render(<PlayComputer />);
+      renderComponent();
 
       const sessionErrorHandler = mockOn.mock.calls.find(call => call[0] === 'session-error')?.[1];
 
@@ -259,7 +271,7 @@ describe('PlayComputer', () => {
 
   describe('Game Play', () => {
     const setupGame = () => {
-      const { container } = render(<PlayComputer />);
+      const { container } = renderComponent();
 
       // Connect
       const connectHandler = mockOn.mock.calls.find(call => call[0] === 'connect')?.[1];
@@ -373,7 +385,7 @@ describe('PlayComputer', () => {
 
   describe('Game Controls', () => {
     const setupGameWithMoves = async () => {
-      const container = render(<PlayComputer />);
+      const container = renderComponent();
 
       // Connect
       const connectHandler = mockOn.mock.calls.find(call => call[0] === 'connect')?.[1];
@@ -445,7 +457,7 @@ describe('PlayComputer', () => {
     });
 
     it('should disable undo button when no moves have been made', async () => {
-      const container = render(<PlayComputer />);
+      const container = renderComponent();
 
       const connectHandler = mockOn.mock.calls.find(call => call[0] === 'connect')?.[1];
       act(() => {
@@ -488,7 +500,7 @@ describe('PlayComputer', () => {
       const chess = require('chess.js').Chess;
       jest.spyOn(chess.prototype, 'isCheckmate').mockReturnValue(true);
 
-      render(<PlayComputer />);
+      renderComponent();
 
       const connectHandler = mockOn.mock.calls.find(c => c[0] === 'connect')?.[1];
       act(() => connectHandler());
@@ -519,7 +531,7 @@ describe('PlayComputer', () => {
 
   describe('Component Cleanup', () => {
     it('should disconnect socket on unmount', () => {
-      const { unmount } = render(<PlayComputer />);
+      const { unmount } = renderComponent();
 
       unmount();
 
@@ -529,7 +541,7 @@ describe('PlayComputer', () => {
 
   describe('Black Player Auto-Start', () => {
     it('should request computer move immediately when player is black', () => {
-      render(<PlayComputer />);
+      renderComponent();
 
       // Connect
       const connectHandler = mockOn.mock.calls.find(call => call[0] === 'connect')?.[1];
@@ -570,7 +582,7 @@ describe('PlayComputer', () => {
 
   describe('Move History', () => {
     it('should display move history section', async () => {
-      const container = render(<PlayComputer />);
+      const container = renderComponent();
 
       const connectHandler = mockOn.mock.calls.find(call => call[0] === 'connect')?.[1];
       act(() => {

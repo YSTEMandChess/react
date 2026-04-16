@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Chess } from 'chess.js';
 import { io, Socket } from 'socket.io-client';
+import { useLocation } from 'react-router';
 import { Move } from '../../core/types/chess';
 import ChessBoard, { ChessBoardRef } from '../../components/ChessBoard/ChessBoard';
 import { environment } from "../../environments/environment";
@@ -24,15 +25,30 @@ const PlayComputer: React.FC = () => {
   const [fen, setFen] = useState<string>("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   const [playerColor, setPlayerColor] = useState<'white' | 'black'>('white');
   const [difficulty, setDifficulty] = useState<Difficulty>(10);
+  const location = useLocation();
   const [isThinking, setIsThinking] = useState(false);
   const [connected, setConnected] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
-  const [gameStatus, setGameStatus] = useState<string>("");
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
   const [showSettings, setShowSettings] = useState(true);
   const [showGameEndModal, setShowGameEndModal] = useState(false);
   const [gameEndMessage, setGameEndMessage] = useState('');
+
+  // When the user clicks "Play" in the navbar while a game is active, reset to settings
+  useEffect(() => {
+    if (!sessionStartedRef.current) return;
+    socketRef.current?.emit('end-session');
+    gameRef.current.reset();
+    setFen(gameRef.current.fen());
+    setMoveHistory([]);
+    setHighlightSquares([]);
+    setIsThinking(false);
+    if (chessBoardRef.current) chessBoardRef.current.reset();
+    setShowSettings(true);
+    setSessionStarted(false);
+    sessionStartedRef.current = false;
+  }, [location.key]);
 
   useEffect(() => { playerColorRef.current = playerColor; }, [playerColor]);
   useEffect(() => { sessionStartedRef.current = sessionStarted; }, [sessionStarted]);
@@ -167,13 +183,6 @@ const PlayComputer: React.FC = () => {
       setShowGameEndModal(true);
       return true;
     }
-    if (game.isCheck()) {
-      const side = game.turn() === 'w' ? 'White' : 'Black';
-      setGameStatus(`${side} is in Check!`);
-      setTimeout(() => setGameStatus(''), 5000);
-    } else {
-      setGameStatus('');
-    }
     return false;
   }, []);
 
@@ -183,7 +192,6 @@ const PlayComputer: React.FC = () => {
     setFen(startFen);
     setMoveHistory([]);
     setHighlightSquares([]);
-    setGameStatus('');
     setIsThinking(false);
     if (chessBoardRef.current) chessBoardRef.current.reset();
     if (socketRef.current && sessionStartedRef.current) {
@@ -212,7 +220,6 @@ const PlayComputer: React.FC = () => {
     setFen(newFen);
     setMoveHistory(prev => prev.slice(0, -2));
     setHighlightSquares([]);
-    setGameStatus('');
     if (chessBoardRef.current) chessBoardRef.current.setPosition(newFen);
     if (socketRef.current) socketRef.current.emit('update-fen', { fen: newFen });
   }, [moveHistory.length]);
@@ -301,7 +308,7 @@ const PlayComputer: React.FC = () => {
       ) : (
         <>
           {/* ── Game controls ── */}
-          <div className="flex gap-3 mb-6 flex-wrap justify-center">
+          <div className="flex gap-3 mb-8 flex-wrap justify-center">
             <button className={controlBtnClass} onClick={undoMove} disabled={moveHistory.length < 2 || isThinking}>
               Undo
             </button>
@@ -316,15 +323,6 @@ const PlayComputer: React.FC = () => {
             </button>
           </div>
 
-          {/* ── Check status banner ── */}
-          <div className="w-full max-w-xl h-16 flex items-center justify-center mb-4">
-            {gameStatus && (
-              <div className="text-red bg-red/10 border-solid border-red px-6 py-2 rounded-xl font-semibold text-lg animate-shake">
-                {gameStatus}
-              </div>
-            )}
-          </div>
-
           {/* ── Chessboard ── */}
           <div className="mb-8 shadow-xl rounded-lg overflow-hidden">
             <ChessBoard
@@ -334,13 +332,13 @@ const PlayComputer: React.FC = () => {
               orientation={playerColor}
               highlightSquares={highlightSquares}
               onMove={handleMove}
-              disabled={isThinking || gameStatus.includes('wins') || gameStatus === 'Draw!'}
+              disabled={isThinking}
             />
           </div>
 
           {/* ── Move history ── */}
-          <div className="bg-light border-solid border-borderLight rounded-2xl p-6 w-full max-w-xl">
-            <h3 className="font-bold text-dark text-lg border-b border-borderLight pb-2 mb-3">
+          <div className="bg-light border-2 border-dark rounded-2xl p-6 w-full max-w-xl my-3">
+            <h3 className="font-bold text-dark text-lg mb-3">
               Move History
             </h3>
             <div
@@ -356,11 +354,11 @@ const PlayComputer: React.FC = () => {
                       className="grid grid-cols-[40px_1fr_1fr] gap-2 px-3 py-2 rounded-lg border border-borderLight items-center hover:border-primary transition-colors duration-150"
                     >
                       <span className="text-primary font-bold text-right text-sm">{moveNumber}.</span>
-                      <span className="bg-white text-dark border-solid border-borderLight px-3 py-1 rounded font-mono text-sm">
+                      <span className="bg-white text-dark border-2 border-primary px-3 py-1 rounded font-mono text-sm">
                         {move}
                       </span>
                       {moveHistory[idx + 1] && (
-                        <span className="bg-dark text-light border-solid border-gray px-3 py-1 rounded font-mono text-sm">
+                        <span className="bg-dark text-light border-2 border-primary px-3 py-1 rounded font-mono text-sm">
                           {moveHistory[idx + 1]}
                         </span>
                       )}
