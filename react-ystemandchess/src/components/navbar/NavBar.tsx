@@ -376,7 +376,7 @@ const NavBar = () => {
   );
 
   return (
-    <header className="bg-light border-b-2 border-dark sticky top-0 z-50">
+    <header className="fixed top-0 left-0 right-0 w-full bg-light border-b-2 border-dark z-50">
       <div className="max-w-full mx-auto">
         <div className="flex justify-between items-center h-24 pr-8">
           
