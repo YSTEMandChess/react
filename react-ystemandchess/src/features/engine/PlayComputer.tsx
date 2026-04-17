@@ -1,17 +1,15 @@
-/* eslint-disable import/first */
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-// use require() for modules that may not have TypeScript type declarations in this project
-// this avoids cascading TS errors during build while keeping runtime behavior
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const chessjs: any = require('chess.js');
-// chess.js exports the Chess class either as { Chess } or as the module itself depending on build
-const Chess = chessjs.Chess || chessjs;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const io: any = require('socket.io-client');
+// chess.js can export either a default/module object or a named Chess export depending on build.
+// import it first (satisfies import/first rule) then normalize below.
+import { Chess as ChessClass } from 'chess.js';
+import { io } from 'socket.io-client';
 import { Move } from '../../core/types/chess';
 import ChessBoard, { ChessBoardRef } from '../../components/ChessBoard/ChessBoard';
 import { environment } from "../../environments/environment";
 import styles from './PlayComputer.module.scss';
+
+// chess.js exposes a named export `Chess`; normalize to a local constructor variable.
+const Chess: any = ChessClass;
 
 type Difficulty = 1 | 5 | 10 | 15 | 20;
 
@@ -38,6 +36,8 @@ const PlayComputer: React.FC = () => {
   const [gameEndMessage, setGameEndMessage] = useState('');
   const [tutorEnabled, setTutorEnabled] = useState<boolean>(true);
   const [tutorTrigger, setTutorTrigger] = useState<number>(0);
+  const [tutorFenBefore, setTutorFenBefore] = useState<string | undefined>(undefined);
+  const [tutorMoveUci, setTutorMoveUci] = useState<string | undefined>(undefined);
 
   // Update refs whenever state changes
   useEffect(() => {
@@ -164,6 +164,9 @@ const PlayComputer: React.FC = () => {
   // Handle player move
   const handleMove = useCallback((move: Move) => {
     try {
+      // capture fen before the move so the tutor can analyze the player's move
+      const fenBefore = gameRef.current.fen();
+
       const moveResult = gameRef.current.move({
         from: move.from,
         to: move.to,
@@ -180,7 +183,10 @@ const PlayComputer: React.FC = () => {
       setHighlightSquares([move.from, move.to]);
       setMoveHistory(prev => [...prev, `${move.from} -> ${move.to}`]);
 
-      // trigger tutor analysis for this player move
+      // set tutor context and trigger analysis for this player move
+      const currentMoveUci = `${moveResult.from}${moveResult.to}${moveResult.promotion ?? ''}`;
+      setTutorFenBefore(fenBefore);
+      setTutorMoveUci(currentMoveUci);
       setTutorTrigger(t => t + 1);
 
       // Check if game ended
@@ -253,6 +259,8 @@ const PlayComputer: React.FC = () => {
     setHighlightSquares([]);
     setGameStatus('');
     setIsThinking(false);
+    setTutorFenBefore(undefined);
+    setTutorMoveUci(undefined);
 
     if (chessBoardRef.current) {
       chessBoardRef.current.reset();
@@ -277,6 +285,8 @@ const PlayComputer: React.FC = () => {
     setShowSettings(true);
     setSessionStarted(false);
     sessionStartedRef.current = false;
+    setTutorFenBefore(undefined);
+    setTutorMoveUci(undefined);
   }, [resetGame]);
 
   // Undo move
@@ -293,6 +303,8 @@ const PlayComputer: React.FC = () => {
     setMoveHistory(prev => prev.slice(0, -2));
     setHighlightSquares([]);
     setGameStatus('');
+    setTutorFenBefore(undefined);
+    setTutorMoveUci(undefined);
 
     if (chessBoardRef.current) {
       chessBoardRef.current.setPosition(newFen);
@@ -431,9 +443,9 @@ const PlayComputer: React.FC = () => {
                     <Tutor
                       enabled={tutorEnabled}
                       trigger={tutorTrigger}
-                      fenBefore={undefined}
+                      fenBefore={tutorFenBefore}
                       fenAfter={fen}
-                      moveUci={undefined}
+                      moveUci={tutorMoveUci}
                       uciHistory={moveHistory.join(' ')}
                     />
                   );
