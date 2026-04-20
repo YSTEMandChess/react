@@ -397,17 +397,7 @@ const PlayComputer: React.FC = () => {
             </div>
           </div>
 
-          <div className="mb-8 shadow-xl rounded-lg overflow-hidden mt-6">
-            <ChessBoard
-              mode="engine"
-              ref={chessBoardRef}
-              fen={fen}
-              orientation={playerColor}
-              highlightSquares={highlightSquares}
-              onMove={handleMove}
-              disabled={isThinking}
-            />
-          </div>
+          {/* Duplicate board removed — keep single main board above (with tutor). */}
 
           <div className="bg-light border-2 border-dark rounded-2xl p-6 w-full max-w-xl my-3">
             <h3 className="font-bold text-dark text-lg mb-3">Move History</h3>

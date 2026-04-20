@@ -14,10 +14,25 @@ type Props = {
 };
 
 type Analysis = {
-  moveIndicator?: 'Best' | 'Good' | 'Inaccuracy' | 'Mistake' | 'Blunder';
+  moveIndicator?: 'Best' | 'Good' | 'Neutral' | 'Book' | 'Inaccuracy' | 'Mistake' | 'Blunder';
   Analysis?: string;
   nextStepHint?: string;
 };
+
+function normalizeIndicator(ind?: string | null | undefined): Analysis['moveIndicator'] | undefined {
+  if (!ind) return undefined;
+  const v = String(ind).toLowerCase();
+  if (v === 'best') return 'Best';
+  if (v === 'good') return 'Good';
+  if (v === 'book') return 'Book';
+  if (v === 'mistake') return 'Mistake';
+  if (v === 'blunder') return 'Blunder';
+  // map old 'inaccuracy' to 'Neutral'
+  if (v === 'inaccuracy' || v === 'inaccurate') return 'Neutral';
+  if (v === 'neutral') return 'Neutral';
+  // default: return undefined so downstream logic can decide
+  return undefined;
+}
 
 // localAnalyze: simple browser-only heuristic fallback when no analysis server is configured.
 // It examines net material change for the mover and returns a lightweight classification.
@@ -50,24 +65,158 @@ function localAnalyze(fenBefore: string, fenAfter: string, moveUci: string) {
   const beforeMaterial = materialSum(fenBefore, sideMoved);
   const afterMaterial = materialSum(fenAfter, sideMoved);
   const delta = afterMaterial - beforeMaterial; // positive => net gain for mover
+  const fullmoveNum = Number(fenBefore.split(' ')[5] || '1');
+  // Additional lightweight heuristics to improve appraisals without Stockfish:
+  // - center control (e4/d4/e5/d5)
+  // - minor-piece development from baseline rank
+  // - giving check
+  // - captures (we already use material delta)
+  // We'll compute a small score and map it to qualitative indicators.
+  let score = 0;
+  // material contribution (increased weight)
+  if (delta >= 3) score += 6;
+  else if (delta >= 1) score += 3;
+  else if (delta <= -3) score -= 6;
+  else if (delta <= -1) score -= 3;
 
-  let moveIndicator: Analysis['moveIndicator'];
-  if (delta >= 3) moveIndicator = 'Best';
-  else if (delta >= 1) moveIndicator = 'Good';
-  else if (delta <= -3) moveIndicator = 'Blunder';
-  else if (delta <= -1) moveIndicator = 'Mistake';
-  else moveIndicator = 'Inaccuracy';
+  // parse move squares
+  const from = moveUci ? moveUci.slice(0, 2) : '';
+  const to = moveUci ? moveUci.slice(2, 4) : '';
+  const promotion = moveUci && moveUci.length === 5 ? moveUci[4] : undefined;
 
-  let analysisText: string;
-  if (delta > 0) {
-    analysisText = `Net material gain of ${delta}. This was a favorable capture. Move: ${moveUci}`;
-  } else if (delta < 0) {
-    analysisText = `Net material loss of ${Math.abs(delta)}. This move lost material and may be a ${moveIndicator}. Move: ${moveUci}`;
-  } else {
-    analysisText = `No material change. Move appears neutral; check tactics and development. Move: ${moveUci}`;
+  // center control bonus (increase to favor opening center moves like e4/d4)
+  const centerSquares = new Set(['e4', 'd4', 'e5', 'd5']);
+  if (centerSquares.has(to)) score += 3;
+
+  // attempt to apply the move on a local Chess instance to inspect result flags
+  try {
+    // chess before for king-attack baseline
+    const chBefore = new Chess(fenBefore);
+    const beforeMoves = chBefore.moves({ verbose: true }) as any[];
+    // find king square before for the mover
+    let kingSquareBefore = '';
+    const boardBefore = chBefore.board();
+    for (let r = 0; r < 8; r++) {
+      for (let f = 0; f < 8; f++) {
+        const sq = boardBefore[r][f];
+        if (!sq) continue;
+        if (sq.type === 'k' && sq.color === sideMoved) {
+          // convert r,f to algebraic
+          const file = 'abcdefgh'[f];
+          const rank = 8 - r;
+          kingSquareBefore = `${file}${rank}`;
+        }
+      }
+    }
+    const beforeKingAttacks = beforeMoves.filter(m => m.to === kingSquareBefore).length;
+
+    const ch = new Chess(fenBefore);
+    const moveObj = ch.move({ from: from as any, to: to as any, promotion: promotion as any });
+    if (moveObj) {
+      // detect castling by from/to pattern
+      const isCastling = (from === 'e1' && (to === 'g1' || to === 'c1')) || (from === 'e8' && (to === 'g8' || to === 'c8'));
+
+      // compute opponent moves after the move
+      const afterMoves = ch.moves({ verbose: true }) as any[];
+      const movingPieceAttacks = afterMoves.filter(m => m.to === moveObj.to).length;
+
+      // find king square after for the mover
+      let kingSquareAfter = '';
+      const boardAfter = ch.board();
+      for (let r = 0; r < 8; r++) {
+        for (let f = 0; f < 8; f++) {
+          const sq = boardAfter[r][f];
+          if (!sq) continue;
+          if (sq.type === 'k' && sq.color === sideMoved) {
+            const file = 'abcdefgh'[f];
+            const rank = 8 - r;
+            kingSquareAfter = `${file}${rank}`;
+          }
+        }
+      }
+      const afterKingAttacks = afterMoves.filter(m => m.to === kingSquareAfter).length;
+
+      // Capture handling: avoid double-counting material (delta already reflected in score)
+      if (moveObj.captured) {
+        const capturedType = (moveObj.captured as string) || 'p';
+        const capturedValue = values[capturedType] || 1;
+        // If material delta already gave a positive score, don't add full capturedValue again.
+        if (delta > 0) {
+          // small bonus for a good capture unless the capturing piece is immediately attacked
+          score += movingPieceAttacks > 0 ? 0 : 1;
+        } else {
+          // no net material gain detected (delta == 0 or negative) — reward only safe captures
+          if (movingPieceAttacks > 0) {
+            // risky capture: small or negative reward
+            score += Math.max(-2, capturedValue - 2);
+          } else {
+            score += Math.max(1, capturedValue - 1);
+          }
+        }
+      }
+
+      // check bonus
+      if (ch.in_check()) score += 2;
+
+      // king-safety change: fewer attacks on king is good, more is bad
+      if (afterKingAttacks < beforeKingAttacks) score += 2;
+      else if (afterKingAttacks > beforeKingAttacks) score -= 2;
+
+      // castling is generally good early
+      if (isCastling) {
+        if (fullmoveNum <= 8) score += 4;
+        else score += 2;
+      }
+
+      // development bonus: minor piece from starting rank moving forward
+      const piece = moveObj.piece;
+      const fromRank = parseInt(from[1] || '0', 10);
+      const toRank = parseInt(to[1] || '0', 10);
+      if (piece === 'n' || piece === 'b') {
+        if ((fromRank === 1 && toRank > fromRank) || (fromRank === 8 && toRank < fromRank)) {
+          score += 2;
+        }
+      }
+
+      // penalize if the moved piece is attacked after the move (hanging piece)
+      if (movingPieceAttacks > 0) {
+        score -= Math.min(3, movingPieceAttacks);
+      }
+    }
+  } catch (e) {
+    // ignore invalid-move parsing here — fallback to material-only
   }
 
-  const nextStepHint = (moveIndicator === 'Blunder' || moveIndicator === 'Mistake')
+  // Map score to qualitative indicator (use 'Neutral' as default)
+  let moveIndicator: Analysis['moveIndicator'];
+  if (score >= 6) moveIndicator = 'Best';
+  else if (score >= 3) moveIndicator = 'Good';
+  else if (score <= -6) moveIndicator = 'Blunder';
+  else if (score <= -3) moveIndicator = 'Mistake';
+  else moveIndicator = 'Neutral';
+
+  // If this is an early opening pawn move to center (book), mark as 'Book'
+  const bookMoves = new Set([
+    'e2e4','d2d4','c2c4','e2e3','d2d3','c2c3',
+    'e7e5','d7d5','c7c5','e7e6','d7d6','c7c6',
+  ]);
+  const isEarlyBook = fullmoveNum <= 2 && bookMoves.has(moveUci || '');
+  if (isEarlyBook) moveIndicator = 'Book';
+
+  // Build analysis text summarizing key signals
+  let analysisText: string[] = [];
+  if (delta > 0) analysisText.push(`Net material gain of ${delta}.`);
+  else if (delta < 0) analysisText.push(`Net material loss of ${Math.abs(delta)}.`);
+  if (centerSquares.has(to)) analysisText.push('Move controls the center.');
+  if ((moveUci && moveUci.length >= 4) && ((moveUci === 'g1f3') || (moveUci === 'b1c3') || (moveUci === 'g8f6') || (moveUci === 'b8c6'))) {
+    analysisText.push('Minor piece development.');
+  }
+  if (analysisText.length === 0) analysisText.push('No material change. Check tactics and development.');
+  analysisText.push(`Move: ${moveUci}`);
+  const analysisSummary = analysisText.join(' ');
+
+  const _serious = new Set(['Blunder', 'Mistake']);
+  const nextStepHint = _serious.has(moveIndicator ?? '')
     ? 'Review the capture sequence and look for hanging pieces.'
     : 'Continue development and watch for opponent threats.';
 
@@ -75,44 +224,193 @@ function localAnalyze(fenBefore: string, fenAfter: string, moveUci: string) {
     success: true,
     explanation: {
       moveIndicator,
-      Analysis: analysisText,
+      Analysis: analysisSummary,
       nextStepHint,
     } as Analysis,
-    rawText: analysisText,
+    rawText: analysisSummary,
   };
+}
+
+// Attempt to run in-browser Stockfish if the `stockfish` package is installed.
+// Returns null if Stockfish is not available or fails.
+async function analyzeWithStockfish(fenBefore: string, fenAfter: string, moveUci: string, uciHistory: string, depth = 12, cancelled = false) {
+  try {
+    // dynamic import (some projects bundle a stockfish.js that exports a factory)
+    // The package name may vary; many setups use 'stockfish' that returns a function/worker.
+    // We'll attempt to import and construct an engine if possible.
+    // dynamically import stockfish if it's installed. It's optional for the project.
+    // Use ts-ignore because the package may not be present in this repository and that's acceptable.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const stockfishModule: any = await import('stockfish').then((m: any) => (m && (m.default || m)));
+    if (!stockfishModule) return null;
+
+    return await new Promise<any>((resolve) => {
+      let bestMove: string | null = null;
+      let score: number | null = null;
+      let infoLines: string[] = [];
+      const engine = typeof stockfishModule === 'function' ? stockfishModule() : stockfishModule;
+
+      const onMessage = (msg: string) => {
+        if (!msg) return;
+        const line = msg.toString();
+        infoLines.push(line);
+        // UCI info lines may contain 'score cp N' or 'score mate N'
+        if (/^bestmove\s+/i.test(line)) {
+          const parts = line.split(/\s+/);
+          bestMove = parts[1] || null;
+        }
+        const scoreMatch = line.match(/score cp (-?\d+)/);
+        if (scoreMatch) score = parseInt(scoreMatch[1], 10);
+      };
+
+      // some stockfish builds use postMessage/onmessage, others use send
+      if (typeof engine.onmessage === 'function') {
+        engine.onmessage = (e: any) => onMessage(e.data || e);
+      }
+      if (typeof engine.addEventListener === 'function') {
+        try { engine.addEventListener('message', (e: any) => onMessage(e.data || e)); } catch (e) {}
+      }
+      if (typeof engine.postMessage === 'function') {
+        engine.postMessage('uci');
+        engine.postMessage('ucinewgame');
+        engine.postMessage(`position fen ${fenBefore}`);
+        engine.postMessage(`go depth ${depth}`);
+      } else if (typeof engine.send === 'function') {
+        engine.send('uci');
+        engine.send('ucinewgame');
+        engine.send(`position fen ${fenBefore}`);
+        engine.send(`go depth ${depth}`);
+      }
+
+      // poll for bestmove for a limited time
+      const timeout = setInterval(() => {
+        if (cancelled) {
+          clearInterval(timeout);
+          try { if (engine.terminate) engine.terminate(); } catch (e) {}
+          resolve(null);
+        }
+          if (bestMove !== null || infoLines.length > 0) {
+          // we have info — return what we have
+          clearInterval(timeout);
+          try { if (engine.terminate) engine.terminate(); } catch (e) {}
+          // Heuristic mapping: if bestMove equals our moveUci, it's likely good
+          // Map engine centipawn score to qualitative indicator; small scores -> Neutral
+          let sfIndicator: string;
+          if (bestMove && moveUci && bestMove.startsWith(moveUci)) sfIndicator = 'Best';
+          else if (score !== null) {
+            if (score >= 100) sfIndicator = 'Best';
+            else if (score >= 30) sfIndicator = 'Good';
+            else if (score >= -20) sfIndicator = 'Neutral';
+            else if (score >= -100) sfIndicator = 'Mistake';
+            else sfIndicator = 'Blunder';
+          } else {
+            sfIndicator = 'Neutral';
+          }
+
+          resolve({ bestMove, score, explanation: `Stockfish score ${score ?? 'n/a'}`, moveIndicator: sfIndicator, nextStepHint: 'Consider reviewing the engine PV.' });
+        }
+      }, 150);
+    });
+  } catch (e) {
+    // dynamic import failed or engine not present
+    // eslint-disable-next-line no-console
+    console.warn('StockfishTutor: in-browser stockfish import failed', e);
+    return null;
+  }
 }
 
 const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter, moveUci, uciHistory }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [debugLog, setDebugLog] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
-    if (!trigger) return;
-    if (!fenBefore || !fenAfter || !moveUci) return;
+    if (!enabled) {
+      try { setDebugLog('tutor disabled (enabled=false)'); } catch (e) {}
+      return;
+    }
+
+    // allow trigger to be optional — run whenever move context is provided
+    if (!fenBefore || !fenAfter || !moveUci) {
+      try { setDebugLog('waiting for move context (fenBefore/fenAfter/moveUci)'); } catch (e) {}
+      return;
+    }
+
+    // Debounce/delay before starting analysis to allow the board & engine to settle
+    const analysisDelay = 800; // ms
+    const minDisplayTime = 700; // ensure 'thinking' shows for at least this long
+    let cancelled = false;
+    let timer = 0 as any;
 
     const doAnalyze = async () => {
+      if (cancelled) return;
       setIsAnalyzing(true);
       setError(null);
       setAnalysis(null);
+      const startedAt = Date.now();
 
       try {
         // Debug: log the move context we're about to send for analysis
         // eslint-disable-next-line no-console
         console.debug('StockfishTutor: analyzing move', { fenBefore, fenAfter, moveUci, uciHistory });
+        try { setDebugLog(`analyzing move ${moveUci} | fenBefore=${fenBefore.split(' ')[0]}...`); } catch (e) { /* ignore */ }
         // Safely read environment URL keys
         const urls = (environment && (environment as any).urls) || {};
         const rawBase = urls.chessServerURL || urls.chessServer || '';
         const baseUrl = typeof rawBase === 'string' ? rawBase.replace(/\/$/, '') : '';
 
-        if (!baseUrl) {
-          // Use local no-network heuristic analyzer as a fallback so the UI works without a server.
-          const local = localAnalyze(fenBefore, fenAfter, moveUci || '');
-          setAnalysis(local.explanation || { Analysis: local.rawText });
-          setIsAnalyzing(false);
-          return;
-        }
+                        if (!baseUrl) {
+                          // Try in-browser Stockfish engine first (if installed). If unavailable or fails, fall back to localAnalyze.
+                          try {
+                            // eslint-disable-next-line no-console
+                            console.debug('StockfishTutor: attempting in-browser Stockfish');
+                            try { setDebugLog('attempting in-browser Stockfish analysis'); } catch (e) {}
+                            const sfResult = await analyzeWithStockfish(fenBefore, fenAfter, moveUci || '', uciHistory || '', 12, cancelled);
+                            if (sfResult) {
+                              // Build Analysis object and normalize labels
+                              const explanation = {
+                                moveIndicator: (normalizeIndicator(sfResult.moveIndicator) as Analysis['moveIndicator']) || (sfResult.moveIndicator as Analysis['moveIndicator']),
+                                Analysis: sfResult.explanation ?? `Best move: ${sfResult.bestMove ?? 'n/a'}; score: ${sfResult.score ?? 'n/a'}`,
+                                nextStepHint: sfResult.nextStepHint,
+                              } as Analysis;
+                              setAnalysis(explanation);
+                              try { setDebugLog(`stockfish result: ${sfResult.moveIndicator} | best=${sfResult.bestMove} score=${sfResult.score}`); } catch (e) {}
+                              const elapsed = Date.now() - startedAt;
+                              if (elapsed < minDisplayTime) await new Promise((r) => setTimeout(r, minDisplayTime - elapsed));
+                              if (cancelled) return;
+                              setIsAnalyzing(false);
+                              return;
+                            }
+                          } catch (e) {
+                            // eslint-disable-next-line no-console
+                            console.warn('StockfishTutor: in-browser Stockfish failed, falling back to localAnalyze', e);
+                            try { setDebugLog('in-browser Stockfish failed, using local fallback'); } catch (ee) {}
+                          }
+
+                          // Use local no-network heuristic analyzer as a fallback so the UI works without a server.
+                          // Add a small delay to give the feel of real analysis and to let quick successive moves settle.
+                          await new Promise((r) => setTimeout(r, 300));
+                          if (cancelled) return;
+                          const local = localAnalyze(fenBefore, fenAfter, moveUci || '');
+                          // eslint-disable-next-line no-console
+                          console.debug('StockfishTutor: local analyze result', local);
+                          try { setDebugLog(`local result: ${local.explanation?.moveIndicator ?? '—'} | ${local.rawText}`); } catch (e) { /* ignore */ }
+                          // normalize local result labels
+                          if (local && local.explanation) {
+                            const norm = { ...local.explanation } as Analysis;
+                            norm.moveIndicator = normalizeIndicator(norm.moveIndicator as any) || norm.moveIndicator;
+                            setAnalysis(norm);
+                          } else {
+                            setAnalysis({ Analysis: local.rawText });
+                          }
+                          const elapsed = Date.now() - startedAt;
+                          if (elapsed < minDisplayTime) await new Promise((r) => setTimeout(r, minDisplayTime - elapsed));
+                          if (cancelled) return;
+                          setIsAnalyzing(false);
+                          return;
+                        }
 
         // Try a set of common endpoints in case the server route differs (e.g. /analyze vs /api/analyze)
         const endpoints = [
@@ -172,7 +470,21 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
         }
 
         if (!rawText) {
-          setError('No reachable analysis endpoint found. Check your analysis server URL and that the server is running.');
+          // No usable server response from any endpoint — fall back to local heuristic so the tutor still works offline
+          // eslint-disable-next-line no-console
+          console.warn('StockfishTutor: no usable server response, falling back to localAnalyze');
+          try { setDebugLog('no server response, using localAnalyze fallback'); } catch (e) { /* ignore */ }
+          const local = localAnalyze(fenBefore, fenAfter, moveUci || '');
+          if (local && local.explanation) {
+            const norm = { ...local.explanation } as Analysis;
+            norm.moveIndicator = normalizeIndicator(norm.moveIndicator as any) || norm.moveIndicator;
+            setAnalysis(norm);
+          } else {
+            setAnalysis({ Analysis: local.rawText });
+          }
+          const elapsed = Date.now() - startedAt;
+          if (elapsed < minDisplayTime) await new Promise((r) => setTimeout(r, minDisplayTime - elapsed));
+          if (cancelled) return;
           setIsAnalyzing(false);
           return;
         }
@@ -239,17 +551,31 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
           parsed = expl as Analysis;
         }
 
+        // Normalize legacy/other labels: prefer 'Neutral' instead of 'Inaccuracy'
+        if (parsed && parsed.moveIndicator === 'Inaccuracy') {
+          parsed.moveIndicator = 'Neutral';
+        }
+
+        // Respect minimum thinking display time for better UX
+        const elapsed = Date.now() - startedAt;
+        if (elapsed < minDisplayTime) await new Promise((r) => setTimeout(r, minDisplayTime - elapsed));
+        if (cancelled) return;
         setAnalysis(parsed || null);
         setIsAnalyzing(false);
       } catch (err: any) {
         setError(err?.message || 'Network error');
-        setIsAnalyzing(false);
+        if (!cancelled) setIsAnalyzing(false);
       }
     };
 
-    doAnalyze();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trigger, enabled]);
+    // Start analysis after debounce delay
+    timer = setTimeout(() => doAnalyze(), analysisDelay);
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [trigger, enabled, fenBefore, fenAfter, moveUci]);
 
   if (!enabled) return <div className={styles.tutorPlaceholder}>Tutor disabled</div>;
 
@@ -268,6 +594,9 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
         )}
         {!isAnalyzing && !error && !analysis && (
           <div className={styles.empty}>Make a move to get instant feedback.</div>
+        )}
+        {debugLog && (
+          <div style={{ marginTop: 8, fontSize: 12, color: '#6b7280' }}>Debug: {debugLog}</div>
         )}
       </div>
     </div>

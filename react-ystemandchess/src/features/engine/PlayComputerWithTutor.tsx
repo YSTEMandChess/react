@@ -59,15 +59,17 @@ const PlayComputerWithTutor: React.FC = () => {
     const socket = io(environment.urls.stockfishServerURL, { transports: ['websocket'], reconnection: true });
     socketRef.current = socket;
 
-    socket.on('connect', () => setConnected(true));
-    socket.on('disconnect', () => { setConnected(false); setSessionStarted(false); sessionStartedRef.current = false; });
+    socket.on('connect', () => { console.debug('PlayComputerWithTutor: socket connected'); setConnected(true); });
+    socket.on('disconnect', (reason: any) => { console.debug('PlayComputerWithTutor: socket disconnected', reason); setConnected(false); setSessionStarted(false); sessionStartedRef.current = false; });
 
     socket.on('session-started', ({ success }: any) => {
+      console.debug('PlayComputerWithTutor: session-started', { success });
       setSessionStarted(true); sessionStartedRef.current = true;
       if (success && playerColorRef.current === 'black') requestComputerMove(gameRef.current.fen());
     });
 
     socket.on('evaluation-complete', ({ mode, move }: any) => {
+      console.debug('PlayComputerWithTutor: evaluation-complete', { mode, move });
       if (mode === 'move' && move) {
         try {
           const moveResult = gameRef.current.move(move);
@@ -189,6 +191,20 @@ const PlayComputerWithTutor: React.FC = () => {
             <button onClick={resetGame} disabled={isThinking}>Reset</button>
             <button onClick={newGame}>New Game</button>
             <button onClick={() => chessBoardRef.current?.flip()}>Flip Board</button>
+          </div>
+
+          {/* Simple connection/status panel to aid debugging when opponent doesn't move */}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+            <div style={{ fontSize: 13 }}>Socket: <strong>{connected ? 'Connected' : 'Disconnected'}</strong></div>
+            <div style={{ fontSize: 13 }}>Session: <strong>{sessionStarted ? 'Started' : 'Stopped'}</strong></div>
+            <div style={{ fontSize: 13 }}>Engine: <strong>{isThinking ? 'Thinking...' : 'Idle'}</strong></div>
+            <button onClick={() => {
+              // attempt a lightweight reconnect
+              try {
+                if (socketRef.current && socketRef.current.disconnect) socketRef.current.disconnect();
+              } catch (e) {}
+              try { socketRef.current = io(environment.urls.stockfishServerURL, { transports: ['websocket'], reconnection: true }); } catch (e) { console.error('Reconnect failed', e); }
+            }}>Reconnect</button>
           </div>
 
           <div className={styles.statusBarFixed}>{gameStatus && (<div className={`${styles.statusMessage} ${styles.check}`}>{gameStatus}</div>)}</div>
