@@ -6,10 +6,9 @@
  * to the HTML DOM element with id 'root'.
  */
 
-import React from "react";
 import ReactDOM from "react-dom/client";
-import "./index.css";
 import App from "./App";
+import "./index.css";
 
 // Create a root React element and mount it to the DOM
 const root = ReactDOM.createRoot(

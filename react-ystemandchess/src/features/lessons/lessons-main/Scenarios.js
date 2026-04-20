@@ -1314,42 +1314,58 @@ export const scenariosArray = [
       {
         name: 'Relative Skewer #1',
         fen: '8/1r3k2/2q1ppp1/8/5PB1/4P3/4QK2/5R2 w - - 0 1',
-        info: 'Get a winning position in 2 moves. A skewer is an attack upon two pieces in a line and is similar to a pin. A skewer is sometimes described as a \'reverse pin\'; the difference is that in a skewer, the more valuable piece is in front of the piece of lesser value. If the piece being attacked is not a king, then it is a Relative Skewer.'
+        info: 'Get a winning position in 2 moves. A skewer is an attack upon two pieces in a line and is similar to a pin. A skewer is sometimes described as a \'reverse pin\'; the difference is that in a skewer, the more valuable piece is in front of the piece of lesser value. If the piece being attacked is not a king, then it is a Relative Skewer.', 
+        solution: 'Bf3 Qc3 Bxb7',
+        goal: null
       },
       {
         name: 'Relative Skewer #2',
         fen: 'r2r2k1/2p2ppp/5n2/4p3/pB2P3/P2q3P/2R2PP1/2RQ2K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves', 
+        solution: 'Rd2 Qxd2 Bxd2',
+        goal: null
       },
       {
         name: 'Relative Skewer #3',
         fen: '4rr1k/ppqb2p1/3b4/2p2n2/2PpBP1P/PP4P1/2QBN3/R3K2R b KQ - 0 22',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Rxe4 Qxe4 Bc6 Qd3 Bxh1',
+        goal: null 
       },
       {
         name: 'Absolute Skewer #1',
         fen: '8/3qkb2/8/8/4KB2/5Q2/8/8 b - - 0 1',
-        info: 'Get a winning position in 2 moves. A skewer is an attack upon two pieces in a line and is similar to a pin. A skewer is sometimes described as a \'reverse pin\'; the difference is that in a skewer, the more valuable piece is in front of the piece of lesser value. If the piece being attacked is a king, then it is an Absolute Skewer. The king is said to be skewered.'
+        info: 'Get a winning position in 2 moves. A skewer is an attack upon two pieces in a line and is similar to a pin. A skewer is sometimes described as a \'reverse pin\'; the difference is that in a skewer, the more valuable piece is in front of the piece of lesser value. If the piece being attacked is a king, then it is an Absolute Skewer. The king is said to be skewered.' ,
+        solution: 'Bd5+ Ke3 Bxf3',
+        goal: null
       },
       {
         name: 'Absolute Skewer #2',
         fen: '2Q5/1p4q1/p4k2/6p1/P3b3/6BP/5PP1/6K1 w - - 4 51',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Be5+ Kxe5 Qc3+ Kd6 Qxg7',
+        goal: null
       },
       {
         name: 'Absolute Skewer #3',
         fen: '5Q2/2k2p2/3bqP2/R2p4/3P1p2/2p4P/2P3P1/7K w - - 1 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Qxf7+ Qxf7 Ra7+ Kd8 Rxf7',
+        goal: null
       },
       {
         name: 'Absolute Skewer #4',
         fen: '5k2/pp1b4/3N1pp1/3P4/2p5/q1P1QP2/5KP1/8 w - - 0 39',
-        info: 'Get a winning position in 4 moves.'
+        info: 'Get a winning position in 4 moves.',
+        solution: 'Qh6+ Ke7 Qg7+ Kxd6 Qf8+ Kxd5 Qxa3',
+        goal: null
       },
       {
         name: 'Absolute Skewer #5',
         fen: '6q1/6p1/2k4p/R6B/p7/8/2P3P1/2K5 w - - 0 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Ra8 Qxa8 Bf3+ Kb5 Bxa8',
+        goal: null
       },
     ]
   },
@@ -1359,82 +1375,114 @@ export const scenariosArray = [
       {
         name: 'Knight Fork #1',
         fen: '2q3k1/8/8/5N2/6P1/7K/8/8 w - - 0 1',
-        info: 'Get a winning position in 2 moves. A fork is a tactic whereby a single piece makes two or more direct attacks simultaneously. Most commonly two pieces are threatened, which is also sometimes called a double attack. The attacking piece is called the forking piece; the pieces attacked are said to be forked.'
+        info: 'Get a winning position in 2 moves. A fork is a tactic whereby a single piece makes two or more direct attacks simultaneously. Most commonly two pieces are threatened, which is also sometimes called a double attack. The attacking piece is called the forking piece; the pieces attacked are said to be forked.',
+        solution: 'Ne7+ Kf7 Nxc8',       
+        goal: null
       },
       {
         name: 'Knight Fork #2',
         fen: '6k1/5r1p/p2N4/nppP2q1/2P5/1P2N3/PQ5P/7K w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Qh8+ Kxh8 Nxf7+',     
+        goal: null
       },
       {
         name: 'Pawn Fork #1',
         fen: '7k/8/8/4b1n1/8/8/5PPP/5R1K w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'f4 Nf3 Rxf3 ',        
+        goal: null
       },
       {
         name: 'Pawn Fork #2',
         fen: 'r1bqkb1r/pppp1ppp/2n5/4p3/2B1N3/5N2/PPPP1PPP/R1BQK2R b KQkq - 0 2',
-        info: 'Equalize in 2 moves'
+        info: 'Equalize in 2 moves',
+        solution: 'd5 Bd3 dxe4',
+        goal: null
       },
       {
         name: 'Rook Fork #1',
         fen: '8/8/b5k1/8/8/8/1K6/3R4 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Rd6+ Kf5 Rxa6',       
+        goal: null
       },
       {
         name: 'Bishop Fork #1',
         fen: '5k2/8/8/8/8/r6P/5B2/6K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Bc5+ Kg8 Bxa3',       
+        goal: null
       },
       {
         name: 'Queen Fork #1',
         fen: '4k2r/2n2p1p/6p1/3n4/5Q2/8/5PPP/6K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Qe5+ Kd7 Qxh8',       
+        goal: null
       },
       {
         name: 'Double Attack #1',
         fen: 'r3k3/7p/6p1/5p2/5r2/2NP4/PPP2PPP/R5K1 w - - 0 1',
-        info: 'Get a winning position in 3 moves. A fork is often also called a double attack, because it usually attacks two targets. A fork can of course attack more than two targets, and the targets don\'t have to be pieces. Direct mating threats, or even an implied threat can also be excellent targets for a fork. In this position, you can fork an undefended piece and a second implied threat.'
+        info: 'Get a winning position in 3 moves. A fork is often also called a double attack, because it usually attacks two targets. A fork can of course attack more than two targets, and the targets don\'t have to be pieces. Direct mating threats, or even an implied threat can also be excellent targets for a fork. In this position, you can fork an undefended piece and a second implied threat.',
+        solution: 'Nd5 Rfa4 Nc7+ Kd7 Nxa8',
+        goal: null
       },
       {
         name: 'Double Attack #2',
         fen: '3r1k2/pp1n2pb/q1p1Qp2/2P2r2/3Pp1Np/P1P1B2P/6P1/1R1R2K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves. In this position, you can fork an undefended piece and a direct mate threat.'
+        info: 'Get a winning position in 2 moves. In this position, you can fork an undefended piece and a direct mate threat.',
+        solution: 'Nh6 Qc4 Qxc4',        
+        goal: null
       },
       {
         name: 'Fork Challenge #1 N',
         fen: '8/5pk1/8/4p3/pp1qPn2/5P2/PP2B3/2Q2K2 b - - 0 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Qg1+ Kxg1 Nxe2+ Kf2 Nxc1',
+        goal: null
       },
       {
         name: 'Fork Challenge #2 N',
         fen: '4k3/R4br1/8/p3P3/4N3/5K2/8/8 w - - 0 1',
-        info: 'Get a winning position in 4 moves.'
+        info: 'Get a winning position in 4 moves.',
+        solution: 'Nd6+ Kf8 Ra8+ Ke7 Nf5+ Ke6 Nxg7+',
+        goal: null
       },
       {
         name: 'Fork Challenge #3 N',
         fen: 'r5k1/ppp2p1p/6pB/4n2n/3bPp1q/2NB3P/PPP3PK/R2Q1R2 b - - 1 1',
-        info: 'Get a winning position in 4 moves.'
+        info: 'Get a winning position in 4 moves.',      
+        solution: 'f3 Rxf3 Ng4+ Kh1 Ng3+ Rxg3 Nf2+',
+        goal: null
       },
       {
         name: 'Fork Challenge #4 Q',
         fen: '8/1q6/p3p1k1/2P1Q2p/P3P2P/2P5/4r1PK/8 w - - 0 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Qg5+ Kf7 Qxh5+ Kg7 Qxe2',
+        goal: null
       },
       {
         name: 'Fork Challenge #5 Q',
         fen: '5Bk1/1b1r2p1/q4p1p/2Q5/2P5/6PP/P4P2/4R1K1 b - - 0 31',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Qe6 Qb4 Qxh3 Qxb7 Rxb7',
+        goal: null
       },
       {
         name: 'Fork Challenge #6 P',
         fen: 'r1bq1rk1/3np1bp/p2p1pp1/1PpP3n/4PP1B/2N2Q2/PP1N2PP/R3KB1R b KQ - 1 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Nxf4 Qxf4 g5 Qg3 gxh4',
+        goal: null
       },
       {
         name: 'Fork Challenge #7 P',
         fen: '4b1rr/4k1p1/4pp1n/pp1pP1RP/2pP1R2/P1P2B1N/2PK1P2/8 w - - 0 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',      
+        solution: 'Rxg7+ Rxg7 exf6+ Kf7 fxg7+',
+        goal: null
       },
     ]
   },
@@ -1444,22 +1492,30 @@ export const scenariosArray = [
       {
         name: 'Discovered Attacks #1',
         fen: '5q2/3k2pp/8/8/8/5N2/6PP/5RK1 w - - 0 1',
-        info: 'Get a winning position in 2 moves. A Discovered Attack is an attack that is revealed when one piece moves out of the way of another. Discovered Attacks can be extremely powerful, as the piece moved can make a threat independently of the piece it reveals. Like many chess tactics, they succeed because the opponent is unable to meet two threats at once. While typically the consequence of a discovered attack is the gain of material, they do not have to do this to be effective; the tactic can be used merely to gain a tempo.'
+        info: 'Get a winning position in 2 moves. A Discovered Attack is an attack that is revealed when one piece moves out of the way of another. Discovered Attacks can be extremely powerful, as the piece moved can make a threat independently of the piece it reveals. Like many chess tactics, they succeed because the opponent is unable to meet two threats at once. While typically the consequence of a discovered attack is the gain of material, they do not have to do this to be effective; the tactic can be used merely to gain a tempo.',
+        solution: 'Ne5+ Ke7 Rxf8',       
+        goal: null
       },
       {
         name: 'Discovered Check #1',
         fen: '5k2/3q2pp/8/8/8/5N2/6PP/5RK1 w - - 0 1',
-        info: 'Get a winning position in 2 moves. When a Discovered Attack is a check, it is called a Discovered Check.'
+        info: 'Get a winning position in 2 moves. When a Discovered Attack is a check, it is called a Discovered Check.',
+        solution: 'Ne5+ Ke8 Nxd7',       
+        goal: null
       },
       {
         name: 'Discovered Attacks #2',
         fen: 'r4k2/2r2pp1/7p/3P4/4B3/5N2/6PP/5RK1 w - - 0 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',  
+        solution: 'd6 Rd7 Bxa8',
+        goal: null
       },
       {
         name: 'Discovered Check #2',
         fen: 'r2q1bnr/pp2k1pp/3p1p2/1Bp1N1B1/8/2Pp4/PP3PPP/RN1bR1K1 w - - 0 12',
-        info: 'Checkmate the opponent in 2 moves'
+        info: 'Checkmate the opponent in 2 moves',
+        solution: 'Ng6+ Kf7 Nxh8#',      
+        goal: null
       },
       {
         name: 'Discovered Attacks #3',
@@ -1469,27 +1525,37 @@ export const scenariosArray = [
       {
         name: 'Discovered Check #3',
         fen: '3k4/7R/p2P4/2p1b3/8/2P3rB/P4r2/1K2R3 w - - 3 41',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Nxe4 fxe4 Bxd4+ Kh1 Qc3',
+        goal: null
       },
       {
         name: 'Discovered Attacks #4',
         fen: '8/8/4np2/4pk1p/RNr4P/P3KP2/1P6/8 w - - 1 1',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Nd5 Rxh4 Rxh4',       
+        goal: null
       },
       {
         name: 'Discovered Check #4',
         fen: 'r1bq2rk/1p1p4/p1n1pPQp/3n4/4N3/1N1Bb3/PPP3PP/R4R1K w - - 0 1',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves', 
+        solution: 'Qh7+ Kxh7 Ng5+ Kh8 Nf7#',
+        goal: null
       },
       {
         name: 'Discovered Attacks #5',
         fen: '8/1b1Q1ppk/p2bp2p/1p1q4/3Pp3/1P2B1P1/P6P/2R3K1 b - - 0 1',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Bf4 Qxd5 Bxe3+ Kf1 Bxd5',
+        goal: null
       },
       {
         name: 'Discovered Check #5',
         fen: '3r4/1R1P1k1p/1p1q2p1/1Pp5/2P5/6P1/4Q1KP/8 w - - 6 51',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Qe8+ Rxe8 d8=Q+ Qe7 Qxb6',
+        goal: null
       },
     ]
   },
@@ -1500,32 +1566,43 @@ export const scenariosArray = [
         name: 'Double Check Introduction',
         fen: '8/k1p5/1p6/5B2/N7/8/8/R5K1 w - - 0 1',
         info: 'Checkmate the opponent in 2 moves. A Double Check is when two pieces are delivering check simultaneously. A Double Check is generally more powerful than a normal check, because the opponent can only respond with a king move. (The pieces that are delivering check cannot both be captured or blocked with one move.)',
-        solution: 'Nc5+ Kb8 Nd7#',
+        solution: 'Nc5+ Kb8 Nd7#',       
+        goal: null
       },
       {
         name: 'Double Check #1',
         fen: 'r3k2r/ppp2pp1/2np4/2B1p2n/2B1P1Nq/3P4/PPP2PP1/RN1Q1RK1 b kq - 0 11',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Qh1+ Kxh1 Ng3+ Kg1 Rh1#',
+        goal: null
       },
       {
         name: 'Double Check #2',
         fen: 'rn2kb1r/pp2pp1p/2p2p2/8/8/3Q1N2/qPPB1PPP/2KR3R w kq - 0 13',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Qd8+ Kxd8 Ba5+ Ke8 Rd8#',
+        goal: null
       },
       {
         name: 'Double Check #3',
         fen: 'r4k2/pppb1Pp1/2np3p/2b5/2B2Bnq/2N5/PP2Q1PP/4RR1K w - - 6 17',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Qe8+ Bxe8 fxe8=Q+ Rxe8 Bxd6#',
+        goal: null
       },
       {
         name: 'Double Check #4',
         fen: '3r2k1/pp5p/6p1/2Ppq3/4Nr2/4B2b/PP2P2K/R1Q1R2B b - - 0 26',
-        info: 'Checkmate the opponent in 4 moves'
+        info: 'Checkmate the opponent in 4 moves',      
+        solution: 'Rf2+ Kxh3 Rh2+ Kg4 h5+ Kf3 dxe4#',
+        goal: null
       },
       {
         name: 'Double Check #5',
         fen: 'r3k2r/2q1np1p/p3P1p1/1p2p3/8/2PBB3/P1PR2PP/5RK1 w kq - 0 21',
-        info: 'Get a winning position in 5 moves'
+        info: 'Get a winning position in 5 moves',       
+        solution: 'exf7+ Kd7 Bf5+ Kc6 Be4+ Nd5 Bxd5+ Kd7 Bxa8+',
+        goal: null
       },
     ]
   },
@@ -1535,52 +1612,72 @@ export const scenariosArray = [
       {
         name: 'Overloaded #1',
         fen: '6k1/5pp1/4b1n1/8/8/3BR3/5PPP/6K1 w - - 0 1',
-        info: 'Get a winning position in 1 move. A piece is Overloaded (also known as \'overworked\') if it has more than one responsibility, e.g. defending a piece, defending a square, blocking a check, and blockading a piece. In this example, the f7 pawn has at least two responsibilities; it is protecting the bishop on e6, but it is also protecting the knight on g6. Can you exploit this double responsibility?'
+        info: 'Get a winning position in 1 move. A piece is Overloaded (also known as \'overworked\') if it has more than one responsibility, e.g. defending a piece, defending a square, blocking a check, and blockading a piece. In this example, the f7 pawn has at least two responsibilities; it is protecting the bishop on e6, but it is also protecting the knight on g6. Can you exploit this double responsibility?',
+        solution: 'Rxe6',
+        goal: null
       },
       {
         name: 'Overloaded #2',
         fen: '2r1rbk1/5pp1/3P1n2/8/8/3Q3P/2B2PPK/8 w - - 0 1',
-        info: 'Get a winning position in 1 move. In this example, the f6 knight has two responsibilities. One of those responsibilities is more important than the other. Can you exploit the situation?'
+        info: 'Get a winning position in 1 move. In this example, the f6 knight has two responsibilities. One of those responsibilities is more important than the other. Can you exploit the situation?',
+        solution: 'd7',
+        goal: null
       },
       {
         name: 'Overloaded #3',
         fen: '2b5/7p/3k2pP/1p1p1pP1/1P1P1K2/8/5P2/3B4 w - - 0 1',
-        info: 'Get a winning position in 4 moves'
+        info: 'Get a winning position in 4 moves',
+        solution: 'Bh5 Be6 Bxg6 Bg8 Bxf5 Ke7 Ke5',
+        goal: null
       },
       {
         name: 'Overloaded #4',
         fen: '3q3k/pp2b1pp/8/2P5/1P2RBQ1/2P5/P4rPp/7K w - - 2 29',
-        info: 'Get a winning position in 1 move'
+        info: 'Get a winning position in 1 move',
+        solution: 'Rxe7',
+        goal: null
       },
       {
         name: 'Overloaded #5',
         fen: '8/1Q1rkpp1/p3p3/3nB1r1/8/3q3P/PP3R2/K1R5 w - - 2 34',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Rxf7+ Kxf7 Qxd7+ Kg6 Qxg7+',
+        goal: null
       },
       {
         name: 'Overloaded #6',
         fen: '3r2k1/pb1r1pp1/1pn2q1p/3B4/6Q1/P4NP1/1P3PP1/3RR1K1 w - - 7 23',
-        info: 'Get a winning position in 4 moves'
+        info: 'Get a winning position in 4 moves',       
+        solution: 'Qxd7 Rxd7 Re8+ Kh7 Be4+ g6 Rxd7',
+        goal: null
       },
       {
         name: 'Overloaded #7',
         fen: '2Q5/1p3p1k/p2prPq1/8/7p/8/PP3RP1/6K1 w - - 0 1',
-        info: 'Get a winning position in 4 moves'
+        info: 'Get a winning position in 4 moves',
+        solution: 'Qxe6 fxe6 f7 Qxf7 Rxf7+ Kh8 Rf8+ Kh7',
+        goal: null
       },
       {
         name: 'Overloaded #8',
         fen: '5k1r/p4p2/3Np2p/3bP3/8/3RBPb1/1r4P1/2R3K1 w - - 0 1',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Rxd5 exd5 Nf5 Rb8 Nxg3',
+        goal: null
       },
       {
         name: 'Overloaded #9',
         fen: '3r2k1/1pp4p/p1n1q1p1/2Q5/1P2B3/P3P1Pb/3N1R1P/6K1 b - - 1 1',
-        info: 'Get a winning position in 3 moves'
+        info: 'Get a winning position in 3 moves',
+        solution: 'Qxe4 Qf8+ Rxf8 Rxf8+ Kxf8',
+        goal: null
       },
       {
         name: 'Overloaded #10',
         fen: 'r7/2k1Pp1p/p1n2p2/P1b1r3/2p5/2P3P1/5P1P/1R1Q2K1 w - - 2 29',
-        info: 'Get a winning position in 4 moves'
+        info: 'Get a winning position in 4 moves',
+        solution: 'Rb7+ Kxb7 Qd7+ Kb8 e8=Q+ Rxe8 Qxe8+',
+        goal: null
       },
     ]
   },
@@ -1590,27 +1687,42 @@ export const scenariosArray = [
       {
         name: 'Zwischenzug',
         fen: 'rBbqk2r/pp3ppp/5n2/8/1bpP4/8/PP2B1PP/RN1Q1KNR b kq - 0 9',
-        info: 'Get a winning position in 2 moves. Whether you call it Zwischenzug (from German), Intermezzo (from Italian), an intermediate move or just an in-between move, it\'s all the same thing. It\'s a very common tactic that you need to know because it happens in almost all chess games. A Zwischenzug is when a player, instead of playing the expected move, often a recapture, plays another move that makes an immediate threat that the opponent must answer, before playing the original expected move.In this Savielly Tartakower - Jose Raul Capablanca game from 1924, Tartakower just played Bxb8. Instead of recapturing immediately with Rxb8, can you find a better move that makes a strong threat?'
+        info: 'Get a winning position in 2 moves. Whether you call it Zwischenzug (from German), Intermezzo (from Italian), an intermediate move or just an in-between move, it\'s all the same thing. It\'s a very common tactic that you need to know because it happens in almost all chess games. A Zwischenzug is when a player, instead of playing the expected move, often a recapture, plays another move that makes an immediate threat that the opponent must answer, before playing the original expected move.In this Savielly Tartakower - Jose Raul Capablanca game from 1924, Tartakower just played Bxb8. Instead of recapturing immediately with Rxb8, can you find a better move that makes a strong threat?',
+        solution: 'Nd5 Kf2 Rxb8',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Zwischenschach',
         fen: '2r2rk1/pp1b1ppp/1q2p3/3pP3/1B3Pn1/3B1N2/P3Q1PP/RN2KR2 b Q - 0 16',
-        info: 'Get a winning position in 3 moves. A Zwischenzug that is also a check, is called a Zwischenschach, Zwischen-check, or simply an in-between check. Instead of recapturing with Qxb4 immediately, find the Zwischenschach in this Samuel Rosenthal - Cecil Valentine De Vere game from 1867.'
+        info: 'Get a winning position in 3 moves. A Zwischenzug that is also a check, is called a Zwischenschach, Zwischen-check, or simply an in-between check. Instead of recapturing with Qxb4 immediately, find the Zwischenschach in this Samuel Rosenthal - Cecil Valentine De Vere game from 1867.',
+        solution: 'Rc1+ Kd2 Rxf1 Qxf1 Qxb4+',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Zwischenzug Challenge #1',
         fen: 'r1b5/4kq2/p1Bbp1Qp/6p1/8/4B1P1/PPP4P/6K1 w - - 0 29',
-        info: 'Get a winning position in 3 moves. From Wolfgang Unzicker - Mikhail Tal, 1975.'
+        info: 'Get a winning position in 3 moves. From Wolfgang Unzicker - Mikhail Tal, 1975.',
+        solution: 'Qxh6 Bd7 Qxg5+ Ke8 Bxa8',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Zwischenzug Challenge #2',
         fen: '2r3k1/q5pp/4p3/2rp1p2/1p1B1P2/1P1QP3/P1R3PP/6K1 w - - 2 28',
-        info: 'Get a winning position in 2 moves. From Alexander Kotov - Ratmir Kholmov, 1971.'
+        info: 'Get a winning position in 2 moves. From Alexander Kotov - Ratmir Kholmov, 1971.',
+        solution: 'Qb5 Rxc2 Bxa7',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Zwischenzug Challenge #3',
         fen: '2r2r1k/1pN1Qpbp/p4pp1/qb6/8/1B6/PP3PPP/2RR2K1 w - - 10 23',
-        info: 'Get a winning position in 3 moves. From Boris Gelfand - Peter Svidler, 1996.'
+        info: 'Get a winning position in 3 moves. From Boris Gelfand - Peter Svidler, 1996.',
+        solution: 'Be6 Be2 Bxc8 Bxd1 Rxd1',
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -1620,37 +1732,51 @@ export const scenariosArray = [
       {
         name: 'X-Ray #1',
         fen: '1R1r2k1/2q2ppp/8/1Q6/8/6P1/5P1P/6K1 w - - 0 1',
-        info: 'Checkmate the opponent in 2 moves. X-Ray attacks happen when a piece attacks or defends a square, through an enemy piece.'
+        info: 'Checkmate the opponent in 2 moves. X-Ray attacks happen when a piece attacks or defends a square, through an enemy piece.',
+        solution: 'Qe8+ Rxe8 Rxe8#',
+        goal: null
       },
       {
         name: 'X-Ray #2',
         fen: '8/6p1/5p1k/BP1B4/5P1p/r6P/2R3P1/6Kn b - - 0 1',
-        info: 'Checkmate the opponent in 5 moves. Peter Svidler - Boris Gelfand, 2009.'
+        info: 'Checkmate the opponent in 5 moves. Peter Svidler - Boris Gelfand, 2009.',
+        solution: 'Ra1+ Kh2 Ng3 Be1 Rxe1 Rc1 Rxc1 f5 Rh1#',
+        goal: null
       },
       {
         name: 'X-Ray #3',
         fen: 'rn1qr1k1/1p2np2/2p3p1/8/1pPb4/7Q/PB1P1PP1/2KR1B1R w - - 0 1',
-        info: 'Checkmate the opponent in 2 moves. Max Euwe - Rudolf Loman, 1923.'
+        info: 'Checkmate the opponent in 2 moves. Max Euwe - Rudolf Loman, 1923.',
+        solution: 'Qh8+ Bxh8 Rxh8#',
+        goal: null
       },
       {
         name: 'X-Ray #4',
         fen: '3Rr1k1/p4ppp/b5q1/2Q5/1B3PP1/P7/1PP1r2P/2K5 w - - 0 1',
-        info: 'Checkmate the opponent in 2 moves. Mikhail Chigorin - Eugene Znosko-Borovsky, 1903.'
+        info: 'Checkmate the opponent in 2 moves. Mikhail Chigorin - Eugene Znosko-Borovsky, 1903.',
+        solution: 'Qf8+ Rxf8 Rxf8#',
+        goal: null
       },
       {
         name: 'X-Ray #5',
         fen: '2r5/p2kBp2/b3pP1p/3p2p1/1p6/5P2/PqQ2RPP/2R3K1 b - - 0 1',
-        info: 'Checkmate the opponent in 3 moves. Zandor Nilsson - Efim Geller, 1954.'
+        info: 'Checkmate the opponent in 3 moves. Zandor Nilsson - Efim Geller, 1954.',
+        solution: 'Qxc1+ Qxc1 Rxc1+ Rf1 Rxf1#',
+        goal: null
       },
       {
         name: 'X-Ray #6',
         fen: 'r1b2rk1/4n1b1/p2p2PQ/3P4/2n1B3/2B3P1/qPP5/1NKR3R b - - 0 1',
-        info: 'Checkmate the opponent in 2 moves. In this example, Bxh6 is a winning move as well, but try to find a mate in 2 using the X-Ray tactic.          Sven Platzack - John van Baarle, 1967.'
+        info: 'Checkmate the opponent in 2 moves. In this example, Bxh6 is a winning move as well, but try to find a mate in 2 using the X-Ray tactic.          Sven Platzack - John van Baarle, 1967.',
+        solution: 'Qxb2+ Bxb2 Bxb2#',
+        goal: null
       },
       {
         name: 'X-Ray #7',
         fen: '5n1k/2r1Rr1p/1p3P1B/pPqp4/P1np2Q1/3B4/2P3PP/R5K1 w - - 0 1',
-        info: 'Checkmate the opponent in 3 moves. There are multiple solutions in this example, but use the X-Ray tactic to checkmate the opponent in 3 moves. Zoltan Almasi - Viktor Korchnoi, 1996.'
+        info: 'Checkmate the opponent in 3 moves. There are multiple solutions in this example, but use the X-Ray tactic to checkmate the opponent in 3 moves. Zoltan Almasi - Viktor Korchnoi, 1996.',
+        solution: 'Qg7+ Rxg7 fxg7+ Kg8 gxf8=Q#',
+        goal: null
       },
     ]
   },
@@ -1660,22 +1786,34 @@ export const scenariosArray = [
       {
         name: 'Zugzwang #1',
         fen: '3k4/8/2K5/7R/8/8/8/8 w - - 0 1',
-        info: 'Checkmate the opponent in 2 moves. The word \'Zugzwang\' comes from German, and means \'being forced to make a move\'. A player is in Zugzwang when it\'s their turn and every possible move makes their position worse.In the above example, if black would only move his king to c8 then Rook to the back rank would be check mate, you can force the king to c8 by simply taking away every other option.White to play, mate in 2.'
+        info: 'Checkmate the opponent in 2 moves. The word \'Zugzwang\' comes from German, and means \'being forced to make a move\'. A player is in Zugzwang when it\'s their turn and every possible move makes their position worse.In the above example, if black would only move his king to c8 then Rook to the back rank would be check mate, you can force the king to c8 by simply taking away every other option.White to play, mate in 2.',
+        solution: 'Re5 Kc8 Re8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Zugzwang #2',
         fen: '5rk1/6n1/8/7p/4q1pP/6P1/6RQ/6NK b - - 0 1',
-        info: 'Checkmate the opponent in 3 moves. Here you can use Zugzwang to force checkmate. How cool is that?'
+        info: 'Checkmate the opponent in 3 moves. Here you can use Zugzwang to force checkmate. How cool is that?',
+        solution: 'Rf1 Qh3 gxh3 g4 Qxg2#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Zugzwang #3',
         fen: '8/8/3k4/1p1p4/1P6/2P1K3/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. Use your knowledge of Zugzwang to promote one of your pawns safely.'
+        info: 'Safely promote your pawn. Use your knowledge of Zugzwang to promote one of your pawns safely.',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Zugzwang #4',
         fen: '1k1b4/2n5/1K6/4B3/6B1/8/8/8 w - - 0 1',
-        info: 'Checkmate the opponent in 4 moves. From an endgame composition by Goldberg, published in 1931.'
+        info: 'Checkmate the opponent in 4 moves. From an endgame composition by Goldberg, published in 1931.',
+        solution: 'Bd7 Ka8 Bc6+ Kb8 Bb7 Be7 Bxc7#',
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -1685,37 +1823,58 @@ export const scenariosArray = [
       {
         name: 'Interference Introduction',
         fen: '1r2r1k1/p1pbqppp/Q2b1n2/3p4/P2P4/2P5/1P2BPPP/R1B1KN1R b KQ - 2 14',
-        info: 'Get a winning position in 2 moves. Interference occurs when the line between an attacked piece and its defender is interrupted by sacrificially interposing a piece - typically on a protected square.In this position, Black threatens mate on e2, but White\'s queen is protecting that square. Can you make a bishop move to interfere with this defense? From Adolf Jay Fink - Alexander Alekhine, 1932.'
+        info: 'Get a winning position in 2 moves. Interference occurs when the line between an attacked piece and its defender is interrupted by sacrificially interposing a piece - typically on a protected square.In this position, Black threatens mate on e2, but White\'s queen is protecting that square. Can you make a bishop move to interfere with this defense? From Adolf Jay Fink - Alexander Alekhine, 1932.',
+        solution: 'Bb5 Qxb5 Rxb5',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Interference #2',
         fen: '1k1r3r/1pp2pp1/p1p5/2Q5/7q/2Pp1Pp1/PP1N2P1/R1B1RK2 b - - 3 20',
-        info: 'Checkmate the opponent in 7 moves'
+        info: 'Checkmate the opponent in 7 moves',
+        solution: 'Rd4 Re8+ Rxe8 Qxd4 Qh1+ Qg1 Re1+ Kxe1 Qxg1+ Nf1 Qf2+ Kd1 Qe2#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Interference #3',
         fen: 'r2q2k1/pQ2bppp/4p3/8/3r1B2/6P1/P3PP1P/1R3RK1 w - - 1 17',
-        info: 'Get a winning position in 3 moves. From Vasily Smyslov - Alexander Kazimirovich Tolush, 1961.'
+        info: 'Get a winning position in 3 moves. From Vasily Smyslov - Alexander Kazimirovich Tolush, 1961.',
+        solution: 'Bb8 Rxb8 Qxb8 Qxb8 Rxb8+',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Interference #4',
         fen: '2rqr1k1/pp1Q1pbp/2n3p1/8/4P3/4BP2/PP2B1PP/2RR2K1 b - - 0 21',
-        info: 'Get a winning position in 5 moves. From Ludwig Rellstab - Miguel Najdorf, 1950.'
+        info: 'Get a winning position in 5 moves. From Ludwig Rellstab - Miguel Najdorf, 1950.',
+        solution: 'Bd4 Rxd4 Nxd4 Qxd8 Nxe2+ Kf2 Rexd8 Kxe2 Rxc1',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Interference #5',
         fen: '3B2k1/6p1/3b4/1p1p3q/3P1p2/2PQ1NPb/1P2rP1P/R5K1 b - - 5 30',
-        info: 'Get a winning position in 2 moves. From Viswanathan Anand - Levon Aronian, 2008.'
+        info: 'Get a winning position in 2 moves. From Viswanathan Anand - Levon Aronian, 2008.',
+        solution: 'Re3 Qd1 Rxf3',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Interference #6',
         fen: '2r4k/5pR1/7p/4pN1q/7P/2n1P3/2Q2P1K/8 b - - 0 36',
-        info: 'Get a winning position in 2 moves. From Hikaru Nakamura - Alexander Beliavsky, 2005.'
+        info: 'Get a winning position in 2 moves. From Hikaru Nakamura - Alexander Beliavsky, 2005.',
+        solution: 'e4 Qb3 Qxf5',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Interference #7',
         fen: '5q2/1b4pk/1p2p1n1/1P1pPp2/P2P1P1p/rB1N1R1P/1Q4PK/8 w - - 2 46',
-        info: 'Get a winning position in 3 moves. From Vassily Ivanchuk - Viktor Moskalenko, 1988.'
+        info: 'Get a winning position in 3 moves. From Vassily Ivanchuk - Viktor Moskalenko, 1988.',
+        solution: 'Nc5 Rxb3 Nxb3',
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -1725,32 +1884,50 @@ export const scenariosArray = [
       {
         name: 'Greek Gift Introduction',
         fen: 'rnbq1rk1/pppn1ppp/4p3/3pP3/1b1P4/2NB1N2/PPP2PPP/R1BQK2R w KQq - 0 1',
-        info: 'Get a winning position in 4 moves. The Greek Gift sacrifice is a common tactical theme, where one side sacrifices their bishop by capturing the rook pawn of a castled king position (white playing Bxh7+ or black playing Bxh2+) usually in order to checkmate the opponent or gain significant material advantage.Play the Greek Gift sacrifice and maintain a winning position for 4 moves to complete this exercise.'
+        info: 'Get a winning position in 4 moves. The Greek Gift sacrifice is a common tactical theme, where one side sacrifices their bishop by capturing the rook pawn of a castled king position (white playing Bxh7+ or black playing Bxh2+) usually in order to checkmate the opponent or gain significant material advantage.Play the Greek Gift sacrifice and maintain a winning position for 4 moves to complete this exercise.',
+        solution: 'Bxh7+ Kxh7 Ng5+ Kg8 Qd3 Qxg5 Bxg5',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Greek Gift Challenge #1',
         fen: 'rnb2rk1/pp1nqppp/4p3/3pP3/3p3P/2NB3N/PPP2PP1/R2QK2R w KQ - 0 10',
-        info: 'Checkmate the opponent in 7 moves. From Efim Bogoljubov - NN, 1952.'
+        info: 'Checkmate the opponent in 7 moves. From Efim Bogoljubov - NN, 1952.',
+        solution: 'Bxh7+ Kh8 Qh5 Qxh4 Qxh4 Re8 Ng5 g6 Bxg6+ Kg7 Qh7+ Kf8 Qxf7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Greek Gift Challenge #2',
         fen: 'r3r1k1/1b2qppp/p7/1p1Pb3/1P6/P2B4/1B2Q1PP/3R1RK1 w - - 0 21',
-        info: 'Get a winning position in 6 moves. Maintain a winning position for 6 moves to complete this exercise. From Carl Schlechter - Geza Maroczy, 1907.'
+        info: 'Get a winning position in 6 moves. Maintain a winning position for 6 moves to complete this exercise. From Carl Schlechter - Geza Maroczy, 1907.',
+        solution: 'Bxh7+ Kxh7 Qh5+ Kg8 Bxe5 Qxe5 Qxf7+ Kh8 Rf5 Qe3+ Kh1',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Greek Gift Challenge #3',
         fen: 'r2qrbk1/5ppp/pn1p4/np2P1P1/3p4/5N2/PPB2PP1/R1BQR1K1 w - - 1 20',
-        info: 'Get a winning position in 6 moves. Maintain a winning position for 6 moves to complete this exercise. From Boris Spassky - Efim Geller, 1965.'
+        info: 'Get a winning position in 6 moves. Maintain a winning position for 6 moves to complete this exercise. From Boris Spassky - Efim Geller, 1965.',
+        solution: 'Bxh7+ Kxh7 g6+ fxg6 Ng5+ Kg8 Qf3 Qxg5 Bxg5 dxe5 Rac1',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Greek Gift Challenge #4',
         fen: '3r1rk1/bpq2ppp/p1b1p3/2P5/1P2B3/P4Q2/1B3PPP/2R2RK1 w - - 3 18',
-        info: 'Get a winning position in 5 moves. Maintain a winning position for 6 moves to complete this exercise. From Anthony Miles - Walter Shawn Browne, 1982.'
+        info: 'Get a winning position in 5 moves. Maintain a winning position for 6 moves to complete this exercise. From Anthony Miles - Walter Shawn Browne, 1982.',
+        solution: 'Bxh7+ Kxh7 Qh5+ Kg8 Bxg7 f6 Qh8+ Kf7 Bxf8',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Defend againts the Greek Gift',
         fen: 'r1b2rk1/ppqn1ppB/4p3/2pnP3/1p1P4/5N2/PP1N1PPP/R2Q1RK1 b - - 0 12',
-        info: 'Defend for 4 moves. The Greek Gift sacrifice does not always work. Defend accurately. From Miguel A Quinteros - Yasser Seirawan, 1985.'
+        info: 'Defend for 4 moves. The Greek Gift sacrifice does not always work. Defend accurately. From Miguel A Quinteros - Yasser Seirawan, 1985.',
+        solution: 'Kxh7 Ng5+ Kg8 Qh5 N5f6 exf6 Nxf6',
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -1760,52 +1937,82 @@ export const scenariosArray = [
       {
         name: 'Deflection #1',
         fen: 'R4rk1/5ppp/4b3/8/8/3B3P/5PP1/6K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves. The deflection is a tactic that forces the opponent\'s piece away from defending another piece or an important square. The deflected piece is usually an overloaded piece that needs to protect more than one other piece or square.'
+        info: 'Get a winning position in 2 moves. The deflection is a tactic that forces the opponent\'s piece away from defending another piece or an important square. The deflected piece is usually an overloaded piece that needs to protect more than one other piece or square.',
+        solution: 'Bxh7+ Kxh7 Rxf8',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Deflection #2',
         fen: '8/3P4/8/k2r4/8/6R1/5K2/8 w - - 0 1',
-        info: 'Get a winning position in 3 moves. In this position, white is about to promote their pawn to a queen. However, black\'s rook is guarding the d8 square. Therefore, white needs to deflect the rook so they can safely promote their pawn. What is the only way for white to achieve that?'
+        info: 'Get a winning position in 3 moves. In this position, white is about to promote their pawn to a queen. However, black\'s rook is guarding the d8 square. Therefore, white needs to deflect the rook so they can safely promote their pawn. What is the only way for white to achieve that?',
+        solution: 'Rg5 Rxg5 d8=Q+ Kb5 Qxg5+',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Deflection #3',
         fen: '4r1k1/1p1q1ppp/p2p1P2/1n1P4/1P1Q4/6P1/P4PKP/4R3 w - - 0 3',
-        info: 'Get a winning position in 2 moves'
+        info: 'Get a winning position in 2 moves',
+        solution: 'Qg4 g6 Qxd7',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Deflection #4',
         fen: 'rnbqkb1r/pp2pppp/5n2/8/2B1P3/2N5/PPP2PPP/R1BQK2R w - - 0 1',
-        info: 'Get a winning position in 2 moves.'
+        info: 'Get a winning position in 2 moves.',
+        solution: 'Bxf7+ Kxf7 Qxd8',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Deflection #5',
         fen: '2b3k1/4q2p/3r2pQ/8/8/3r3R/6PP/5RK1 w - - 0 1',
-        info: 'Checkmate the opponent in 2 moves'
+        info: 'Checkmate the opponent in 2 moves',
+        solution: 'Rf8+ Qxf8 Qxh7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Deflection #6',
         fen: '4r1k1/5p2/3q2pp/4n3/6P1/4Q1NP/5P2/4R1K1 b - - 0 1',
-        info: 'Get a winning position in 2 moves.'
+        info: 'Get a winning position in 2 moves.',
+        solution: 'Nf3+ Qxf3 Rxe1+',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Deflection #7',
         fen: 'r2r2k1/p4pp1/1p1q3p/8/P7/7P/1P3PP1/R2QR1K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves.'
+        info: 'Get a winning position in 2 moves.',
+        solution: 'Re8+ Rxe8 Qxd6',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Deflection #8',
         fen: 'r5rk/3b2qp/p1p5/PpP3BQ/1P6/2PB2P1/5PKP/8 w - - 0 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Checkmate the opponent in 3 moves.',
+        solution: 'Bf6 Bh3+ Kxh3 h6 Qxh6#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Deflection #9',
         fen: 'r1bk3r/pppp1pp1/1n5p/4N2n/2q5/5PQ1/PPP3PP/R3R1K1 w - - 0 1',
-        info: 'Get a winning position in 2 moves.'
+        info: 'Get a winning position in 2 moves.',
+        solution: 'Qh4+ f6 Nxc4',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Deflection #10',
         fen: '6k1/1r3pp1/5q1p/Np6/8/1P1p3Q/4bPPR/2R3K1 b - - 3 4',
-        info: 'Get a winning position in 2 moves.'
+        info: 'Get a winning position in 2 moves.',
+        solution: 'Rc7 Rb1 d2',
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -1815,52 +2022,82 @@ export const scenariosArray = [
       {
         name: 'Attraction #1',
         fen: '5nk1/5p1p/8/5N2/8/Q4p1q/3r4/1R4K1 w - - 0 1',
-        info: 'Checkmate the opponent in 3 moves. The attraction is a tactic that occurs when we force an opponent\'s piece to move to a bad square. ­“Decoy” is also a synonym to attraction.'
+        info: 'Checkmate the opponent in 3 moves. The attraction is a tactic that occurs when we force an opponent\'s piece to move to a bad square. ­”Decoy” is also a synonym to attraction.',
+        solution: 'Qxf8+ Kxf8 Rb8+ Rd8 Rxd8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Attraction #2',
         fen: 'rnb1kb1r/pp3ppp/2p5/4q3/4n3/3Q4/PPPB1PPP/2KR1BNR w kq - 0 9',
-        info: 'Checkmate the opponent in 3 moves. Richard Reti - Savielly Tartakower, 1910.'
+        info: 'Checkmate the opponent in 3 moves. Richard Reti - Savielly Tartakower, 1910.',
+        solution: 'Qd8+ Kxd8 Bg5+ Kc7 Bd8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Attraction #3',
         fen: 'r2B3r/3n2pp/p1kbR3/1b1p1P2/1qpP4/4PQPP/2B2P1K/8 w - - 0 1',
-        info: 'Checkmate the opponent in 2 moves'
+        info: 'Checkmate the opponent in 2 moves',
+        solution: 'Qxd5+ Kxd5 Be4#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Attraction #4',
         fen: 'r4Bk1/5p2/4b1p1/q7/3P4/8/P1P2Q2/K6R w - - 0 1',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Rh8+ Kxh8 Qf6+ Kg8 Qg7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Attraction #5',
         fen: 'r3r1k1/p1p2pp1/3b3p/6R1/1PB1Q3/7q/2P2R2/6K1 w - - 0 1',
-        info: 'Checkmate the opponent in 3 moves'
+        info: 'Checkmate the opponent in 3 moves',
+        solution: 'Rxg7+ Kxg7 Rxf7+ Kh8 Qh7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Attraction #6',
         fen: '8/5pk1/4p3/1p1r4/6P1/4P2p/PR2KP2/8 b - - 0 1',
-        info: 'Get a winning position in 3 moves.'
+        info: 'Get a winning position in 3 moves.',
+        solution: 'Rd1 Kxd1 h2 Ke2 h1=Q',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Attraction #7',
         fen: '4k1r1/R6p/4Nb2/4n3/6Pq/2P4P/3Q3K/5R2 w - - 2 2',
-        info: 'Checkmate the opponent in 3 moves. There are multiple winning moves for white in this position, but use the attraction tactic to checkmate the opponent in 3 moves.'
+        info: 'Checkmate the opponent in 3 moves. There are multiple winning moves for white in this position, but use the attraction tactic to checkmate the opponent in 3 moves.',
+        solution: 'Qd8+ Bxd8 Rf8+ Rxf8 Ng7#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Attraction #8',
         fen: '6k1/ppq3bp/2n2np1/5p2/2P2P2/4KBN1/PP5P/RQ6 b - - 0 23',
-        info: 'Get a winning position in 1 move. Robert James Fischer - Rene Letelier Martner, 1960.'
+        info: 'Get a winning position in 1 move. Robert James Fischer - Rene Letelier Martner, 1960.',
+        solution: 'Qxf4+',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Attraction #9',
         fen: '8/r2n1p2/1r1N1Pk1/3pP1p1/1p4P1/qPp2K2/P1R4R/8 w - - 0 1',
-        info: 'Checkmate the opponent in 5 moves'
+        info: 'Checkmate the opponent in 5 moves',
+        solution: 'Rh6+ Kxh6 Nf5+ Kh7 Rh2+ Kg8 Ne7+ Kf8 Rh8#',
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Attraction #10',
         fen: '7r/6kp/5bp1/8/8/8/6PP/2B2RK1 w - - 0 1',
-        info: 'Get a winning position in 1 move.'
+        info: 'Get a winning position in 1 move.',
+        solution: 'Rxf6',
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -2209,7 +2446,7 @@ export const scenariosArray = [
         fen: "8/8/8/8/pk6/8/3K4/8 w - - 0 1",
         info: "Hold the draw for 10 more moves. An advanced rook pawn generally has two key squares: the two squares on the adjacent file that touch the promotion square. Reach a key square and win. Prevent the black king from reaching a key square to draw the game.",
         solution: null,
-        goal: null,
+        goal: { type: 'SURVIVE', moves: 20 },
         opponentConstraints: null,
       },
       {
@@ -2228,42 +2465,66 @@ export const scenariosArray = [
       {
         name: 'Direct Opposition #1',
         fen: '8/2k5/8/8/2PK4/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. Direct Opposition is a position in which the kings are on the same rank or file and they are separated by one square. In such a situation, the player not having to move is said to \'have the opposition\'. The side without the opposition may have to move the king away, potentially allowing the opposing king access to important squares. Take the opposition to reach a key square and win!'
+        info: 'Safely promote your pawn. Direct Opposition is a position in which the kings are on the same rank or file and they are separated by one square. In such a situation, the player not having to move is said to \'have the opposition\'. The side without the opposition may have to move the king away, potentially allowing the opposing king access to important squares. Take the opposition to reach a key square and win!',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Direct Opposition #2',
         fen: '8/8/8/4p3/4k3/8/8/4K3 w - - 0 1',
-        info: 'Hold the draw for 20 more moves. Take the opposition to prevent black from reaching a key square and hold the draw.'
+        info: 'Hold the draw for 20 more moves. Take the opposition to prevent black from reaching a key square and hold the draw.',
+        solution: null,
+        goal: { type: 'SURVIVE', moves: 40 },
+        opponentConstraints: null,
       },
       {
         name: 'Direct Opposition #3',
         fen: '8/4k3/8/8/2P1K3/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. Take the opposition to reach a key square and win!'
+        info: 'Safely promote your pawn. Take the opposition to reach a key square and win!',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Direct Opposition #4',
         fen: '8/8/7k/8/1p6/7K/2P5/8 w - - 0 1',
-        info: 'Safely promote your pawn. Take the opposition to reach a key square and win!'
+        info: 'Safely promote your pawn. Take the opposition to reach a key square and win!',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Direct Opposition #5',
         fen: '8/4R2n/4K1pk/6p1/7P/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. Use your knowledge of Direct Opposition to win the game.'
+        info: 'Safely promote your pawn. Use your knowledge of Direct Opposition to win the game.',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Distant Opposition #1',
         fen: '8/8/8/5kp1/8/8/8/6K1 w - - 0 1',
-        info: 'Hold the draw for 20 more moves. Distant Opposition is a position in which the kings are on the same rank or file but are separated by more than one square. If there are an odd number of squares between the kings, the player not having the move has the (distant) opposition. Take the Distant Opposition to hold the draw.'
+        info: 'Hold the draw for 20 more moves. Distant Opposition is a position in which the kings are on the same rank or file but are separated by more than one square. If there are an odd number of squares between the kings, the player not having the move has the (distant) opposition. Take the Distant Opposition to hold the draw.',
+        solution: null,
+        goal: { type: 'SURVIVE', moves: 40 },
+        opponentConstraints: null,
       },
       {
         name: 'Distant Opposition #2',
         fen: '4k3/8/8/1p5p/1P5P/8/8/4K3 w - - 0 1',
-        info: 'Safely promote your pawn. Take the Distant Opposition to win the game.'
+        info: 'Safely promote your pawn. Take the Distant Opposition to win the game.',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'As a means to an end',
         fen: '8/8/4k3/8/2PK4/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. White can take Direct Opposition, but is that the best move? Remember the key squares.'
+        info: 'Safely promote your pawn. White can take Direct Opposition, but is that the best move? Remember the key squares.',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
     ]
   },
@@ -2273,87 +2534,176 @@ export const scenariosArray = [
       {
         name: 'Exercise: Queen in front = Win',
         fen: '7K/8/Q7/8/8/6k1/5p2/8 w - - 0 1',
-        info: 'Checkmate the opponent. In this study, we\'re going to look at the endgame where one side has a Queen and the other side has a pawn on the 7th rank. We\'re going to look at the following situations:1) Queen in front of the pawn = Win 2) Not a Bishop or Rook pawn = Win 3) Rook or Bishop pawn without King assistance = Draw 4) Rook or Bishop pawn with King assistance = Win Let\'s start with a simple exercise to prove a first point: If the Queen can get in front of the pawn, the side with the Queen will win. Win this game.'
+        info: 'Checkmate the opponent. In this study, we\'re going to look at the endgame where one side has a Queen and the other side has a pawn on the 7th rank. We\'re going to look at the following situations:1) Queen in front of the pawn = Win 2) Not a Bishop or Rook pawn = Win 3) Rook or Bishop pawn without King assistance = Draw 4) Rook or Bishop pawn with King assistance = Win Let\'s start with a simple exercise to prove a first point: If the Queen can get in front of the pawn, the side with the Queen will win. Win this game.',
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Not a Bishop or Rook pawn = Win',
         fen: '7K/8/1Q6/8/8/8/3kp3/8 w - - 0 1',
-        info: 'If the pawn on the 7th rank is NOT a Bishop or Rook pawn, the side with the Queen can win.The key to winning these positions is to get our King near the pawn so we can capture it safely. To do this, we must force Black to block their own pawn with their King. This will give us a free move which we can use to get our King closer.'
+        info: 'Checkmate the opponent. If the pawn on the 7th rank is NOT a Bishop or Rook pawn, the side with the Queen can win. The key to winning these positions is to get our King near the pawn so we can capture it safely. To do this, we must force Black to block their own pawn with their King. This will give us a free move which we can use to get our King closer.',
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Exercise: d-pawn = Win',
         fen: '7K/8/1Q6/8/8/8/3pk3/8 w - - 0 1',
-        info: 'Checkmate the opponent. If the pawn on the 7th rank is NOT a Bishop or Rook pawn, the side with the Queen can win.The key to winning these positions is to get our King near the pawn so we can capture it safely. To do this, we must force Black to block their own pawn with their King. This will give us a free move which we can use to get our King closer.'
+        info: 'Checkmate the opponent. If the pawn on the 7th rank is NOT a Bishop or Rook pawn, the side with the Queen can win.The key to winning these positions is to get our King near the pawn so we can capture it safely. To do this, we must force Black to block their own pawn with their King. This will give us a free move which we can use to get our King closer.',
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Exercise: b-pawn = Win',
         fen: '7K/8/1Q6/8/8/8/1pk5/8 w - - 0 1',
-        info: 'Checkmate the opponent. If the pawn on the 7th rank is NOT a Bishop or Rook pawn, the side with the Queen can win. The key to winning these positions is to get our King near the pawn so we can capture it safely. To do this, we must force Black to block their own pawn with their King. This will give us a free move which we can use to get our King closer.'
+        info: 'Checkmate the opponent. If the pawn on the 7th rank is NOT a Bishop or Rook pawn, the side with the Queen can win. The key to winning these positions is to get our King near the pawn so we can capture it safely. To do this, we must force Black to block their own pawn with their King. This will give us a free move which we can use to get our King closer.',
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
+        failConditions: [{ type: 'OPPONENT_PROMOTION' }],
       },
       {
         name: 'Rook pawn, no King assistance = Draw',
         fen: '8/1K6/P7/8/3q4/8/8/7k w - - 0 1',
-        info: 'If the pawn on the 7th rank is a Bishop or Rook pawn, and the side with the Queen does not have their King near the pawn, the side with the pawn can draw. When it\'s a Rook pawn, the side with the pawn just needs to promote it if allowed, or otherwise keep their King in or near the corner. The side with the Queen won\'t have any time to get their King closer.'
+        info: 'If the pawn on the 7th rank is a Bishop or Rook pawn, and the side with the Queen does not have their King near the pawn, the side with the pawn can draw. When it\'s a Rook pawn, the side with the pawn just needs to promote it if allowed, or otherwise keep their King in or near the corner. The side with the Queen won\'t have any time to get their King closer.',
+        solution: null,
+        goal: {
+            type: "SURVIVE",
+            moves: 40
+          },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Bishop pawn, no King assistance = Draw',
         fen: '7K/8/4Q3/8/8/8/2p5/1k6 w - - 0 1',
-        info: 'If the pawn on the 7th rank is a Bishop or Rook pawn, and the side with the Queen does not have their King near the pawn, the side with the pawn can draw. When it\'s a Bishop pawn, the side with the pawn just needs to promote it if allowed, or threaten to promote it, or exploit the possible stalemate situation. If played correctly, the side with the Queen won\'t have any time to get their King closer.'
+        info: 'If the pawn on the 7th rank is a Bishop or Rook pawn, and the side with the Queen does not have their King near the pawn, the side with the pawn can draw. When it\'s a Bishop pawn, the side with the pawn just needs to promote it if allowed, or threaten to promote it, or exploit the possible stalemate situation. If played correctly, the side with the Queen won\'t have any time to get their King closer.',
+        solution: null,
+        goal: {
+            type: "SURVIVE",
+            moves: 40
+          },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Exercise: Bishop pawn, no King assistance',
         fen: '7K/8/8/8/8/8/2p5/1k2Q3 b - - 1 1',
-        info: 'Hold the draw for 20 more moves. If the pawn on the 7th rank is a Bishop or Rook pawn, and the side with the Queen does not have their King near the pawn, the side with the pawn can draw. When it\'s a Bishop pawn, the side with the pawn just needs to promote it if allowed, or threaten to promote it, or exploit the possible stalemate situation. If played correctly, the side with the Queen won\'t have any time to get their King closer.'
+        info: 'Hold the draw for 20 more moves. If the pawn on the 7th rank is a Bishop or Rook pawn, and the side with the Queen does not have their King near the pawn, the side with the pawn can draw. When it\'s a Bishop pawn, the side with the pawn just needs to promote it if allowed, or threaten to promote it, or exploit the possible stalemate situation. If played correctly, the side with the Queen won\'t have any time to get their King closer.',
+        solution: null,
+        goal: { type: 'SURVIVE', moves: 40 },
+        opponentConstraints: null,
       },
       {
         name: 'Rook pawn, King assistance on short side = Win',
         fen: '8/8/8/K7/2Q5/8/p7/1k6 w - - 0 1',
-        info: 'If the pawn on the 7th rank is a Rook pawn, and the side with the Queen has their King on one of the green squares (or closer) on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. White can accomplish this by having their Queen on the d2 square (other squares can also work) and the King on b3 when the pawn has promoted.'
+        info: 'If the pawn on the 7th rank is a Rook pawn, and the side with the Queen has their King on one of the green squares (or closer) on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. White can accomplish this by having their Queen on the d2 square (other squares can also work) and the King on b3 when the pawn has promoted.',
+        solution: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Exercise: Rook pawn, King assistance on short side',
         fen: '8/8/8/K7/2Q5/8/p7/1k6 w - - 0 1',
-        info: 'Checkmate the opponent. If the pawn on the 7th rank is a Rook pawn, and the side with the Queen has their King on one of the green squares (or closer) on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. White can accomplish this by having their Queen on the d2 square (other squares can also work) and the King on b3 when the pawn has promoted.'
+        info: 'Checkmate the opponent. If the pawn on the 7th rank is a Rook pawn, and the side with the Queen has their King on one of the green squares (or closer) on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. White can accomplish this by having their Queen on the d2 square (other squares can also work) and the King on b3 when the pawn has promoted.',
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: 'Rook pawn, King assistance on long side = Win',
         fen: '8/8/8/8/2QK4/8/p7/1k6 w - - 0 1',
-        info: 'If the pawn on the 7th rank is a Rook pawn, and the side with the Queen has their King on one of the green squares (or closer) on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. White can accomplish this by having their Queen on the d2 square (other squares can also work) and the King on one of the orange squares (d3, d2, d1) when the pawn has promoted.'
+        info: 'If the pawn on the 7th rank is a Rook pawn, and the side with the Queen has their King on one of the green squares (or closer) on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. White can accomplish this by having their Queen on the d2 square (other squares can also work) and the King on one of the orange squares (d3, d2, d1) when the pawn has promoted.',
+        solution: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Exercise: Rook pawn, King assistance on long side',
         fen: '8/8/8/8/2QK4/8/p7/1k6 w - - 0 1',
-        info: 'Checkmate the opponent. If the pawn on the 7th rank is a Rook pawn, and the side with the Queen has their King on one of the green squares (or closer) on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. White can accomplish this by having their Queen on the d2 square (other squares can also work) and the King on one of the orange squares (d3, d2, d1) when the pawn has promoted.'
+        info: 'Checkmate the opponent. If the pawn on the 7th rank is a Rook pawn, and the side with the Queen has their King on one of the green squares (or closer) on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. White can accomplish this by having their Queen on the d2 square (other squares can also work) and the King on one of the orange squares (d3, d2, d1) when the pawn has promoted.',
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: 'Bishop pawn, defending King on long side, King assistance on short side = Win',
         fen: '8/8/8/1K6/4Q3/8/2pk4/8 w - - 0 1',
-        info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When the attacking King is on the short side, and the defending King is on the long side, the attacker can accomplish this by having their King on b3 when the pawn promotes.'
+        info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When the attacking King is on the short side, and the defending King is on the long side, the attacker can accomplish this by having their King on b3 when the pawn promotes.',
+        solution: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Bishop pawn, defending King on long side, King assistance on long side = Win',
         fen: '8/8/Q7/8/6K1/8/2pk4/8 w - - 0 1',
-        info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When both Kings are on the long side, the attacker can accomplish this by having their King on one of the orange squares (f3, f2, f1) when the pawn promotes.'
+        info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When both Kings are on the long side, the attacker can accomplish this by having their King on one of the orange squares (f3, f2, f1) when the pawn promotes.',
+        solution: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Exercise: Bishop pawn, defending King on long side, King assistance on long side',
         fen: '8/8/Q7/8/6K1/8/2pk4/8 w - - 0 1',
-        info: 'Checkmate the opponent. If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When both Kings are on the long side, the attacker can accomplish this by having their King on one of the orange squares (f3, f2, f1) when the pawn promotes.'
+        info: 'Checkmate the opponent. If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When both Kings are on the long side, the attacker can accomplish this by having their King on one of the orange squares (f3, f2, f1) when the pawn promotes.',
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: 'Bishop pawn, defending King on short side, King assistance on short side = Win',
         fen: '8/4Q3/8/8/K7/8/1kp5/8 w - - 0 1',
-        info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When both Kings are on the short side, the attacker can accomplish this by having their King on b3 when the pawn promotes.'
+        info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When both Kings are on the short side, the attacker can accomplish this by having their King on b3 when the pawn promotes.',
+        solution: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Bishop pawn, defending King on short side, King assistance on long side = Win',
         fen: '8/4Q3/8/8/8/8/1kp5/4K3 w - - 0 1',
-        info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When the attacking King is on the long side, and the defending King is on the short side, the attacker can accomplish this by having their King on d2 when the pawn promotes.'
+        info: 'If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When the attacking King is on the long side, and the defending King is on the short side, the attacker can accomplish this by having their King on d2 when the pawn promotes.',
+        solution: null,
+        goal: {
+          type: "CHECKMATE"
+        },
+        opponentConstraints: [
+          { type: "AVOID_CHECKING" }
+        ],
       },
       {
         name: 'Exercise: Bishop pawn, defending King on short side, King assistance on long side',
         fen: '8/4Q3/8/8/8/8/1kp5/4K3 w - - 0 1',
-        info: 'Checkmate the opponent. If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When the attacking King is on the long side, and the defending King is on the short side, the attacker can accomplish this by having their King on d2 when the pawn promotes.'
+        info: 'Checkmate the opponent. If the pawn on the 7th rank is a Bishop pawn, and the side with the Queen has their King on one of the green squares on their move, they can win the game. The side with the Queen can allow the pawn to promote and deliver checkmate. When the attacking King is on the long side, and the defending King is on the short side, the attacker can accomplish this by having their King on d2 when the pawn promotes.',
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
     ]
   },
@@ -2363,47 +2713,74 @@ export const scenariosArray = [
       {
         name: 'King on f7',
         fen: 'R7/P4k2/8/8/8/r7/6K1/8 w - - 0 1',
-        info: 'In this Study, we\'re going to look at Rook endgames where both sides have a Rook, but one side has a pawn on the 7th-rank and their Rook is passive, or \'trapped\', in front of the pawn. If Black\'s King is on any of the red squares when it\'s White to move, this position is a draw. With Black\'s King on b6 or b7, Black will simply capture the pawn on the next move. With Black\'s King on c6 or c7, Black will play Kb7 on the next move and be able to either capture the pawn or occupy the promotion square by playing Ka8. With Black\'s King on a1, a2, or a6, it\'s impossible for White to move their Rook away from the promotion square with tempo as no checks are available. White either has to move their Rook and lose the pawn, or move their King. The White King has nowhere to hide, so black can just check White forever. If the black King is on any square other than the red squares, it is a win for White. With Black\'s King on d7, e7 or f7, White can play Rh8. Black can\'t respond with Rxa7 due to Rh7+, winning the rook on a7. The best Black can do is to delay the eventual loss. With Black\'s King on any other square not mentioned, White can move their Rook away from the promotion square with a check and promote their pawn on the next move.'
+        info: 'In this Study, we\'re going to look at Rook endgames where both sides have a Rook, but one side has a pawn on the 7th-rank and their Rook is passive, or \'trapped\', in front of the pawn. If Black\'s King is on any of the red squares when it\'s White to move, this position is a draw. With Black\'s King on b6 or b7, Black will simply capture the pawn on the next move. With Black\'s King on c6 or c7, Black will play Kb7 on the next move and be able to either capture the pawn or occupy the promotion square by playing Ka8. With Black\'s King on a1, a2, or a6, it\'s impossible for White to move their Rook away from the promotion square with tempo as no checks are available. White either has to move their Rook and lose the pawn, or move their King. The White King has nowhere to hide, so black can just check White forever. If the black King is on any square other than the red squares, it is a win for White. With Black\'s King on d7, e7 or f7, White can play Rh8. Black can\'t respond with Rxa7 due to Rh7+, winning the rook on a7. The best Black can do is to delay the eventual loss. With Black\'s King on any other square not mentioned, White can move their Rook away from the promotion square with a check and promote their pawn on the next move.',
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'King on g7',
         fen: 'R7/P5k1/8/8/8/r7/6K1/8 b - - 0 1',
-        info: 'If Black\'s King is on any of the red squares when it\'s White to move, this position is a draw. With Black\'s King on b6 or b7, Black will simply capture the pawn on the next move. With Black\'s King on c6 or c7, Black will play Kb7 on the next move and be able to either capture the pawn or occupy the promotion square by playing Ka8. With Black\'s King on a1, a2, or a6, it\'s impossible for White to move their Rook away from the promotion square with tempo as no checks are available. White either has to move their Rook and lose the pawn, or move their King. The White King has nowhere to hide, so black can just check White forever. If the black King is on any square other than the red squares, it is a win for White. With Black\'s King on d7, e7 or f7, White can play Rh8. Black can\'t respond with Rxa7 due to Rh7+, winning the rook on a7. The best Black can do is to delay the eventual loss. With Black\'s King on any other square not mentioned, White can move their Rook away from the promotion square with a check and promote their pawn on the next move.'
+        info: 'If Black\'s King is on any of the red squares when it\'s White to move, this position is a draw. With Black\'s King on b6 or b7, Black will simply capture the pawn on the next move. With Black\'s King on c6 or c7, Black will play Kb7 on the next move and be able to either capture the pawn or occupy the promotion square by playing Ka8. With Black\'s King on a1, a2, or a6, it\'s impossible for White to move their Rook away from the promotion square with tempo as no checks are available. White either has to move their Rook and lose the pawn, or move their King. The White King has nowhere to hide, so black can just check White forever. If the black King is on any square other than the red squares, it is a win for White. With Black\'s King on d7, e7 or f7, White can play Rh8. Black can\'t respond with Rxa7 due to Rh7+, winning the rook on a7. The best Black can do is to delay the eventual loss. With Black\'s King on any other square not mentioned, White can move their Rook away from the promotion square with a check and promote their pawn on the next move.',
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'King on g7, extra g-pawn',
         fen: 'R7/P5k1/8/8/8/r5P1/6K1/8 w - - 0 1',
-        info: 'An extra pawn on g3 has been introduced. What difference does it make? Well, if we push it to g6, it takes away the h7 square from Black\'s King.'
+        info: 'An extra pawn on g3 has been introduced. What difference does it make? Well, if we push it to g6, it takes away the h7 square from Black\'s King.',
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'King on g7, extra b-f pawn',
         fen: 'R7/P5k1/8/8/8/r4P2/6K1/8 w - - 0 1',
-        info: 'An extra g-pawn does not help White, but an extra b-, c-, d-, e-, or f-pawn does win for White. Why? Because we can now force Black\'s King away from g7 and h7.'
+        info: 'An extra g-pawn does not help White, but an extra b-, c-, d-, e-, or f-pawn does win for White. Why? Because we can now force Black\'s King away from g7 and h7.',
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Exercise: King on g7, extra c-pawn',
         fen: 'R7/P5k1/8/8/8/r1PK4/8/8 w - - 0 1',
-        info: 'Checkmate the opponent. We know that an extra b-, c-, d-, e-, or f-pawn win for White. Prove it.'
+        info: 'Checkmate the opponent. We know that an extra b-, c-, d-, e-, or f-pawn win for White. Prove it.',
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: 'Exercise: King on g7, 2 vs 1 on the king-side',
         fen: 'R7/P5k1/6p1/8/5P1P/8/r7/6K1 w - - 0 1',
-        info: 'Checkmate the opponent. We know that an extra b-, c-, d-, e-, or f-pawn win for White. Force a win.'
+        info: 'Checkmate the opponent. We know that an extra b-, c-, d-, e-, or f-pawn win for White. Force a win.',
+        solution: null,
+        goal: { type: 'CHECKMATE' },
+        opponentConstraints: null,
       },
       {
         name: 'Hochstrasser - Papa, 2012: Forcing an f-pawn',
         fen: 'R7/8/P5k1/5pp1/8/5PKP/r7/8 w - - 1 56',
-        info: 'In this game, White forced an f-pawn and won the game. From [Hochstrasser - Papa, Swiss National Championship A, 2012.]'
+        info: 'In this game, White forced an f-pawn and won the game. From [Hochstrasser - Papa, Swiss National Championship A, 2012.]',
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Bartholomew - Thaler, 2012: Trading into a winning 4v4 pawn endgame',
         fen: 'R7/P6k/5pp1/4p2p/4P2P/5P2/r5PK/8 w - - 1 43',
-        info: 'In this game, White did not force an e- or f-pawn, but rather sacrificed the a7 pawn to trade Rooks into a winning 4v4 pawn endgame. This is a useful concept to remember. From [Bartholomew - Thaler, 2012]'
+        info: 'In this game, White did not force an e- or f-pawn, but rather sacrificed the a7 pawn to trade Rooks into a winning 4v4 pawn endgame. This is a useful concept to remember. From [Bartholomew - Thaler, 2012]',
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Spassky - Torre, 1982: Forcing an e-pown',
         fen: 'R7/P5pk/5p2/4p2p/4P2P/5P2/6PK/r7 w - - 3 46',
-        info: 'Due to the pawn on g7, White is unable to sacrifice the a7 pawn in order to trade Rooks. White can\'t force the trade of Rooks, but has to force an e- or f-pawn.'
+        info: 'Due to the pawn on g7, White is unable to sacrifice the a7 pawn in order to trade Rooks. White can\'t force the trade of Rooks, but has to force an e- or f-pawn.',
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },
@@ -2413,52 +2790,82 @@ export const scenariosArray = [
       {
         name: 'Lucena - The Bridge',
         fen: '6K1/4k1P1/8/8/8/7r/8/5R2 w - - 0 1',
-        info: 'Safely promote your pawn. In this Study, we\'re going to cover basic rook endgames such as Lucena and Philidor. We\'re also going to see some basic ideas such as placing our rook behind passed pawns. Finally, we\'ll analyze some positions with a lone rook vs a pawn. This is the classic Lucena position. White is definitely winning, but has a major problem to solve: their king stands on the pawn\'s promotion square and currently can\'t move. Furthermore, even if it could, repeated rook checks from behind will force it back in front of the pawn. The next sequence, famously called \'building a bridge\', addresses those issues elegantly. The idea is to bring the rook to e4 then come to g5 with the king to be able to stop repetitive checks from behind. Analysis from B.Larsen-W.Browne, Las Palmas 1982.'
+        info: 'Safely promote your pawn. In this Study, we\'re going to cover basic rook endgames such as Lucena and Philidor. We\'re also going to see some basic ideas such as placing our rook behind passed pawns. Finally, we\'ll analyze some positions with a lone rook vs a pawn. This is the classic Lucena position. White is definitely winning, but has a major problem to solve: their king stands on the pawn\'s promotion square and currently can\'t move. Furthermore, even if it could, repeated rook checks from behind will force it back in front of the pawn. The next sequence, famously called \'building a bridge\', addresses those issues elegantly. The idea is to bring the rook to e4 then come to g5 with the king to be able to stop repetitive checks from behind. Analysis from B.Larsen-W.Browne, Las Palmas 1982.',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Lucena - Alternative Wins',
         fen: '5K2/3k1P2/8/8/8/8/6r1/4R3 w - - 0 1',
-        info: 'Safely promote your pawn. In the case where White has a central or bishop\'s pawn there is an alternative winning method: to maneuver the rook to the g8-square and budge Black\'s rook from that file, then simply marching forward with the king until there are no checks left. Be careful to not allow the rook to skewer the king and pawn! H.Ni-N.Pert, Liverpool 2007.'
+        info: 'Safely promote your pawn. In the case where White has a central or bishop\'s pawn there is an alternative winning method: to maneuver the rook to the g8-square and budge Black\'s rook from that file, then simply marching forward with the king until there are no checks left. Be careful to not allow the rook to skewer the king and pawn! H.Ni-N.Pert, Liverpool 2007.',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Reaching the Lucena I',
         fen: '8/4k3/8/6P1/6K1/8/7r/5R2 w - - 0 1',
-        info: 'Safely promote your pawn. In this position Black is unable to stop White from reaching the Lucena Position. The idea for white is to keep black\'s king cut off and push the pawn in a way that they can always defend it with their king. See if you can reach the Lucena and \'build the bridge\'! J.Steer-A.Szurkos, Budapest 2014'
+        info: 'Safely promote your pawn. In this position Black is unable to stop White from reaching the Lucena Position. The idea for white is to keep black\'s king cut off and push the pawn in a way that they can always defend it with their king. See if you can reach the Lucena and \'build the bridge\'! J.Steer-A.Szurkos, Budapest 2014',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Reaching the Lucena II',
         fen: '8/6R1/8/5K2/1k6/r3P3/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. A slightly trickier example, but the idea is the same. Cut off Black\'s king, reach the Lucena Position, and then either \'build the bridge\' or use the alternative winning method discussed in example #2. D.Andreikin-A.Korobov, Karpov Memorial 2016.'
+        info: 'Safely promote your pawn. A slightly trickier example, but the idea is the same. Cut off Black\'s king, reach the Lucena Position, and then either \'build the bridge\' or use the alternative winning method discussed in example #2. D.Andreikin-A.Korobov, Karpov Memorial 2016.',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Philidor Position',
         fen: '1r2k3/R7/8/4PK2/8/8/8/8 b - - 0 1',
-        info: 'Equalize in 10 moves. The Philidor Position, named after the legendary François-André Danican Philidor, whose analysis of this position dates all the way back to 1777! The key idea here is to cut off White\'s king along Black\'s 3rd rank, leaving White with no choice but to push the pawn to make safety for his king. This allows Black to switch to checks from behind, when the pawn sadly leaves White\'s king no safe shelter!'
+        info: 'Equalize in 10 moves. The Philidor Position, named after the legendary François-André Danican Philidor, whose analysis of this position dates all the way back to 1777! The key idea here is to cut off White\'s king along Black\'s 3rd rank, leaving White with no choice but to push the pawn to make safety for his king. This allows Black to switch to checks from behind, when the pawn sadly leaves White\'s king no safe shelter!',
+        solution: null,
+        goal: { type: 'SURVIVE', moves: 20 },
+        opponentConstraints: null,
       },
       {
         name: 'Avoiding the Philidor',
         fen: '4k3/7R/8/3KP1r1/8/8/8/8 w - - 0 1',
-        info: 'Safely promote your pawn. Try to reach a Lucena position without accidentally running into a Philidor position. You can do this!'
+        info: 'Safely promote your pawn. Try to reach a Lucena position without accidentally running into a Philidor position. You can do this!',
+        solution: null,
+        goal: { type: 'PROMOTION', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Don\'t Place the Cart Before the Horse!',
         fen: '2r3k1/4Rp1p/6p1/8/P7/6P1/5P1P/6K1 w - - 0 1',
-        info: 'We have a passed pawn, but where should the rook be placed?'
+        info: 'We have a passed pawn, but where should the rook be placed?',
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
       {
         name: 'Put Your Opponent\'s Cart Before their Horse',
         fen: '2R5/5pk1/8/8/8/7P/p5PK/r7 w - - 0 1',
-        info: 'Equalize in 20 moves. Rooks are also better behind your opponent\'s passed pawn because usually the opponent pawn won\'t be able to promote unless it\'s protected along its way. Here, it is very important to keep the rook on the a-file and check black\'s king if it approaches the pawn to help it promote.'
+        info: 'Equalize in 20 moves. Rooks are also better behind your opponent\'s passed pawn because usually the opponent pawn won\'t be able to promote unless it\'s protected along its way. Here, it is very important to keep the rook on the a-file and check black\'s king if it approaches the pawn to help it promote.',
+        solution: null,
+        goal: { type: 'SURVIVE', moves: 40 },
+        opponentConstraints: null,
       },
       {
         name: 'Rook vs Pawn: Cutting off the King',
         fen: '6K1/6R1/2k5/1p6/8/8/8/8 w - - 0 1',
-        info: 'Get a winning position in 7 moves. In this position, the key idea is to cut off the king with the rook so it can\'t help the pawn to promote. Then we can bring our king safely and if black pushes their pawn further the rook can catch it right in time since the king would be too far.'
+        info: 'Get a winning position in 7 moves. In this position, the key idea is to cut off the king with the rook so it can\'t help the pawn to promote. Then we can bring our king safely and if black pushes their pawn further the rook can catch it right in time since the king would be too far.',
+        solution: null,
+        goal: { type: 'CAPTURE', min: 1 },
+        opponentConstraints: null,
       },
       {
         name: 'Rook vs Pawn Draw',
         fen: '8/1R6/8/8/8/p2K4/1k6/8 b - - 0 1',
-        info: 'In this interesting position, the main idea for black to be able to draw is to not obstruct the pawn on the a-file and be cut off by white\'s rook. Thus black always needs to put their king on the c-file if white check them with the rook on the b-file.'
+        info: 'In this interesting position, the main idea for black to be able to draw is to not obstruct the pawn on the a-file and be cut off by white\'s rook. Thus black always needs to put their king on the c-file if white check them with the rook on the b-file.',
+        solution: null,
+        goal: null,
+        opponentConstraints: null,
       },
     ]
   },

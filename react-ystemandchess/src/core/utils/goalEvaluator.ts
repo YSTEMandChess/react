@@ -27,6 +27,9 @@ export function evaluateGoal(goal: Goal, context: EvaluationContext): boolean {
     case 'MATERIAL_ADVANTAGE':
       return evaluateMaterialAdvantage(goal, context);
 
+    case 'SURVIVE':
+      return evaluateSurvive(goal, context);
+
     case 'AND':
       return evaluateAND(goal, context);
 
@@ -148,6 +151,18 @@ function evaluateMaterialAdvantage(
 
   console.log(`[MATERIAL_ADVANTAGE] Required: ${goal.threshold}, Current: ${advantage}`);
   return advantage >= goal.threshold;
+}
+
+function evaluateSurvive(
+  goal: { type: 'SURVIVE'; moves: number },
+  context: EvaluationContext
+): boolean {
+  if (context.events.length < goal.moves) return false;
+
+  const opponentPromoted = context.events.some((e, i) => i % 2 !== 0 && e.promotion);
+
+  console.log(`[SURVIVE] Required: ${goal.moves} half-moves, Current: ${context.events.length}, Opponent promoted: ${opponentPromoted}`);
+  return !opponentPromoted;
 }
 
 // ============================================

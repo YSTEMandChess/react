@@ -197,7 +197,7 @@ describe("LessonOverlay", () => {
       completedNum: 0,
       totalLessons: 5,
       refreshProgress: jest.fn().mockResolvedValue(undefined),
-      goToLesson: jest.fn(),
+      goToLesson: jest.fn().mockResolvedValue(undefined),
       nextLesson: jest.fn().mockResolvedValue(undefined),
       prevLesson: jest.fn().mockResolvedValue(undefined),
       updateCompletion: jest.fn().mockResolvedValue(undefined),
@@ -269,7 +269,7 @@ describe("LessonOverlay", () => {
     if (btn) {
       fireEvent.click(btn);
     }
-    expect(mockUseLessonManager.nextLesson).toHaveBeenCalled();
+    expect(mockUseLessonManager.goToLesson).toHaveBeenCalled();
 
     unmount();
 

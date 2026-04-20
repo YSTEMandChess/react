@@ -1,6 +1,4 @@
 import React from "react";
-// import { Link } from 'react-router-dom';
-import './Login.scss';
 import { useState } from 'react';
 import { environment } from "../../../environments/environment";
 import { useCookies } from 'react-cookie';
@@ -109,14 +107,32 @@ const Login = () => {
     });
   };
 
-  return (
-    <div className='login-page'>
-      <h1 className='login-title'>Login</h1>
-      {loginError && <div className='login-error' role="alert">{loginError}</div>}
+  const inputClass = (invalid: boolean) =>
+    `w-full rounded-lg border-2 px-4 py-3 text-sm text-dark bg-white caret-dark
+     focus:outline-none focus:shadow-none transition-colors ${
+      invalid ? "border-red" : "border-borderLight focus:border-primary"
+    }`;
 
-      <form className='login-form' aria-label="Login Form" aria-busy={isLoading} onSubmit={submitLogin}>
-        <div className='input-wrapper'>
-          <label htmlFor='username' id="username-label">Username</label>
+  return (
+    <div className="min-h-[71vh] flex flex-col items-center justify-center px-4 py-12">
+      <h1 className="text-3xl font-bold text-dark mb-6 text-center">Login</h1>
+
+      {loginError && (
+        <p className="text-red font-semibold mb-4 text-center" role="alert">
+          {loginError}
+        </p>
+      )}
+
+      <form
+        className="w-full max-w-sm bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-6"
+        aria-label="Login Form"
+        aria-busy={isLoading}
+        onSubmit={submitLogin}
+      >
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="username" id="username-label" className="text-sm font-bold text-dark">
+            Username
+          </label>
           <input
             type="text"
             name="username"
@@ -127,40 +143,60 @@ const Login = () => {
               setUsername(e.target.value);
               //usernameVerification();
             }}
-            aria-describedby='loginError-h3'
+            aria-describedby="loginError-h3"
             aria-invalid={usernameFlag}
             required
+            className={inputClass(usernameFlag)}
           />
         </div>
-        <div className='input-wrapper'>
-          <label htmlFor='password' id="password-label">Password</label>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="password" id="password-label" className="text-sm font-bold text-dark">
+            Password
+          </label>
           <input
             type="password"
             name="password"
-            placeholder="Password"
             id="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
               //passwordVerification();
             }}
-            aria-describedby='loginError-h3'
+            aria-describedby="loginError-h3"
             aria-invalid={passwordFlag}
             required
+            className={inputClass(passwordFlag)}
           />
         </div>
-        <div className='button-wrapper'>
-          <button type='submit' aria-label='Login Button' disabled={isLoading}>
-          Enter
-        </button>
+
+        <div className="flex justify-center pt-2">
+          <button
+            type="submit"
+            aria-label="Login Button"
+            disabled={isLoading}
+            className="btn-green px-10"
+          >
+            Enter
+          </button>
         </div>
       </form>
 
-      <nav className='login-links' aria-label="Account Options">
-        <a href='/signup'>
+      <nav
+        className="mt-6 flex flex-wrap justify-center gap-6 text-sm font-bold"
+        aria-label="Account Options"
+      >
+        <a
+          href="/signup"
+          className="text-dark border-b-2 border-transparent hover:border-dark transition-colors"
+        >
           Create a new account
         </a>
-        <a href='/reset-password'>
+        <a
+          href="/reset-password"
+          className="text-dark border-b-2 border-transparent hover:border-dark transition-colors"
+        >
           Forgot password?
         </a>
       </nav>

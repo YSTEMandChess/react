@@ -1,17 +1,14 @@
-/* eslint-disable import/first */
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-// avoid TypeScript import issues for runtime-only modules
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const chessjs: any = require('chess.js');
-const Chess = chessjs.Chess || chessjs;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const io: any = require('socket.io-client');
-
+import { Chess as ChessClass } from 'chess.js';
+import { io } from 'socket.io-client';
 import { Move } from '../../core/types/chess';
 import ChessBoard, { ChessBoardRef } from '../../components/ChessBoard/ChessBoard';
 import { environment } from '../../environments/environment';
 import StockfishTutor from './StockfishTutor';
 import styles from './PlayComputer.module.scss';
+
+// Normalize chess.js named export to local constructor
+const Chess: any = ChessClass;
 
 type Difficulty = 1 | 5 | 10 | 15 | 20;
 
@@ -186,7 +183,7 @@ const PlayComputerWithTutor: React.FC = () => {
           <button className={styles.startButton} onClick={startSession} disabled={!connected}>{connected ? 'Start Game' : 'Connecting...'}</button>
         </div>
       ) : (
-        <> 
+        <>
           <div className={styles.controls}>
             <button onClick={undoMove} disabled={moveHistory.length < 2 || isThinking}>Undo</button>
             <button onClick={resetGame} disabled={isThinking}>Reset</button>
