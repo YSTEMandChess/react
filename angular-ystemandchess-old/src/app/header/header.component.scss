@@ -99,6 +99,19 @@
   color: #3a7cca;
 }
 
+.navbar-toggler {
+  transition: all 0.5s ease-in-out;
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
+  }
+}
+
+.navbar-toggler-icon {
+  transition: transform 0.5s ease-in-out;
+}
+
 .btn-lg {
   background-color: white;
   border-radius: 30px;
