@@ -35,7 +35,9 @@ body {
 }
 
 #main-content-math {
-  padding: 24px 0 32px 0;
+  background-color: $brand-color-primary;
+  padding: 0;
+  min-height: 100vh;
 }
 
 .text-title-md-math {
@@ -47,6 +49,15 @@ body {
   margin-bottom: 10px;
 }
 
+// ...existing code...
+
+.pictureMath {
+  object-fit: contain;
+  width: max(100%, 300px);
+  height: 450px;
+}
+// ...existing code...
+
 .picture-math,
 .picture {
   width: 90%;
@@ -57,6 +68,9 @@ body {
   border-radius: 10px;
   object-fit: cover;
 }
+
+
+
 
 .text-caption-math,
 .text-caption {
@@ -75,6 +89,7 @@ body {
   line-height: 1.7;
   color: $text-color;
   text-align: justify;
+  text-indent: 2em; // Add a tab space at the beginning, like MLA format
 }
 
 .rectdiv2-math {
@@ -82,24 +97,17 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 160px; // Reduce height to fit content
-  //margin: 20px auto; // Center-align the quote section
-  //padding: 10px;
-  //max-width: 800px;
+  height: auto;
+  min-height: 160px;
+  padding: 20px 0;
+  width: 100%;
 }
 
 .recttext-math {
-  // font-size: 1.6rem;
-  // font-weight: 500;
-  // color: $highlight-color;
-  // text-align: center;
-  // line-height: 1.4;
-  // width: 80%;
-
-  max-width: 500px; // Limit the width of the paragraph
-  margin: 0 auto 15px; // Center align with auto margins
+  max-width: 800px; // Limit the width of the paragraph
+  margin: 0 auto; // Center align with auto margins
   padding: 0 20px; // Add padding to avoid edges
-  font-size: 1.20rem;
+  font-size: 1.50rem;
   line-height: 1.7;
   color: $text-color;
   text-align: center;
@@ -115,11 +123,6 @@ footer {
   border-top: 1px solid #ddd;
 }
 
-.picture-math{
-  object-fit: contain;
-    width: max(100%, 300px);
-    height: 450px;
-}
 
 
 footer p {
