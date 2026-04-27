@@ -1,4 +1,5 @@
 const GameManager = require("./GameManager");
+const { completeActivity } = require("../api/completeActivity");
 
 const gameManager = new GameManager();
 
@@ -45,8 +46,7 @@ const registerSocketHandlers = (socket, io) => {
     socket.on("newPuzzle", (msg) => {
         try {
             const parsed = JSON.parse(msg);
-            console.log('data',parsed, msg);
-            // create the new puzzle
+            console.log('data', parsed, msg);
             gameManager.createOrJoinPuzzle({
                 student: parsed.student,
                 mentor: parsed.mentor,
@@ -54,6 +54,17 @@ const registerSocketHandlers = (socket, io) => {
                 socketId: socket.id,
                 credentials: parsed.credentials,
             }, io);
+
+            // Student joining a puzzle session with their mentor counts as attending a session
+            if (parsed.role === "student" && parsed.credentials && parsed.student) {
+                completeActivity(parsed.student, parsed.credentials, "attendSession")
+                    .then(r => {
+                        if (r.status === 200) {
+                            socket.emit("completeActivity");
+                        }
+                    })
+                    .catch(e => console.log("attendSession error:", e));
+            }
         }
         catch (err) {
             socket.emit("gameerror", err.message);
@@ -72,38 +83,33 @@ const registerSocketHandlers = (socket, io) => {
             const state = res.result;
             gameManager.broadcastBoardState(res.result, io);
             console.log('Move: ', res);
-            if(!computerMove && credentials) {
-                const activityEvents = res.activityEvents;   
+            // Gap 5: guard username too — it can be null on early moves before startRecording resolves
+            if (!computerMove && credentials && username) {
+                const activityEvents = res.activityEvents;
                 if (activityEvents && activityEvents.length > 0) {
-                    const studentId = state.studentId;   
+                    const studentId = state.studentId;
                     const payload = {
-                        activities: activityEvents, 
+                        activities: activityEvents,
                         lastMove: { from, to, san: state.move?.san }
                     };
                     console.log('Payload', payload);
+                    // Gap 1: resolve the student socket so we always notify the student, not the mover
                     const studentSocket = io.sockets.sockets.get(studentId);
-                    //console.log('student socket', studentSocket);
                     if (studentSocket) {
                         try {
-                            console.log('route:', `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`);
-                            const response = await fetch(`${process.env.MIDDLEWARE_URL}/activities/${username}/activity`, {
-                                method: "PUT",
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authentication' : `Bearer ${credentials}`,
-                                },
-                                body: JSON.stringify({
-                                    activityName: payload.activities[0].name,
-                                })
-                            });
-                            console.log('response',response);
-                            socket.emit("completeActivity");
+                            for (const event of payload.activities) {
+                                const response = await completeActivity(username, credentials, event.name);
+                                console.log('completeActivity response', response.status);
+                                // Gap 2: only notify on confirmed success; Gap 1: emit to studentSocket
+                                if (response.status === 200) {
+                                    studentSocket.emit("completeActivity");
+                                }
+                            }
                         } catch (e) {
-                            console.log('Error: ', e);                            
+                            console.log('Error: ', e);
                         }
                     }
                 }
-
             }
 
             /*
