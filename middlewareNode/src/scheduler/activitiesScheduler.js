@@ -16,7 +16,7 @@
 const schedule = require("node-schedule");
 const config = require("config");
 const { MongoClient } = require('mongodb');
-const { selectActivities } = require("../utils/activities");
+const { getActivityTypes, selectActivitiesFromList } = require("../utils/activities");
 require('dotenv').config();
 
 // Cache database client to prevent repeated connections
@@ -45,11 +45,13 @@ const activityScheduler = schedule.scheduleJob('0 0 * * *',
     
     // Get all user activity documents
     const activitiesArray = await (activities.find({})).toArray();
-    
+
+    // Fetch activity types once and reuse for every user
+    const activityTypes = await getActivityTypes();
+
     // Reset activities for each user
     for(const userActivity of activitiesArray) {
-        // Generate new random activities for the day
-        const newActivities = await selectActivities();
+        const newActivities = selectActivitiesFromList(activityTypes);
         const id = userActivity._id;
         
         // Update user's activities in database

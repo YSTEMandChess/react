@@ -175,6 +175,17 @@ router.post(
       });
       await mainUser.save();
 
+      // Create an activities document for students who register directly
+      if (role === "student") {
+        const newActivities = await selectActivities();
+        const activitiesEntry = new Activities({
+          userId: mainUser.id,
+          activities: newActivities,
+          completedDates: [],
+        });
+        await activitiesEntry.save();
+      }
+
       res.status(200).json("Added users");
     } catch (error) {
       console.error(error.message);
@@ -231,6 +242,13 @@ router.post(
         recordingList: [],
       });
       await newStudent.save();
+      const newActivities = await selectActivities();
+      const activitiesEntry = new Activities({
+        userId: newStudent.id,
+        activities: newActivities,
+        completedDates: [],
+      });
+      await activitiesEntry.save();
       return res.status(200).json("Added student");
     } catch (error) {
       console.error(error.message);

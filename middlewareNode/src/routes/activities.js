@@ -12,6 +12,7 @@
 
 const config = require("config");
 const express = require('express');
+const passport = require("passport");
 const router = express.Router({mergeParams: true});
 const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
@@ -65,6 +66,11 @@ router.get("/:username", async (req, res) => {
         const userActivities = await activities.findOne(
             { userId }, { projection: {activities: 1, _id: 0}}
         );
+        // Return a safe empty structure if no activities document exists yet
+        if (!userActivities) {
+            return res.status(200).json({ activities: { activities: [] } });
+        }
+        res.setHeader('Cache-Control', 'no-store');
         return res.status(200).json({activities: userActivities});
 
     } catch (err) {
@@ -93,28 +99,45 @@ router.get("/:username/dates", async (req, res) => {
 });
 
 
-router.put("/:username/activity", async (req, res) => {
+router.put("/:username/activity", passport.authenticate("jwt", { session: false }), async (req, res) => {
     try {
         const db = await getDb();
-        const { username } = req.params;
+        const username = req.user.username;
         const { activityName } = req.body;
         const userId = await getUserId(db, username);
         if(!userId) {
             return res.status(404).json({error:'User not found'});
         }
         const activities = db.collection("activities");
-        const activityIncomplete = await activities.findOne(
-            { userId, "activities.name": activityName }, 
-            { activities: {$elemMatch: { name: activityName }}, _id:0},
+        const alreadyCompleted = await activities.findOne(
+            { userId, activities: { $elemMatch: { name: activityName, completed: true } } }
         );
-        if(activityIncomplete) {
-            console.log('incomplete activity: ', activityName);
+        if (alreadyCompleted) {
+            return res.status(200).json({ message: 'already completed' });
         }
-        await activities.updateOne(
+        const updateResult = await activities.updateOne(
             { userId, "activities.name": activityName },
             { $set: { "activities.$.completed": true } }
         );
-        return res.status(200).json({message:'success'});
+        if (updateResult.modifiedCount === 0) {
+            // Activity not in today's random selection — add it as completed
+            const activityTypes = db.collection("activityTypes");
+            const activityType = await activityTypes.findOne({ _id: activityName });
+            const type = activityType?.type || "session";
+            await activities.updateOne(
+                { userId },
+                { $push: { activities: { name: activityName, type, completed: true } } }
+            );
+        }
+        const updatedDoc = await activities.findOne({ userId });
+        const allDone = updatedDoc.activities.every(activity => activity.completed);
+        if (allDone) {
+            await activities.updateOne(
+                { userId },
+                { $push: { completedDates: new Date() } }
+            );
+        }
+        return res.status(200).json({ message: 'success' });
     } catch (err) {
         console.error('Error updating activities: ', err);
         return res.status(500).json({error: 'Server error'});

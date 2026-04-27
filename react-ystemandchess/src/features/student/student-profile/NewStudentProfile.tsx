@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from "react";
 import { SetPermissionLevel } from '../../../globals';
 import { useCookies } from 'react-cookie';
 import { environment } from "../../../environments/environment";
@@ -108,6 +108,9 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   // Animation states
   const [showConfetti, setShowConfetti] = useState(false);
   const [celebrateAction, setCelebrateAction] = useState(false);
+
+  // Incremented each time a puzzle activity completes, triggering ActivitiesModal refetch
+  const [activityRefreshKey, setActivityRefreshKey] = useState(0);
 
   // states for lessons tab
   const [lessonSelected, setLessonSelected] = useState(false); // whether user has navigated into a lesson
@@ -268,6 +271,10 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     }
   }
 
+  const handleActivityComplete = useCallback(() => {
+    setActivityRefreshKey(k => k + 1);
+  }, []);
+
   // Fun click handler for portrait
   const handlePortraitClick = () => {
     setShowConfetti(true);
@@ -420,7 +427,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     case "puzzles":
       return (
         <div className="w-full h-full">
-          <Puzzles student={username} mentor={mentorUsername} role={"student"} styleType="profile" />
+          <Puzzles student={username} mentor={mentorUsername} role={"student"} styleType="profile" onCompleteActivity={handleActivityComplete} />
         </div>
       );
     
@@ -448,7 +455,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   }
 };
 
-  const tabContent = useMemo(() => renderTabContent(), [activeTab, lessonSelected, piece, lessonNum, events, loading, hasMore]);
+  const tabContent = useMemo(() => renderTabContent(), [activeTab, lessonSelected, piece, lessonNum, events, loading, hasMore, handleActivityComplete, username, mentorUsername]);
 
   return (
   <main className="bg-soft min-h-screen relative mb-12">
@@ -602,7 +609,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
 
     {/* Modals */}
     {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} />}
-    {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username} />}
+    {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username} refreshKey={activityRefreshKey} />}
     {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} />}
     {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
   </main>

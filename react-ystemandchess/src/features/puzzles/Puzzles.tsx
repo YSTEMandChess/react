@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import {
   themesName,
   themesDescription,
@@ -19,6 +19,7 @@ type PuzzlesProps = {
   mentor?: any;
   role?: any;
   styleType?: any;
+  onCompleteActivity?: () => void;
 };
 
 // Helper function to normalize FEN (same as in socket)
@@ -50,6 +51,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   mentor = null,
   role = "student",
   styleType = "page",
+  onCompleteActivity,
 }) => {
   const isProfile = styleType === "profile";
 
@@ -83,8 +85,17 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const [startTime, setStartTime] = useState(null);
   const [username, setUsername] = useState(null);
 
+  // Decode username from JWT cookie directly — fallback when startRecording is slow/fails
+  const usernameFromJwt = useMemo(() => {
+    try {
+      return JSON.parse(atob((cookies.login as string).split('.')[1])).username as string;
+    } catch {
+      return null;
+    }
+  }, [cookies.login]);
+
   // User identification
-  const studentId = student || cookies.login?.studentId || uuidv4();
+  const studentId = student || usernameFromJwt || uuidv4();
   const mentorId = mentor || "puzzle_mentor_" + studentId;
 
   // ============================================================================
@@ -305,7 +316,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       if (newFen) {
         setCurrentFEN(newFen);
       }
-      move.username = username;
+      move.username = student || usernameFromJwt || username;
       move.credentials = cookies.login;
       socket.sendMove(move);
       socket.sendLastMove(move.from, move.to);
@@ -385,6 +396,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     student: studentId,
     mentor: mentorId,
     role: role,
+    credentials: cookies.login,
     serverUrl: environment.urls.chessServerURL,
     mode: "puzzle",
 
@@ -394,6 +406,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     },
 
     onMessage: handleSocketMessage,
+    onCompleteActivity,
 
     onRoleAssigned: (assignedRole) => {
       if (assignedRole === "host") {

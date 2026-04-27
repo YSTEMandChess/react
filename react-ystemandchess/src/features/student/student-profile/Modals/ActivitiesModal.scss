@@ -10,11 +10,13 @@
   align-items: center;
   z-index: 999;
   animation: fadeIn 0.3s ease;
+  pointer-events: none;
 
   /* ---------------------------------------------
     Modal Container
   ---------------------------------------------- */
   .modal-content {
+    pointer-events: auto;
     width: 80vw;
     max-width: 1000px;
     max-height: 90vh;
@@ -108,6 +110,11 @@
     &:hover {
       background: #f7a835;
     }
+
+    &.growth-btn--active {
+      background: #c47a10;
+      box-shadow: 0 0 0 3px #fff, 0 0 0 5px #c47a10;
+    }
   }
 
   .water-meter {
@@ -120,6 +127,36 @@
     svg {
       width: 100%;
       height: 100%;
+
+      /* Hide the hardcoded 50% fill, wave, and "50%" text paths baked into the SVG */
+      g:nth-child(2),
+      g:nth-child(3),
+      g:nth-child(4) {
+        display: none;
+      }
+    }
+
+    .water-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(30, 120, 200, 0.45);
+      border-radius: 0 0 4px 4px;
+      transition: none;
+      pointer-events: none;
+    }
+
+    .water-percent {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #1a3a6e;
+      pointer-events: none;
     }
   }
 }
@@ -182,6 +219,13 @@
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
+
+      .no-activities {
+        font-size: 0.8rem;
+        color: #555;
+        font-style: italic;
+        padding: 0.5rem;
+      }
     }
 
     .activity-button {
@@ -219,6 +263,24 @@
         padding: 0 0.3rem;
         margin: 0;
         display: block;
+      }
+
+      .status-icon {
+        position: absolute;
+        bottom: 0.3rem;
+        right: 0.4rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #5a9e6f;
+      }
+
+      &.activity-button--completed {
+        background-color: #d4edda;
+        border: 1.5px solid #5a9e6f;
+
+        .action {
+          color: #2e7d4f;
+        }
       }
     }
   }
