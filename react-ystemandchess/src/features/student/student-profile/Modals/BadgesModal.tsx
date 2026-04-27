@@ -41,6 +41,10 @@ const BadgesModal = ({ onClose }: { onClose: () => void }) => {
         ]);
         setCatalog(badges);
         setEarnedIds(earned.map((b: any) => b.badgeId));
+      } catch (err) {
+        console.error("Error loading badges:", err);
+        setCatalog([]);
+        setEarnedIds([]);
       } finally {
         setLoading(false);
       }
