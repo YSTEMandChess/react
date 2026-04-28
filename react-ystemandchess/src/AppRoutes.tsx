@@ -31,6 +31,7 @@ import SponsorsPartners from "./features/about-us/sponsors-partners/SponsorsPart
 import Board from "./features/about-us/board/Board";
 import Financial from "./features/about-us/financial/Financial";
 import AboutUs from "./features/about-us/aboutus/AboutUs";
+import OnlineExpansion from "./features/about-us/online-expansion/OnlineExpansion";
 
 // Educational content pages
 import PlayComputer from "./features/engine/PlayComputer";
@@ -98,6 +99,7 @@ const AppRoutes = () => {
       <Route path="/financial" element={<Financial />} />
       <Route path="/board" element={<Board />} />
       <Route path="/sponsors&partners" element={<SponsorsPartners />} />
+      <Route path="/online-expansion" element={<OnlineExpansion />} />
       
       {/* Educational content and learning pages */}
       <Route path="/play" element={<PlayComputer/>}/>
