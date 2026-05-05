@@ -1,0 +1,10 @@
+{
+  "zipcode": "30301",
+  "totalStudents": 14,
+  "avgTotalTimeHours": 8.3,
+  "avgGameTimeHours": 2.1,
+  "avgLessonTimeHours": 4.2,
+  "avgPuzzleTimeHours": 2.0,
+  "avgStreakDays": 5.2,
+  "globalAvgTotalTimeHours": 6.1
+}
