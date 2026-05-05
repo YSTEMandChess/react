@@ -473,4 +473,33 @@ router.get("/getUser", async (req, res) => {
   }
 });
 
+/**
+ * PUT /user/profile
+ * Allows the authenticated user to update their own demographic fields.
+ * Only zipcode, gender, and gradeLevel are updatable via this endpoint.
+ */
+router.put("/profile", passport.authenticate("jwt"), async (req, res) => {
+  try {
+    const { zipcode, gender, gradeLevel } = req.body;
+    const allowed = ["M", "F", "Other", null];
+
+    if (gender !== undefined && !allowed.includes(gender))
+      return res.status(400).json({ error: "gender must be M, F, Other, or null" });
+
+    const updates = {};
+    if (zipcode    !== undefined) updates.zipcode    = zipcode    || null;
+    if (gender     !== undefined) updates.gender     = gender     || null;
+    if (gradeLevel !== undefined) updates.gradeLevel = gradeLevel || null;
+
+    if (Object.keys(updates).length === 0)
+      return res.status(400).json({ error: "No updatable fields provided" });
+
+    await users.updateOne({ username: req.user.username }, { $set: updates });
+    res.json({ message: "Profile updated" });
+  } catch (err) {
+    console.error("PUT /user/profile:", err.message);
+    res.status(500).json("Server error");
+  }
+});
+
 module.exports = router;

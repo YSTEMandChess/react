@@ -22,7 +22,8 @@
     "uuid": "^8.3.2"
   },
   "scripts": {
-    "start": "nodemon src/server.js"
+    "start": "nodemon src/server.js",
+    "test": "jest --testPathPatterns=tests/"
   },
   "author": "",
   "license": "ISC",
@@ -30,6 +31,7 @@
     "node": "18.20.8"
   },
   "devDependencies": {
+    "jest": "^30.3.0",
     "node-schedule": "^2.1.1"
   }
 }
