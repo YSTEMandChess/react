@@ -13,6 +13,7 @@
  */
 
 // React and routing imports
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 
 // Page component imports - organized by category
