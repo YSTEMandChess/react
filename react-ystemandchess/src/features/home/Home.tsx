@@ -175,6 +175,7 @@ const Home = () => {
           <button
             className="btn-primary mt-auto mb-4"
             aria-label="Join now for free"
+            onClick={() => navigate("/signup")}
           >
             Join Now!
           </button>
@@ -191,6 +192,7 @@ const Home = () => {
           <button
             className="btn-primary mt-auto mb-4"
             aria-label="Join now premium"
+            onClick={() => navigate("/signup")}
           >
             Join Now!
           </button>
