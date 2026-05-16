@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 import DateRangeFilter, { DateRange } from '../../components/Analytics/DateRangeFilter';
 import IndividualView from './IndividualView';
+import ZipcodeView from './ZipcodeView';
+import GlobalView from './GlobalView';
 
 type Tab = 'individual' | 'zipcode' | 'global';
 
@@ -69,16 +71,8 @@ const AnalyticsLayout: React.FC = () => {
       {/* Content */}
       <div className="p-6">
         {activeTab === 'individual' && <IndividualView dateRange={dateRange} />}
-        {activeTab === 'zipcode' && (
-          <div className="text-center text-gray-400 py-16 text-sm">
-            Zipcode view — coming in Week 3.
-          </div>
-        )}
-        {activeTab === 'global' && (
-          <div className="text-center text-gray-400 py-16 text-sm">
-            Global view — coming in Week 3.
-          </div>
-        )}
+        {activeTab === 'zipcode'    && <ZipcodeView dateRange={dateRange} />}
+        {activeTab === 'global'     && <GlobalView  dateRange={dateRange} />}
       </div>
     </div>
   );

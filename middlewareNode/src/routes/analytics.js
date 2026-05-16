@@ -45,6 +45,22 @@ function dateFilter(from, to) {
 }
 
 /**
+ * Returns an error string if the param is present but not a valid date,
+ * or null if the param is absent or valid.
+ */
+function validateDate(val, name) {
+  if (val === undefined || val === "") return null;
+  return isNaN(new Date(val).getTime())
+    ? `${name} must be a valid date (YYYY-MM-DD)`
+    : null;
+}
+
+/** Validates from/to query params; returns an error string or null. */
+function validateDateRange(from, to) {
+  return validateDate(from, "from") || validateDate(to, "to");
+}
+
+/**
  * Aggregates time tracking records for one user into hours per event type.
  * @returns {{ totalTimeHours, gameTimeHours, lessonTimeHours, puzzleTimeHours, mentorTimeHours }}
  */
@@ -151,6 +167,8 @@ router.get("/student/:username", async (req, res) => {
   try {
     const { username } = req.params;
     const { from, to } = req.query;
+    const dateErr = validateDateRange(from, to);
+    if (dateErr) return res.status(400).json({ error: dateErr });
 
     const user = await Users.findOne({ username }, { password: 0 });
     if (!user) return res.status(404).json({ error: "Student not found" });
@@ -237,6 +255,8 @@ router.get("/student/:username/events", async (req, res) => {
   try {
     const { username } = req.params;
     const { from, to } = req.query;
+    const dateErr = validateDateRange(from, to);
+    if (dateErr) return res.status(400).json({ error: dateErr });
     const skip  = Math.max(parseInt(req.query.skip)  || 0, 0);
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
     const filter = { username, eventType: { $ne: "website" }, ...dateFilter(from, to) };
@@ -269,6 +289,8 @@ router.get("/zipcode", async (req, res) => {
   try {
     const { zipcode, from, to } = req.query;
     if (!zipcode) return res.status(400).json({ error: "zipcode is required" });
+    const dateErr = validateDateRange(from, to);
+    if (dateErr) return res.status(400).json({ error: dateErr });
 
     const usersInZip = await Users.find({ zipcode }, { username: 1, _id: 0 });
     if (usersInZip.length === 0)
@@ -342,6 +364,8 @@ router.get("/zipcode", async (req, res) => {
 router.get("/zipcode/all", async (req, res) => {
   try {
     const { from, to } = req.query;
+    const dateErr = validateDateRange(from, to);
+    if (dateErr) return res.status(400).json({ error: dateErr });
     const df = dateFilter(from, to);
 
     // Group students by zipcode
@@ -383,6 +407,8 @@ router.get("/zipcode/all", async (req, res) => {
 router.get("/global", async (req, res) => {
   try {
     const { from, to } = req.query;
+    const dateErr = validateDateRange(from, to);
+    if (dateErr) return res.status(400).json({ error: dateErr });
     const df = dateFilter(from, to);
 
     const [totalUsers, eventAgg, genderAgg] = await Promise.all([

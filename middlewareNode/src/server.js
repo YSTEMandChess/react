@@ -9,6 +9,15 @@ const cors = require("cors");
 const config = require("config");
 const streakRoutes = require("./routes/streak");
 const adminGuard   = require("./middleware/adminGuard");
+const rateLimit    = require("express-rate-limit");
+
+const analyticsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later" },
+});
 
 // Enable scheduler
 require("./scheduler/activitiesScheduler.js");
@@ -47,7 +56,7 @@ app.use("/lessons", require("./routes/lessons"));
 app.use("/activities", require("./routes/activities"));
 app.use("/streak", streakRoutes);
 app.use("/badges", require("./routes/badges"));
-app.use("/analytics", adminGuard, require("./routes/analytics"));
+app.use("/analytics", analyticsLimiter, adminGuard, require("./routes/analytics"));
 
 // Start server on specified port
 const PORT = process.env.PORT || 8000;
