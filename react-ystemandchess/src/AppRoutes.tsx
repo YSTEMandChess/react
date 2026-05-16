@@ -14,6 +14,7 @@
 
 // React and routing imports
 import { Route, Routes } from "react-router-dom";
+import AnalyticsLayout from "./Pages/Analytics/AnalyticsLayout";
 
 // Page component imports - organized by category
 // Home and main pages
@@ -135,6 +136,9 @@ const AppRoutes = () => {
           />
         }
       />
+
+      {/* Admin analytics dashboard — admin role required */}
+      <Route path="/analytics" element={<AnalyticsLayout />} />
     </Routes>
   );
 };
