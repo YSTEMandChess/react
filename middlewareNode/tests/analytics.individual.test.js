@@ -39,6 +39,8 @@ const app = express();
 app.use(express.json());
 app.use("/analytics", adminGuard, analytics);
 
+afterEach(() => jest.clearAllMocks());
+
 // ─── Shared fixtures ───────────────────────────────────────────
 const STUDENT = {
   _id: "user123",
@@ -125,7 +127,8 @@ describe("GET /analytics/student/:username", () => {
 
   test("200 — date range filter is passed to TimeTracking.find", async () => {
     await request(app).get("/analytics/student/alex_j?from=2026-01-01&to=2026-05-01");
-    const dateCall = TimeTracking.find.mock.calls.find(c => c[0].startTime);
+    // getUserTimeStats and getUserStreak both call find; locate the date-filtered one
+    const dateCall = TimeTracking.find.mock.calls.find((c) => c[0].startTime);
     expect(dateCall).toBeTruthy();
     expect(dateCall[0].startTime.$gte).toEqual(new Date("2026-01-01"));
   });
@@ -190,5 +193,14 @@ describe("GET /analytics/student/:username/events", () => {
     const res = await request(app).get("/analytics/student/alex_j/events?limit=999");
     expect(res.status).toBe(200);
     // limit is capped at 100 — just verify no crash
+  });
+
+  test("date range filter is applied to both find and countDocuments", async () => {
+    await request(app).get("/analytics/student/alex_j/events?from=2026-01-01&to=2026-05-01");
+    // After clearAllMocks, calls[0] belongs to this request only
+    const findArg  = TimeTracking.find.mock.calls[0][0];
+    const countArg = TimeTracking.countDocuments.mock.calls[0][0];
+    expect(findArg.startTime.$gte).toEqual(new Date("2026-01-01"));
+    expect(countArg.startTime.$gte).toEqual(new Date("2026-01-01"));
   });
 });

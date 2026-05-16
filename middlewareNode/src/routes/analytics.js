@@ -236,18 +236,17 @@ router.get("/student/:username/chart", async (req, res) => {
 router.get("/student/:username/events", async (req, res) => {
   try {
     const { username } = req.params;
+    const { from, to } = req.query;
     const skip  = Math.max(parseInt(req.query.skip)  || 0, 0);
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const filter = { username, eventType: { $ne: "website" }, ...dateFilter(from, to) };
 
     const [events, total] = await Promise.all([
-      TimeTracking.find(
-        { username, eventType: { $ne: "website" } },
-        { eventType: 1, eventName: 1, startTime: 1, totalTime: 1, _id: 0 }
-      )
+      TimeTracking.find(filter, { eventType: 1, eventName: 1, startTime: 1, totalTime: 1, _id: 0 })
         .sort({ startTime: -1 })
         .skip(skip)
         .limit(limit),
-      TimeTracking.countDocuments({ username, eventType: { $ne: "website" } }),
+      TimeTracking.countDocuments(filter),
     ]);
 
     res.json({ events, hasMore: skip + limit < total });
