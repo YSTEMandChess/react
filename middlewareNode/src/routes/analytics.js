@@ -72,7 +72,7 @@ async function getUserTimeStats(username, from, to) {
  * A day counts when both 'lesson' and 'puzzle' events exist.
  */
 async function getUserStreak(username) {
-  const events = await TimeTracking.find({ username }, { eventType: 1, startTime: 1, _id: 0 }).lean();
+  const events = await TimeTracking.find({ username }, { eventType: 1, startTime: 1, _id: 0 });
   const daysMap = {};
   for (const e of events) {
     if (!e.startTime || !e.eventType) continue;
