@@ -142,6 +142,11 @@ const PlayComputerWithTutor: React.FC = () => {
     const startFen = gameRef.current.fen();
     setFen(startFen); setMoveHistory([]); setHighlightSquares([]); setGameStatus(''); setIsThinking(false);
     if (chessBoardRef.current) chessBoardRef.current.reset();
+    // Reset tutor feedback/state: clear last move context and nudge the tutor trigger
+    try {
+      setLastMoveData({});
+      setTutorTrigger(t => t + 1);
+    } catch (e) {}
     if (socketRef.current && sessionStartedRef.current) {
       socketRef.current.emit('update-fen', { fen: startFen });
       if (playerColorRef.current === 'black') setTimeout(() => requestComputerMove(startFen), 500);
@@ -218,7 +223,21 @@ const PlayComputerWithTutor: React.FC = () => {
               <div style={{ marginBottom: 8 }}>
                 <label><input type="checkbox" checked={tutorEnabled} onChange={(e) => setTutorEnabled(e.target.checked)} /> Show Tutor</label>
               </div>
-              <StockfishTutor enabled={tutorEnabled} trigger={tutorTrigger} fenBefore={lastMoveData.fenBefore} fenAfter={lastMoveData.fenAfter} moveUci={lastMoveData.moveUci} uciHistory={lastMoveData.uciHistory} />
+              <StockfishTutor
+                enabled={tutorEnabled}
+                trigger={tutorTrigger}
+                fenBefore={lastMoveData.fenBefore}
+                fenAfter={lastMoveData.fenAfter}
+                moveUci={lastMoveData.moveUci}
+                uciHistory={lastMoveData.uciHistory}
+                onRequestGotoFen={(fen: string) => {
+                  try {
+                    setFen(fen);
+                    setHighlightSquares([]);
+                    if (chessBoardRef.current) chessBoardRef.current.setPosition(fen);
+                  } catch (e) {}
+                }}
+              />
             </div>
           </div>
 
