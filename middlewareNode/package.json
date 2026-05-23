@@ -20,7 +20,8 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.0",
     "request-ip": "^3.3.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "node-schedule": "^2.1.1"
   },
   "scripts": {
     "start": "nodemon src/server.js",
@@ -33,7 +34,6 @@
   },
   "devDependencies": {
     "jest": "^30.3.0",
-    "node-schedule": "^2.1.1",
     "supertest": "^7.2.2"
   }
 }

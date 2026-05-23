@@ -12,8 +12,8 @@ const adminGuard   = require("./middleware/adminGuard");
 const rateLimit    = require("express-rate-limit");
 
 const analyticsLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  windowMs: 15 * 60 * 1000,
+  max: parseInt(process.env.ANALYTICS_RATE_LIMIT_MAX) || 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later" },
@@ -35,7 +35,7 @@ app.use(express.json({ extended: false }));
 // Configure session middleware
 app.use(
   session({
-    secret: "your_secret_key_here", // Use a long and random string for better security
+    secret: process.env.SESSION_SECRET || "dev-secret-change-in-prod",
     resave: false,
     saveUninitialized: false,
   })

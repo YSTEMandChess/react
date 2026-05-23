@@ -70,7 +70,7 @@ const ActivityFeed: React.FC<Props> = ({ username, dateRange }) => {
     setEvents([]);
     setSkip(0);
     loadEvents(0, true);
-  }, [username, dateRange]);
+  }, [username, dateRange, loadEvents]);
 
   if (error) return <ErrorBanner message={`Failed to load events: ${error}`} />;
 

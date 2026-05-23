@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useCookies } from 'react-cookie';
+import React, { useState } from 'react';
 import DateRangeFilter, { DateRange } from '../../components/Analytics/DateRangeFilter';
 import IndividualView from './IndividualView';
 import ZipcodeView from './ZipcodeView';
@@ -15,48 +13,33 @@ const TABS: { key: Tab; label: string }[] = [
 ];
 
 const AnalyticsLayout: React.FC = () => {
-  const [cookies] = useCookies(['login']);
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('individual');
   const [dateRange, setDateRange] = useState<DateRange>({ from: '', to: '' });
-  const [authChecked, setAuthChecked] = useState(false);
-
-  useEffect(() => {
-    if (!cookies.login) {
-      navigate('/login');
-      return;
-    }
-    try {
-      const payload = JSON.parse(atob(cookies.login.split('.')[1]));
-      if (payload.role !== 'admin') {
-        navigate('/login');
-        return;
-      }
-    } catch {
-      navigate('/login');
-      return;
-    }
-    setAuthChecked(true);
-  }, [cookies.login, navigate]);
-
-  if (!authChecked) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-screen-xl mx-auto">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <h1 className="text-xl font-bold text-gray-900">Expand Analytics</h1>
-          <DateRangeFilter value={dateRange} onChange={setDateRange} />
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <h1 className="text-xl font-bold text-gray-900">Expand Analytics</h1>
+            <DateRangeFilter value={dateRange} onChange={setDateRange} />
+          </div>
         </div>
 
-        </div>
         {/* Tab bar */}
-        <div className="max-w-screen-xl mx-auto flex gap-1 mt-4">
+        <div
+          className="max-w-screen-xl mx-auto flex gap-1 mt-4"
+          role="tablist"
+          aria-label="Analytics views"
+        >
           {TABS.map((tab) => (
             <button
               key={tab.key}
+              role="tab"
+              id={`tab-${tab.key}`}
+              aria-selected={activeTab === tab.key}
+              aria-controls={`panel-${tab.key}`}
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
                 activeTab === tab.key
@@ -70,11 +53,32 @@ const AnalyticsLayout: React.FC = () => {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content panels */}
       <div className="p-6 max-w-screen-xl mx-auto">
-        {activeTab === 'individual' && <IndividualView dateRange={dateRange} />}
-        {activeTab === 'zipcode'    && <ZipcodeView dateRange={dateRange} />}
-        {activeTab === 'global'     && <GlobalView  dateRange={dateRange} />}
+        <div
+          role="tabpanel"
+          id="panel-individual"
+          aria-labelledby="tab-individual"
+          hidden={activeTab !== 'individual'}
+        >
+          {activeTab === 'individual' && <IndividualView dateRange={dateRange} />}
+        </div>
+        <div
+          role="tabpanel"
+          id="panel-zipcode"
+          aria-labelledby="tab-zipcode"
+          hidden={activeTab !== 'zipcode'}
+        >
+          {activeTab === 'zipcode' && <ZipcodeView dateRange={dateRange} />}
+        </div>
+        <div
+          role="tabpanel"
+          id="panel-global"
+          aria-labelledby="tab-global"
+          hidden={activeTab !== 'global'}
+        >
+          {activeTab === 'global' && <GlobalView dateRange={dateRange} />}
+        </div>
       </div>
     </div>
   );

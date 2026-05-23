@@ -33,8 +33,7 @@ const StudentTimeChart: React.FC<Props> = ({ username, dateRange }) => {
     setLoading(true);
     setError(null);
     const params = new URLSearchParams({ months: '6' });
-    if (dateRange.from) params.set('from', dateRange.from);
-    if (dateRange.to) params.set('to', dateRange.to);
+    // Note: /chart uses a rolling N-month window; from/to are not supported by this endpoint.
 
     fetch(`${environment.urls.middlewareURL}/analytics/student/${username}/chart?${params}`, {
       headers: { Authorization: `Bearer ${cookies.login}` },
@@ -46,7 +45,7 @@ const StudentTimeChart: React.FC<Props> = ({ username, dateRange }) => {
       .then(setChart)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [username, dateRange, cookies.login]);
+  }, [username, cookies.login]);
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorBanner message={`Failed to load chart: ${error}`} />;

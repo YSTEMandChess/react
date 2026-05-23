@@ -28,6 +28,7 @@ services:
       - "8000:8000"
     environment:
       - PORT=8000
+      - SESSION_SECRET=dev-secret-replace-in-prod
       # Analytics rate limit — requests per 15-minute window per IP (default: 100)
       - ANALYTICS_RATE_LIMIT_MAX=100
 

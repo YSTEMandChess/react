@@ -16,6 +16,7 @@ const DateRangeFilter: React.FC<Props> = ({ value, onChange }) => (
     <input
       type="date"
       value={value.from}
+      max={value.to || undefined}
       onChange={(e) => onChange({ ...value, from: e.target.value })}
       className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
     />
@@ -23,6 +24,7 @@ const DateRangeFilter: React.FC<Props> = ({ value, onChange }) => (
     <input
       type="date"
       value={value.to}
+      min={value.from || undefined}
       onChange={(e) => onChange({ ...value, to: e.target.value })}
       className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
     />
