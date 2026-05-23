@@ -1,0 +1,16 @@
+{
+  "totalUsers": 248,
+  "activeUsersInPeriod": 112,
+  "totalHours": 1840.5,
+  "byEventType": {
+    "gameTime":   620.0,
+    "lessonTime": 800.0,
+    "puzzleTime": 350.0,
+    "mentorTime": 70.5
+  },
+  "byGender": {
+    "M":     { "count": 130, "avgHours": 7.8 },
+    "F":     { "count": 100, "avgHours": 7.1 },
+    "Other": { "count": 18,  "avgHours": 6.5 }
+  }
+}
