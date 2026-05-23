@@ -45,13 +45,15 @@ const AnalyticsLayout: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="max-w-screen-xl mx-auto">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h1 className="text-xl font-bold text-gray-900">Expand Analytics</h1>
           <DateRangeFilter value={dateRange} onChange={setDateRange} />
         </div>
 
+        </div>
         {/* Tab bar */}
-        <div className="flex gap-1 mt-4">
+        <div className="max-w-screen-xl mx-auto flex gap-1 mt-4">
           {TABS.map((tab) => (
             <button
               key={tab.key}
@@ -69,7 +71,7 @@ const AnalyticsLayout: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-6 max-w-screen-xl mx-auto">
         {activeTab === 'individual' && <IndividualView dateRange={dateRange} />}
         {activeTab === 'zipcode'    && <ZipcodeView dateRange={dateRange} />}
         {activeTab === 'global'     && <GlobalView  dateRange={dateRange} />}

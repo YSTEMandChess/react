@@ -102,8 +102,15 @@ const GlobalView: React.FC<Props> = ({ dateRange }) => {
     }],
   };
 
+  const hasActivity = data.totalHours > 0;
+
   return (
     <div className="space-y-4">
+      {!hasActivity && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm px-4 py-3 rounded-lg">
+          No activity recorded for this period. Try widening the date range or clearing the filter.
+        </div>
+      )}
       {/* KPI row */}
       <div className="grid grid-cols-4 gap-3">
         <KpiCard label="Total Students"    value={data.totalUsers} />

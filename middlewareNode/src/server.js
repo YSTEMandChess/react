@@ -19,8 +19,9 @@ const analyticsLimiter = rateLimit({
   message: { error: "Too many requests, please try again later" },
 });
 
-// Enable scheduler
+// Enable schedulers
 require("./scheduler/activitiesScheduler.js");
+require("./scheduler/analyticsSummaryScheduler.js");
 
 // Enable CORS for cross-origin requests
 app.use(cors(config.get("corsOptions")));
