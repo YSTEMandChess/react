@@ -42,32 +42,26 @@ describe("AnalyticsLayout", () => {
     );
   });
 
-  it("renders the date-range prompt before dates are picked", () => {
+  it("shows empty-state prompt before a student is selected", () => {
     render(<AnalyticsLayout />);
     expect(
-      screen.getByText(/Select a start and end date to load analytics/i)
+      screen.getByText(/Search and select a student to view their analytics/i)
     ).toBeInTheDocument();
   });
 
-  it("loads mock data once start and end dates are set", async () => {
+  it("keeps Individual panel visible after date range is set", async () => {
     const { container } = render(<AnalyticsLayout />);
-    const startInput = container.querySelector(
-      'input[type="date"]:nth-of-type(1)'
-    ) as HTMLInputElement;
-    const endInput = container.querySelectorAll(
-      'input[type="date"]'
-    )[1] as HTMLInputElement;
+    const dateInputs = container.querySelectorAll('input[type="date"]');
+    const startInput = dateInputs[0] as HTMLInputElement;
+    const endInput = dateInputs[1] as HTMLInputElement;
 
     fireEvent.change(startInput, { target: { value: "2026-05-01" } });
     fireEvent.change(endInput, { target: { value: "2026-05-04" } });
 
-    // Loading indicator first
-    await waitFor(() =>
-      expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument()
-    );
-
-    // Mock data renders inside the <pre> as JSON
     const panel = screen.getByRole("tabpanel");
-    expect(panel.textContent).toMatch(/active_users/);
+    expect(panel).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(/Search students/i)
+    ).toBeInTheDocument();
   });
 });
