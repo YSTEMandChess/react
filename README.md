@@ -73,7 +73,24 @@ cd react
 
 ### 2. Environment Setup
 
+This project can be run locally using Node.js or with Docker.
+
+#### Option 1: Docker (Recommended)
+
+Using Docker is the recommended way to run the project, as it automatically sets up all the services and databases for you.
+
+1.  **Install Docker Desktop**: Make sure you have Docker Desktop installed and running on your system.
+2.  **Create `default.json`**: A `default.json` file containing environment variables will be provided to contributors. Place this file in `middlewareNode/config/`.
+3.  **Build and Run**: From the project root, run the following command:
+    ```bash
+    docker-compose -f deploy/dev/docker-compose.yml up --build
+    ```
+4.  **Access the Application**: The application will be available at [http://localhost:8080](http://localhost:8080).
+
+#### Option 2: Local Node.js Setup
+
 Before running any services, create the local development environment from the **project root directory**:
+
 
 ```bash
 ./create_dev_envs.sh
