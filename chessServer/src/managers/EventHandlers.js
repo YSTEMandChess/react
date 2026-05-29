@@ -1,4 +1,5 @@
 const GameManager = require("./GameManager");
+const completeActivity = require("../api/completeActivity");
 
 const gameManager = new GameManager();
 
@@ -45,14 +46,12 @@ const registerSocketHandlers = (socket, io) => {
     socket.on("newPuzzle", (msg) => {
         try {
             const parsed = JSON.parse(msg);
-            console.log('data',parsed, msg);
             // create the new puzzle
             gameManager.createOrJoinPuzzle({
                 student: parsed.student,
                 mentor: parsed.mentor,
                 role: parsed.role,
                 socketId: socket.id,
-                credentials: parsed.credentials,
             }, io);
         }
         catch (err) {
@@ -82,22 +81,12 @@ const registerSocketHandlers = (socket, io) => {
                     };
                     console.log('Payload', payload);
                     const studentSocket = io.sockets.sockets.get(studentId);
-                    //console.log('student socket', studentSocket);
                     if (studentSocket) {
                         try {
-                            console.log('route:', `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`);
-                            const response = await fetch(`${process.env.MIDDLEWARE_URL}/activities/${username}/activity`, {
-                                method: "PUT",
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authentication' : `Bearer ${credentials}`,
-                                },
-                                body: JSON.stringify({
-                                    activityName: payload.activities[0].name,
-                                })
-                            });
+                            const activityName = payload.activities[0].name;
+                            const response = await completeActivity(username, credentials, activityName);
                             console.log('response',response);
-                            socket.emit("completeActivity");
+                            //socket.emit("completeActivity");
                         } catch (e) {
                             console.log('Error: ', e);                            
                         }
