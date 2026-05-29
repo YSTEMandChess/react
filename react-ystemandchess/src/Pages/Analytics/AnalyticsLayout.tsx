@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { useAnalyticsApi } from "../../core/hooks/useAnalyticsApi";
+import DateRangeFilter from "./DateRangeFilter";
+import LoadingSpinner from "./LoadingSpinner";
+import ErrorBanner from "./ErrorBanner";
+import IndividualView from "./IndividualView";
 
 export type AnalyticsTab = "individual" | "zipcode" | "global";
 
@@ -16,10 +20,12 @@ const AnalyticsLayout = () => {
 
   const dateRangeReady = Boolean(startDate && endDate);
 
+  // Individual tab manages its own fetch; the layout-level fetch backs the
+  // remaining tabs until they get dedicated views.
   const { data, loading, error } = useAnalyticsApi<unknown>({
     endpoint: `/analytics/${activeTab}`,
     params: { startDate, endDate },
-    enabled: dateRangeReady,
+    enabled: dateRangeReady && activeTab !== "individual",
   });
 
   return (
@@ -50,43 +56,28 @@ const AnalyticsLayout = () => {
         })}
       </div>
 
-      {/* Date range filter */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <label className="flex flex-col text-sm">
-          <span className="text-gray-700 mb-1">Start date</span>
-          <input
-            type="date"
-            value={startDate}
-            max={endDate || undefined}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </label>
-        <label className="flex flex-col text-sm">
-          <span className="text-gray-700 mb-1">End date</span>
-          <input
-            type="date"
-            value={endDate}
-            min={startDate || undefined}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </label>
-      </div>
+      <DateRangeFilter
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        className="mb-6"
+      />
 
-      {/* Content panel */}
       <section
         role="tabpanel"
         id={`analytics-panel-${activeTab}`}
         aria-labelledby={`analytics-tab-${activeTab}`}
         className="bg-white border border-gray-200 rounded-lg p-4 min-h-[12rem]"
       >
-        {!dateRangeReady ? (
+        {activeTab === "individual" ? (
+          <IndividualView startDate={startDate} endDate={endDate} />
+        ) : !dateRangeReady ? (
           <p className="text-gray-500">Select a start and end date to load analytics.</p>
         ) : loading ? (
-          <p className="text-gray-500">Loading…</p>
+          <LoadingSpinner />
         ) : error ? (
-          <p className="text-red-600">Error: {error.message}</p>
+          <ErrorBanner message={error.message} />
         ) : data ? (
           <pre className="text-xs overflow-auto">{JSON.stringify(data, null, 2)}</pre>
         ) : (

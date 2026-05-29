@@ -1,24 +1,54 @@
+import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
+import { CookiesProvider } from "react-cookie";
 import AnalyticsLayout from "./AnalyticsLayout";
 
+// Mock environment
 jest.mock("../../environments/environment", () => ({
-  environment: { urls: { middlewareURL: "http://mockurl.com" } },
+  environment: {
+    urls: {
+      middlewareURL: "http://mock-api.com",
+    },
+  },
 }));
 
-jest.mock("react-cookie", () => ({
-  useCookies: () => [{ login: "mock-jwt-token" }, jest.fn(), jest.fn()],
-}));
+// Mock useCookies — match the jest.requireActual + spread pattern used in admin.test.tsx
+jest.mock("react-cookie", () => {
+  const actual = jest.requireActual("react-cookie");
+  return {
+    ...actual,
+    useCookies: () => [{ login: "mock-jwt-token" }, jest.fn(), jest.fn()],
+  };
+});
+
+const renderLayout = () =>
+  render(
+    <MemoryRouter>
+      <CookiesProvider>
+        <AnalyticsLayout />
+      </CookiesProvider>
+    </MemoryRouter>
+  );
 
 describe("AnalyticsLayout", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // mock fetch — the hook should NOT call this while USE_MOCK is true
+    global.fetch = jest.fn(() =>
+      Promise.reject("fetch should not be called in mock mode")
+    ) as jest.Mock;
+  });
+
   it("renders three tabs: Individual, Zipcode, Global", () => {
-    render(<AnalyticsLayout />);
+    renderLayout();
     expect(screen.getByRole("tab", { name: /Individual/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Zipcode/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Global/i })).toBeInTheDocument();
   });
 
   it("defaults to Individual tab selected", () => {
-    render(<AnalyticsLayout />);
+    renderLayout();
     expect(screen.getByRole("tab", { name: /Individual/i })).toHaveAttribute(
       "aria-selected",
       "true"
@@ -30,7 +60,7 @@ describe("AnalyticsLayout", () => {
   });
 
   it("switches selection when a tab is clicked", () => {
-    render(<AnalyticsLayout />);
+    renderLayout();
     fireEvent.click(screen.getByRole("tab", { name: /Global/i }));
     expect(screen.getByRole("tab", { name: /Global/i })).toHaveAttribute(
       "aria-selected",
@@ -43,31 +73,26 @@ describe("AnalyticsLayout", () => {
   });
 
   it("renders the date-range prompt before dates are picked", () => {
-    render(<AnalyticsLayout />);
+    renderLayout();
     expect(
       screen.getByText(/Select a start and end date to load analytics/i)
     ).toBeInTheDocument();
   });
 
   it("loads mock data once start and end dates are set", async () => {
-    const { container } = render(<AnalyticsLayout />);
-    const startInput = container.querySelector(
-      'input[type="date"]:nth-of-type(1)'
-    ) as HTMLInputElement;
-    const endInput = container.querySelectorAll(
-      'input[type="date"]'
-    )[1] as HTMLInputElement;
+    renderLayout();
+    const startInput = screen.getByLabelText(/Start date/i) as HTMLInputElement;
+    const endInput = screen.getByLabelText(/End date/i) as HTMLInputElement;
 
     fireEvent.change(startInput, { target: { value: "2026-05-01" } });
     fireEvent.change(endInput, { target: { value: "2026-05-04" } });
 
-    // Loading indicator first
     await waitFor(() =>
       expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument()
     );
 
-    // Mock data renders inside the <pre> as JSON
     const panel = screen.getByRole("tabpanel");
     expect(panel.textContent).toMatch(/active_users/);
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });
