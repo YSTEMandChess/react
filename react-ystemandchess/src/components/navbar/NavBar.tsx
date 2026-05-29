@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useCookies } from "react-cookie";
-import { motion } from "framer-motion";
+import { motion, px } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
@@ -77,11 +77,15 @@ const NavBar = () => {
   };
 
   const closeDropdown = (event: { target: any }) => {
-      // Close "About Us" dropdown if click is outside its container
-      if (aboutUsRef.current && !aboutUsRef.current.contains(event.target)) {
+      // Close "About Us" dropdown if click is outside its container and dropdown
+      const aboutUsMenu = document.getElementById('aboutus-menu');
+      const isClickInsideAboutUs = aboutUsRef.current && aboutUsRef.current.contains(event.target);
+      const isClickInsideAboutUsMenu = aboutUsMenu && aboutUsMenu.contains(event.target);
+
+      if (!isClickInsideAboutUs && !isClickInsideAboutUsMenu) {
         setAboutUsDropDown(false);
       }
-      
+
       // Close mobile menu if click is outside both the menu and hamburger button
       if (
         mobileMenuRef.current &&
@@ -89,7 +93,8 @@ const NavBar = () => {
         hamburgerRef.current &&
         !hamburgerRef.current.contains(event.target) &&
         aboutUsRef.current &&
-        !aboutUsRef.current.contains(event.target)
+        !aboutUsRef.current.contains(event.target) &&
+        (!aboutUsMenu || !aboutUsMenu.contains(event.target))
       ) {
         setMobileMenuDropDown(false);
       }
@@ -158,7 +163,7 @@ const NavBar = () => {
       </Link>
 
       {/* About Us dropdown menu container */}
-      <div ref={aboutUsRef} className="relative">
+      <div ref={aboutUsRef} className="relative w-full md:w-auto">
         {/* About Us dropdown trigger button */}
         <div
           onClick={toggleAboutUs}
@@ -179,7 +184,7 @@ const NavBar = () => {
         {aboutUsDropDown && (
           <motion.div
             id="aboutus-menu"
-            className="absolute z-20 mt-3 w-64 rounded-md bg-light p-4 shadow-lg"
+            className="w-full md:absolute md:left-0 md:top-full z-20 md:mt-3 md:w-64 rounded-md bg-light md:p-4 shadow-lg flex flex-col gap-2 py-2 px-0 md:gap-3 md:py-0 md:px-4"
             initial="parentInitial"
             animate="parentAnimate"
             variants={navbarVariants}
@@ -376,7 +381,7 @@ const NavBar = () => {
   );
 
   return (
-    <header className="bg-light border-b-2 border-dark sticky top-0 z-50">
+    <header className="fixed top-0 left-0 right-0 w-full bg-light border-b-2 border-dark z-50">
       <div className="max-w-full mx-auto">
         <div className="flex justify-between items-center h-24 pr-8">
           
@@ -390,7 +395,7 @@ const NavBar = () => {
             <button
               ref={hamburgerRef}
               type="button"
-              className="text-dark hover:text-primary focus:outline-none"
+              className="text-dark hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-white transition-colors"
               onClick={toggleMobileMenu}
               aria-label="Toggle menu"
             >
@@ -433,10 +438,19 @@ const NavBar = () => {
 
       {/* Mobile dropdown menu - conditionally rendered based on mobileMenuDropDown state */}
       {mobileMenuDropDown && (
-        <div ref={mobileMenuRef} className="border-t border-light md:hidden px-4 py-4">
+        <motion.div
+          ref={mobileMenuRef}
+          className="border-t border-light md:hidden px-4 py-4"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          style={{
+            padding: "18px 10px"
+          }}
+        >
           {/* Mobile navigation using vertical layout */}
           <nav className="flex flex-col gap-4">{renderLinks()}</nav>
-        </div>
+        </motion.div>
       )}
     </header>
   );

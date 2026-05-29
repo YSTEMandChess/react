@@ -272,8 +272,8 @@
   padding: 0;
   position: relative;
 }
-
-.prevNextLessonButtonInactive {
+ 
+ .prevNextLessonButtonInactive {
   width: 160px;
   height: 60px;
   border-radius: 5px;
@@ -284,30 +284,29 @@
   padding: 0;
   position: relative;
 }
-
-.prevNextLessonButton svg,
-.prevNextLessonButtonInactive svg {
+ 
+ .prevNextLessonButton svg,
+ .prevNextLessonButtonInactive svg {
   width: 22px;
   height: 22px;
   position: absolute;
 }
-
-.prev svg {
+ 
+ .prev svg {
   left: 16px;
 }
-
-.next svg {
+ 
+ .next svg {
   right: 16px;
 }
-
-.buttonDescription {
+ 
+ .buttonDescription {
   font-size: 20px;
   font-weight: bold;
 }
-
-.next {
+ 
+ .next {
   background-color: var(--green-color);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .next:hover {

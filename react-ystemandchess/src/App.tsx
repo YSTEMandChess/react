@@ -142,7 +142,7 @@ function App() {
    */
   return (
     <Router>
-      <div className="App flex flex-col min-h-screen">
+      <div className="App pt-24 flex flex-col min-h-screen">
         <NavBar />
         <main className="flex-1">
           <AppRoutes />
