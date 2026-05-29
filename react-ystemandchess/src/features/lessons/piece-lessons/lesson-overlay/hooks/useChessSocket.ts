@@ -6,6 +6,7 @@ interface UseChessSocketOptions {
   student: string;
   mentor?: string;
   role?: "mentor" | "student" | "host" | "guest";
+  credentials?: string;
   serverUrl: string;
   mode?: GameMode;
   trackMouse?: boolean;
@@ -26,6 +27,7 @@ interface UseChessSocketOptions {
   onMessage?: (msg: string) => void;
   onRoleAssigned?: (role: "host" | "guest") => void;
   onColorAssigned?: (color: PlayerColor) => void;
+  onCompleteActivity?: () => void;
 }
 
 // ======== CENTRALIZED FEN NORMALIZATION ========
@@ -63,6 +65,7 @@ export const useChessSocket = ({
   student,
   mentor = "",
   role = "student",
+  credentials = "",
   serverUrl,
   mode = "regular",
   trackMouse = false,
@@ -80,6 +83,7 @@ export const useChessSocket = ({
   onMessage,
   onRoleAssigned,
   onColorAssigned,
+  onCompleteActivity,
 }: UseChessSocketOptions) => {
   // ======== state ========
   const [fen, setFen] = useState<string>("");
@@ -96,12 +100,18 @@ export const useChessSocket = ({
   const highlightFromRef = useRef<string>("");
   const highlightToRef = useRef<string>("");
 
-  // Store mentor/student/role in refs so they can be updated
+  // Store mentor/student/role/credentials in refs so they can be updated
   const mentorRef = useRef<string>(mentor);
   const studentRef = useRef<string>(student);
   const roleRef = useRef<"mentor" | "student" | "host" | "guest">(role);
+  const credentialsRef = useRef<string>(credentials);
+
+  // Keep latest callback ref so the stale socket closure always calls the current handler
+  const onCompleteActivityRef = useRef(onCompleteActivity);
 
   // ======== connect / listeners ========
+
+
   useEffect(() => {
     const socket = io(serverUrl, {
       transports: ["websocket"],
@@ -290,6 +300,10 @@ export const useChessSocket = ({
       if (onError) onError(msg);
     });
 
+    socket.on("completeActivity", () => {
+        if (onCompleteActivityRef.current) onCompleteActivityRef.current();
+    });
+
     // cleanup when component unmounts
     return () => {
       try {
@@ -320,7 +334,8 @@ export const useChessSocket = ({
     const data: GameConfig = {
       mentor: mentorRef.current,
       student: studentRef.current,
-      role: roleRef.current
+      role: roleRef.current,
+      credentials: credentialsRef.current,
     };
     console.log("Starting new puzzle:", data);
     socketRef.current?.emit("newPuzzle", JSON.stringify(data));
@@ -497,7 +512,9 @@ export const useChessSocket = ({
     mentorRef.current = mentor;
     studentRef.current = student;
     roleRef.current = role;
-  }, [mentor, student, role]);
+    credentialsRef.current = credentials;
+    onCompleteActivityRef.current = onCompleteActivity;
+  }, [mentor, student, role, credentials, onCompleteActivity]);
 
   // allow runtime change of mentor/student/role
   const setUserInfo = useCallback(

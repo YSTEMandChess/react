@@ -25,38 +25,48 @@ async function getDb() {
 }
 
 /**
- * Selects 4 random unique activities for a user's daily challenges
- * 
- * Randomly picks activities from the activityTypes collection without duplicates.
- * Each activity is initialized with completed: false.
- * 
+ * Fetches all available activity types from the database.
+ * Call once and pass the result to selectActivitiesFromList to avoid repeated queries.
+ * @returns {Array} Array of activity type documents from MongoDB
+ */
+const getActivityTypes = async () => {
+    const db = await getDb();
+    return (db.collection("activityTypes").find({})).toArray();
+};
+
+/**
+ * Selects 4 random unique activities from a pre-fetched activity list.
+ * Pure function — no DB access, safe to call in a loop.
+ * @param {Array} activityList - Array of activity type documents
  * @returns {Array} Array of 4 activity objects with name, type, and completed fields
  */
-const selectActivities = async () => {
-    const db = await getDb();
-    
-    // Fetch all available activity types
-    const activityList = await (db.collection("activityTypes").find({})).toArray();
-    const chosenActivites = [];
+const selectActivitiesFromList = (activityList) => {
+    const chosenIds = [];
     const newActivities = [];
-    
-    // Select 4 unique random activities
+
     while (newActivities.length < 4) {
-        const activity = {};
-        
-        // Randomly select an activity
         const selectedActivity = activityList[Math.floor(Math.random() * activityList.length)];
-        
-        // Only add if not already selected (avoid duplicates)
-        if(!chosenActivites.includes(selectedActivity._id)) {
-          chosenActivites.push(selectedActivity._id);
-          activity.name = selectedActivity._id;
-          activity.type = selectedActivity.type;
-          activity.completed = false;
-          newActivities.push(activity);
+
+        if (!chosenIds.includes(selectedActivity._id)) {
+            chosenIds.push(selectedActivity._id);
+            newActivities.push({
+                name: selectedActivity._id,
+                type: selectedActivity.type,
+                completed: false,
+            });
         }
     }
     return newActivities;
-}
+};
 
-module.exports = { selectActivities };
+/**
+ * Convenience wrapper — queries DB then selects 4 activities.
+ * Use this for one-off calls. Use getActivityTypes + selectActivitiesFromList in loops.
+ * @returns {Array} Array of 4 activity objects
+ */
+const selectActivities = async () => {
+    const activityList = await getActivityTypes();
+    return selectActivitiesFromList(activityList);
+};
+
+module.exports = { selectActivities, getActivityTypes, selectActivitiesFromList };

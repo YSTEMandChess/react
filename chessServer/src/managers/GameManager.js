@@ -219,6 +219,15 @@ class GameManager {
             at: Date.now()
             });
         }
+
+        // Game over (checkmate or stalemate) — credit playMatch
+        if (board.isGameOver()) {
+            activityEvents.push({
+                name: "playMatch",
+                meta: { san: moveResult.san, result: board.isCheckmate() ? "checkmate" : "draw" },
+                at: Date.now()
+            });
+        }
         //console.log(activityEvents);
         //console.log('student info',game.student);
         return { 
