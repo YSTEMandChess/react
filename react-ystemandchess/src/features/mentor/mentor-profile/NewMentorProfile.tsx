@@ -71,6 +71,105 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
   const [piece, setPiece] = useState(""); // lesson name for props
   const [lessonNum, setLessonNum] = useState(0); // lesson number for props
 
+  // Educator Dashboard states
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [totalSessions, setTotalSessions] = useState(0);
+  const [studentSearch, setStudentSearch] = useState("");
+  const [topicFilter, setTopicFilter] = useState("All Topics");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [dashboardPage, setDashboardPage] = useState(1);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [selectedTranscript, setSelectedTranscript] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [studentId, setStudentId] = useState<string | null>(null);
+  const [studentCoachingSessions, setStudentCoachingSessions] = useState<any[]>([]);
+  const [isFetchingCoaching, setIsFetchingCoaching] = useState(false);
+
+  const fetchStudentCoachingSessions = (resolvedStudentId: string) => {
+    setIsFetchingCoaching(true);
+    fetch(`${environment.urls.middlewareURL}/chat/sessions?userId=${resolvedStudentId}&limit=20`, {
+      headers: { 'Authorization': `Bearer ${cookies.login}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.sessions) {
+          const completed = data.sessions.filter((s: any) => s.status === 'completed');
+          setStudentCoachingSessions(completed);
+        }
+      })
+      .catch(err => console.error("Error fetching student coaching sessions:", err))
+      .finally(() => setIsFetchingCoaching(false));
+  };
+
+  const fetchSessions = () => {
+    const limit = 10;
+    const skip = (dashboardPage - 1) * limit;
+    let url = `${environment.urls.middlewareURL}/chat/educator/sessions?skip=${skip}&limit=${limit}`;
+    if (topicFilter && topicFilter !== 'All Topics') {
+      url += `&topic=${encodeURIComponent(topicFilter)}`;
+    }
+    if (studentSearch) {
+      url += `&student=${encodeURIComponent(studentSearch)}`;
+    }
+    if (startDate) {
+      url += `&startDate=${encodeURIComponent(startDate)}`;
+    }
+    if (endDate) {
+      url += `&endDate=${encodeURIComponent(endDate)}`;
+    }
+
+    fetch(url, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${cookies.login}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.sessions) {
+          setSessions(data.sessions);
+          setTotalSessions(data.total);
+        }
+      })
+      .catch(err => console.error("Error fetching educator sessions:", err));
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, [topicFilter, studentSearch, startDate, endDate, dashboardPage]);
+
+  const handleViewTranscript = (sessionId: string, session: any) => {
+    fetch(`${environment.urls.middlewareURL}/chat/educator/session/${sessionId}/transcript`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${cookies.login}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.messages) {
+          setSelectedTranscript(data.messages);
+          setSelectedSession(session);
+          setIsModalOpen(true);
+        }
+      })
+      .catch(err => console.error("Error fetching transcript:", err));
+  };
+
+  const handleCopyLMS = (session: any) => {
+    const text = `STUDENT: ${session.userId ? `${session.userId.firstName} ${session.userId.lastName} (${session.userId.username})` : 'Unknown'}
+DATE: ${new Date(session.createdAt).toLocaleDateString()}
+TOPIC: ${session.topic}
+SUMMARY: ${session.summary || 'N/A'}
+ACTION ITEMS:
+${session.actions && session.actions.length > 0 ? session.actions.map((act: any, idx: any) => `${idx + 1}. ${act}`).join('\n') : 'None'}`;
+    
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        alert("Session summary successfully copied to clipboard for LMS/CRM import!");
+      })
+      .catch(err => {
+        console.error("Failed to copy summary:", err);
+      });
+  };
   // Runs once upon first render
   useEffect(()=>{
     fetchStudentData().catch(err => console.log(err)); // fetch student data when the component mounts
@@ -86,6 +185,18 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         fetchGraphData(studentUsername)
         // fetch latest usage history to show in Activity tab
         fetchActivity(studentUsername)
+        // Resolve student MongoDB _id for fetching coaching sessions
+        fetch(`${environment.urls.middlewareURL}/user/getUser?username=${encodeURIComponent(studentUsername)}`, {
+          headers: { 'Authorization': `Bearer ${cookies.login}` }
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data && data._id) {
+              setStudentId(data._id);
+              fetchStudentCoachingSessions(data._id);
+            }
+          })
+          .catch(err => console.error("Error resolving student ID:", err));
       }
   }, [hasStudent, studentUsername])
 
@@ -282,9 +393,94 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         );
       case "mentor":
         return (
-          <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
-            <h2>Mentor</h2>
-            <p>This is the content for the Mentor tab.</p>
+          <div id="inventory-content-mentor" className="inventory-content active-content">
+            <div className="inventory-content-headingbar">
+              <h2>Student Completed AI Coaching</h2>
+              <h4>Recent completed sessions & committed plans</h4>
+            </div>
+            
+            {isFetchingCoaching ? (
+              <p>Loading coaching sessions...</p>
+            ) : studentCoachingSessions.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+                <p>No completed AI Coaching sessions found for {studentFirstName}.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginTop: '1rem' }}>
+                {studentCoachingSessions.map((session, index) => (
+                  <div 
+                    key={index} 
+                    style={{ 
+                      background: 'white', 
+                      border: '2px solid #1F1F1F', 
+                      borderRadius: '12px', 
+                      padding: '1.5rem', 
+                      boxShadow: '4px 4px 0px #1F1F1F'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                      {/* Mini AI Coach Logo Icon */}
+                      <div style={{ background: '#7FCC26', padding: '8px', borderRadius: '50%', border: '1.5px solid #1F1F1F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg viewBox="0 0 120 120" width="24" height="24">
+                          <circle cx="60" cy="60" r="50" fill="#1E293B" />
+                          <circle cx="60" cy="50" r="22" fill="#f5cbb5" />
+                          <rect x="44" y="72" width="32" height="32" rx="4" fill="#46515c" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold', color: '#1F1F1F', textTransform: 'capitalize' }}>
+                          Topic: {session.topic}
+                        </h3>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#666' }}>
+                          Completed on: {new Date(session.createdAt).toLocaleDateString()} at {new Date(session.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div style={{ borderBottom: '1px solid #D6D6D6', marginBottom: '1rem' }}></div>
+
+                    {session.summary && (
+                      <div style={{ marginBottom: '1rem' }}>
+                        <strong style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#5C5C5C', display: 'block', marginBottom: '0.25rem' }}>Summary</strong>
+                        <p style={{ margin: 0, fontSize: '0.9rem', color: '#333', lineHeight: '1.4' }}>
+                          {session.summary}
+                        </p>
+                      </div>
+                    )}
+
+                    {session.actions && session.actions.length > 0 && (
+                      <div style={{ background: '#F9FAF7', border: '1.5px solid #D6D6D6', borderRadius: '8px', padding: '1rem' }}>
+                        <strong style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#4c820f', display: 'block', marginBottom: '0.5rem' }}>Committed If-Then Plans</strong>
+                        <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem', color: '#333', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                          {session.actions.map((act: string, idx: number) => (
+                            <li key={idx}>{act}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                      <button
+                        onClick={() => handleViewTranscript(session._id, session)}
+                        style={{ 
+                          background: '#7FCC26', 
+                          color: '#1F1F1F', 
+                          border: '1.5px solid #1F1F1F', 
+                          borderRadius: '6px', 
+                          padding: '6px 12px', 
+                          fontSize: '11px', 
+                          fontWeight: 'bold', 
+                          cursor: 'pointer',
+                          boxShadow: '2px 2px 0px #1F1F1F'
+                        }}
+                      >
+                        View Full Transcript 💬
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
       case "learning":

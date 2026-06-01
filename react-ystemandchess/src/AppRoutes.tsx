@@ -55,6 +55,7 @@ import Mentor from "./features/mentor/mentor-page/Mentor";
 import StudentInventory from "./features/student/student-inventory/StudentInventory";
 import NewMentorProfile from "./features/mentor/mentor-profile/NewMentorProfile";
 import NewStudentProfile from "./features/student/student-profile/NewStudentProfile";
+import AdminProfile from "./features/admin/AdminProfile";
 
 // Analytics dashboard (admin-only)
 import AnalyticsLayout from "./Pages/Analytics/AnalyticsLayout";
@@ -158,6 +159,14 @@ const AppRoutes = () => {
       <Route
         path="/student-profile"
         element={<NewStudentProfile userPortraitSrc={userPortraitImg} />}
+      />
+      <Route
+        path="/admin-profile"
+        element={<AdminProfile />}
+      />
+      <Route
+        path="/tutor-profile"
+        element={<AdminProfile />}
       />
       
       {/* Student inventory/dashboard page with user data */}
