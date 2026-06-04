@@ -156,7 +156,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
     onBoardStateChange: (newFEN, color) => {
       try {
-        gameRef.current.load(newFEN);
+        gameRef.current.load(newFEN, { skipValidation: true });
         setCurrentFEN(newFEN);
         if (color) setBoardOrientation(color);
         if (onChessMove) onChessMove(newFEN);
@@ -185,7 +185,15 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
     onError: (msg) => {
       console.error("Socket error:", msg);
-      setShowError(true);
+      // Socket retries 5 times with 1s delay — wait before showing hard error
+      // The loading popup (showLPopup) is already visible during this time
+
+      setTimeout(() => {
+        if (!socket.connected) {
+          setShowLPopup(false);
+          setShowError(true);
+        }
+      }, 6000); // 5 retries × 1s + buffer
     },
   });
 
@@ -336,7 +344,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
   // Fallback: Get random legal move
   const getRandomLegalMove = useCallback((fen: string) => {
-    const tempGame = new Chess(fen);
+    const tempGame = new Chess(fen, { skipValidation: true });
     const moves = tempGame.moves({ verbose: true });
 
     if (moves.length === 0) return null;
@@ -423,7 +431,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     playerColorRef.current = turn;
 
     // Initialize game position
-    gameRef.current = new Chess(lessonData.startFen);
+    gameRef.current = new Chess(lessonData.startFen, { skipValidation: true });
     setCurrentFEN(lessonData.startFen);
     // Immediately sync ChessBoard's internal game so hover dots work without
     // waiting for the fen prop → useEffect render cycle
@@ -529,7 +537,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
   // Check lesson completion for free-play mode
   const checkFreePlayCompletion = useCallback((fen: string) => {
-    const game = new Chess(fen);
+    const game = new Chess(fen, { skipValidation: true });
     const infoLower = info.toLowerCase();
 
     // Checkmate goal
@@ -602,7 +610,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
       return;
     }
 
-    const tempGame = new Chess(currentFEN);
+    const tempGame = new Chess(currentFEN, { skipValidation: true });
     const expectedMove = sanToMove(expectedSolutionMove.san, tempGame);
 
     if (!expectedMove) {
@@ -843,7 +851,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   }, [moveHistory.length, isPuzzleMode]);
 
   const handleReset = useCallback(() => {
-    gameRef.current = new Chess(lessonStartFENRef.current);
+    gameRef.current = new Chess(lessonStartFENRef.current, { skipValidation: true });
     setCurrentFEN(lessonStartFENRef.current);
     setMoveHistory([]);
     setHighlightSquares([]);
