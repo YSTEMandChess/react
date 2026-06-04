@@ -27,10 +27,14 @@ const normalizeFen = (fen: string): string => {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   }
 
-  const trimmed = fen.trim();
-  const parts = trimmed.split(" ");
+  const trimmed = fen.trim().toLowerCase();
+  if (trimmed === "start") {
+    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  }
 
-  if (parts.length === 6) return trimmed;
+  const parts = fen.trim().split(" ");
+
+  if (parts.length === 6) return fen.trim();
   if (parts.length === 1 && parts[0].split("/").length === 8) {
     return `${parts[0]} w KQkq - 0 1`;
   }
@@ -62,8 +66,8 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const handleUnloadRef = useRef(() => {});
   const puzzleArrayRef = useRef<any[]>([]);
   const dbIndexRef = useRef(0);
-  const getNextPuzzleRef = useRef<() => void>();
-  const initializeComponentRef = useRef<() => Promise<void>>();
+  const getNextPuzzleRef = useRef<(() => void) | undefined>(undefined);
+  const initializeComponentRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
   // State
   const [puzzleArray, setPuzzleArray] = useState<any[]>([]);
@@ -583,7 +587,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         <ChessBoard
           mode="puzzle"
           ref={chessBoardRef}
-          fen={currentFEN || "start"}
+          fen={currentFEN || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"}
           orientation={playerColor}
           highlightSquares={highlightSquares}
           onMove={handlePlayerMove}
