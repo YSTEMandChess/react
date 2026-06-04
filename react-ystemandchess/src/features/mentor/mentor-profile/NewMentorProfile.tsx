@@ -248,30 +248,48 @@ ${session.actions && session.actions.length > 0 ? session.actions.map((act: any,
   }
 
   const fetchStudentData = async () => {
-    fetch(`${environment.urls.middlewareURL}/user/getMentorship`, {
-      method: 'GET',
-      headers: { 'Authorization': `Bearer ${cookies.login}` }
-    }).then(data => data.json())
-      .then(data => {
-        if (data) {
-          setStudentFirstName(data.firstName);
-          setStudentLastName(data.lastName);
-          setStudentUsername(data.username);
-          setHasStudent(true);
-        }
+    try {
+      const res = await fetch(`${environment.urls.middlewareURL}/user/getMentorship`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${cookies.login}` }
       });
+      if (res.status === 404) {
+        console.warn("Mentorship not set. Automatically setting default student 'student'...");
+        await setStubStudent("student");
+        // Retry fetch once mentorship is established
+        setTimeout(() => {
+          fetchStudentData();
+        }, 500);
+        return;
+      }
+      const data = await res.json();
+      if (data && data.username) {
+        setStudentFirstName(data.firstName || "Test");
+        setStudentLastName(data.lastName || "Student");
+        setStudentUsername(data.username);
+        setHasStudent(true);
+      }
+    } catch (err) {
+      console.error("Error fetching student data:", err);
+    }
   }
 
   const setStubStudent = async (stubStudentUsername) => {
     console.log("Setting stub student:", stubStudentUsername);
-    fetch(`${environment.urls.middlewareURL}/user/updateMentorship?mentorship=${stubStudentUsername}`, {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${cookies.login}`,
-                'Content-Type': 'application/json'}
-    }).then(data => data.json())
-      .then(data => {
-        console.log("Set student response:", data);
+    try {
+      const response = await fetch(`${environment.urls.middlewareURL}/user/updateMentorship?mentorship=${stubStudentUsername}`, {
+        method: 'PUT',
+        headers: { 
+          'Authorization': `Bearer ${cookies.login}`,
+          'Content-Type': 'application/json'
+        }
       });
+      const data = await response.json();
+      console.log("Set student response:", data);
+      return data;
+    } catch (err) {
+      console.error("Error updating mentorship:", err);
+    }
   }
 
 // fetch latest usage history (Activity Tab)
@@ -619,11 +637,161 @@ ${session.actions && session.actions.length > 0 ? session.actions.map((act: any,
 
           <div className="inv-inventory-content-content">{tabContent}</div>
         </div>
-      </section>) : (
+      </section>
+      ) : (
       <section className="no-student-message">
         <h1>No Student Selected</h1>
         <p>Please select a student to view their progress.</p>
       </section>
+      )}
+
+      {isModalOpen && selectedSession && (
+        <div className="transcript-modal-overlay" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 100000,
+          padding: '20px',
+          boxSizing: 'border-box'
+        }} onClick={() => setIsModalOpen(false)}>
+          <div className="transcript-modal-window" style={{
+            width: '90vw',
+            maxWidth: '650px',
+            maxHeight: '80vh',
+            background: '#F9FAF7',
+            borderRadius: '20px',
+            border: '3px solid #1F1F1F',
+            boxShadow: '8px 8px 0px rgba(31, 31, 31, 0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }} onClick={(e) => e.stopPropagation()}>
+            
+            {/* Modal Header */}
+            <div className="modal-header" style={{
+              padding: '20px',
+              borderBottom: '3px solid #1F1F1F',
+              background: '#E5F3D2',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold', color: '#1F1F1F', textTransform: 'capitalize' }}>
+                  Topic: {selectedSession.topic}
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#555' }}>
+                  Session with AI Tutor on {new Date(selectedSession.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '28px',
+                cursor: 'pointer',
+                color: '#1F1F1F',
+                fontWeight: 'bold',
+                lineHeight: 1
+              }}>&times;</button>
+            </div>
+
+            {/* Modal Body / Chat Messages */}
+            <div className="modal-body" style={{
+              flex: 1,
+              padding: '20px',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              background: '#F1F5F9'
+            }}>
+              {selectedTranscript.length === 0 ? (
+                <p style={{ textAlign: 'center', color: '#666' }}>No messages in this session.</p>
+              ) : (
+                selectedTranscript.map((msg, idx) => {
+                  const isUser = msg.role === 'user';
+                  return (
+                    <div key={idx} style={{
+                      alignSelf: isUser ? 'flex-end' : 'flex-start',
+                      maxWidth: '80%',
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}>
+                      <span style={{
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        color: '#64748B',
+                        marginBottom: '2px',
+                        alignSelf: isUser ? 'flex-end' : 'flex-start',
+                        textTransform: 'uppercase'
+                      }}>
+                        {isUser ? 'Student' : 'AI Tutor'}
+                      </span>
+                      <div style={{
+                        padding: '10px 14px',
+                        borderRadius: '16px',
+                        fontSize: '13.5px',
+                        lineHeight: '1.45',
+                        background: isUser ? '#7FCC26' : '#ffffff',
+                        color: '#1F1F1F',
+                        border: '2px solid #1F1F1F',
+                        borderBottomRightRadius: isUser ? '4px' : '16px',
+                        borderBottomLeftRadius: isUser ? '16px' : '4px',
+                        boxShadow: '2px 2px 0px rgba(31, 31, 31, 0.1)'
+                      }}>
+                        {msg.content.split('\n').map((line: string, i: number) => (
+                          <React.Fragment key={i}>
+                            {line}
+                            <br />
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="modal-footer" style={{
+              padding: '16px 20px',
+              borderTop: '2px solid #D6D6D6',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: '#F9FAF7'
+            }}>
+              <span style={{ fontSize: '12px', color: '#666' }}>
+                Status: <strong style={{ color: '#4c820f' }}>{selectedSession.status}</strong>
+              </span>
+              <button 
+                onClick={() => handleCopyLMS(selectedSession)}
+                style={{
+                  background: '#F1F5F9',
+                  color: '#1F1F1F',
+                  border: '2px solid #1F1F1F',
+                  borderRadius: '8px',
+                  padding: '8px 16px',
+                  fontWeight: 'bold',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  boxShadow: '2px 2px 0px #1F1F1F',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Copy for LMS/CRM 📋
+              </button>
+            </div>
+
+          </div>
+        </div>
       )}
     </main>
   );
