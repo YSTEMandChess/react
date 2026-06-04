@@ -35,12 +35,16 @@ const normalizeFen = (fen: string): string => {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; // Default starting position
   }
 
-  const trimmed = fen.trim();
-  const parts = trimmed.split(" ");
+  const trimmed = fen.trim().toLowerCase();
+  if (trimmed === "start") {
+    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  }
+
+  const parts = fen.trim().split(" ");
 
   // Already a complete 6-field FEN
   if (parts.length === 6) {
-    return trimmed;
+    return fen.trim();
   }
 
   // Board-only FEN (just piece positions)
