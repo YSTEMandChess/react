@@ -11,7 +11,7 @@ import ActivitiesModal from "./Modals/ActivitiesModal";
 import BadgesModal from "./Modals/BadgesModal";
 import LeaderboardModal from "./Modals/LeaderboardModal";
 import Confetti from "../../../components/animations/Confetti/Confetti";
-
+import ChatWidget from '../../../components/ChatWidget/ChatWidget';
 import { ReactComponent as StreakIcon } from "../../../assets/images/student/streak_button.svg";
 import { ReactComponent as ActivitiesIcon } from "../../../assets/images/student/activities_button.svg";
 import { ReactComponent as BadgesIcon } from "../../../assets/images/student/badges_button.svg";
@@ -605,6 +605,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username} />}
     {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} />}
     {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
+    <ChatWidget />
   </main>
 );
 };

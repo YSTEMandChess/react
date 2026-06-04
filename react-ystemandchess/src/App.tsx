@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { environment } from "./environments/environment";
 import { useCookies } from "react-cookie";
@@ -6,7 +6,6 @@ import { SetPermissionLevel } from "./globals";
 import NavBar from "./components/navbar/NavBar";
 import Footer from "./components/footer/Footer";
 import AppRoutes from "./AppRoutes";
-import ChatWidget from "./components/ChatWidget/ChatWidget";
 import "./App.css";
 
 /**
@@ -23,22 +22,6 @@ import "./App.css";
 function App() {
   // Hook to manage browser cookies, specifically the login token
   const [cookies] = useCookies(["login"]);
-
-  // State to store the user's role
-  const [role, setRole] = useState<string | null>(null);
-
-  // Fetch the logged-in user's role
-  useEffect(() => {
-    async function fetchUserRole() {
-      const uInfo = await SetPermissionLevel(cookies);
-      if (!uInfo.error && uInfo.role) {
-        setRole(uInfo.role);
-      } else {
-        setRole(null);
-      }
-    }
-    fetchUserRole();
-  }, [cookies.login]);
   
   // Variables to track user session and time spent on website
   // These are used for analytics and user engagement tracking
@@ -164,7 +147,6 @@ function App() {
         <main className="flex-1">
           <AppRoutes />
         </main>
-        {role === "student" && <ChatWidget />}
         <Footer />
       </div>
     </Router>
