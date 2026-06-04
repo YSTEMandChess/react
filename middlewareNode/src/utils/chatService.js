@@ -88,6 +88,12 @@ const getCoachingResponse = (topic, phase, intent, message) => {
     if (t.includes('goal') || t.includes('set')) {
       return `A powerful way to reach goals is to set "Micro-Goals." Instead of a giant goal like "I want to be a grandmaster," set a tiny daily goal like "I will solve 2 chess puzzles today." It builds huge momentum! How does that sound?`;
     }
+    if (t.includes('math')) {
+      return `When you're stuck on a math problem, a great strategy is to write down exactly what you know, identify what you need to find, and then tackle the first small calculation. Shall we try breaking down your problem together?`;
+    }
+    if (t.includes('homework') || t.includes('school')) {
+      return `For school assignments, a great strategy is to highlight the key questions, explain the concept in your own words, and draft a quick outline. What part of the assignment feels most confusing right now?`;
+    }
     return `One great strategy is to break big challenges down into much smaller pieces, then focus on only the very first step. It makes things feel way less overwhelming! How does that strategy sound to you?`;
   }
   
@@ -132,7 +138,7 @@ const generateSessionSummary = (messages, topic) => {
     userPlan = userMessages[userMessages.length - 1].content;
   }
   
-  const summary = `You completed a great coaching session on ${topic || 'your chosen topic'}. You explored your challenges and designed a personal strategy to help you succeed!`;
+  const summary = `You completed a great tutoring session with your AI Tutor on ${topic || 'your chosen topic'}. You explored your challenges and designed a personal strategy to help you succeed!`;
   
   const actions = [];
   if (userPlan) {
@@ -151,6 +157,10 @@ const generateSessionSummary = (messages, topic) => {
       actions.push("If I have a big assignment, then I will work in 15-minute chunks with short breaks.");
     } else if (t.includes('frustrat')) {
       actions.push("If I feel my frustration rising, then I will Take 3 deep breaths and step away for 2 minutes.");
+    } else if (t.includes('math')) {
+      actions.push("If I get stuck on a math problem, then I will write down what I know and try the first small step.");
+    } else if (t.includes('homework') || t.includes('school')) {
+      actions.push("If I have a school assignment, then I will read the questions carefully and do one chunk at a time.");
     } else {
       actions.push("If I encounter an obstacle, then I will break it down and focus on just the first step.");
     }

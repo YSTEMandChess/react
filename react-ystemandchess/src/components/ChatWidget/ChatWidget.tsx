@@ -60,10 +60,13 @@ const UserIcon = () => (
 );
 
 const TOPICS = [
-  "growth mindset",
-  "time management",
-  "dealing with frustration",
-  "goal-setting"
+  { value: "general tutoring", label: "General Tutor & Coach" },
+  { value: "math tutoring", label: "Math Tutoring 📐" },
+  { value: "school homework help", label: "School Homework Help 📚" },
+  { value: "goal-setting", label: "Goal-Setting 🎯" },
+  { value: "growth mindset", label: "Growth Mindset 🌱" },
+  { value: "time management", label: "Time Management ⏱️" },
+  { value: "dealing with frustration", label: "Dealing with Frustration 😤" }
 ];
 
 type CoachExpression = 'welcome' | 'thinking' | 'speaking' | 'happy' | 'thumbsup';
@@ -257,7 +260,7 @@ const CoachMascot = ({ expression }: { expression: CoachExpression }) => {
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [topic, setTopic] = useState<string>('');
+  const [topic, setTopic] = useState<string>('general tutoring');
   const [messages, setMessages] = useState<{ sender: 'user' | 'bot', text: string }[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -270,7 +273,7 @@ const ChatWidget = () => {
     if (nextOpen) {
       setCoachExpression('welcome');
       if (!sessionId) {
-        startSession("General Coaching");
+        startSession("general tutoring");
       }
     }
   };
@@ -283,7 +286,7 @@ const ChatWidget = () => {
 
   useEffect(() => {
     if (!sessionId) {
-      startSession("General Coaching");
+      startSession("general tutoring");
     }
   }, []);
 
@@ -323,7 +326,24 @@ const ChatWidget = () => {
       if (response.ok) {
         const data = await response.json();
         setSessionId(data.session._id);
-        setMessages([{ sender: 'bot', text: `Hi there! I'm your AI Coach. 🧠 How are you feeling about your learning and chess progress today?` }]);
+
+        let greeting = `Hi there! I'm your AI Tutor. 🧠 How are you feeling about your learning progress today?`;
+        const t = selectedTopic.toLowerCase();
+        if (t.includes('math')) {
+          greeting = `Hi there! I'm your Socratic AI Tutor. 📐 Got a math problem you're working on? Let's solve it step-by-step together!`;
+        } else if (t.includes('homework') || t.includes('school')) {
+          greeting = `Hi there! I'm your AI Tutor. 📚 What school homework or assignment can I help you break down today?`;
+        } else if (t.includes('goal')) {
+          greeting = `Hi there! I'm your AI Tutor. 🎯 Let's work together to set some micro-goals and create an If-Then plan!`;
+        } else if (t.includes('frustrat')) {
+          greeting = `Hi! I'm your AI Tutor. 😤 If you are feeling frustrated or stuck, I'm here to support you. Let's work through it!`;
+        } else if (t.includes('time')) {
+          greeting = `Hi! I'm your AI Tutor. ⏱️ Let's talk about time management and how we can make your tasks feel much lighter!`;
+        } else if (t.includes('mindset') || t.includes('growth')) {
+          greeting = `Hi there! I'm your AI Tutor. 🌱 Ready to grow your brain and practice the Power of Yet?`;
+        }
+
+        setMessages([{ sender: 'bot', text: greeting }]);
         setCoachExpression('happy');
       } else {
         throw new Error("Failed to start session");
@@ -360,6 +380,25 @@ const ChatWidget = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTopicChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedTopic = e.target.value;
+    if (selectedTopic === topic) return;
+    setIsLoading(true);
+    setCoachExpression('thinking');
+    if (sessionId) {
+      try {
+        await fetch(`${environment.urls.middlewareURL}/chat/session/${sessionId}/end`, {
+          method: 'POST'
+        });
+      } catch (err) {
+        console.error("Error ending previous session on topic change:", err);
+      }
+    }
+    setMessages([]);
+    setSessionId(null);
+    await startSession(selectedTopic);
   };
 
   const handleSend = async () => {
@@ -418,13 +457,12 @@ const ChatWidget = () => {
                 });
               }
             } catch (e) {
-              // Ignore incomplete JSON chunks and wait for the rest
+              // Ignore incomplete JSON chunks
             }
           }
         }
       }
 
-      // Check tone or words to update expression on response completion
       setCoachExpression('happy');
 
     } catch (error) {
@@ -443,7 +481,7 @@ const ChatWidget = () => {
   const getCoachBubbleText = () => {
     switch (coachExpression) {
       case 'welcome':
-        return "Hello! I'm your AI Coach. Ready to unlock your potential?";
+        return "Hello! I'm your AI Tutor. Ready to unlock your potential?";
       case 'thinking':
         return "Let me think about that for a second...";
       case 'speaking':
@@ -457,23 +495,37 @@ const ChatWidget = () => {
     }
   };
 
+  const getProTipText = () => {
+    const t = topic.toLowerCase();
+    if (t.includes('math')) {
+      return "Math is all about patterns and practice! Ask me to explain a step if it doesn't make sense yet.";
+    }
+    if (t.includes('homework') || t.includes('school')) {
+      return "Breaking a big homework assignment into smaller tasks makes it much easier to start and finish.";
+    }
+    if (t.includes('goal')) {
+      return "Micro-goals are tiny steps you can achieve today. Success builds momentum!";
+    }
+    return "Developing a growth mindset helps you embrace challenges and learn from failure. Take your time to reflect on your answers!";
+  };
+
   return (
     <div className="chat-widget-container">
       {isOpen && (
         <div className="chat-overlay-backdrop" onClick={toggleWidget}>
           <div className="chat-widget-window" onClick={(e) => e.stopPropagation()}>
             
-            {/* Left Column: AI Coach Sidebar */}
+            {/* Left Column: AI Tutor Sidebar */}
             <div className="chat-coach-sidebar">
               <div className="sidebar-branding">
-                <div className="mascot-badge">AI Coach</div>
+                <div className="mascot-badge">AI Tutor</div>
                 <div className="status-indicator">
                   <span className="pulse-dot"></span>
                   Online
                 </div>
               </div>
 
-              {/* Coach Avatar Display */}
+              {/* Tutor Avatar Display */}
               <div className="avatar-frame-container">
                 <CoachMascot expression={coachExpression} />
                 
@@ -487,16 +539,56 @@ const ChatWidget = () => {
               {/* Tips & Guidance Info card */}
               <div className="coach-tips-card">
                 <h5>Pro Tip 💡</h5>
-                <p>Developing a growth mindset helps you embrace challenges and learn from failure. Take your time to reflect on your answers!</p>
+                <p>{getProTipText()}</p>
               </div>
             </div>
 
             {/* Right Column: Chat Workspace */}
             <div className="chat-main-area">
               <div className="chat-header">
-                <div className="header-title-section">
-                  <h4>Mental Strength Training</h4>
-                  {topic && <span className="topic-tag">{topic}</span>}
+                <div className="header-title-section" style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%' }}>
+                  <h4 style={{ margin: 0, whiteSpace: 'nowrap' }}>AI Tutor & Coach</h4>
+                  <div className="topic-select-container" style={{ position: 'relative' }}>
+                    <select 
+                      value={topic} 
+                      onChange={handleTopicChange}
+                      disabled={isLoading}
+                      className="topic-dropdown-select"
+                      style={{
+                        background: '#BFD99E',
+                        color: '#1F1F1F',
+                        padding: '6px 36px 6px 14px',
+                        borderRadius: '16px',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        border: '2px solid #1F1F1F',
+                        cursor: 'pointer',
+                        textTransform: 'capitalize',
+                        appearance: 'none',
+                        outline: 'none',
+                        boxShadow: '2px 2px 0px #1F1F1F',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {TOPICS.map((t) => (
+                        <option key={t.value} value={t.value} style={{ background: '#F9FAF7', color: '#1F1F1F' }}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      pointerEvents: 'none',
+                      fontSize: '10px',
+                      color: '#1F1F1F',
+                      fontWeight: 'bold'
+                    }}>
+                      ▼
+                    </div>
+                  </div>
                 </div>
                 <div className="chat-header-actions">
                   {sessionId && (
@@ -516,14 +608,14 @@ const ChatWidget = () => {
                       <span></span>
                       <span></span>
                     </div>
-                    <p style={{ marginTop: '14px', color: '#64748B', fontSize: '15px', fontWeight: '500' }}>Starting your coaching session...</p>
+                    <p style={{ marginTop: '14px', color: '#64748B', fontSize: '15px', fontWeight: '500' }}>Starting your tutoring session...</p>
                   </div>
                 ) : (
                   <>
                     {messages.map((msg, idx) => (
                       <div key={idx} className={`chat-message ${msg.sender}`}>
                         <div className="message-sender-label">
-                          {msg.sender === 'user' ? 'You' : 'Coach'}
+                          {msg.sender === 'user' ? 'You' : 'Tutor'}
                         </div>
                         <div className="message-text">
                           {msg.text.split('\n').map((line, i) => (
@@ -537,7 +629,7 @@ const ChatWidget = () => {
                     ))}
                     {isLoading && (
                       <div className="chat-message bot loading">
-                        <div className="message-sender-label">Coach</div>
+                        <div className="message-sender-label">Tutor</div>
                         <div className="typing-loader">
                           <span></span>
                           <span></span>
@@ -572,7 +664,7 @@ const ChatWidget = () => {
       
       {!isOpen && (
         <button className="chat-text-button" onClick={toggleWidget}>
-          Talk to AI Coach
+          Talk to AI Tutor 🧠
         </button>
       )}
     </div>

@@ -38,38 +38,60 @@ const chatMetrics = {
 // Seeding default templates in MongoDB on start
 const seedDefaultTemplates = async () => {
   try {
-    const count = await CoachTemplate.countDocuments();
-    if (count === 0) {
-      console.log('Seeding default AI Coach templates...');
-      const defaults = [
-        {
-          name: 'General Coaching',
-          ageGroup: 'general',
-          topic: 'General Coaching',
-          systemPrompt: `You are a warm, friendly, encouraging AI Coach for a student. Listen to the student's feelings about their progress, ask open guiding questions (2-4 sentences max), avoid long info dumps, and guide them dynamically toward setting micro-goals and an If-then plan.`
-        },
-        {
-          name: 'Growth Mindset (Middle School)',
-          ageGroup: 'middle',
-          topic: 'growth mindset',
-          systemPrompt: `You are a warm, encouraging AI Coach specialized in Growth Mindset. Focus on teaching the 'Power of Yet' (e.g. 'I can't do this *yet*'). Guide the student to view challenges as opportunities to grow their brain. Keep responses friendly, warm, and under 4 sentences.`
-        },
-        {
-          name: 'Time Management (Middle School)',
-          ageGroup: 'middle',
-          topic: 'time management',
-          systemPrompt: `You are a warm, supportive AI Coach specialized in Time Management. Teach 'Time Chunking' (e.g. 15-minute work intervals with short breaks). Guide the student to break down large tasks into smaller, manageable pieces. Keep responses encouraging, simple, and under 4 sentences.`
-        },
-        {
-          name: 'Dealing with Frustration (Middle School)',
-          ageGroup: 'middle',
-          topic: 'dealing with frustration',
-          systemPrompt: `You are an empathetic, encouraging AI Coach specialized in Dealing with Frustration. Teach the 'Take 3' rule (taking 3 deep breaths and stepping away for 2 minutes). Guide the student to identify triggers and reset their stress response. Keep responses warm, simple, and under 4 sentences.`
-        }
-      ];
-      await CoachTemplate.insertMany(defaults);
-      console.log('Default AI Coach templates seeded successfully!');
+    console.log('Seeding and updating default AI Tutor templates...');
+    const defaults = [
+      {
+        name: 'General Tutoring',
+        ageGroup: 'general',
+        topic: 'general tutoring',
+        systemPrompt: `You are a warm, friendly, encouraging AI Tutor for a student. Help the student with whatever they need, including school homework, math problems, setting goals, time management, dealing with frustration, and mindset. Follow these rules strictly:\n1. For math/school problems, act as a patient, encouraging Socratic tutor. Guide the student step-by-step; do NOT just give the answer.\n2. Guide the student to set micro-goals and create If-Then plans.\n3. Keep responses warm and limited to 2-4 sentences maximum. Always ask a supportive guiding question.`
+      },
+      {
+        name: 'Math Tutoring',
+        ageGroup: 'general',
+        topic: 'math tutoring',
+        systemPrompt: `You are a warm, encouraging Socratic Math Tutor. Your goal is to help the student understand and solve math problems step-by-step. Follow these rules strictly:\n1. Never give the answer directly. Instead, ask guiding questions to lead the student to the next step.\n2. Break down mathematical concepts into extremely simple, bite-sized explanations.\n3. Keep responses encouraging, positive, and limited to 2-4 sentences max.`
+      },
+      {
+        name: 'School Homework Help',
+        ageGroup: 'general',
+        topic: 'school homework help',
+        systemPrompt: `You are a warm, supportive School Homework Tutor. Help the student understand school assignments and subjects. Follow these rules strictly:\n1. Explain concepts using simple language and fun examples.\n2. Act as a Socratic guide: ask open-ended questions that prompt the student to think and work through the problem themselves.\n3. Do not do their homework for them. Keep responses encouraging and limited to 2-4 sentences max.`
+      },
+      {
+        name: 'Goal-Setting',
+        ageGroup: 'general',
+        topic: 'goal-setting',
+        systemPrompt: `You are a warm, supportive AI Tutor specialized in Goal-Setting. Help the student set concrete academic, personal, or chess goals. Follow these rules strictly:\n1. Guide the student to set "Micro-Goals" (tiny daily actions) instead of overwhelming goals.\n2. Teach the student to create an "If-Then" plan (e.g., "If I get stuck, then I will...").\n3. Keep responses warm, encouraging, and under 4 sentences.`
+      },
+      {
+        name: 'Growth Mindset (Middle School)',
+        ageGroup: 'middle',
+        topic: 'growth mindset',
+        systemPrompt: `You are a warm, encouraging AI Tutor specialized in Growth Mindset. Focus on teaching the 'Power of Yet' (e.g. 'I can't do this *yet*'). Guide the student to view challenges as opportunities to grow their brain. Keep responses friendly, warm, and under 4 sentences.`
+      },
+      {
+        name: 'Time Management (Middle School)',
+        ageGroup: 'middle',
+        topic: 'time management',
+        systemPrompt: `You are a warm, supportive AI Tutor specialized in Time Management. Teach 'Time Chunking' (e.g. 15-minute work intervals with short breaks). Guide the student to break down large tasks into smaller, manageable pieces. Keep responses encouraging, simple, and under 4 sentences.`
+      },
+      {
+        name: 'Dealing with Frustration (Middle School)',
+        ageGroup: 'middle',
+        topic: 'dealing with frustration',
+        systemPrompt: `You are an empathetic, encouraging AI Tutor specialized in Dealing with Frustration. Teach the 'Take 3' rule (taking 3 deep breaths and stepping away for 2 minutes). Guide the student to identify triggers and reset their stress response. Keep responses warm, simple, and under 4 sentences.`
+      }
+    ];
+
+    for (const d of defaults) {
+      await CoachTemplate.findOneAndUpdate(
+        { topic: d.topic },
+        { name: d.name, ageGroup: d.ageGroup, systemPrompt: d.systemPrompt, isEnabled: true },
+        { upsert: true, new: true }
+      );
     }
+    console.log('Default AI Tutor templates upserted successfully!');
   } catch (error) {
     console.error('Error seeding CoachTemplates:', error.message);
   }
@@ -213,10 +235,16 @@ router.post('/session', async (req, res) => {
     }
 
     // Resolve matching template
-    const cleanTopic = (topic || '').toLowerCase();
-    let template = await CoachTemplate.findOne({ topic: cleanTopic, isEnabled: true });
+    const cleanTopic = (topic || '').trim().toLowerCase();
+    let template = await CoachTemplate.findOne({ 
+      $or: [
+        { topic: cleanTopic },
+        { topic: new RegExp('^' + cleanTopic + '$', 'i') }
+      ],
+      isEnabled: true 
+    });
     if (!template) {
-      template = await CoachTemplate.findOne({ name: 'General Coaching' });
+      template = await CoachTemplate.findOne({ name: 'General Tutoring' }) || await CoachTemplate.findOne({ name: 'General Coaching' });
     }
 
     const session = new ChatSession({
@@ -359,7 +387,7 @@ router.post('/message', rateLimiter, async (req, res) => {
       systemPrompt = getSystemPrompt(session.topic, session.phase);
     }
     // Enforce student coaching standards
-    systemPrompt += `\n\nAdditional Instructions: Be extremely friendly, warm, encouraging, and supportive as an AI Coach for students. Use emojis occasionally, keep responses short (2-3 sentences), simple, and clear. Guide them dynamically based on their feelings and thoughts. Do not show them option screens. Ask supportive questions to guide them through their learning/chess challenges.`;
+    systemPrompt += `\n\nAdditional Instructions: Be extremely friendly, warm, encouraging, and supportive as an AI Tutor for students. Use emojis occasionally, keep responses short (2-3 sentences), simple, and clear. Guide them dynamically based on their feelings and thoughts. Do not show them option screens. Ask supportive questions to guide them through their learning/chess challenges.`;
 
     const apiMessages = [
       { role: 'system', content: systemPrompt },
