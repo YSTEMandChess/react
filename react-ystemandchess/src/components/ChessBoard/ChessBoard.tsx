@@ -53,13 +53,21 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     // Internal chess engine for move validation and UI hints (grey dots)
     // This is kept in sync with the authoritative FEN prop from parent/socket
     const gameRef = useRef<Chess>(new Chess());
+    const start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    // UI state
     const [internalHighlights, setInternalHighlights] = useState<string[]>([]);
     const [lessonIndex, setLessonIndex] = useState<number>(0);
     const [isShaking, setIsShaking] = useState<boolean>(false);
     const [orientation, setOrientationState] = useState<"white" | "black">(propOrientation);
-    const [boardPosition, setBoardPosition] = useState<string>(fen || "start");
+    // Helper to check if a FEN is shorthand for the starting position
+    const isStartFen = (f?: string): boolean => {
+      if (!f) return true;
+      const t = f.trim().toLowerCase();
+      return t === "start" || t === start_fen;
+    };
+    const [boardPosition, setBoardPosition] = useState<string>(
+      fen && !isStartFen(fen) ? fen : start_fen
+    );
     const [boardWidth, setBoardWidth] = useState(600);
     const [greySquares, setGreySquares] = useState<string[]>([]);
 
@@ -84,23 +92,24 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       setOrientationState(propOrientation);
     }, [propOrientation]);
 
-    // Always keep gameRef.current in sync with the authoritative FEN prop
+        // Always keep gameRef.current in sync with the authoritative FEN prop
     useEffect(() => {
-      if (fen) {
+      if (fen && !isStartFen(fen)) {
         try {
           const currentFen = gameRef.current.fen();
 
           // Only update if FEN has actually changed
           if (fen !== currentFen) {
-            gameRef.current.load(fen);
+            gameRef.current.load(fen, { skipValidation: true });
             setBoardPosition(fen);
           }
         } catch (err) {
           console.error("ChessBoard: Invalid FEN from props:", fen, err);
-          // On error, try to reset to a valid state
+          // On error, reset to a valid starting position
           try {
             gameRef.current = new Chess();
-            setBoardPosition("start");
+            gameRef.current.load(fen, { skipValidation: true });
+            setBoardPosition(start_fen);
           } catch {
             // Last resort fallback
           }
@@ -138,7 +147,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
 
       loadPosition: (newFen: string) => {
         try {
-          gameRef.current.load(newFen);
+          gameRef.current.load(newFen, { skipValidation: true });
           setBoardPosition(newFen);
           setGreySquares([]);
         } catch (err) {
@@ -148,7 +157,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
 
       setPosition: (newFen: string) => {
         try {
-          gameRef.current.load(newFen);
+          gameRef.current.load(newFen, { skipValidation: true });
           setBoardPosition(newFen);
           setGreySquares([]);
         } catch (err) {
