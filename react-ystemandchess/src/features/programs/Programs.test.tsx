@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import Programs from "./Programs";
+import { Programs } from "./Programs";
 import { MemoryRouter } from "react-router";
 // Test that the Programs page renders without crashing
 test("renders Programs page", () => {
@@ -22,50 +22,46 @@ test("displays the Programs page title", () => {
     expect(programsTitle).toBeInTheDocument();
 });
 
-// Test that the register button is present
-test("shows the register button", () => {
+// Test that the apply now buttons are present
+test("shows the apply now buttons", () => {
     render(
         <MemoryRouter>
             <Programs />
         </MemoryRouter>
     );
-    const registerButton = screen.getByTestId("register-btn-link");
-    expect(registerButton).toBeInTheDocument();
+    const applyButtons = screen.getAllByText("Apply Now!");
+    expect(applyButtons.length).toBeGreaterThan(0);
 });
 
-// Test that the register link inside the button is present
-test("shows the register button link", () => {
+// Test that the donate button is present
+test("shows the donate button", () => {
     render(
         <MemoryRouter>
             <Programs />
         </MemoryRouter>
     );
-    const registerLink = screen.getByTestId("register-btn-link");
-    expect(registerLink).toBeInTheDocument();
+    const donateButton = screen.getByText("Donate Now!");
+    expect(donateButton).toBeInTheDocument();
 });
 
-// Test that the left subscription terms are displayed correctly
-test("shows the left subscription terms", () => {
+// Test that the free card terms are displayed correctly
+test("shows the free card terms", () => {
     render(
         <MemoryRouter>
             <Programs />
         </MemoryRouter>
     );
-    const subTermsLeft = screen.getByTestId("sub-terms-left");
-    expect(subTermsLeft).toBeInTheDocument();
-    // Check the text content of the left subscription terms
-    expect(subTermsLeft.children[0].textContent).toBe("First Month is Free  Cancel anytime");
+    const freeCard = screen.getByText("Free");
+    expect(freeCard).toBeInTheDocument();
 });
 
-// Test that the right subscription terms are displayed correctly
-test("shows the right subscription terms", () => {
+// Test that the premium card terms are displayed correctly
+test("shows the premium card terms", () => {
     render(
         <MemoryRouter>
             <Programs />
         </MemoryRouter>
     );
-    const subTermsRight = screen.getByTestId("sub-terms-right");
-    expect(subTermsRight).toBeInTheDocument();
-    // Check the text content of the right subscription terms
-    expect(subTermsRight.children[0].textContent).toBe("Can't afford to pay monthly? We'd still love to have your student join!");
+    const premiumCard = screen.getByText("Premium");
+    expect(premiumCard).toBeInTheDocument();
 });
