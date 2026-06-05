@@ -39,6 +39,8 @@ const PlayComputer: React.FC = () => {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
+  const [fenHistory, setFenHistory] = useState<string[]>([gameRef.current.fen()]);
+  const [uciHistoryArr, setUciHistoryArr] = useState<string[]>([]);
   const [showSettings, setShowSettings] = useState(true);
   const [showGameEndModal, setShowGameEndModal] = useState(false);
   const [gameEndMessage, setGameEndMessage] = useState('');
@@ -116,6 +118,8 @@ const PlayComputer: React.FC = () => {
             setFen(updatedFen);
             setHighlightSquares([moveResult.from, moveResult.to]);
             setMoveHistory(prev => [...prev, `${moveResult.from} -> ${moveResult.to}`]);
+            setFenHistory(prev => [...prev, updatedFen]);
+            setUciHistoryArr(prev => [...prev, `${moveResult.from}${moveResult.to}${moveResult.promotion ?? ''}`]);
             if (chessBoardRef.current) {
               chessBoardRef.current.setPosition(updatedFen);
               chessBoardRef.current.highlightMove(moveResult.from, moveResult.to);
@@ -165,6 +169,8 @@ const PlayComputer: React.FC = () => {
       setFen(newFen);
       setHighlightSquares([move.from, move.to]);
       setMoveHistory(prev => [...prev, `${move.from} -> ${move.to}`]);
+      setFenHistory(prev => [...prev, newFen]);
+      setUciHistoryArr(prev => [...prev, `${moveResult.from}${moveResult.to}${moveResult.promotion ?? ''}`]);
 
       // set tutor context and trigger analysis for this player move
       const currentMoveUci = `${moveResult.from}${moveResult.to}${moveResult.promotion ?? ''}`;
@@ -221,6 +227,8 @@ const PlayComputer: React.FC = () => {
     setIsThinking(false);
     setTutorFenBefore(undefined);
     setTutorMoveUci(undefined);
+    setFenHistory([startFen]);
+    setUciHistoryArr([]);
 
     if (chessBoardRef.current) chessBoardRef.current.reset();
     if (socketRef.current && sessionStartedRef.current) {
@@ -263,7 +271,63 @@ const PlayComputer: React.FC = () => {
     if (socketRef.current) {
       socketRef.current.emit('update-fen', { fen: newFen });
     }
+    try {
+      setFenHistory(prev => prev.slice(0, -2));
+      setUciHistoryArr(prev => prev.slice(0, -2));
+    } catch (e) {}
   }, [moveHistory.length]);
+
+  const gotoPly = useCallback((plyIndex: number) => {
+    try {
+      const targetFen = fenHistory[plyIndex + 1];
+      const uci = uciHistoryArr[plyIndex];
+      if (!targetFen) return;
+      // Load the target FEN into the game engine so subsequent moves continue from here
+      try {
+        if (gameRef.current && typeof gameRef.current.load === 'function') {
+          gameRef.current.load(targetFen);
+        } else {
+          // Some builds of chess.js may not expose a .load method on the instance; recreate the game from FEN
+          try {
+            // eslint-disable-next-line new-cap
+            gameRef.current = new Chess(targetFen);
+          } catch (e) {
+            // As a last resort, leave the engine as-is; the board UI will still reflect the chosen FEN
+          }
+        }
+      } catch (e) { /* ignore load errors */ }
+
+      setFen(targetFen);
+      if (uci && uci.length >= 4) {
+        const from = uci.slice(0, 2);
+        const to = uci.slice(2, 4);
+        setHighlightSquares([from, to]);
+        if (chessBoardRef.current) {
+          chessBoardRef.current.setPosition(targetFen);
+          chessBoardRef.current.highlightMove(from, to);
+        }
+      } else {
+        setHighlightSquares([]);
+        if (chessBoardRef.current) chessBoardRef.current.setPosition(targetFen);
+      }
+      // Trim histories so the app state reflects continuing from this ply
+      try {
+        setFenHistory(prev => prev.slice(0, plyIndex + 2)); // keep starting fen + positions up to target
+        setUciHistoryArr(prev => prev.slice(0, plyIndex + 1)); // keep UCIs up to target
+        setMoveHistory(prev => prev.slice(0, plyIndex + 1));
+      } catch (e) {}
+
+      const fenBefore = fenHistory[plyIndex];
+      setTutorFenBefore(fenBefore);
+      setTutorMoveUci(uci);
+      setTutorTrigger(t => t + 1);
+
+      // Notify server so remote engine state can be updated to match this new position
+      try {
+        if (socketRef.current) socketRef.current.emit('update-fen', { fen: targetFen });
+      } catch (e) {}
+    } catch (e) { console.error('gotoPly failed', e); }
+  }, [fenHistory, uciHistoryArr]);
 
   const difficulties: { label: string; value: Difficulty }[] = [
     { label: 'Easy', value: 1 },
@@ -393,6 +457,16 @@ const PlayComputer: React.FC = () => {
                 fenAfter={fen}
                 moveUci={tutorMoveUci}
                 uciHistory={moveHistory.join(' ')}
+                onRequestGotoFen={(fen: string, highlights?: string[] | null) => {
+                  try {
+                    setFen(fen);
+                    setHighlightSquares(highlights || []);
+                    if (chessBoardRef.current) {
+                      chessBoardRef.current.setPosition(fen);
+                      if (highlights && highlights.length === 2) chessBoardRef.current.highlightMove(highlights[0], highlights[1]);
+                    }
+                  } catch (e) {}
+                }}
               />
             </div>
           </div>
@@ -407,11 +481,20 @@ const PlayComputer: React.FC = () => {
                   const moveNumber = Math.floor(idx / 2) + 1;
                   acc.push(
                     <div key={idx} className="grid grid-cols-[40px_1fr_1fr] gap-2 px-3 py-2 rounded-lg border border-borderLight items-center hover:border-primary transition-colors duration-150">
-                      <span className="text-primary font-bold text-right text-sm">{moveNumber}.</span>
-                      <span className="bg-white text-dark border-2 border-primary px-3 py-1 rounded font-mono text-sm">{move}</span>
-                      {moveHistory[idx + 1] && (
-                        <span className="bg-dark text-light border-2 border-primary px-3 py-1 rounded font-mono text-sm">{moveHistory[idx + 1]}</span>
-                      )}
+                      <button onClick={() => {
+                        // prefer to jump to after the opponent's reply so the game can continue from this branch
+                        const hasOpponent = moveHistory.length > idx + 1;
+                        const target = hasOpponent ? idx + 1 : idx;
+                        gotoPly(target);
+                      }} className="text-primary font-bold text-right text-sm">{moveNumber}.</button>
+                      <button onClick={() => {
+                        const hasOpponent = moveHistory.length > idx + 1;
+                        const target = hasOpponent ? idx + 1 : idx;
+                        gotoPly(target);
+                      }} className="bg-white text-dark border-2 border-primary px-3 py-1 rounded font-mono text-sm text-left">{move}</button>
+                      {moveHistory[idx + 1] ? (
+                        <button onClick={() => gotoPly(idx + 1)} className="bg-dark text-light border-2 border-primary px-3 py-1 rounded font-mono text-sm text-left">{moveHistory[idx + 1]}</button>
+                      ) : null}
                     </div>
                   );
                 }

@@ -11,8 +11,9 @@ type Props = {
   fenAfter?: string;
   moveUci?: string;
   uciHistory?: string;
-  // optional callback the parent can provide to request the main board jump to a historical FEN
-  onRequestGotoFen?: (fen: string, index: number) => void;
+  // Optional callback allowing parent components to request the tutor restore/go to a FEN
+  // now accepts optional highlight squares [from,to]
+  onRequestGotoFen?: (fen: string, highlights?: string[] | null) => void;
 };
 
 type Analysis = {
@@ -30,15 +31,19 @@ type Analysis = {
   score?: number | null;
 };
 
-// Move history entry stored per analyzed move. We keep the FEN after the move so the UI can
-// request the parent board to jump back to it, and we also store the analysis snapshot.
+// Move history entry stored by the tutor so the user can review and restore positions
 type MoveHistoryEntry = {
-  fen: string;
-  moveUci: string;
-  moveSan?: string;
-  matchPoints?: number;
+  fenBefore: string;
+  fenAfter: string;
+  moveUci?: string;
+  uciHistory?: string;
+  prevMatchPoints?: number | null;
+  matchPoints?: number | null;
   analysis?: Analysis | null;
-  timestamp?: number;
+  // optional convenience fields for UI: origin/destination and highlight pair
+  from?: string;
+  to?: string;
+  highlight?: string[] | null;
 };
 
 function normalizeIndicator(ind?: string | null | undefined): Analysis['moveIndicator'] | undefined {
@@ -142,22 +147,6 @@ function localAnalyze(fenBefore: string, fenAfter: string, moveUci: string) {
       const afterMoves = ch.moves({ verbose: true }) as any[];
       const movingPieceAttacks = afterMoves.filter(m => m.to === moveObj.to).length;
 
-      // compute defenders count by asking for friendly moves to the destination square
-      let defendersCount = 0;
-      try {
-        if (typeof fenAfter === 'string' && fenAfter) {
-          const parts = fenAfter.split(' ');
-          // ensure active color is set to sideMoved to enumerate friendly moves
-          parts[1] = sideMoved;
-          const fenForDefenders = parts.join(' ');
-          const chDef = new Chess(fenForDefenders);
-          const friendlyMoves = chDef.moves({ verbose: true }) as any[];
-          defendersCount = friendlyMoves.filter(m => m.to === moveObj.to).length;
-        }
-      } catch (e) {
-        defendersCount = 0;
-      }
-
       // find king square after for the mover
       let kingSquareAfter = '';
       const boardAfter = ch.board();
@@ -218,19 +207,13 @@ function localAnalyze(fenBefore: string, fenAfter: string, moveUci: string) {
 
       // penalize if the moved piece is attacked after the move (hanging piece)
       if (movingPieceAttacks > 0) {
-        // Stronger penalty: larger base per attacker and higher cap to better flag hanging pieces.
-        // This implements the user's request to make "protect piece" penalties stronger.
-        let attackerPenalty = Math.min(50, movingPieceAttacks * 8);
-        // If no friendly defenders exist on the square after the move, make it significantly worse
-        if (defendersCount === 0) attackerPenalty = Math.round(attackerPenalty * 1.8);
-        // If the move resulted in net material loss for the mover, increase penalty
-        if (delta < 0) attackerPenalty += 6;
-        attackerPenalty = Math.min(60, attackerPenalty);
-        score -= attackerPenalty;
+        // STRONGER penalty for hanging or attacked pieces: each attacking move increases penalty.
+        // Use -4 per attacker and cap at -12 so protecting pieces becomes more strongly encouraged.
+        score -= Math.min(12, movingPieceAttacks * 4);
         // If we captured and the capturing piece is immediately attacked, that's especially bad.
         if (moveObj.captured && movingPieceAttacks > 0) {
           // extra penalty for risky capture
-          score -= 8;
+          score -= 3;
         }
       }
     }
@@ -398,10 +381,7 @@ function inferBotPreferenceFromIndicator(ind?: Analysis['moveIndicator']): Analy
 
 // Enforce rule: if botPreference === 'Less' then the move should be considered at least a 'Mistake'.
 // If the point decrement (100 - matchPoints) is greater than 10, consider it a 'Blunder'.
-// NOTE: renamed to avoid accidental name collisions with other declarations that
-// TypeScript might pick up in some build environments. Use the Fn suffix and
-// update all call sites below.
-function applyBotPreferenceRulesFn(a?: Analysis | null, previousMatchPoints: number | null = null): Analysis | null {
+function applyBotPreferenceRules(a?: Analysis | null, previousMatchPoints: number | null = null): Analysis | null {
   if (!a) return a ?? null;
   const botPref = a.botPreference;
   // Determine current matchPoints if present, otherwise derive from matchScore
@@ -435,10 +415,6 @@ function applyBotPreferenceRulesFn(a?: Analysis | null, previousMatchPoints: num
   }
   return a;
 }
-
-// backward-compatible alias in case other code expects the old name (keeps runtime
-// behavior identical while avoiding TypeScript compile collisions)
-(applyBotPreferenceRulesFn as any).displayName = 'applyBotPreferenceRulesFn';
 
 // Helper: determine whether the move favors center control in the opening
 function computeFavorsCenter(moveUci: string | undefined, fenBefore: string | undefined): boolean {
@@ -569,69 +545,117 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
   const [error, setError] = useState<string | null>(null);
   const [debugLog, setDebugLog] = useState<string | null>(null);
 
-  // Move history state: store per-move snapshots so users can navigate back to previous positions
+  // Keep a referenced no-op to avoid unused prop warnings for optional callbacks
+  useEffect(() => {
+    if (onRequestGotoFen) {
+      // Intentionally no-op; parent components may pass this handler to request FEN navigation
+      // We reference it here to avoid unused-variable/prop warnings from TypeScript or linters
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      void onRequestGotoFen;
+    }
+  }, [onRequestGotoFen]);
+
+  // Move history stack for UI review and undo/reset functionality
   const [history, setHistory] = useState<MoveHistoryEntry[]>([]);
-  const [selectedHistoryIndex, setSelectedHistoryIndex] = useState<number | null>(null);
 
-  // Append a history entry. If a user has navigated back (selectedHistoryIndex !== null), truncate
-  // future history entries before appending (time-travel behavior).
-  const recordMoveHistory = (entry: MoveHistoryEntry) => {
+  const pushHistory = (entry: MoveHistoryEntry) => {
+    // Avoid adding duplicate entries when the same move/position is re-analyzed (e.g. user navigates history).
+    // Normalize FENs for comparison by stripping halfmove/fullmove counters so semantically identical
+    // positions aren't treated as different due to clock differences.
+    const normFen = (f?: string | null) => {
+      try {
+        if (!f) return f;
+        const parts = f.split(' ').map((s) => s.trim());
+        // Keep only piece placement, active color, castling availability, and en-passant target
+        return parts.slice(0, 4).join(' ');
+      } catch (e) {
+        return f;
+      }
+    };
+
     setHistory((h) => {
-      if (selectedHistoryIndex !== null && selectedHistoryIndex < h.length - 1) {
-        // truncate to selected index before appending
-        const truncated = h.slice(0, selectedHistoryIndex + 1);
-        return [...truncated, { ...entry, timestamp: Date.now() }];
+      try {
+        if (!entry) return h;
+        const entryFenNorm = normFen(entry.fenAfter);
+        const matchIdx = h.findIndex((e) => {
+          try {
+            // Compare normalized FENs first
+            if (entryFenNorm && e.fenAfter && entryFenNorm === normFen(e.fenAfter)) return true;
+            if (entry.moveUci && e.moveUci && entry.moveUci === e.moveUci) return true;
+            // fallback: compare uciHistory if present
+            if (entry.uciHistory && e.uciHistory && entry.uciHistory === e.uciHistory) return true;
+          } catch (ee) {}
+          return false;
+        });
+        if (matchIdx >= 0) {
+          // schedule a restore to the existing history entry so we don't interfere with React state updates here
+          setTimeout(() => {
+            try { restoreToHistory(matchIdx); } catch (e) {}
+          }, 0);
+          return h; // do not append duplicate
+        }
+      } catch (e) {
+        // ignore and fall back to append
       }
-      return [...h, { ...entry, timestamp: Date.now() }];
-    });
-    // clear selection on new real move so UI shows latest
-    setSelectedHistoryIndex(null);
-  };
-
-  const popHistory = () => {
-    setHistory((h) => h.slice(0, -1));
-    setSelectedHistoryIndex((idx) => {
-      if (idx === null) return null;
-      const next = idx - 1;
-      return next >= 0 ? next : null;
+      return [...h, entry];
     });
   };
 
-  // Request to jump the parent board to a stored FEN. If parent provided onRequestGotoFen prop, call it.
-  const gotoHistoryIndex = (index: number) => {
-    if (index < 0 || index >= history.length) return;
+  // Restore to a specific history index (restore the board to fenAfter of that entry)
+  const restoreToHistory = (index: number) => {
     const entry = history[index];
-    setSelectedHistoryIndex(index);
-    // Restore internal tutor state to reflect the chosen historical move:
-    // - set analysis to the historical snapshot
-    // - rebuild matchPointsStack up to this index so undo/redo behave intuitively
-    try {
-      if (entry && typeof entry.matchPoints === 'number') {
-        const newStack = history.slice(0, index + 1).map(h => (typeof h.matchPoints === 'number' ? h.matchPoints : 0));
-        setMatchPointsStack(newStack);
-        setPrevMatchPoints(newStack.length ? newStack[newStack.length - 1] : null);
-      } else {
-        // no matchPoints on the selected entry -> clear stack
-        setMatchPointsStack([]);
-        setPrevMatchPoints(null);
-      }
-    } catch (e) {
-      // ignore state restore errors
+    if (!entry) return;
+    // Request parent to navigate to the requested FEN (fenAfter) if callback provided
+    if (onRequestGotoFen) {
+      try { onRequestGotoFen(entry.fenAfter, entry.highlight ?? null); } catch (e) { /* ignore */ }
+    } else {
+      // If no callback, log debug so developers know to wire the handler
+      try { setDebugLog(`Requested goto FEN: ${entry.fenAfter}`); } catch (e) {}
     }
+    // Trim history to this point (include the selected move so it remains the last entry)
+    setHistory((h) => h.slice(0, index + 1));
+    // Restore tutor-internal state
+    setAnalysis(entry.analysis || null);
+    setPrevMatchPoints(entry.prevMatchPoints ?? null);
+    // Update matchPoints stack as a simple sync (replace with single value)
+    try { setMatchPointsStack(entry.matchPoints != null ? [entry.matchPoints] : []); } catch (e) {}
+  };
 
-    // Set the currently-displayed analysis to the historical entry's analysis
-    try {
-      setAnalysis(entry.analysis ?? null);
-    } catch (e) {}
-
-    // Let parent perform the actual board state change
-    try {
-      if (typeof onRequestGotoFen === 'function') {
-        onRequestGotoFen(entry.fen, index);
-      }
-    } catch (e) {
-      // ignore
+  const undoLast = () => {
+    if (history.length === 0) return;
+    // Compute new history after popping one entry so we can synchronously inspect the resulting last entry
+    const newHist = history.slice(0, -1);
+    setHistory(newHist);
+    const newLast = newHist.length ? newHist[newHist.length - 1] : undefined;
+    if (onRequestGotoFen) {
+      try {
+        if (newLast) onRequestGotoFen(newLast.fenAfter, newLast.highlight ?? null);
+        else onRequestGotoFen('start', null);
+      } catch (e) { /* ignore */ }
     }
+    // restore tutor state to previous history item or reset
+    if (newLast) {
+      setAnalysis(newLast.analysis || null);
+      setPrevMatchPoints(newLast.prevMatchPoints ?? null);
+      try { setMatchPointsStack(newLast.matchPoints != null ? [newLast.matchPoints] : []); } catch (e) {}
+    } else {
+      setAnalysis(null);
+      setPrevMatchPoints(null);
+      try { setMatchPointsStack([]); } catch (e) {}
+    }
+  };
+
+  const resetAll = () => {
+    // Ask parent to reset board to initial position if callback provided (standard starting FEN)
+    const startFen = 'start';
+    if (onRequestGotoFen) {
+      try { onRequestGotoFen(startFen, []); } catch (e) { /* ignore */ }
+    }
+    setHistory([]);
+    setAnalysis(null);
+    setPrevMatchPoints(null);
+    try { setMatchPointsStack([]); } catch (e) {}
+    try { setDebugLog('Tutor reset'); } catch (e) {}
   };
 
   // helper to push a new matchPoints onto the stack and update prevMatchPoints
@@ -667,14 +691,11 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
     // If the board was reset (no uciHistory or empty), also reset the tutor's internal state
     try {
       if (!uciHistory || (typeof uciHistory === 'string' && uciHistory.trim() === '')) {
-        // Clear stack, analysis, and appraisal history so tutor feedback is fully reset
+        // Clear stack and analysis state
         setMatchPointsStack([]);
         setPrevMatchPoints(null);
         setAnalysis(null);
         setLastUciHistory(undefined);
-        // clear the per-move appraisal history and selected index as well
-        try { setHistory([]); } catch (e) {}
-        try { setSelectedHistoryIndex(null); } catch (e) {}
         try { setDebugLog('Tutor state reset (board reset detected)'); } catch (e) {}
         return;
       }
@@ -698,13 +719,12 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
       if (cancelled) return;
       // Detect undo: if uciHistory is shorter than the last seen one, pop matchPoints accordingly
       try {
-          if (lastUciHistory && uciHistory && typeof lastUciHistory === 'string' && typeof uciHistory === 'string') {
+        if (lastUciHistory && uciHistory && typeof lastUciHistory === 'string' && typeof uciHistory === 'string') {
           const lastCount = lastUciHistory.trim() ? lastUciHistory.trim().split(/\s+/).length : 0;
           const curCount = uciHistory.trim() ? uciHistory.trim().split(/\s+/).length : 0;
           if (curCount < lastCount) {
             const undone = lastCount - curCount;
             for (let i = 0; i < undone; i++) popMatchPoints();
-              for (let i = 0; i < undone; i++) popHistory();
           }
         }
       } catch (e) {
@@ -726,70 +746,6 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
         // also accept stockfishServerURL (some deployments use that name).
         const rawBase = urls.chessServerURL || urls.stockfishServerURL || urls.chessServer || urls.stockfishServer || '';
         const baseUrl = typeof rawBase === 'string' ? rawBase.replace(/\/$/, '') : '';
-
-                        // Automatic opening-blunder detection: treat very first-move flank pawn pushes as blunders
-                        try {
-                          const sideToMove = (fenBefore.split(' ')[1] === 'w') ? 'w' : 'b';
-                          const fullmoveNum = Number(fenBefore.split(' ')[5] || '1');
-                          const whiteOpeningBlunders = new Set(['g2g4', 'b2b4']);
-                          const blackOpeningBlunders = new Set(['g7g5', 'b7b5']);
-                          const normMove = (moveUci || '').toLowerCase();
-                          // Only flag as blunder if this is the player's FIRST move of the game
-                          if (fullmoveNum === 1) {
-                            if (sideToMove === 'w' && whiteOpeningBlunders.has(normMove)) {
-                              const synth: Analysis = {
-                                moveIndicator: 'Blunder',
-                                Analysis: `Early flank pawn push ${moveUci} is considered a serious opening error: it neglects center control and weakens king safety.`,
-                                nextStepHint: 'Avoid premature flank pawn pushes. Prefer central control (e4/d4) and piece development.',
-                                botPreference: 'Less',
-                                favorsCenter: false,
-                                matchScore: 0,
-                                matchPoints: 0,
-                                score: null,
-                              };
-                              const finalSynth = applyBotPreferenceRulesFn(synth, prevMatchPoints) || synth;
-                              setAnalysis(finalSynth);
-                              try {
-                                // ensure stack and history are updated so undo/reset behave correctly
-                                pushMatchPoints(finalSynth.matchPoints ?? 0);
-                                try { setLastUciHistory(uciHistory); } catch (e) {}
-                                try {
-                                  recordMoveHistory({ fen: fenAfter || '', moveUci: moveUci || '', matchPoints: finalSynth.matchPoints ?? 0, analysis: finalSynth });
-                                } catch (e) {}
-                              } catch (e) {}
-                              const elapsed = Date.now() - startedAt;
-                              if (elapsed < minDisplayTime) await new Promise((r) => setTimeout(r, minDisplayTime - elapsed));
-                              if (cancelled) return;
-                              setIsAnalyzing(false);
-                              return;
-                            }
-                            if (sideToMove === 'b' && blackOpeningBlunders.has(normMove)) {
-                              const synth: Analysis = {
-                                moveIndicator: 'Blunder',
-                                Analysis: `Early flank pawn push ${moveUci} is considered a serious opening error: it neglects center control and weakens king safety.`,
-                                nextStepHint: 'Avoid premature flank pawn pushes. Prefer central control (e4/d4) and piece development.',
-                                botPreference: 'Less',
-                                favorsCenter: false,
-                                matchScore: 0,
-                                matchPoints: 0,
-                                score: null,
-                              };
-                              const finalSynth = applyBotPreferenceRulesFn(synth, prevMatchPoints) || synth;
-                              setAnalysis(finalSynth);
-                              try {
-                                pushMatchPoints(finalSynth.matchPoints ?? 0);
-                                try { setLastUciHistory(uciHistory); } catch (e) {}
-                              } catch (e) {}
-                              const elapsed = Date.now() - startedAt;
-                              if (elapsed < minDisplayTime) await new Promise((r) => setTimeout(r, minDisplayTime - elapsed));
-                              if (cancelled) return;
-                              setIsAnalyzing(false);
-                              return;
-                            }
-                          }
-                        } catch (e) {
-                          // ignore opening-blunder detection failures and continue
-                        }
 
                         if (!baseUrl) {
                           // Try in-browser Stockfish engine first (if installed). If unavailable or fails, fall back to localAnalyze.
@@ -825,18 +781,32 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                                   }
 
                                       // apply user-defined botPreference rules (Less => Mistake/Blunder)
-                                              const finalExplanation = applyBotPreferenceRulesFn(explanation, prevMatchPoints) || null;
-                                                      setAnalysis(finalExplanation);
-                                                      // store current matchPoints for the next turn (push onto stack)
+                                      const finalExplanation = applyBotPreferenceRules(explanation, prevMatchPoints) || null;
+                                      setAnalysis(finalExplanation);
+                                      // store current matchPoints for the next turn (push onto stack)
+                                      try {
+                                        if (finalExplanation && typeof finalExplanation.matchPoints === 'number') {
+                                          pushMatchPoints(finalExplanation.matchPoints);
+                                          try { setLastUciHistory(uciHistory); } catch (e) {}
+                                        }
+                                      } catch (e) {}
+                                      // persist this move into tutor history so users can review/undo
                                                       try {
-                                                        if (finalExplanation && typeof finalExplanation.matchPoints === 'number') {
-                                                          pushMatchPoints(finalExplanation.matchPoints);
-                                                          try { setLastUciHistory(uciHistory); } catch (e) {}
-                                                        }
-                                                      } catch (e) {}
-                                                      try {
-                                                        // record history entry for this analyzed move
-                                                        recordMoveHistory({ fen: fenAfter || '', moveUci: moveUci || '', matchPoints: finalExplanation?.matchPoints ?? undefined, analysis: finalExplanation });
+                                                        // derive from/to highlight pair from UCI when available
+                                                        const from = moveUci && moveUci.length >= 4 ? moveUci.slice(0, 2) : undefined;
+                                                        const to = moveUci && moveUci.length >= 4 ? moveUci.slice(2, 4) : undefined;
+                                                        pushHistory({
+                                                          fenBefore: fenBefore,
+                                                          fenAfter: fenAfter,
+                                                          moveUci: moveUci,
+                                                          uciHistory: uciHistory,
+                                                          prevMatchPoints: prevMatchPoints,
+                                                          matchPoints: finalExplanation && typeof finalExplanation.matchPoints === 'number' ? finalExplanation.matchPoints : null,
+                                                          analysis: finalExplanation,
+                                                          from: from,
+                                                          to: to,
+                                                          highlight: from && to ? [from, to] : null,
+                                                        });
                                                       } catch (e) {}
                               // extra debug showing the final explanation object
                               // eslint-disable-next-line no-console
@@ -872,16 +842,26 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                               norm.matchPoints = mv.points;
                               norm.botPreference = norm.botPreference || mv.botPreference;
                             } catch (e) {}
-                            const finalNorm = applyBotPreferenceRulesFn(norm, prevMatchPoints) || null;
+                            const finalNorm = applyBotPreferenceRules(norm, prevMatchPoints) || null;
                             setAnalysis(finalNorm);
                             try {
-                              if (finalNorm && typeof finalNorm.matchPoints === 'number') {
-                                pushMatchPoints(finalNorm.matchPoints);
-                                try { setLastUciHistory(uciHistory); } catch (e) {}
-                              }
+                              if (finalNorm && typeof finalNorm.matchPoints === 'number') pushMatchPoints(finalNorm.matchPoints);
                             } catch (e) {}
                             try {
-                              recordMoveHistory({ fen: fenAfter || '', moveUci: moveUci || '', matchPoints: finalNorm?.matchPoints ?? undefined, analysis: finalNorm });
+                              const from = moveUci && moveUci.length >= 4 ? moveUci.slice(0, 2) : undefined;
+                              const to = moveUci && moveUci.length >= 4 ? moveUci.slice(2, 4) : undefined;
+                              pushHistory({
+                                fenBefore: fenBefore,
+                                fenAfter: fenAfter,
+                                moveUci: moveUci,
+                                uciHistory: uciHistory,
+                                prevMatchPoints: prevMatchPoints,
+                                matchPoints: finalNorm && typeof finalNorm.matchPoints === 'number' ? finalNorm.matchPoints : null,
+                                analysis: finalNorm,
+                                from: from,
+                                to: to,
+                                highlight: from && to ? [from, to] : null,
+                              });
                             } catch (e) {}
                           } else {
                             setAnalysis({ Analysis: local.rawText });
@@ -956,7 +936,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
           console.warn('StockfishTutor: no usable server response, falling back to localAnalyze');
           try { setDebugLog('no server response, using localAnalyze fallback'); } catch (e) { /* ignore */ }
           const local = localAnalyze(fenBefore, fenAfter, moveUci || '');
-                          if (local && local.explanation) {
+                                        if (local && local.explanation) {
             const norm = { ...local.explanation } as Analysis;
             norm.moveIndicator = normalizeIndicator(norm.moveIndicator as any) || norm.moveIndicator;
             try {
@@ -965,14 +945,27 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
               norm.matchPoints = mv.points;
               norm.botPreference = norm.botPreference || mv.botPreference;
             } catch (e) {}
-            const finalNorm = applyBotPreferenceRulesFn(norm, prevMatchPoints) || null;
-            setAnalysis(finalNorm);
-            try {
-              if (finalNorm && typeof finalNorm.matchPoints === 'number') {
-                pushMatchPoints(finalNorm.matchPoints);
-                try { setLastUciHistory(uciHistory); } catch (e) {}
-              }
-            } catch (e) {}
+                                        const finalNorm = applyBotPreferenceRules(norm, prevMatchPoints) || null;
+                                        setAnalysis(finalNorm);
+                                        try {
+                                          if (finalNorm && typeof finalNorm.matchPoints === 'number') setPrevMatchPoints(finalNorm.matchPoints);
+                                        } catch (e) {}
+                                        try {
+                                          const from = moveUci && moveUci.length >= 4 ? moveUci.slice(0, 2) : undefined;
+                                          const to = moveUci && moveUci.length >= 4 ? moveUci.slice(2, 4) : undefined;
+                                          pushHistory({
+                                            fenBefore: fenBefore,
+                                            fenAfter: fenAfter,
+                                            moveUci: moveUci,
+                                            uciHistory: uciHistory,
+                                            prevMatchPoints: prevMatchPoints,
+                                            matchPoints: finalNorm && typeof finalNorm.matchPoints === 'number' ? finalNorm.matchPoints : null,
+                                            analysis: finalNorm,
+                                            from: from,
+                                            to: to,
+                                            highlight: from && to ? [from, to] : null,
+                                          });
+                                        } catch (e) {}
           } else {
             setAnalysis({ Analysis: local.rawText });
           }
@@ -1100,7 +1093,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
 
             // Apply user rule: botPreference 'Less' => Mistake; if (100 - matchPoints) > 10 => Blunder
             try {
-              parsed = applyBotPreferenceRulesFn(parsed, prevMatchPoints) || parsed;
+              parsed = applyBotPreferenceRules(parsed, prevMatchPoints) || parsed;
             } catch (e) {}
             try {
               if (parsed && typeof (parsed as any).matchPoints === 'number') {
@@ -1108,10 +1101,17 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                 try { setLastUciHistory(uciHistory); } catch (ee) {}
               }
             } catch (e) {}
-
             try {
-              // record the server-parsed analysis into history as well
-              recordMoveHistory({ fen: fenAfter || '', moveUci: moveUci || '', matchPoints: (parsed as any)?.matchPoints ?? undefined, analysis: parsed ?? null });
+              // persist server-provided analysis into history
+              pushHistory({
+                fenBefore: fenBefore,
+                fenAfter: fenAfter,
+                moveUci: moveUci,
+                uciHistory: uciHistory,
+                prevMatchPoints: prevMatchPoints,
+                matchPoints: parsed && typeof (parsed as any).matchPoints === 'number' ? (parsed as any).matchPoints : null,
+                analysis: parsed || null,
+              });
             } catch (e) {}
           }
         } catch (e) {
@@ -1147,28 +1147,20 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
       <div className={styles.tutorBody}>
         {isAnalyzing && <div className={styles.loading}>Analyzing move...</div>}
         {error && <div className={styles.error}>{error}</div>}
-        {!isAnalyzing && !error && (selectedHistoryIndex !== null ? history[selectedHistoryIndex]?.analysis : analysis) && (
+        {!isAnalyzing && !error && analysis && (
           <div className={styles.analysis}>
-            {(() => {
-              const disp = selectedHistoryIndex !== null ? history[selectedHistoryIndex]?.analysis : analysis;
-              if (!disp) return null;
-              return (
-                <>
-                  <div className={styles.indicator}>{disp.moveIndicator ?? '—'}</div>
-                  <div className={styles.text}>{disp.Analysis ?? 'No explanation provided.'}</div>
-                  {disp.botPreference && (
-                    <div className={styles.hint}>Bot preference: {disp.botPreference}</div>
-                  )}
-                  {typeof disp.matchPoints === 'number' && (
-                    <div className={styles.hint}>Match points: {disp.matchPoints}/100</div>
-                  )}
-                  {typeof disp.favorsCenter === 'boolean' && (
-                    <div className={styles.hint}>Favors center: {disp.favorsCenter ? 'Yes' : 'No'}</div>
-                  )}
-                  {disp.nextStepHint && <div className={styles.hint}>Next: {disp.nextStepHint}</div>}
-                </>
-              );
-            })()}
+            <div className={styles.indicator}>{analysis.moveIndicator ?? '—'}</div>
+            <div className={styles.text}>{analysis.Analysis ?? 'No explanation provided.'}</div>
+            {analysis.botPreference && (
+              <div className={styles.hint}>Bot preference: {analysis.botPreference}</div>
+            )}
+            {typeof analysis.matchPoints === 'number' && (
+              <div className={styles.hint}>Match points: {analysis.matchPoints}/100</div>
+            )}
+            {typeof analysis.favorsCenter === 'boolean' && (
+              <div className={styles.hint}>Favors center: {analysis.favorsCenter ? 'Yes' : 'No'}</div>
+            )}
+            {analysis.nextStepHint && <div className={styles.hint}>Next: {analysis.nextStepHint}</div>}
           </div>
         )}
         {!isAnalyzing && !error && !analysis && (
@@ -1177,29 +1169,21 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
         {debugLog && (
           <div style={{ marginTop: 8, fontSize: 12, color: '#6b7280' }}>Debug: {debugLog}</div>
         )}
-        {/* Quick clickable history list for navigation */}
         {history.length > 0 && (
-          <div style={{ marginTop: 8 }}>
-            <div style={{ fontSize: 12, color: '#374151', marginBottom: 4 }}>Move history (click to jump):</div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <div style={{ marginTop: 10 }} className={styles.history}>
+            <div style={{ fontWeight: 600, marginBottom: 6 }}>Move history</div>
+            <div>
               {history.map((h, i) => (
-                // keep this simple: a button-like span
-                <button
-                  key={`${h.timestamp || i}-${h.moveUci}-${i}`}
-                  onClick={() => gotoHistoryIndex(i)}
-                  style={{
-                    padding: '6px 8px',
-                    borderRadius: 6,
-                    border: selectedHistoryIndex === i ? '2px solid #2563eb' : '1px solid #d1d5db',
-                    background: selectedHistoryIndex === i ? '#eef2ff' : '#fff',
-                    cursor: 'pointer',
-                    fontSize: 12,
-                  }}
-                >
-                  <div style={{ fontWeight: 600 }}>{h.moveUci}</div>
-                  <div style={{ fontSize: 11, color: '#6b7280' }}>{typeof h.matchPoints === 'number' ? `${h.matchPoints}/100` : '—'}</div>
-                </button>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <button onClick={() => restoreToHistory(i)} style={{ padding: '4px 8px' }}>Go</button>
+                  <div style={{ fontSize: 13 }}>{h.moveUci ?? 'move'} {h.matchPoints != null ? `— ${h.matchPoints}/100` : ''}</div>
+                  <div style={{ marginLeft: 'auto', fontSize: 12, color: '#6b7280' }}>{h.analysis?.moveIndicator ?? ''}</div>
+                </div>
               ))}
+            </div>
+            <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+              <button onClick={() => undoLast()} style={{ padding: '6px 10px' }}>Undo last</button>
+              <button onClick={() => resetAll()} style={{ padding: '6px 10px' }}>Reset tutor</button>
             </div>
           </div>
         )}
