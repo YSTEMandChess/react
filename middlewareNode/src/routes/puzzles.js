@@ -46,7 +46,26 @@ router.get("/list", async (req, res) => {
 router.get("/random", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 20;
-    const puzzlesArray = await puzzles.aggregate([{ $sample: { size: limit } }]);
+    const theme = typeof req.query.theme === "string" ? req.query.theme.trim() : "";
+    const pipeline = [];
+
+    if (theme) {
+      const escapedTheme = theme.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const themeTokenRegex = new RegExp(`(^|\\s)${escapedTheme}(\\s|$)`, "i");
+
+      pipeline.push({
+        $match: {
+          $or: [
+            { Themes: themeTokenRegex },
+            { themes: themeTokenRegex },
+          ],
+        },
+      });
+    }
+
+    pipeline.push({ $sample: { size: limit } });
+
+    const puzzlesArray = await puzzles.aggregate(pipeline);
     res.status(200).json(puzzlesArray);
   } catch (error) {
     console.error(error.message);

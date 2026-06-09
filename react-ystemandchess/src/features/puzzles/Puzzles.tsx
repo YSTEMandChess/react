@@ -21,6 +21,33 @@ type PuzzlesProps = {
   styleType?: any;
 };
 
+type PuzzleThemeKey = keyof typeof themesName;
+
+const FEATURED_PUZZLE_THEMES: PuzzleThemeKey[] = [
+  "mateIn1",
+  "mateIn2",
+  "fork",
+  "pin",
+  "skewer",
+  "discoveredAttack",
+  "deflection",
+  "sacrifice",
+  "promotion",
+  "endgame",
+  "opening",
+  "middlegame",
+  "zugzwang",
+  "advancedPawn",
+  "Endgame",
+];
+
+const getThemeName = (theme: PuzzleThemeKey | string) =>
+  themesName[theme as PuzzleThemeKey] || theme;
+
+const getThemeDescription = (theme: PuzzleThemeKey | string) =>
+  themesDescription[theme as keyof typeof themesDescription] ||
+  "Practice puzzles in this category.";
+
 // Helper function to normalize FEN (same as in socket)
 const normalizeFen = (fen: string): string => {
   if (!fen || typeof fen !== "string") {
@@ -78,6 +105,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const [status, setStatus] = useState<string>("");
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<PuzzleThemeKey | null>(null);
   const [cookies] = useCookies(["login"]);
   const [modal, setModal] = useState<Omit<ModalProps, "onClose"> | null>(null);
   const closeModal = () => setModal(null);
@@ -95,11 +123,51 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   // PUZZLE LOADING
   // ============================================================================
 
+  const getPuzzleFetchUrl = () => {
+    const params = new URLSearchParams({ limit: "20" });
+    if (selectedTheme) {
+      params.set("theme", selectedTheme);
+    }
+
+    return `${environment.urls.middlewareURL}/puzzles/random?${params.toString()}`;
+  };
+
+  const resetPuzzleSession = () => {
+    setPuzzleArray([]);
+    puzzleArrayRef.current = [];
+    dbIndexRef.current = 0;
+    moveListRef.current = [];
+    currentPuzzleRef.current = null;
+    isPuzzleEndRef.current = false;
+    setCurrentFEN("");
+    setHidePieces(true);
+    setHighlightSquares([]);
+    setThemeList([]);
+    setIsInitialized(false);
+    closeModal();
+
+    const hintText = document.getElementById("hint-text");
+    if (hintText) {
+      hintText.innerHTML = "";
+      hintText.style.display = "none";
+    }
+  };
+
+  const handleThemeSelect = (theme: PuzzleThemeKey) => {
+    resetPuzzleSession();
+    setSelectedTheme(theme);
+  };
+
+  const handleBackToThemes = () => {
+    resetPuzzleSession();
+    setSelectedTheme(null);
+  };
+
   const initPuzzleArray = async () => {
     try {
-      const response = await fetch(
-        `${environment.urls.middlewareURL}/puzzles/random?limit=20`
-      );
+      if (!selectedTheme) return [];
+
+      const response = await fetch(getPuzzleFetchUrl());
       if (response.ok) {
         const jsonData = await response.json();
         setPuzzleArray(jsonData);
@@ -118,9 +186,9 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   const prefetchPuzzles = async () => {
     try {
-      const response = await fetch(
-        `${environment.urls.middlewareURL}/puzzles/random?limit=20`
-      );
+      if (!selectedTheme) return;
+
+      const response = await fetch(getPuzzleFetchUrl());
       if (response.ok) {
         const jsonData = await response.json();
         setPuzzleArray((prev) => {
@@ -152,6 +220,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   }, [puzzleArray.length]);
 
   initializeComponentRef.current = async () => {
+    if (!selectedTheme) return;
     if (isInitialized || isInitializingRef.current) return;
 
     isInitializingRef.current = true;
@@ -174,6 +243,13 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         setThemeList(firstPuzzle.Themes.split(" "));
         setStateAsActive(firstPuzzle);
         updateInfoBox(firstPuzzle.Themes.split(" "));
+      } else {
+        setIsInitialized(false);
+        setModal({
+          type: "error",
+          title: "No puzzles found",
+          message: `No puzzles were found for ${getThemeName(selectedTheme)}.`,
+        });
       }
     } finally {
       isInitializingRef.current = false;
@@ -554,6 +630,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   useEffect(() => {
     if (
+      selectedTheme &&
       socket.connected &&
       status === "" &&
       !isInitialized &&
@@ -561,16 +638,102 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     ) {
       socket.startNewPuzzle();
     }
-  }, [socket.connected, status, isInitialized, socket]);
+  }, [selectedTheme, socket.connected, status, isInitialized, socket]);
+
+  useEffect(() => {
+    if (
+      selectedTheme &&
+      socket.connected &&
+      status === "host" &&
+      !isInitialized &&
+      !isInitializingRef.current
+    ) {
+      initializeComponentRef.current?.();
+    }
+  }, [selectedTheme, socket.connected, status, isInitialized]);
 
   // ============================================================================
   // RENDER
   // ============================================================================
 
   const puzzleButtonClass = "btn-green w-full md:w-auto";
+  const selectedThemeName = selectedTheme ? getThemeName(selectedTheme) : "";
+
+  if (!selectedTheme) {
+    return (
+      <>
+      <section
+        className={
+          isProfile
+            ? "w-full px-4 py-8"
+            : "w-full px-6 py-12 md:px-10"
+        }
+      >
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 text-left">
+          <div className="rounded-3xl border-2 border-dark bg-light p-6 shadow-lg md:p-8">
+            <p className="mb-2 text-sm font-bold uppercase tracking-[0.25em] text-primary">
+              Puzzle Themes
+            </p>
+            <h1 className="text-3xl font-extrabold text-dark md:text-5xl">
+              Choose what you want to practice
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-relaxed text-gray md:text-lg">
+              Pick a theme to load puzzles tagged with that tactic or game phase.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURED_PUZZLE_THEMES.map((theme) => {
+              return (
+                <button
+                  key={theme}
+                  type="button"
+                  className="group min-h-[150px] rounded-2xl border-2 border-dark bg-light p-5 text-left shadow-md transition-transform hover:-translate-y-1 hover:bg-soft focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/30"
+                  onClick={() => handleThemeSelect(theme)}
+                  data-testid={`puzzle-theme-${theme}`}
+                >
+                  <span className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
+                    {theme}
+                  </span>
+                  <h2 className="mt-3 text-2xl font-extrabold text-dark">
+                    {getThemeName(theme)}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-gray">
+                    {getThemeDescription(theme)}
+                  </p>
+                  <span className="mt-5 inline-flex font-bold text-dark group-hover:text-primary">
+                    Play this theme
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {modal && <Modal {...modal} onClose={closeModal} />}
+      </>
+    );
+  }
 
   return (
     <>
+    <div className="mx-auto mt-8 flex w-full max-w-5xl flex-col gap-3 px-4 text-left">
+      <button
+        type="button"
+        className="w-fit text-sm font-bold text-primary hover:text-dark"
+        onClick={handleBackToThemes}
+      >
+        Back to puzzle themes
+      </button>
+      <div>
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
+          Selected Theme
+        </p>
+        <h1 className="text-3xl font-extrabold text-dark">{selectedThemeName}</h1>
+      </div>
+    </div>
+
     <div
       className={
         isProfile
