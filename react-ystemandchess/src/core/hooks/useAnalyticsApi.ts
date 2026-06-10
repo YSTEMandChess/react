@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import { environment } from "../../environments/environment";
 
@@ -41,6 +41,8 @@ export interface UseAnalyticsApiResult<T = AnalyticsData> {
   data: T | null;
   loading: boolean;
   error: Error | null;
+  /** Re-runs the request with the current options (e.g. after an error). */
+  refetch: () => void;
 }
 
 const MOCK_ANALYTICS_DATA: AnalyticsData = [
@@ -79,8 +81,11 @@ export function useAnalyticsApi<T = AnalyticsData>(
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
+  const [reloadIndex, setReloadIndex] = useState<number>(0);
 
   const paramsKey = JSON.stringify(params ?? {});
+
+  const refetch = useCallback(() => setReloadIndex((i) => i + 1), []);
 
   useEffect(() => {
     if (!enabled) {
@@ -94,7 +99,7 @@ export function useAnalyticsApi<T = AnalyticsData>(
     const fetchData = async (): Promise<void> => {
       setLoading(true);
       setError(null);
-
+      
       try {
         if (USE_MOCK) {
           // Simulate latency so loading states are observable in dev.
@@ -138,7 +143,7 @@ export function useAnalyticsApi<T = AnalyticsData>(
       controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endpoint, paramsKey, enabled, cookies[AUTH_COOKIE_NAME]]);
+  }, [endpoint, paramsKey, enabled, cookies[AUTH_COOKIE_NAME], reloadIndex]);
 
-  return { data, loading, error };
+  return { data, loading, error, refetch };
 }

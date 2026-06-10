@@ -14,7 +14,7 @@ const IndividualView = ({ startDate, endDate }: IndividualViewProps) => {
 
   const dateRangeReady = Boolean(startDate && endDate);
 
-  const { data, loading, error } = useAnalyticsApi<AnalyticsRecord[]>({
+  const { data, loading, error, refetch } = useAnalyticsApi<AnalyticsRecord[]>({
     endpoint: "/analytics/individual",
     params: { startDate, endDate, q: submittedQuery },
     enabled: dateRangeReady,
@@ -33,7 +33,7 @@ const IndividualView = ({ startDate, endDate }: IndividualViewProps) => {
   };
 
   if (!dateRangeReady) {
-    return <p className="text-gray-500">Select a start and end date to load analytics.</p>;
+    return <p className="text-muted">Select a start and end date to load analytics.</p>;
   }
 
   return (
@@ -45,34 +45,34 @@ const IndividualView = ({ startDate, endDate }: IndividualViewProps) => {
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by metric…"
           aria-label="Search individual analytics"
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 border border-borderLight rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
         />
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition"
         >
           Search
         </button>
       </form>
 
       {loading && <LoadingSpinner />}
-      {error && <ErrorBanner message={error.message} />}
+      {error && <ErrorBanner message={error.message} onRetry={refetch} />}
 
       {!loading && !error && (
-        <ul className="divide-y divide-gray-200 border border-gray-200 rounded-lg">
+        <ul className="divide-y divide-borderLight border border-borderLight rounded-lg">
           {filtered.length === 0 ? (
-            <li className="p-3 text-sm text-gray-500">No results.</li>
+            <li className="p-3 text-sm text-muted">No results.</li>
           ) : (
             filtered.map((row, idx) => (
               <li
                 key={`${row.date}-${row.metric}-${idx}`}
                 className="p-3 flex justify-between text-sm"
               >
-                <span className="text-gray-700">
+                <span className="text-gray">
                   <span className="font-medium">{row.metric}</span>
-                  <span className="text-gray-500"> · {row.date}</span>
+                  <span className="text-muted"> · {row.date}</span>
                 </span>
-                <span className="font-mono text-gray-900">{row.value}</span>
+                <span className="font-mono text-dark">{row.value}</span>
               </li>
             ))
           )}

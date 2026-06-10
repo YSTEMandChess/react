@@ -8,10 +8,10 @@ const LoadingSpinner = ({ label = "Loading…", className = "" }: LoadingSpinner
     <div
       role="status"
       aria-live="polite"
-      className={`flex flex-col items-center justify-center gap-3 py-10 text-gray-500 ${className}`}
+      className={`flex flex-col items-center justify-center gap-3 py-10 text-muted ${className}`}
     >
       <span
-        className="inline-block h-12 w-12 rounded-full border-4 border-[#E5F3D2] border-t-[#7FCC26] animate-spin"
+        className="inline-block h-12 w-12 rounded-full border-4 border-soft border-t-primary animate-spin"
         aria-hidden="true"
       />
       <span className="text-sm font-medium">{label}</span>
