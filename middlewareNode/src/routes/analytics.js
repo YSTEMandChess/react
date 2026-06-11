@@ -292,7 +292,7 @@ router.get("/zipcode", async (req, res) => {
     const dateErr = validateDateRange(from, to);
     if (dateErr) return res.status(400).json({ error: dateErr });
 
-    const usersInZip = await Users.find({ zipcode }, { username: 1, _id: 0 });
+    const usersInZip = await Users.find({ zipcode, role: "student" }, { username: 1, _id: 0 });
     if (usersInZip.length === 0)
       return res.json({ zipcode, totalStudents: 0, avgTotalTimeHours: 0,
         avgGameTimeHours: 0, avgLessonTimeHours: 0, avgPuzzleTimeHours: 0,
@@ -315,7 +315,7 @@ router.get("/zipcode", async (req, res) => {
 
     const rows = await TimeTracking.aggregate(pipeline);
     const toH = (s) => s / 3600;
-    const n   = rows.length || 1;
+    const n   = usernames.length;
     const sum = rows.reduce((a, r) => ({
       play:   a.play   + toH(r.play),
       lesson: a.lesson + toH(r.lesson),
@@ -343,7 +343,7 @@ router.get("/zipcode", async (req, res) => {
 
     res.json({
       zipcode,
-      totalStudents:        rows.length,
+      totalStudents:        usernames.length,
       avgTotalTimeHours:    avg(sum.play + sum.lesson + sum.puzzle + sum.mentor),
       avgGameTimeHours:     avg(sum.play),
       avgLessonTimeHours:   avg(sum.lesson),
@@ -434,7 +434,7 @@ router.get("/global", async (req, res) => {
             foreignField: "username",
             as: "userInfo",
         }},
-        { $unwind: { path: "$userInfo", preserveNullAndEmpty: true } },
+        { $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: true } },
         { $group: {
             _id: { $ifNull: ["$userInfo.gender", "Unknown"] },
             count: { $sum: 1 },
