@@ -91,8 +91,9 @@ describe("AnalyticsLayout", () => {
       expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument()
     );
 
+    // IndividualView renders the mock student list once dates are set.
     const panel = screen.getByRole("tabpanel");
-    expect(panel.textContent).toMatch(/active_users/);
+    expect(panel.textContent).toMatch(/Ava Martinez/);
     expect(global.fetch).not.toHaveBeenCalled();
   });
 });

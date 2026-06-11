@@ -1,9 +1,8 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { CookiesProvider } from "react-cookie";
 import AnalyticsLayout from "./AnalyticsLayout";
-import type { AnalyticsRecord } from "../../core/hooks/useAnalyticsApi";
 
 jest.mock("../../environments/environment", () => ({
   environment: { urls: { middlewareURL: "http://mock-api.com" } },
@@ -17,18 +16,12 @@ jest.mock("react-cookie", () => {
   };
 });
 
-// Drive the hook from the test so we can exercise loading / data / error
-// without flipping USE_MOCK in the real hook.
-type HookState = {
-  data: AnalyticsRecord[] | null;
-  loading: boolean;
-  error: Error | null;
-};
-
-let mockState: HookState;
-
-jest.mock("../../core/hooks/useAnalyticsApi", () => ({
-  useAnalyticsApi: () => mockState,
+// Chart.js needs a real canvas; follow the repo pattern of stubbing the charts.
+jest.mock("react-chartjs-2", () => ({
+  __esModule: true,
+  Line: () => <div data-testid="mock-line-chart" />,
+  Bar: () => <div data-testid="mock-bar-chart" />,
+  Pie: () => <div data-testid="mock-pie-chart" />,
 }));
 
 const renderLayout = () =>
@@ -40,108 +33,91 @@ const renderLayout = () =>
     </MemoryRouter>
   );
 
-const SAMPLE_ROWS: AnalyticsRecord[] = [
-  { date: "2026-05-01", metric: "active_users", value: 142 },
-  { date: "2026-05-02", metric: "lesson_completions", value: 58 },
-];
+const pickDates = () => {
+  fireEvent.change(screen.getByLabelText(/Start date/i), { target: { value: "2026-05-01" } });
+  fireEvent.change(screen.getByLabelText(/End date/i), { target: { value: "2026-05-04" } });
+};
 
-describe("Analytics flow end-to-end", () => {
-  beforeEach(() => {
-    mockState = { data: null, loading: false, error: null };
-  });
+describe("Analytics flow end-to-end (mock-first hook)", () => {
+  it("Individual: dates → student list → search → select → detail panel", async () => {
+    renderLayout();
 
-  it("walks the full flow: empty → pick dates → loading → data → search → error → tab switch", async () => {
-    const { rerender } = renderLayout();
-
-    // 1. Layout shell renders with all three tabs and the date range filter.
+    // Shell: three tabs, Individual selected by default.
     expect(screen.getByRole("heading", { name: /Analytics/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Individual/i })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("tab", { name: /Zipcode/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Global/i })).toBeInTheDocument();
 
-    const startInput = screen.getByLabelText(/Start date/i) as HTMLInputElement;
-    const endInput = screen.getByLabelText(/End date/i) as HTMLInputElement;
-    expect(startInput).toHaveValue("");
-    expect(endInput).toHaveValue("");
+    // Before dates: prompt.
+    expect(screen.getByText(/Select a start and end date to load analytics/i)).toBeInTheDocument();
 
-    // 2. Before dates are picked, IndividualView shows the prompt.
-    expect(
-      screen.getByText(/Select a start and end date to load analytics/i)
-    ).toBeInTheDocument();
-
-    // 3. Pick dates — IndividualView is now active and renders a search box.
-    fireEvent.change(startInput, { target: { value: "2026-05-01" } });
-    fireEvent.change(endInput, { target: { value: "2026-05-04" } });
-
+    // Pick dates → student list loads.
+    pickDates();
     expect(screen.getByRole("search")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Search by metric/i)).toBeInTheDocument();
+    await screen.findByText(/Ava Martinez/);
+    expect(screen.getByText(/Liam Chen/)).toBeInTheDocument();
 
-    // 4. Loading state — LoadingSpinner appears.
-    mockState = { data: null, loading: true, error: null };
-    rerender(
-      <MemoryRouter>
-        <CookiesProvider>
-          <AnalyticsLayout />
-        </CookiesProvider>
-      </MemoryRouter>
-    );
-    // Re-pick dates after rerender (state was reset).
-    fireEvent.change(screen.getByLabelText(/Start date/i), { target: { value: "2026-05-01" } });
-    fireEvent.change(screen.getByLabelText(/End date/i), { target: { value: "2026-05-04" } });
+    // Search filters the list client-side.
+    fireEvent.change(screen.getByPlaceholderText(/Search by name/i), { target: { value: "ava" } });
+    fireEvent.click(screen.getByRole("button", { name: /Search/i }));
+    expect(screen.getByText(/Ava Martinez/)).toBeInTheDocument();
+    expect(screen.queryByText(/Liam Chen/)).not.toBeInTheDocument();
 
-    const spinner = screen.getByRole("status");
-    expect(spinner).toHaveTextContent(/Loading/i);
+    // Select the student → detail panel with profile + stat cards + chart + feed.
+    fireEvent.click(screen.getByText(/Ava Martinez/));
+    await screen.findByText(/ava_m@example\.com/);
+    expect(screen.getByText(/Total time \(hours\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Badges/)).toBeInTheDocument();
+    expect(screen.getByTestId("mock-line-chart")).toBeInTheDocument();
+    // Activity feed first page renders.
+    await screen.findByText(/activity #34/i);
+  });
 
-    // 5. Data state — results list renders both rows.
-    mockState = { data: SAMPLE_ROWS, loading: false, error: null };
-    rerender(
-      <MemoryRouter>
-        <CookiesProvider>
-          <AnalyticsLayout />
-        </CookiesProvider>
-      </MemoryRouter>
-    );
-    fireEvent.change(screen.getByLabelText(/Start date/i), { target: { value: "2026-05-01" } });
-    fireEvent.change(screen.getByLabelText(/End date/i), { target: { value: "2026-05-04" } });
+  it("Individual: empty state when search matches nothing", async () => {
+    renderLayout();
+    pickDates();
+    await screen.findByText(/Ava Martinez/);
 
-    await waitFor(() =>
-      expect(screen.queryByRole("status")).not.toBeInTheDocument()
-    );
-
-    const list = screen.getByRole("list");
-    expect(within(list).getByText(/active_users/i)).toBeInTheDocument();
-    expect(within(list).getByText(/lesson_completions/i)).toBeInTheDocument();
-
-    // 6. Search filters results — typing "active" + submit drops the lesson row.
-    fireEvent.change(screen.getByPlaceholderText(/Search by metric/i), {
-      target: { value: "active" },
+    fireEvent.change(screen.getByPlaceholderText(/Search by name/i), {
+      target: { value: "zzz-nobody" },
     });
     fireEvent.click(screen.getByRole("button", { name: /Search/i }));
+    expect(screen.getByText(/No data for this period\./i)).toBeInTheDocument();
+  });
 
-    expect(within(screen.getByRole("list")).getByText(/active_users/i)).toBeInTheDocument();
-    expect(within(screen.getByRole("list")).queryByText(/lesson_completions/i)).not.toBeInTheDocument();
-
-    // 7. Error state — ErrorBanner replaces the list.
-    mockState = { data: null, loading: false, error: new Error("Network unreachable") };
-    rerender(
-      <MemoryRouter>
-        <CookiesProvider>
-          <AnalyticsLayout />
-        </CookiesProvider>
-      </MemoryRouter>
-    );
-    fireEvent.change(screen.getByLabelText(/Start date/i), { target: { value: "2026-05-01" } });
-    fireEvent.change(screen.getByLabelText(/End date/i), { target: { value: "2026-05-04" } });
-
-    const alert = screen.getByRole("alert");
-    expect(alert).toHaveTextContent(/Network unreachable/i);
-
-    // 8. Tab switch — moving to Zipcode shows the layout-level placeholder
-    //    (no dedicated view yet) without crashing.
+  it("Zipcode: table renders, sorts, and row select opens detail", async () => {
+    renderLayout();
     fireEvent.click(screen.getByRole("tab", { name: /Zipcode/i }));
-    expect(screen.getByRole("tab", { name: /Zipcode/i })).toHaveAttribute("aria-selected", "true");
-    // The Zipcode tab uses the layout-level fetch, which is in error state too.
-    expect(screen.getByRole("alert")).toHaveTextContent(/Network unreachable/i);
+    pickDates();
+
+    await screen.findByText("10001");
+    const table = screen.getByRole("table");
+    expect(within(table).getByText("94110")).toBeInTheDocument();
+
+    // Sort by Avg hours — the column header reflects the sort direction.
+    const avgHeader = screen.getByRole("columnheader", { name: /Avg hours/i });
+    fireEvent.click(within(avgHeader).getByRole("button"));
+    expect(avgHeader).toHaveAttribute("aria-sort", "ascending");
+    fireEvent.click(within(avgHeader).getByRole("button"));
+    expect(avgHeader).toHaveAttribute("aria-sort", "descending");
+
+    // Select a row → detail panel (grouped bar chart) appears.
+    fireEvent.click(within(table).getByText("94110"));
+    await screen.findByText(/vs\. global average/i);
+    expect(screen.getByTestId("mock-bar-chart")).toBeInTheDocument();
+  });
+
+  it("Global: KPI cards and charts render", async () => {
+    renderLayout();
+    fireEvent.click(screen.getByRole("tab", { name: /Global/i }));
+    pickDates();
+
+    await screen.findByText(/Total Students/i);
+    expect(screen.getByText("94")).toBeInTheDocument();
+    expect(screen.getByText(/Gender breakdown/i)).toBeInTheDocument();
+    expect(screen.getByTestId("mock-pie-chart")).toBeInTheDocument();
+    expect(screen.getByText(/Event types/i)).toBeInTheDocument();
+    expect(screen.getAllByTestId("mock-bar-chart").length).toBeGreaterThan(0);
   });
 
   it("DateRangeFilter clamps min/max between the two inputs", () => {
@@ -154,20 +130,5 @@ describe("Analytics flow end-to-end", () => {
 
     fireEvent.change(endInput, { target: { value: "2026-05-20" } });
     expect(startInput).toHaveAttribute("max", "2026-05-20");
-  });
-
-  it("IndividualView shows a 'No results' row when the search matches nothing", () => {
-    mockState = { data: SAMPLE_ROWS, loading: false, error: null };
-    renderLayout();
-
-    fireEvent.change(screen.getByLabelText(/Start date/i), { target: { value: "2026-05-01" } });
-    fireEvent.change(screen.getByLabelText(/End date/i), { target: { value: "2026-05-04" } });
-
-    fireEvent.change(screen.getByPlaceholderText(/Search by metric/i), {
-      target: { value: "nonexistent_metric_xyz" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /Search/i }));
-
-    expect(screen.getByText(/No results\./i)).toBeInTheDocument();
   });
 });

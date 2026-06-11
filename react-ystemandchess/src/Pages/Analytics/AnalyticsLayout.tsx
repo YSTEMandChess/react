@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { useAnalyticsApi } from "../../core/hooks/useAnalyticsApi";
 import DateRangeFilter from "./DateRangeFilter";
-import LoadingSpinner from "./LoadingSpinner";
-import ErrorBanner from "./ErrorBanner";
 import IndividualView from "./IndividualView";
+import ZipcodeView from "./ZipcodeView";
+import GlobalView from "./GlobalView";
 
 export type AnalyticsTab = "individual" | "zipcode" | "global";
 
@@ -15,18 +14,9 @@ const TABS: Array<{ id: AnalyticsTab; label: string }> = [
 
 const AnalyticsLayout = () => {
   const [activeTab, setActiveTab] = useState<AnalyticsTab>("individual");
+  // Date range is shared across all three views (S4.1).
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-
-  const dateRangeReady = Boolean(startDate && endDate);
-
-  // Individual tab manages its own fetch; the layout-level fetch backs the
-  // remaining tabs until they get dedicated views.
-  const { data, loading, error, refetch } = useAnalyticsApi<unknown>({
-    endpoint: `/analytics/${activeTab}`,
-    params: { startDate, endDate },
-    enabled: dateRangeReady && activeTab !== "individual",
-  });
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
@@ -72,16 +62,10 @@ const AnalyticsLayout = () => {
       >
         {activeTab === "individual" ? (
           <IndividualView startDate={startDate} endDate={endDate} />
-        ) : !dateRangeReady ? (
-          <p className="text-muted">Select a start and end date to load analytics.</p>
-        ) : loading ? (
-          <LoadingSpinner />
-        ) : error ? (
-          <ErrorBanner message={error.message} onRetry={refetch} />
-        ) : data ? (
-          <pre className="text-xs overflow-auto">{JSON.stringify(data, null, 2)}</pre>
+        ) : activeTab === "zipcode" ? (
+          <ZipcodeView startDate={startDate} endDate={endDate} />
         ) : (
-          <p className="text-muted">No data.</p>
+          <GlobalView startDate={startDate} endDate={endDate} />
         )}
       </section>
     </div>

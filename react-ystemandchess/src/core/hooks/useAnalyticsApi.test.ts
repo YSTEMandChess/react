@@ -46,13 +46,15 @@ describe("useAnalyticsApi", () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.error).toBeNull();
+    // /analytics/individual resolves to the student summary list.
     expect(Array.isArray(result.current.data)).toBe(true);
     expect((result.current.data as any[]).length).toBeGreaterThan(0);
     expect((result.current.data as any[])[0]).toEqual(
       expect.objectContaining({
-        date: expect.any(String),
-        metric: expect.any(String),
-        value: expect.any(Number),
+        id: expect.any(String),
+        name: expect.any(String),
+        username: expect.any(String),
+        totalHours: expect.any(Number),
       })
     );
     // mock mode must not hit the network
@@ -82,11 +84,19 @@ describe("useAnalyticsApi", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     const firstData = result.current.data;
+    expect(Array.isArray(firstData)).toBe(true); // student list
 
     rerender({ endpoint: "/analytics/global" });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // mock mode returns the same payload, but the effect did re-run
-    expect(result.current.data).toEqual(firstData);
+    // The effect re-ran and resolved the global summary (a different shape).
+    expect(result.current.data).not.toEqual(firstData);
+    expect(result.current.data).toEqual(
+      expect.objectContaining({
+        kpis: expect.any(Array),
+        genderBreakdown: expect.any(Array),
+        eventTypes: expect.any(Array),
+      })
+    );
   });
 });
