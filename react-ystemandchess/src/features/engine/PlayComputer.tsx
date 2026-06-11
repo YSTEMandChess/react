@@ -70,7 +70,7 @@ const PlayComputer: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const socket = io(environment.urls.stockfishServerURL, {
+    const socket = io(environment.urls.stockFishURL, {
       transports: ['websocket'],
       reconnection: true,
     });
