@@ -38,7 +38,7 @@ const FEATURED_PUZZLE_THEMES: PuzzleThemeKey[] = [
   "middlegame",
   "zugzwang",
   "advancedPawn",
-  "Endgame",
+  "endgame",
 ];
 
 const getThemeName = (theme: PuzzleThemeKey | string) =>
@@ -711,7 +711,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         </div>
       </section>
 
-      {modal && <Modal {...modal} onClose={closeModal} />}
+      {modal &&   <Modal {...modal} onClose={closeModal} />}
       </>
     );
   }
