@@ -1,0 +1,58 @@
+:root {
+  --tutor-bg: #fbfbfc;
+  --tutor-border: #e3e3e3;
+  --accent: #1d4ed8;
+}
+
+.tutorContainer {
+  border: 1px solid var(--tutor-border);
+  border-radius: 10px;
+  background: var(--tutor-bg);
+  padding: 12px;
+}
+
+.tutorHeader {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.tutorBody {
+  min-height: 120px;
+}
+
+.loading {
+  color: var(--accent);
+}
+
+.error {
+  color: #b91c1c;
+}
+
+.analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.indicator {
+  font-weight: 700;
+}
+
+.text {
+  font-size: 14px;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.empty {
+  color: #6b7280;
+}
+
+.tutorPlaceholder {
+  color: #6b7280;
+  padding: 8px;
+}
+
