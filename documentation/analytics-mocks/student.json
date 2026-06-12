@@ -1,0 +1,22 @@
+{
+  "profile": {
+    "username": "test_student",
+    "firstName": "Alex",
+    "lastName": "Johnson",
+    "email": "alex.johnson@example.com",
+    "zipcode": "30301",
+    "gender": "M",
+    "gradeLevel": "8th",
+    "accountCreatedAt": "2025-01-15"
+  },
+  "stats": {
+    "totalTimeHours": 12.5,
+    "gameTimeHours": 4.0,
+    "lessonTimeHours": 5.0,
+    "puzzleTimeHours": 2.5,
+    "mentorTimeHours": 1.0,
+    "currentStreak": 7,
+    "activitiesCompleted": 42,
+    "badgesEarned": 3
+  }
+}

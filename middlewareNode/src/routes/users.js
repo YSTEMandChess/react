@@ -93,7 +93,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, password, first, last, email, role, students } =
+    const { username, password, first, last, email, role, students, zipcode, gender, gradeLevel } =
       req.query;
 
     //Error catching when using mongoose functions like Users.findOne()
@@ -142,6 +142,9 @@ router.post(
                 role: "student",
                 accountCreatedAt: currDate.toLocaleString(),
                 timePlayed: 0,
+                zipcode: student.zipcode || null,
+                gender: student.gender || null,
+                gradeLevel: student.gradeLevel || null,
               });
               await newStudent.save(async function (err, user) {
                 if(err) {
@@ -172,6 +175,9 @@ router.post(
         email,
         role,
         accountCreatedAt: currDate.toLocaleString(),
+        zipcode: zipcode || null,
+        gender: gender || null,
+        gradeLevel: gradeLevel || null,
       });
       await mainUser.save();
 
@@ -470,6 +476,35 @@ router.get("/getUser", async (req, res) => {
     return res.status(200).json(user);
   } catch (err) {
     return res.status(401).json({ error: err });
+  }
+});
+
+/**
+ * PUT /user/profile
+ * Allows the authenticated user to update their own demographic fields.
+ * Only zipcode, gender, and gradeLevel are updatable via this endpoint.
+ */
+router.put("/profile", passport.authenticate("jwt"), async (req, res) => {
+  try {
+    const { zipcode, gender, gradeLevel } = req.body;
+    const allowed = ["M", "F", "Other", null];
+
+    if (gender !== undefined && !allowed.includes(gender))
+      return res.status(400).json({ error: "gender must be M, F, Other, or null" });
+
+    const updates = {};
+    if (zipcode    !== undefined) updates.zipcode    = zipcode    || null;
+    if (gender     !== undefined) updates.gender     = gender     || null;
+    if (gradeLevel !== undefined) updates.gradeLevel = gradeLevel || null;
+
+    if (Object.keys(updates).length === 0)
+      return res.status(400).json({ error: "No updatable fields provided" });
+
+    await users.updateOne({ username: req.user.username }, { $set: updates });
+    res.json({ message: "Profile updated" });
+  } catch (err) {
+    console.error("PUT /user/profile:", err.message);
+    res.status(500).json("Server error");
   }
 });
 
