@@ -13,8 +13,12 @@
  */
 
 // React and routing imports
-import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { useCookies } from "react-cookie";
+
+// Auth utility for role-based route guards
+import { SetPermissionLevel } from "./globals";
 
 // Page component imports - organized by category
 // Home and main pages
@@ -51,6 +55,10 @@ import Mentor from "./features/mentor/mentor-page/Mentor";
 import StudentInventory from "./features/student/student-inventory/StudentInventory";
 import NewMentorProfile from "./features/mentor/mentor-profile/NewMentorProfile";
 import NewStudentProfile from "./features/student/student-profile/NewStudentProfile";
+import AdminProfile from "./features/admin/AdminProfile";
+
+// Analytics dashboard (admin-only)
+import AnalyticsLayout from "./Pages/Analytics/AnalyticsLayout";
 
 // Static assets and default data
 import userPortraitImg from "./assets/images/user-portrait-placeholder.svg";
@@ -60,6 +68,33 @@ import userPortraitImg from "./assets/images/user-portrait-placeholder.svg";
  * TODO: This should be replaced with dynamic user data from authentication
  */
 const userName = "Nimesh Patel";
+
+/**
+ * Route guard that restricts access to admin users.
+ * Resolves the role from the login JWT via SetPermissionLevel.
+ * Renders nested routes via <Outlet /> for admins; otherwise redirects to /login.
+ */
+const AdminRoute = () => {
+  const [cookies, , removeCookie] = useCookies(["login"]);
+  const [status, setStatus] = useState<"loading" | "allowed" | "denied">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const info = await SetPermissionLevel(cookies, removeCookie);
+      if (cancelled) return;
+      setStatus(info && !info.error && info.role === "admin" ? "allowed" : "denied");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [cookies.login]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (status === "loading") return null;
+  // temporary commented, uncomment before committing the code.
+  if (status === "denied") return <Navigate to="/login" replace />;
+  return <Outlet />;
+};
 
 /**
  * Main routing component that defines all application routes
@@ -125,6 +160,14 @@ const AppRoutes = () => {
         path="/student-profile"
         element={<NewStudentProfile userPortraitSrc={userPortraitImg} />}
       />
+      <Route
+        path="/admin-profile"
+        element={<AdminProfile />}
+      />
+      <Route
+        path="/tutor-profile"
+        element={<AdminProfile />}
+      />
       
       {/* Student inventory/dashboard page with user data */}
       <Route
@@ -136,6 +179,11 @@ const AppRoutes = () => {
           />
         }
       />
+
+      {/* Analytics section - admin-only; tabs are managed inside AnalyticsLayout */}
+      <Route path="/analytics" element={<AdminRoute />}>
+        <Route index element={<AnalyticsLayout />} />
+      </Route>
     </Routes>
   );
 };

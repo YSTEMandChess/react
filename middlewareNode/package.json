@@ -14,6 +14,7 @@
     "express-validator": "^6.9.2",
     "googleapis": "^107.0.0",
     "mongoose": "^6.8.4",
+    "node-nlp": "^4.27.0",
     "nodemailer": "^6.7.8",
     "nodemon": "^3.1.10",
     "passport": "^0.7.0",
@@ -27,9 +28,10 @@
   "author": "",
   "license": "ISC",
   "volta": {
-    "node": "18.20.8"
+    "node": "20.19.0"
   },
   "devDependencies": {
+    "mongodb-memory-server": "^11.2.0",
     "node-schedule": "^2.1.1"
   }
 }
