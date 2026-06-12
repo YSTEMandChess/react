@@ -23,7 +23,7 @@ import { SetPermissionLevel } from "./globals";
 // Page component imports - organized by category
 // Home and main pages
 import Home from "./features/home/Home";
-import Programs from "./features/programs/Programs";
+import { Programs } from "./features/programs/Programs";
 
 // About Us section pages
 import CSBenefitPage from "./features/about-us/benefit-of-cs/CSBenefitPage";
