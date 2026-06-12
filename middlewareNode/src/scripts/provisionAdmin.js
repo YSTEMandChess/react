@@ -36,14 +36,15 @@ async function run() {
       { returnDocument: "after" }
     );
 
-  if (!result) {
+  const user = result.value;
+  if (!user) {
     console.error(`User "${targetUsername}" not found. Create the account first.`);
     await mongoose.disconnect();
     process.exit(1);
   }
 
-  console.log(`Success: "${targetUsername}" is now role="${result.role}"`);
-  console.log(`Email: ${result.email}`);
+  console.log(`Success: "${targetUsername}" is now role="${user.role}"`);
+  console.log(`Email: ${user.email}`);
   await mongoose.disconnect();
 }
 
