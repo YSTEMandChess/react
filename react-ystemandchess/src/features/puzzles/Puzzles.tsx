@@ -38,7 +38,6 @@ const FEATURED_PUZZLE_THEMES: PuzzleThemeKey[] = [
   "middlegame",
   "zugzwang",
   "advancedPawn",
-  "endgame",
 ];
 
 const getThemeName = (theme: PuzzleThemeKey | string) =>
@@ -59,9 +58,10 @@ const normalizeFen = (fen: string): string => {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   }
 
-  const parts = fen.trim().split(" ");
+  const parts = fen.trim().split(/[\s,]+/);
 
-  if (parts.length === 6) return fen.trim();
+  if (parts.length === 6) return parts.join(" ");
+
   if (parts.length === 1 && parts[0].split("/").length === 8) {
     return `${parts[0]} w KQkq - 0 1`;
   }
@@ -180,6 +180,11 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       console.error("Error fetching puzzles:", error);
       setPuzzleArray([]);
       puzzleArrayRef.current = [];
+      setModal({
+        type: "error",
+        title: "Server unavailable",
+        message: "Could not reach the puzzle server. Make sure the middleware is running on port 8000.",
+      });
       return [];
     }
   };
@@ -236,7 +241,6 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         if (moveListRef.current.length === 0) {
           console.warn("No valid moves in initial puzzle:", firstPuzzle);
           isInitializingRef.current = false;
-          setIsInitialized(false);
           return;
         }
 
@@ -244,11 +248,12 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         setStateAsActive(firstPuzzle);
         updateInfoBox(firstPuzzle.Themes.split(" "));
       } else {
-        setIsInitialized(false);
         setModal({
           type: "error",
-          title: "No puzzles found",
-          message: `No puzzles were found for ${getThemeName(selectedTheme)}.`,
+          title: "No puzzles loaded",
+          message: puzzleArrayRef.current.length === 0
+            ? "Could not connect to the puzzle server. Please try again."
+            : `No puzzles were found for ${getThemeName(selectedTheme)}.`,
         });
       }
     } finally {
@@ -261,8 +266,9 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       console.warn("Puzzle is missing required fields:", state);
       return;
     }
+    const normalizedFen = normalizeFen(state.FEN);
+    const sideToMove = normalizedFen.split(" ")[1];
 
-    const sideToMove = state.FEN.split(" ")[1];
     const newPlayerColor = sideToMove === "w" ? "black" : "white";
     setPlayerColor(newPlayerColor);
 
@@ -711,7 +717,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         </div>
       </section>
 
-      {modal &&   <Modal {...modal} onClose={closeModal} />}
+      {modal && <Modal {...modal} onClose={closeModal} />}
       </>
     );
   }
