@@ -101,18 +101,13 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
           // Only update if FEN has actually changed
           if (fen !== currentFen) {
             gameRef.current.load(fen, { skipValidation: true });
-            setBoardPosition(fen);
+            setBoardPosition(fen || start_fen);
           }
         } catch (err) {
           console.error("ChessBoard: Invalid FEN from props:", fen, err);
           // On error, reset to a valid starting position
-          try {
             gameRef.current = new Chess();
-            gameRef.current.load(fen, { skipValidation: true });
             setBoardPosition(start_fen);
-          } catch {
-            // Last resort fallback
-          }
         }
       }
     }, [fen]);
@@ -185,6 +180,9 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       sourceSquare: string;
       targetSquare: string;
     }) => {
+      // If they drop it on the same square, snap it back!
+      if (sourceSquare === targetSquare) return "snapback";
+
       try {
         // Ignore if board is disabled
         if (disabled) {
@@ -265,7 +263,11 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
 
       const pieceColor = piece.startsWith('w') ? 'white' : 'black';
 
-      if (mode === "lesson" || mode === "puzzle") {
+      if (mode === "puzzle") {
+        return pieceColor === orientation;
+      }
+
+      if (mode === "lesson") {
         return true;
       }
 
@@ -334,7 +336,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       >
         <Chessboard
           width={boardWidth}
-          position={boardPosition}
+          position={boardPosition || start_fen}
           onDrop={handleDrop}
           orientation={orientation}
           squareStyles={squareStyles()}
