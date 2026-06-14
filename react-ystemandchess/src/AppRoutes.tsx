@@ -40,6 +40,8 @@ import AboutUs from "./features/about-us/aboutus/AboutUs";
 import PlayComputer from "./features/engine/PlayComputer";
 import Lessons from "./features/lessons/lessons-main/Lessons";
 import Puzzles from './features/puzzles/Puzzles';
+import PuzzleStreak from "./features/puzzles/PuzzleStreak";
+import PuzzleDash from "./features/puzzles/PuzzleDash";
 import LessonSelection from "./features/lessons/lessons-selection/LessonsSelection";
 import LessonOverlay from "./features/lessons/piece-lessons/lesson-overlay/Lesson-overlay";
 
@@ -136,6 +138,8 @@ const AppRoutes = () => {
       {/* Educational content and learning pages */}
       <Route path="/play" element={<PlayComputer/>}/>
       <Route path="/puzzles" element={<Puzzles />} />
+      <Route path="/puzzle-streak" element={<PuzzleStreak />} />
+      <Route path="/puzzle-dash" element={<PuzzleDash />} />
       <Route path="/lessons-selection" element={<LessonSelection />} />
       <Route path="/lessons" element={<LessonOverlay />} />
       <Route path="/learnings" element={<Lessons />} />
