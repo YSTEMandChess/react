@@ -8,8 +8,6 @@ import { useChessSocket } from "../lessons/piece-lessons/lesson-overlay/hooks/us
 import { Move } from "../../core/types/chess";
 import { SetPermissionLevel } from "../../globals";
 
-// NOTE: Adjust this import path if your analytics file is located somewhere else!
-
 const normalizeFen = (fen: string): string => {
   if (!fen || typeof fen !== "string") 
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -205,7 +203,7 @@ const PuzzleStreak = () => {
       socket.sendLastMove(move.from, move.to);
 
       if (moveListRef.current.length === 0) {
-        // PUZZLE SOLVED! INCREASE STREAK!
+        // Increases Streak
         isPuzzleEndRef.current = true;
         const newStreak = currentStreak + 1;
         setCurrentStreak(newStreak);
@@ -218,7 +216,7 @@ const PuzzleStreak = () => {
         setTimeout(playComputerMove, 300);
       }
     } else {
-      // WRONG MOVE! STREAK ENDS!
+      // STREAK ENDS!
       isPuzzleEndRef.current = true; // Lock the board
       setIsFailed(true);             // Trigger the UI Restart Button
       setShowHint(true);             // Auto-show the hint text
