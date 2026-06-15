@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { environment } from '../../environments/environment';
 import styles from './StockfishTutor.module.scss';
+import { CoachMascot, CoachExpression } from '../../components/animations/CoachMascot/CoachMascot';
 import { Chess as ChessClass } from 'chess.js';
 const Chess: any = ChessClass;
 
@@ -31,20 +32,7 @@ type Analysis = {
   score?: number | null;
 };
 
-// Move history entry stored by the tutor so the user can review and restore positions
-type MoveHistoryEntry = {
-  fenBefore: string;
-  fenAfter: string;
-  moveUci?: string;
-  uciHistory?: string;
-  prevMatchPoints?: number | null;
-  matchPoints?: number | null;
-  analysis?: Analysis | null;
-  // optional convenience fields for UI: origin/destination and highlight pair
-  from?: string;
-  to?: string;
-  highlight?: string[] | null;
-};
+
 
 function normalizeIndicator(ind?: string | null | undefined): Analysis['moveIndicator'] | undefined {
   if (!ind) return undefined;
@@ -544,7 +532,6 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
   const [lastUciHistory, setLastUciHistory] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [debugLog, setDebugLog] = useState<string | null>(null);
-
   // Keep a referenced no-op to avoid unused prop warnings for optional callbacks
   useEffect(() => {
     if (onRequestGotoFen) {
@@ -554,109 +541,6 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
       void onRequestGotoFen;
     }
   }, [onRequestGotoFen]);
-
-  // Move history stack for UI review and undo/reset functionality
-  const [history, setHistory] = useState<MoveHistoryEntry[]>([]);
-
-  const pushHistory = (entry: MoveHistoryEntry) => {
-    // Avoid adding duplicate entries when the same move/position is re-analyzed (e.g. user navigates history).
-    // Normalize FENs for comparison by stripping halfmove/fullmove counters so semantically identical
-    // positions aren't treated as different due to clock differences.
-    const normFen = (f?: string | null) => {
-      try {
-        if (!f) return f;
-        const parts = f.split(' ').map((s) => s.trim());
-        // Keep only piece placement, active color, castling availability, and en-passant target
-        return parts.slice(0, 4).join(' ');
-      } catch (e) {
-        return f;
-      }
-    };
-
-    setHistory((h) => {
-      try {
-        if (!entry) return h;
-        const entryFenNorm = normFen(entry.fenAfter);
-        const matchIdx = h.findIndex((e) => {
-          try {
-            // Compare normalized FENs first
-            if (entryFenNorm && e.fenAfter && entryFenNorm === normFen(e.fenAfter)) return true;
-            if (entry.moveUci && e.moveUci && entry.moveUci === e.moveUci) return true;
-            // fallback: compare uciHistory if present
-            if (entry.uciHistory && e.uciHistory && entry.uciHistory === e.uciHistory) return true;
-          } catch (ee) {}
-          return false;
-        });
-        if (matchIdx >= 0) {
-          // schedule a restore to the existing history entry so we don't interfere with React state updates here
-          setTimeout(() => {
-            try { restoreToHistory(matchIdx); } catch (e) {}
-          }, 0);
-          return h; // do not append duplicate
-        }
-      } catch (e) {
-        // ignore and fall back to append
-      }
-      return [...h, entry];
-    });
-  };
-
-  // Restore to a specific history index (restore the board to fenAfter of that entry)
-  const restoreToHistory = (index: number) => {
-    const entry = history[index];
-    if (!entry) return;
-    // Request parent to navigate to the requested FEN (fenAfter) if callback provided
-    if (onRequestGotoFen) {
-      try { onRequestGotoFen(entry.fenAfter, entry.highlight ?? null); } catch (e) { /* ignore */ }
-    } else {
-      // If no callback, log debug so developers know to wire the handler
-      try { setDebugLog(`Requested goto FEN: ${entry.fenAfter}`); } catch (e) {}
-    }
-    // Trim history to this point (include the selected move so it remains the last entry)
-    setHistory((h) => h.slice(0, index + 1));
-    // Restore tutor-internal state
-    setAnalysis(entry.analysis || null);
-    setPrevMatchPoints(entry.prevMatchPoints ?? null);
-    // Update matchPoints stack as a simple sync (replace with single value)
-    try { setMatchPointsStack(entry.matchPoints != null ? [entry.matchPoints] : []); } catch (e) {}
-  };
-
-  const undoLast = () => {
-    if (history.length === 0) return;
-    // Compute new history after popping one entry so we can synchronously inspect the resulting last entry
-    const newHist = history.slice(0, -1);
-    setHistory(newHist);
-    const newLast = newHist.length ? newHist[newHist.length - 1] : undefined;
-    if (onRequestGotoFen) {
-      try {
-        if (newLast) onRequestGotoFen(newLast.fenAfter, newLast.highlight ?? null);
-        else onRequestGotoFen('start', null);
-      } catch (e) { /* ignore */ }
-    }
-    // restore tutor state to previous history item or reset
-    if (newLast) {
-      setAnalysis(newLast.analysis || null);
-      setPrevMatchPoints(newLast.prevMatchPoints ?? null);
-      try { setMatchPointsStack(newLast.matchPoints != null ? [newLast.matchPoints] : []); } catch (e) {}
-    } else {
-      setAnalysis(null);
-      setPrevMatchPoints(null);
-      try { setMatchPointsStack([]); } catch (e) {}
-    }
-  };
-
-  const resetAll = () => {
-    // Ask parent to reset board to initial position if callback provided (standard starting FEN)
-    const startFen = 'start';
-    if (onRequestGotoFen) {
-      try { onRequestGotoFen(startFen, []); } catch (e) { /* ignore */ }
-    }
-    setHistory([]);
-    setAnalysis(null);
-    setPrevMatchPoints(null);
-    try { setMatchPointsStack([]); } catch (e) {}
-    try { setDebugLog('Tutor reset'); } catch (e) {}
-  };
 
   // helper to push a new matchPoints onto the stack and update prevMatchPoints
   const pushMatchPoints = (pt?: number | null) => {
@@ -784,30 +668,11 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                                       const finalExplanation = applyBotPreferenceRules(explanation, prevMatchPoints) || null;
                                       setAnalysis(finalExplanation);
                                       // store current matchPoints for the next turn (push onto stack)
-                                      try {
-                                        if (finalExplanation && typeof finalExplanation.matchPoints === 'number') {
-                                          pushMatchPoints(finalExplanation.matchPoints);
-                                          try { setLastUciHistory(uciHistory); } catch (e) {}
-                                        }
-                                      } catch (e) {}
-                                      // persist this move into tutor history so users can review/undo
-                                                      try {
-                                                        // derive from/to highlight pair from UCI when available
-                                                        const from = moveUci && moveUci.length >= 4 ? moveUci.slice(0, 2) : undefined;
-                                                        const to = moveUci && moveUci.length >= 4 ? moveUci.slice(2, 4) : undefined;
-                                                        pushHistory({
-                                                          fenBefore: fenBefore,
-                                                          fenAfter: fenAfter,
-                                                          moveUci: moveUci,
-                                                          uciHistory: uciHistory,
-                                                          prevMatchPoints: prevMatchPoints,
-                                                          matchPoints: finalExplanation && typeof finalExplanation.matchPoints === 'number' ? finalExplanation.matchPoints : null,
-                                                          analysis: finalExplanation,
-                                                          from: from,
-                                                          to: to,
-                                                          highlight: from && to ? [from, to] : null,
-                                                        });
-                                                      } catch (e) {}
+                                      if (finalExplanation && typeof finalExplanation.matchPoints === 'number') {
+                                        pushMatchPoints(finalExplanation.matchPoints);
+                                        try { setLastUciHistory(uciHistory); } catch (e) {}
+                                      }
+                                      
                               // extra debug showing the final explanation object
                               // eslint-disable-next-line no-console
                               console.debug('StockfishTutor: analysis (in-browser)', explanation);
@@ -847,22 +712,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                             try {
                               if (finalNorm && typeof finalNorm.matchPoints === 'number') pushMatchPoints(finalNorm.matchPoints);
                             } catch (e) {}
-                            try {
-                              const from = moveUci && moveUci.length >= 4 ? moveUci.slice(0, 2) : undefined;
-                              const to = moveUci && moveUci.length >= 4 ? moveUci.slice(2, 4) : undefined;
-                              pushHistory({
-                                fenBefore: fenBefore,
-                                fenAfter: fenAfter,
-                                moveUci: moveUci,
-                                uciHistory: uciHistory,
-                                prevMatchPoints: prevMatchPoints,
-                                matchPoints: finalNorm && typeof finalNorm.matchPoints === 'number' ? finalNorm.matchPoints : null,
-                                analysis: finalNorm,
-                                from: from,
-                                to: to,
-                                highlight: from && to ? [from, to] : null,
-                              });
-                            } catch (e) {}
+
                           } else {
                             setAnalysis({ Analysis: local.rawText });
                           }
@@ -950,22 +800,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                                         try {
                                           if (finalNorm && typeof finalNorm.matchPoints === 'number') setPrevMatchPoints(finalNorm.matchPoints);
                                         } catch (e) {}
-                                        try {
-                                          const from = moveUci && moveUci.length >= 4 ? moveUci.slice(0, 2) : undefined;
-                                          const to = moveUci && moveUci.length >= 4 ? moveUci.slice(2, 4) : undefined;
-                                          pushHistory({
-                                            fenBefore: fenBefore,
-                                            fenAfter: fenAfter,
-                                            moveUci: moveUci,
-                                            uciHistory: uciHistory,
-                                            prevMatchPoints: prevMatchPoints,
-                                            matchPoints: finalNorm && typeof finalNorm.matchPoints === 'number' ? finalNorm.matchPoints : null,
-                                            analysis: finalNorm,
-                                            from: from,
-                                            to: to,
-                                            highlight: from && to ? [from, to] : null,
-                                          });
-                                        } catch (e) {}
+
           } else {
             setAnalysis({ Analysis: local.rawText });
           }
@@ -1101,18 +936,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                 try { setLastUciHistory(uciHistory); } catch (ee) {}
               }
             } catch (e) {}
-            try {
-              // persist server-provided analysis into history
-              pushHistory({
-                fenBefore: fenBefore,
-                fenAfter: fenAfter,
-                moveUci: moveUci,
-                uciHistory: uciHistory,
-                prevMatchPoints: prevMatchPoints,
-                matchPoints: parsed && typeof (parsed as any).matchPoints === 'number' ? (parsed as any).matchPoints : null,
-                analysis: parsed || null,
-              });
-            } catch (e) {}
+
           }
         } catch (e) {
           // ignore compute errors
@@ -1141,53 +965,114 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
 
   if (!enabled) return <div className={styles.tutorPlaceholder}>Tutor disabled</div>;
 
-  return (
-    <div className={styles.tutorContainer}>
-      <div className={styles.tutorHeader}>Stockfish Tutor</div>
-      <div className={styles.tutorBody}>
-        {isAnalyzing && <div className={styles.loading}>Analyzing move...</div>}
-        {error && <div className={styles.error}>{error}</div>}
-        {!isAnalyzing && !error && analysis && (
-          <div className={styles.analysis}>
-            <div className={styles.indicator}>{analysis.moveIndicator ?? '—'}</div>
-            <div className={styles.text}>{analysis.Analysis ?? 'No explanation provided.'}</div>
-            {analysis.botPreference && (
-              <div className={styles.hint}>Bot preference: {analysis.botPreference}</div>
-            )}
+  const getCoachExpression = (): CoachExpression => {
+    if (isAnalyzing) return 'thinking';
+    if (error) return 'welcome';
+    if (analysis) {
+      const ind = analysis.moveIndicator;
+      if (ind === 'Best') {
+        return 'thumbsup';
+      }
+      if (ind === 'Good' || ind === 'Book') {
+        return 'happy';
+      }
+      if (ind === 'Mistake' || ind === 'Blunder') {
+        return 'thinking';
+      }
+      return 'speaking';
+    }
+    return 'welcome';
+  };
+
+  const expression = getCoachExpression();
+
+  const renderBubbleContent = () => {
+    if (isAnalyzing) {
+      return (
+        <div className={styles.bubbleLoading}>
+          <div className={styles.typingLoader}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <p className={styles.bubbleText}>Analyzing your move... Let me see if there is a better path! 🤔</p>
+        </div>
+      );
+    }
+    if (error) {
+      return (
+        <div>
+          <p className={styles.bubbleTextError}>Oops, I ran into an issue: {error}</p>
+        </div>
+      );
+    }
+    if (analysis) {
+      const ind = analysis.moveIndicator || '—';
+      let indicatorClass = styles.indicatorNeutral;
+      if (ind === 'Best') indicatorClass = styles.indicatorBest;
+      else if (ind === 'Good' || ind === 'Book') indicatorClass = styles.indicatorGood;
+      else if (ind === 'Mistake') indicatorClass = styles.indicatorMistake;
+      else if (ind === 'Blunder') indicatorClass = styles.indicatorBlunder;
+
+      return (
+        <div className={styles.bubbleAnalysis}>
+          <div className={styles.bubbleHeaderRow}>
+            <span className={`${styles.indicatorBadge} ${indicatorClass}`}>
+              {ind === 'Book' ? '📖 Book Move' : ind === 'Best' ? '⭐ Best Move' : ind === 'Good' ? '✅ Good Move' : ind === 'Neutral' ? '⚪ Neutral' : ind === 'Mistake' ? '⚠️ Mistake' : ind === 'Blunder' ? '❌ Blunder' : ind}
+            </span>
             {typeof analysis.matchPoints === 'number' && (
-              <div className={styles.hint}>Match points: {analysis.matchPoints}/100</div>
+              <span className={styles.matchPointsBadge}>
+                {analysis.matchPoints}/100 pts
+              </span>
+            )}
+          </div>
+          <p className={styles.bubbleText}>{analysis.Analysis ?? 'No explanation provided.'}</p>
+          
+          <div className={styles.detailsRow}>
+            {analysis.botPreference && (
+              <span className={styles.detailPill}>Preference: {analysis.botPreference}</span>
             )}
             {typeof analysis.favorsCenter === 'boolean' && (
-              <div className={styles.hint}>Favors center: {analysis.favorsCenter ? 'Yes' : 'No'}</div>
+              <span className={styles.detailPill}>
+                {analysis.favorsCenter ? '🎯 Controls Center' : '↔️ Side Play'}
+              </span>
             )}
-            {analysis.nextStepHint && <div className={styles.hint}>Next: {analysis.nextStepHint}</div>}
+            {analysis.nextStepHint && (
+              <span className={styles.detailPillHint}>💡 Next: {analysis.nextStepHint}</span>
+            )}
           </div>
-        )}
-        {!isAnalyzing && !error && !analysis && (
-          <div className={styles.empty}>Make a move to get instant feedback.</div>
-        )}
-        {debugLog && (
-          <div style={{ marginTop: 8, fontSize: 12, color: '#6b7280' }}>Debug: {debugLog}</div>
-        )}
-        {history.length > 0 && (
-          <div style={{ marginTop: 10 }} className={styles.history}>
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Move history</div>
-            <div>
-              {history.map((h, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <button onClick={() => restoreToHistory(i)} style={{ padding: '4px 8px' }}>Go</button>
-                  <div style={{ fontSize: 13 }}>{h.moveUci ?? 'move'} {h.matchPoints != null ? `— ${h.matchPoints}/100` : ''}</div>
-                  <div style={{ marginLeft: 'auto', fontSize: 12, color: '#6b7280' }}>{h.analysis?.moveIndicator ?? ''}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-              <button onClick={() => undoLast()} style={{ padding: '6px 10px' }}>Undo last</button>
-              <button onClick={() => resetAll()} style={{ padding: '6px 10px' }}>Reset tutor</button>
-            </div>
-          </div>
-        )}
+        </div>
+      );
+    }
+    return (
+      <div>
+        <p className={styles.bubbleText}>Make a move on the board and I'll give you instant tactical feedback! 🧠</p>
       </div>
+    );
+  };
+
+  return (
+    <div className={styles.tutorContainer}>
+      <div className={styles.tutorHeader}>AI Tutor Feedback</div>
+      
+      <div className={styles.tutorMainArea}>
+        <div className={styles.mascotWrapper}>
+          <CoachMascot expression={expression} />
+        </div>
+        
+        <div className={styles.speechBubble}>
+          <div className={styles.bubbleArrow}></div>
+          <div className={styles.bubbleContent}>
+            {renderBubbleContent()}
+          </div>
+        </div>
+      </div>
+
+      {debugLog && (
+        <div className={styles.debugLog}>Debug: {debugLog}</div>
+      )}
+
+
     </div>
   );
 };
