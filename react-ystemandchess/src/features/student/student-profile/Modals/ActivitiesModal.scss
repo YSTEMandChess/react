@@ -149,7 +149,7 @@
       left: 41.5%;
       width: 4.75rem;
       height: auto;
-      z-index: 1;
+      z-index: 0;
     }
 
     /* Task banner button */
@@ -176,51 +176,74 @@
 
     /* Vertical stack of activity buttons */
     .button-stack {
-      position: absolute;
-      top: 14.5rem;
-      left: 12rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
+  position: absolute;
+  top: 14.5rem;
+  left: 8.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
 
     .activity-button {
-      position: relative;
-      background-color: #F0D9B4;
-      border: none;
-      border-radius: 1rem;
-      box-shadow: -7px 2px 0 #8E6A50;
-      cursor: pointer;
-      width: 7rem;
-      min-height: 4rem;
-      font-family: 'Lato', sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.8rem 0.5rem 0.5rem;
-      box-sizing: border-box;
+  position: relative;
+  width: 12rem;
+  min-height: 4rem;
+  border: none;
+  border-radius: 1.25rem;
+  cursor: pointer;
+  padding: 1.2rem 2.8rem 1.2rem 1.6rem;
+  box-sizing: border-box;
+  text-align: left;
+  font-family: 'Lato', sans-serif;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-      .label {
-        position: absolute;
-        top: 0.35rem;
-        left: 0.5rem;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #231F20;
-        text-align: left;
-      }
+  &:hover {
+    transform: translateY(-2px);
+  }
 
-      .action {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #B58863;
-        word-break: break-word;
-        overflow-wrap: break-word;
-        padding: 0 0.3rem;
-        margin: 0;
-        display: block;
-      }
+  .task {
+    color: #8E6A50;
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1.05;
+    display: block;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .arrow-badge,
+  .completed-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+
+    svg {
+      width: 1.8rem;
+      height: auto;
+      display: block;
     }
+  }
+
+  &.incomplete {
+    background-color: #EAE4DA;
+    box-shadow:
+      -0.6rem 0 0 #8E6A50,
+      0 0.45rem 1.2rem rgba(0, 0, 0, 0.18);
+  }
+
+  &.completed {
+    background-color: #7FAE31;
+    box-shadow:
+      -0.6rem 0 0 #3E732A,
+      0 0.45rem 1.2rem rgba(0, 0, 0, 0.18);
+
+    .task {
+      color: #FFFFFF;
+      font-weight: 700;
+      text-align: center;
+    }
+  }
+}
   }
 }
 
