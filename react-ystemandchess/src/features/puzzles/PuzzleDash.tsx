@@ -71,7 +71,7 @@ const PuzzleDash = () => {
 
   const closeModal = () => setModal(null);
 
-  // Socket Initialization
+  // SOCKET INITIALIZATION (Must be at the top!)
   const socket = useChessSocket({
     student: studentId,
     mentor: mentorId,
@@ -168,6 +168,7 @@ const PuzzleDash = () => {
     }
   };
 
+  // Wait for the backend socket to be completely ready before loading the puzzle
   useEffect(() => {
     if (dashState === "playing" && socket.connected && status === "host" && !isInitialized) {
       setIsInitialized(true);
@@ -236,7 +237,7 @@ const PuzzleDash = () => {
   const handlePlayerMove = (move: Move) => {
     if (isPuzzleEndRef.current || moveListRef.current.length === 0 || dashState !== "playing") return;
 
-    // START TIMER!
+    // START TIMER ON FIRST MOVE!
     if (!isTimerRunning) setIsTimerRunning(true);
 
     const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ""}`;
@@ -258,7 +259,7 @@ const PuzzleDash = () => {
       socket.sendLastMove(move.from, move.to);
 
       if (moveListRef.current.length === 0) {
-        // Update stats!
+        // PUZZLE SOLVED! Update stats!
         isPuzzleEndRef.current = true;
         
         setScore((s) => s + 1);
@@ -280,7 +281,7 @@ const PuzzleDash = () => {
         setTimeout(playComputerMove, 200);
       }
     } else {
-      // Penalty applies!
+      // WRONG MOVE! Penalty applies!
       chessBoardRef.current?.undo(); // Snap piece back
       
       setBlunders((b) => b + 1);
