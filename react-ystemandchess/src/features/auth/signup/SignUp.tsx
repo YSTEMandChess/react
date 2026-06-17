@@ -27,6 +27,9 @@ const Signup = () => {
     password: '',
     retypedPassword: '',
     accountType: 'mentor',
+    zipcode: '',
+    gender: '',
+    gradeLevel: '',
   });
 
     // State flags to track the validity of individual input fields
@@ -213,6 +216,9 @@ const Signup = () => {
             email: '',
             password: '',
             retypedPassword: '',
+            zipcode: '',
+            gender: '',
+            gradeLevel: '',
             errors: {},
         };
         setStudents((prev: any) => [...prev, newStudent]);
@@ -353,6 +359,9 @@ const Signup = () => {
                 email: student.email,
                 username: student.username,
                 password: student.password,
+                zipcode: student.zipcode,
+                gender: student.gender,
+                gradeLevel: student.gradeLevel,
             }));
 
             // Prepare params for parent signup, stringifying the students array
@@ -364,6 +373,9 @@ const Signup = () => {
                 username: formData.username,
                 role: formData.accountType,
                 students: JSON.stringify(studentsData),
+                zipcode: formData.zipcode,
+                gender: formData.gender,
+                gradeLevel: formData.gradeLevel,
             });
         } else {
             // Prepare params for non-parent accounts
@@ -374,6 +386,9 @@ const Signup = () => {
                 password: formData.password,
                 username: formData.username,
                 role: formData.accountType,
+                zipcode: formData.zipcode,
+                gender: formData.gender,
+                gradeLevel: formData.gradeLevel,
             });
         }
 
@@ -578,8 +593,40 @@ const Signup = () => {
         </div>
 
         <div className="input-wrapper">
+          <label>Zip Code</label>
+          <input
+            type="text"
+            name="zipcode"
+            placeholder="Enter your zip code"
+            value={formData.zipcode}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <div className="input-wrapper">
+          <label>Gender</label>
+          <select name="gender" value={formData.gender} onChange={handleInputChange}>
+            <option value="">Prefer not to say</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div className="input-wrapper">
+          <label>Grade Level</label>
+          <input
+            type="text"
+            name="gradeLevel"
+            placeholder="Enter your grade level"
+            value={formData.gradeLevel}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <div className="input-wrapper">
           <label>Account Type</label>
-                    <select name="accountType" value={formData.accountType} onChange={handleAccountTypeChange}>
+                    <select name="accountType" aria-label="Account Type" value={formData.accountType} onChange={handleAccountTypeChange}>
             <option value="mentor">Mentor</option>
             <option value="parent">Parent</option>
           </select>
@@ -707,6 +754,33 @@ const Signup = () => {
                                             'retypedPassword',
                                             e.target.value
                                         )
+                                    }
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Student's zip code"
+                                    value={student.zipcode}
+                                    onChange={(e) =>
+                                        handleStudentInputChange(student.id, 'zipcode', e.target.value)
+                                    }
+                                />
+                                <select
+                                    value={student.gender}
+                                    onChange={(e) =>
+                                        handleStudentInputChange(student.id, 'gender', e.target.value)
+                                    }
+                                >
+                                    <option value="">Prefer not to say</option>
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <input
+                                    type="text"
+                                    placeholder="Student's grade level"
+                                    value={student.gradeLevel}
+                                    onChange={(e) =>
+                                        handleStudentInputChange(student.id, 'gradeLevel', e.target.value)
                                     }
                                 />
                             </div>

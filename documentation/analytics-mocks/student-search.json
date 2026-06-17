@@ -1,0 +1,5 @@
+[
+  { "username": "test_student", "firstName": "Alex", "lastName": "Johnson", "email": "alex.johnson@example.com" },
+  { "username": "jane_doe",     "firstName": "Jane", "lastName": "Doe",     "email": "jane.doe@example.com"     },
+  { "username": "bob_smith",    "firstName": "Bob",  "lastName": "Smith",   "email": "bob.smith@example.com"    }
+]

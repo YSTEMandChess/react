@@ -1,98 +1,85 @@
-import { useState } from "react";
-import { useAnalyticsApi } from "../../core/hooks/useAnalyticsApi";
+import React, { useState } from 'react';
+import DateRangeFilter, { DateRange } from '../../components/Analytics/DateRangeFilter';
+import IndividualView from './IndividualView';
+import ZipcodeView from './ZipcodeView';
+import GlobalView from './GlobalView';
 
-export type AnalyticsTab = "individual" | "zipcode" | "global";
+type Tab = 'individual' | 'zipcode' | 'global';
 
-const TABS: Array<{ id: AnalyticsTab; label: string }> = [
-  { id: "individual", label: "Individual" },
-  { id: "zipcode", label: "Zipcode" },
-  { id: "global", label: "Global" },
+const TABS: { key: Tab; label: string }[] = [
+  { key: 'individual', label: 'Individual' },
+  { key: 'zipcode',    label: 'Zipcode' },
+  { key: 'global',     label: 'Global' },
 ];
 
-const AnalyticsLayout = () => {
-  const [activeTab, setActiveTab] = useState<AnalyticsTab>("individual");
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-
-  const dateRangeReady = Boolean(startDate && endDate);
-
-  const { data, loading, error } = useAnalyticsApi<unknown>({
-    endpoint: `/analytics/${activeTab}`,
-    params: { startDate, endDate },
-    enabled: dateRangeReady,
-  });
+const AnalyticsLayout: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<Tab>('individual');
+  const [dateRange, setDateRange] = useState<DateRange>({ from: '', to: '' });
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">Analytics</h1>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="max-w-screen-xl mx-auto">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <h1 className="text-xl font-bold text-gray-900">Expand Analytics</h1>
+            <DateRangeFilter value={dateRange} onChange={setDateRange} />
+          </div>
+        </div>
 
-      {/* Tab bar */}
-      <div role="tablist" aria-label="Analytics views" className="flex border-b border-gray-300 mb-4 overflow-x-auto">
-        {TABS.map((tab) => {
-          const selected = activeTab === tab.id;
-          return (
+        {/* Tab bar */}
+        <div
+          className="max-w-screen-xl mx-auto flex gap-1 mt-4"
+          role="tablist"
+          aria-label="Analytics views"
+        >
+          {TABS.map((tab) => (
             <button
-              key={tab.id}
+              key={tab.key}
               role="tab"
-              aria-selected={selected}
-              aria-controls={`analytics-panel-${tab.id}`}
-              id={`analytics-tab-${tab.id}`}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-medium transition border-b-2 whitespace-nowrap ${
-                selected
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900"
+              id={`tab-${tab.key}`}
+              aria-selected={activeTab === tab.key}
+              aria-controls={`panel-${tab.key}`}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
+                activeTab === tab.key
+                  ? 'bg-green-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
               {tab.label}
             </button>
-          );
-        })}
+          ))}
+        </div>
       </div>
 
-      {/* Date range filter */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <label className="flex flex-col text-sm">
-          <span className="text-gray-700 mb-1">Start date</span>
-          <input
-            type="date"
-            value={startDate}
-            max={endDate || undefined}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </label>
-        <label className="flex flex-col text-sm">
-          <span className="text-gray-700 mb-1">End date</span>
-          <input
-            type="date"
-            value={endDate}
-            min={startDate || undefined}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </label>
+      {/* Content panels */}
+      <div className="p-6 max-w-screen-xl mx-auto">
+        <div
+          role="tabpanel"
+          id="panel-individual"
+          aria-labelledby="tab-individual"
+          hidden={activeTab !== 'individual'}
+        >
+          {activeTab === 'individual' && <IndividualView dateRange={dateRange} />}
+        </div>
+        <div
+          role="tabpanel"
+          id="panel-zipcode"
+          aria-labelledby="tab-zipcode"
+          hidden={activeTab !== 'zipcode'}
+        >
+          {activeTab === 'zipcode' && <ZipcodeView dateRange={dateRange} />}
+        </div>
+        <div
+          role="tabpanel"
+          id="panel-global"
+          aria-labelledby="tab-global"
+          hidden={activeTab !== 'global'}
+        >
+          {activeTab === 'global' && <GlobalView dateRange={dateRange} />}
+        </div>
       </div>
-
-      {/* Content panel */}
-      <section
-        role="tabpanel"
-        id={`analytics-panel-${activeTab}`}
-        aria-labelledby={`analytics-tab-${activeTab}`}
-        className="bg-white border border-gray-200 rounded-lg p-4 min-h-[12rem]"
-      >
-        {!dateRangeReady ? (
-          <p className="text-gray-500">Select a start and end date to load analytics.</p>
-        ) : loading ? (
-          <p className="text-gray-500">Loading…</p>
-        ) : error ? (
-          <p className="text-red-600">Error: {error.message}</p>
-        ) : data ? (
-          <pre className="text-xs overflow-auto">{JSON.stringify(data, null, 2)}</pre>
-        ) : (
-          <p className="text-gray-500">No data.</p>
-        )}
-      </section>
     </div>
   );
 };

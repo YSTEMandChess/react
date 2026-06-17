@@ -10,6 +10,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.17.1",
+    "express-rate-limit": "^8.5.2",
     "express-session": "^1.18.0",
     "express-validator": "^6.9.2",
     "googleapis": "^107.0.0",
@@ -19,10 +20,12 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.0",
     "request-ip": "^3.3.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "node-schedule": "^2.1.1"
   },
   "scripts": {
-    "start": "nodemon src/server.js"
+    "start": "nodemon src/server.js",
+    "test": "jest --testPathPatterns=tests/"
   },
   "author": "",
   "license": "ISC",
@@ -30,6 +33,7 @@
     "node": "18.20.8"
   },
   "devDependencies": {
-    "node-schedule": "^2.1.1"
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
   }
 }
