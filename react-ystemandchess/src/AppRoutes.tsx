@@ -5,7 +5,9 @@ import { SetPermissionLevel } from "./globals";
 
 import AnalyticsLayout from "./Pages/Analytics/AnalyticsLayout";
 import Home from "./features/home/Home";
-import Programs from "./features/programs/Programs";
+import { Programs } from "./features/programs/Programs";
+
+// About Us section pages
 import CSBenefitPage from "./features/about-us/benefit-of-cs/CSBenefitPage";
 import ChessBenefitPage from "./features/about-us/benefit-of-chess/ChessBenefitPage";
 import MathTutBenefitPage from "./features/about-us/benefit-of-math-tut/MathTutBenefitPage";
