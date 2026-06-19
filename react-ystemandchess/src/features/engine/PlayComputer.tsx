@@ -5,6 +5,13 @@ import { useLocation } from 'react-router';
 import { Move } from '../../core/types/chess';
 import ChessBoard, { ChessBoardRef } from '../../components/ChessBoard/ChessBoard';
 import { environment } from "../../environments/environment";
+import { useSocketChessEngine } from '../lessons/piece-lessons/lesson-overlay/hooks/useSocketChessEngine';
+import { useChessSocket } from '../lessons/piece-lessons/lesson-overlay/hooks/useChessSocket';
+
+//Ideas
+//check login validation for if we need to retrieve games 
+//change all of this to talk to the server have the server do the retireval  saving and editing of information 
+//if someones logged in call thesavestate function otherwise just talk to the server and the server wull delete the socketid game info on disconnect
 
 type Difficulty = 1 | 5 | 10 | 15 | 20;
 
@@ -70,6 +77,9 @@ const PlayComputer: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const chessgame
+
+    const socket = useChessSocket()
     const socket = io(environment.urls.stockfishServerURL, {
       transports: ['websocket'],
       reconnection: true,
