@@ -393,10 +393,18 @@ function applyBotPreferenceRules(a?: Analysis | null, previousMatchPoints: numbe
     }
   }
   // If the engine/bot has equal preference (neither favors nor disfavors), but
-  // the matchPoints are low (<= 50), treat the move as 'Good' rather than 'Best'/'Neutral'.
+  // If the engine/bot has equal preference (neither favors nor disfavors), use
+  // matchPoints to decide a sensible label. Previously very low matchPoints
+  // were incorrectly promoted to 'Good' which made poor moves appear positive.
+  // Use conservative thresholds: very low -> 'Mistake', low -> 'Neutral',
+  // mid -> 'Good'. Leave higher labels (e.g. 'Best') unchanged when appropriate.
   if (botPref === 'Equal') {
     if (typeof matchPoints === 'number') {
-      if (matchPoints <= 50) {
+      if (matchPoints <= 25) {
+        a.moveIndicator = 'Mistake';
+      } else if (matchPoints <= 50) {
+        a.moveIndicator = 'Neutral';
+      } else if (matchPoints <= 80) {
         a.moveIndicator = 'Good';
       }
     }
@@ -411,6 +419,34 @@ function computeFavorsCenter(moveUci: string | undefined, fenBefore: string | un
   const centerSquares = new Set(['e4', 'd4', 'e5', 'd5']);
   const fullmoveNum = Number(fenBefore.split(' ')[5] || '1');
   return fullmoveNum <= 8 && centerSquares.has(to);
+}
+
+// Helper: detect early side-pawn opening moves that are considered poor practice
+function isEarlySidePawnMove(moveUci: string | undefined, fenBefore: string | undefined): boolean {
+  if (!moveUci || !fenBefore) return false;
+  const earlySet = new Set(['f2f4', 'c2c4', 'f7f5', 'c7c5']);
+  const fullmoveNum = Number(fenBefore.split(' ')[5] || '1');
+  // Treat very early moves (first two full moves) as especially suspect
+  return fullmoveNum <= 4 && earlySet.has(moveUci.toLowerCase());
+}
+
+// Apply the "early side pawn is a blunder" rule to an analysis object if applicable.
+function enforceEarlySidePawnBlunder(analysisObj: any, moveUci: string | undefined, fenBefore: string | undefined) {
+  try {
+    if (!analysisObj || !moveUci) return analysisObj;
+    if (isEarlySidePawnMove(moveUci, fenBefore)) {
+      // Force a strong negative label and preference so UI treats these as mistakes/blunders
+      analysisObj.moveIndicator = 'Blunder';
+      analysisObj.Analysis = (analysisObj.Analysis ? analysisObj.Analysis + ' ' : '') + 'Early side-pawn opening move — exposes your king to bishop attacks; avoid f- and c-file pawn thrusts in the opening.';
+      analysisObj.botPreference = 'Less';
+      // push matchPoints to a low value if not present
+      if (typeof analysisObj.matchPoints !== 'number') analysisObj.matchPoints = 5;
+      if (typeof analysisObj.matchScore !== 'number') analysisObj.matchScore = 0.05;
+    }
+  } catch (e) {
+    // ignore enforcement errors
+  }
+  return analysisObj;
 }
 
 // Attempt to run in-browser Stockfish if the `stockfish` package is installed.
@@ -664,6 +700,8 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                                     // ignore scoring errors
                                   }
 
+                                      // Enforce early side-pawn blunder rule (e.g. f2f4, c2c4, f7f5, c7c5)
+                                      enforceEarlySidePawnBlunder(explanation, moveUci, fenBefore);
                                       // apply user-defined botPreference rules (Less => Mistake/Blunder)
                                       const finalExplanation = applyBotPreferenceRules(explanation, prevMatchPoints) || null;
                                       setAnalysis(finalExplanation);
@@ -707,6 +745,8 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                               norm.matchPoints = mv.points;
                               norm.botPreference = norm.botPreference || mv.botPreference;
                             } catch (e) {}
+                            // Enforce early side-pawn detection
+                            enforceEarlySidePawnBlunder(norm, moveUci, fenBefore);
                             const finalNorm = applyBotPreferenceRules(norm, prevMatchPoints) || null;
                             setAnalysis(finalNorm);
                             try {
@@ -795,6 +835,8 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
               norm.matchPoints = mv.points;
               norm.botPreference = norm.botPreference || mv.botPreference;
             } catch (e) {}
+                                        // Enforce early side-pawn detection
+                                        enforceEarlySidePawnBlunder(norm, moveUci, fenBefore);
                                         const finalNorm = applyBotPreferenceRules(norm, prevMatchPoints) || null;
                                         setAnalysis(finalNorm);
                                         try {
@@ -926,8 +968,9 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
               try { setDebugLog(`engineBest=${engineBest} score=${engineScore} mv=${mv.points}`); } catch (e) {}
             } catch (e) {}
 
-            // Apply user rule: botPreference 'Less' => Mistake; if (100 - matchPoints) > 10 => Blunder
+            // Enforce early side-pawn detection then apply user rule: botPreference 'Less' => Mistake; if (100 - matchPoints) > 10 => Blunder
             try {
+              enforceEarlySidePawnBlunder(parsed, moveUci, fenBefore);
               parsed = applyBotPreferenceRules(parsed, prevMatchPoints) || parsed;
             } catch (e) {}
             try {
@@ -1068,9 +1111,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
         </div>
       </div>
 
-      {debugLog && (
-        <div className={styles.debugLog}>Debug: {debugLog}</div>
-      )}
+      {/* debugLog intentionally not rendered in UI anymore to avoid exposing raw engine output */}
 
 
     </div>

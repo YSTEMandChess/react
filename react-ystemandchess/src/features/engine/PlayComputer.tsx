@@ -501,7 +501,7 @@ const PlayComputer: React.FC = () => {
                 fenBefore={tutorFenBefore}
                 fenAfter={fen}
                 moveUci={tutorMoveUci}
-                uciHistory={moveHistory.join(' ')}
+                uciHistory={uciHistoryArr.join(' ')}
                 onRequestGotoFen={(fen: string, highlights?: string[] | null) => {
                   try {
                     setFen(fen);

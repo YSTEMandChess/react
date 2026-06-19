@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router';
 import { Chess as ChessClass } from 'chess.js';
 import { io } from 'socket.io-client';
 import { Move } from '../../core/types/chess';
@@ -24,6 +25,7 @@ const PlayComputerWithTutor: React.FC = () => {
   const [fen, setFen] = useState<string>(gameRef.current.fen());
   const [playerColor, setPlayerColor] = useState<'white' | 'black'>('white');
   const [difficulty, setDifficulty] = useState<Difficulty>(10);
+  const location = useLocation();
   const [isThinking, setIsThinking] = useState(false);
   const [connected, setConnected] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
@@ -45,6 +47,18 @@ const PlayComputerWithTutor: React.FC = () => {
   useEffect(() => { playerColorRef.current = playerColor; }, [playerColor]);
   useEffect(() => { sessionStartedRef.current = sessionStarted; }, [sessionStarted]);
   useEffect(() => { difficultyRef.current = difficulty; }, [difficulty]);
+  // When the user navigates while a game is active, end session and reset to settings
+  useEffect(() => {
+    if (!sessionStartedRef.current) return;
+    try { socketRef.current?.emit('end-session'); } catch (e) {}
+    try { gameRef.current.reset(); } catch (e) {}
+    try { setFen(gameRef.current.fen()); } catch (e) {}
+    try { setMoveHistory([]); setHighlightSquares([]); setIsThinking(false); } catch (e) {}
+    try { if (chessBoardRef.current) chessBoardRef.current.reset(); } catch (e) {}
+    setShowSettings(true);
+    setSessionStarted(false);
+    sessionStartedRef.current = false;
+  }, [location.key]);
 
   useEffect(() => {
     if (movesContainerRef.current) {
@@ -71,6 +85,11 @@ const PlayComputerWithTutor: React.FC = () => {
       if (success && playerColorRef.current === 'black') requestComputerMove(gameRef.current.fen());
     });
 
+    socket.on('session-error', ({ error }: any) => {
+      console.error('PlayComputerWithTutor: session-error', error);
+      alert('Failed to start session: ' + error);
+    });
+
     socket.on('evaluation-complete', ({ mode, move }: any) => {
       console.debug('PlayComputerWithTutor: evaluation-complete', { mode, move });
       if (mode === 'move' && move) {
@@ -88,6 +107,8 @@ const PlayComputerWithTutor: React.FC = () => {
               chessBoardRef.current.setPosition(updatedFen);
               chessBoardRef.current.highlightMove(moveResult.from, moveResult.to);
             }
+            // check for game end after applying the computer move
+            try { checkGameStatus(); } catch (e) { /* ignore */ }
           }
         } catch (err) { console.error('Failed to apply computer move:', err); }
         setIsThinking(false);
@@ -117,12 +138,14 @@ const PlayComputerWithTutor: React.FC = () => {
       setHighlightSquares([move.from, move.to]);
       setMoveHistory(prev => [...prev, `${move.from} -> ${move.to}`]);
       // record fen/uci history for navigation
-      setFenHistory(prev => [...prev, newFen]);
-      setUciHistoryArr(prev => [...prev, `${move.from}${move.to}${move.promotion ?? ''}`]);
-
-      // trigger tutor analysis with fen before/after and uci
       const currentMoveUci = `${move.from}${move.to}${move.promotion ?? ''}`;
-      const uciHistory = moveHistory.join(' ');
+      // Build the new UCI history array and store it so we can pass a correct uciHistory string to the tutor
+      const newUciArr = [...uciHistoryArr, currentMoveUci];
+      setFenHistory(prev => [...prev, newFen]);
+      setUciHistoryArr(newUciArr);
+
+      // trigger tutor analysis with fen before/after and uci; pass a proper UCI-history string
+      const uciHistory = newUciArr.join(' ');
       setLastMoveData({ fenBefore, fenAfter: newFen, moveUci: currentMoveUci, uciHistory });
       setTutorTrigger(t => t + 1);
 
@@ -133,7 +156,7 @@ const PlayComputerWithTutor: React.FC = () => {
         requestComputerMove(newFen);
       }
     } catch (error) { console.error('Error handling move:', error); }
-  }, [moveHistory, requestComputerMove]);
+  }, [moveHistory, requestComputerMove, uciHistoryArr]);
 
   const checkGameStatus = useCallback((): boolean => {
     const game = gameRef.current;
