@@ -63,6 +63,7 @@ import AnalyticsLayout from "./Pages/Analytics/AnalyticsLayout";
 
 // Static assets and default data
 import userPortraitImg from "./assets/images/user-portrait-placeholder.svg";
+import SelectGame from "./features/engine/SelectGame";
 
 /**
  * Default username for components that require user data
@@ -118,42 +119,43 @@ const AppRoutes = () => {
     <Routes>
       {/* Home page - main landing page */}
       <Route path="/" element={<Home />} />
-      
+
       {/* Program information page */}
       <Route path="/programs" element={<Programs />} />
-      
+
       {/* About Us section - Educational benefit pages */}
       <Route path="/benefit-of-computer-science" element={<CSBenefitPage />} />
       <Route path="/benefit-of-chess" element={<ChessBenefitPage />} />
       <Route path="/benefit-of-math-tutoring" element={<MathTutBenefitPage />} />
       <Route path="/benefit-of-mentoring" element={<MentoringBenefitPage />} />
-      
+
       {/* About Us section - Organizational pages */}
       <Route path="/about-us" element={<AboutUs />} />
       <Route path="/mission" element={<Mission />} />
       <Route path="/financial" element={<Financial />} />
       <Route path="/board" element={<Board />} />
       <Route path="/sponsors&partners" element={<SponsorsPartners />} />
-      
+
       {/* Educational content and learning pages */}
-      <Route path="/play" element={<PlayComputer/>}/>
+      <Route path="/select-game" element={<SelectGame />} />
+      <Route path="/play" element={<PlayComputer />} />
       <Route path="/puzzles" element={<Puzzles />} />
       <Route path="/puzzle-streak" element={<PuzzleStreak />} />
       <Route path="/puzzle-dash" element={<PuzzleDash />} />
       <Route path="/lessons-selection" element={<LessonSelection />} />
       <Route path="/lessons" element={<LessonOverlay />} />
       <Route path="/learnings" element={<Lessons />} />
-      
+
       {/* User roles and mentoring */}
       <Route path="/mentor" element={<Mentor />} />
       <Route path="/student" element={<Student />} />
-      
+
       {/* Authentication pages */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/set-password" element={<SetPassword />} />
-      
+
       {/* User profile pages with props */}
       <Route
         path="/mentor-profile"
@@ -163,7 +165,7 @@ const AppRoutes = () => {
         path="/student-profile"
         element={<NewStudentProfile userPortraitSrc={userPortraitImg} />}
       />
-      
+
       {/* Student inventory/dashboard page with user data */}
       <Route
         path="/student-inventory"

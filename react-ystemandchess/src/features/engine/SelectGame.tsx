@@ -12,6 +12,7 @@ const SelectGame = () => {
 
     const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false)
     const [cookies, setCookie, removeCookie] = useCookies(["login"])
+    const username = useRef<string>(null)
 
     useEffect(() => {
         if (!cookies.login) {
@@ -31,6 +32,7 @@ const SelectGame = () => {
                 }
 
                 setIsLoggedIn(true);
+                username.current = UInfo.username;
 
                 await getGames();
 
@@ -41,6 +43,7 @@ const SelectGame = () => {
         };
 
         verifyAndLoad();
+        console.log("Logged in")
 
     }, [cookies.login]);
 
@@ -54,6 +57,8 @@ const SelectGame = () => {
 
     return (
         <div>
+            {isLoggedIn ? <p> welcome {username.current || ""}</p> :
+                <p>Not Logged In</p>}
 
         </div>
     )

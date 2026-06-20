@@ -43,6 +43,9 @@ const PlayComputer: React.FC = () => {
   const [gameEndMessage, setGameEndMessage] = useState('');
 
   // When the user clicks "Play" in the navbar while a game is active, reset to settings
+
+  //Step 1 : connecting to stockfish
+
   useEffect(() => {
     if (!sessionStartedRef.current) return;
     socketRef.current?.emit('end-session');
@@ -77,9 +80,7 @@ const PlayComputer: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const chessgame
 
-    const socket = useChessSocket()
     const socket = io(environment.urls.stockfishServerURL, {
       transports: ['websocket'],
       reconnection: true,
