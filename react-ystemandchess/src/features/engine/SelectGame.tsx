@@ -8,11 +8,21 @@ import { SetPermissionLevel } from "../../globals"
 
 
 const SelectGame = () => {
+    type User = {
+        username: string,
+        firstName: string,
+        lastName: string,
+        role: string,
+        email: string,
+        id: number
 
+
+    }
 
     const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false)
     const [cookies, setCookie, removeCookie] = useCookies(["login"])
-    const username = useRef<string>(null)
+
+    const user = useRef<User>(null)
 
     useEffect(() => {
         if (!cookies.login) {
@@ -32,7 +42,10 @@ const SelectGame = () => {
                 }
 
                 setIsLoggedIn(true);
-                username.current = UInfo.username;
+
+                const { username, firstName, lastName, role, email, id } = UInfo
+                user.current = { username, firstName, lastName, role, email, id }
+
 
                 await getGames();
 
@@ -57,7 +70,7 @@ const SelectGame = () => {
 
     return (
         <div>
-            {isLoggedIn ? <p> welcome {username.current || ""}</p> :
+            {isLoggedIn ? <p> welcome {user.current?.firstName || ""}</p> :
                 <p>Not Logged In</p>}
 
         </div>

@@ -70,6 +70,7 @@ router.post(
 
       //Create a payload for the jwt to have accessible fields from the jwt
       const payload = {
+        id: foundUser._id,
         username: foundUser.username,
         firstName: foundUser.firstName,
         lastName: foundUser.lastName,
@@ -77,6 +78,7 @@ router.post(
         email: foundUser.email,
         iat: Math.floor(Date.now() / 1000),
         accountCreatedAt: foundUser.accountCreatedAt,
+
       };
 
       if (foundUser.role === "student") {
