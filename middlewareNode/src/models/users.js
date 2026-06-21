@@ -31,6 +31,10 @@ const usersSchema = new mongoose.Schema(
     parentUsername: {
       type: String,
     },
+    parentId: {
+      type: Number,
+
+    },
     // if user is a mentor/student, this stores username for their student/mentor
     mentorshipUsername: {
       type: String,
@@ -76,6 +80,10 @@ const usersSchema = new mongoose.Schema(
       type: Number,
       required: false,
       default: 0,
+    },
+    savedGames: {
+      type: [String],
+      default: []
     }
   },
   { versionKey: false },
