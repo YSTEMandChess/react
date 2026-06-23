@@ -59,11 +59,6 @@ const usersSchema = new mongoose.Schema(
       ],
       default: () => require("./defaultLessons"),
     },
-    highestStreak: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
     // Analytics demographic fields — optional, collected over time via profile updates
     zipcode:    { type: String, default: null, index: true },
     gender:     { type: String, enum: ["M", "F", "Other", null], default: null },
