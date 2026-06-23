@@ -41,7 +41,6 @@ import PlayComputer from "./features/engine/PlayComputer";
 import Lessons from "./features/lessons/lessons-main/Lessons";
 import Puzzles from './features/puzzles/Puzzles';
 import PuzzleStreak from "./features/puzzles/PuzzleStreak";
-import PuzzleDash from "./features/puzzles/PuzzleDash";
 import LessonSelection from "./features/lessons/lessons-selection/LessonsSelection";
 import LessonOverlay from "./features/lessons/piece-lessons/lesson-overlay/Lesson-overlay";
 
