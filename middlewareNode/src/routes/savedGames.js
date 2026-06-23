@@ -3,6 +3,11 @@ const users = require('../models/users');
 const savedGame = require('../models/savedGame'); // Using this variable name
 const router = express.Router();
 
+//MAJOR TIP
+//USE MONGODB NATIVE ID TO REFER TO STUDENT
+//USE UUID FROM STUDENT ARRAY TO REFER TO GAMES
+
+
 // Get student by ID 
 const getStudentById = async (req, res, next) => {
     try {
@@ -32,7 +37,6 @@ const getGamesByStudent = async (req, res) => {
     }
 };
 
-router.get("/student/:id", getStudentById, getGamesByStudent);
 
 // Add new game to database 
 const addNewGame = async (req, res, next) => {
@@ -57,8 +61,8 @@ const addNewGame = async (req, res, next) => {
     }
 };
 
-// Push new game id to student game array 
-const addGameToStudent = async (req, res) => { // Added async
+
+const addGameToStudent = async (req, res) => {
     try {
         const id = req.body.studentId;
         const game = req.game;
@@ -67,7 +71,7 @@ const addGameToStudent = async (req, res) => { // Added async
             return res.status(404).json({ message: "No student in DB" });
         }
 
-        // Fixed: removed curly braces for implicit return
+
         const alreadySaved = student.savedGames.some((item) => item === game);
         if (alreadySaved) {
             return res.status(500).json({ message: "Game has been saved under this ID already" });
@@ -81,7 +85,47 @@ const addGameToStudent = async (req, res) => { // Added async
     }
 };
 
-// Make sure to register the POST route path so it can be called
-router.post("/game", addNewGame, addGameToStudent);
+const overWrite = async (req, res) => {
+    try {
+        const newSettings = req.body;
+        const id = req.params.id
+        const game = await savedGame.findOne({ uuid: id });
+        for (key in newSettings) {
+            if (key in game) {
+                game[key] = newSettings[key]
+            }
+        }
+        await game.save();
+        return res.status(200).json(game);
+
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+
+}
+
+const getGame = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const game = await savedGame.findOne({ uuid: id });
+
+        if (!game) {
+            return res.status(404).json({ message: "Game not found" });
+        }
+
+        // Return the actual database game document
+        return res.status(200).json(game);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+
+
+
+router.get("/student/:id", getStudentById, getGamesByStudent);
+router.post("/game", addNewGame, addGameToStudent); //requires student id in the req body
+router.post("/overwrite/:id", overWrite) //requires intended settings in the req body and uuid as param
+router.get("/game/:id", getGame); //required uuid as param
 
 module.exports = router;
