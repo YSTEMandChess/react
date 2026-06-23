@@ -65,19 +65,6 @@ const usersSchema = new mongoose.Schema(
       required: false,
       default: 0,
     },
-  //   // Tracks the user's highest ever Puzzle Dash score
-  //   highestDashScore: {
-  //     type: Number,
-  //     required: false,
-  //     default: 0,
-  //   },
-  //   // Highest Combo Set by user
-  //   highestDashCombo: {
-  //     type: Number,
-  //     required: false,
-  //     default: 0,
-  //   }
-  // },
   { versionKey: false },
 );
 
