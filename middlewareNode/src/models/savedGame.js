@@ -6,6 +6,12 @@ const SavedGameSchema = new mongoose.Schema({
         ref: 'users',
         required: true
     },
+    uuid: {
+        type: String,
+        default: () => crypto.randomUUID(),
+        unique: true,
+        required: true
+    },
     opponentId: {
         type: String, // Can be an ObjectId string for friends, or "Stockfish" for the bot
         required: true
@@ -27,9 +33,9 @@ const SavedGameSchema = new mongoose.Schema({
         type: String,
         required: true // The exact board layout snapshot
     },
-    pgn: {
-        type: String,
-        default: "" // The complete step-by-step move history list
+    movesList: {
+        type: [String],
+        default: []// The complete step-by-step move history list
     },
     playerColor: {
         type: String,
@@ -57,4 +63,4 @@ SavedGameSchema.pre('save', function (next) {
     next();
 });
 
-module.exports = mongoose.model('saved_games', SavedGameSchema);
+module.exports = mongoose.model('saved_game', SavedGameSchema);
