@@ -144,7 +144,7 @@ router.post(
                 timePlayed: 0,
               });
               await newStudent.save(async function (err, user) {
-                if(err) {
+                if (err) {
                   console.error('Error saving student: ', err);
                 }
                 else {
@@ -435,6 +435,23 @@ router.get("/getStudent", async (req, res) => {
   }
 });
 
+router.get("/getUser/:id", async (req, res) => {
+  const keyword = req.params.id || "";
+
+  try {
+    const db = await getDb();
+    const users = db.collection("users");
+
+    const user = await users.findbyId(id)
+    if (!user) {
+      return res.status(500).json({ error: "Could not find student" }); // error
+    }
+
+    return res.status(200).json(user)
+  } catch (err) {
+    res.status(500).json({ error: err.message }); // error
+  }
+});
 // verify role
 
 router.post("/verifyRole", async (req, res) => {
@@ -494,7 +511,7 @@ router.put("/updateHighScore", passport.authenticate("jwt", { session: false }),
     const usersCollection = db.collection("users");
 
     const updateFields = {};
-    
+
     // Mongoose $max operator ensures it ONLY updates if the new score is higher than the old one!
     if (streakScore !== undefined) updateFields.highestStreak = parseInt(streakScore);
     if (dashScore !== undefined) updateFields.highestDashScore = parseInt(dashScore);
@@ -503,7 +520,7 @@ router.put("/updateHighScore", passport.authenticate("jwt", { session: false }),
 
     const result = await usersCollection.updateOne(
       { username: req.user.username },
-      { $max: updateFields } 
+      { $max: updateFields }
     );
 
     res.status(200).json({ message: "High scores checked and updated successfully" });
@@ -523,7 +540,7 @@ router.put("/updateHighScore", passport.authenticate("jwt", { session: false }),
     const usersCollection = db.collection("users");
 
     const updateFields = {};
-    
+
     // Mongoose $max operator ensures it ONLY updates if the new score is higher!
     if (streakScore !== undefined) updateFields.highestStreak = parseInt(streakScore);
     if (dashScore !== undefined) updateFields.highestDashScore = parseInt(dashScore);
@@ -533,7 +550,7 @@ router.put("/updateHighScore", passport.authenticate("jwt", { session: false }),
 
     const result = await usersCollection.updateOne(
       { username: req.user.username },
-      { $max: updateFields } 
+      { $max: updateFields }
     );
 
     res.status(200).json({ message: "High scores checked and updated successfully" });
