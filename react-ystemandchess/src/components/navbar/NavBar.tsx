@@ -351,13 +351,6 @@ const NavBar = () => {
               >
                 Puzzle Streak
               </Link>
-              {/* <Link
-                to="/puzzle-dash"
-                onClick={togglePuzzles}
-                className="text-base text-gray transition-colors hover:text-primary"
-              >
-                Puzzle Dash
-              </Link> */}
             </div>
           </motion.div>
         )}
