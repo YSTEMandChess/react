@@ -513,34 +513,4 @@ router.put("/updateHighScore", passport.authenticate("jwt", { session: false }),
   }
 });
 
-// @route   PUT /user/updateHighScore
-// @desc    Update the user's highest streak or dash score if they beat their record
-// @access  Public with jwt Authentication
-router.put("/updateHighScore", passport.authenticate("jwt", { session: false }), async (req, res) => {
-  try {
-    const { streakScore, dashScore, dashCombo } = req.body;
-    const db = await getDb();
-    const usersCollection = db.collection("users");
-
-    const updateFields = {};
-    
-    // Mongoose $max operator ensures it ONLY updates if the new score is higher!
-    if (streakScore !== undefined) updateFields.highestStreak = parseInt(streakScore);
-    if (dashScore !== undefined) updateFields.highestDashScore = parseInt(dashScore);
-    if (dashCombo !== undefined) updateFields.highestDashCombo = parseInt(dashCombo);
-
-    if (Object.keys(updateFields).length === 0) return res.status(400).json("No scores provided");
-
-    const result = await usersCollection.updateOne(
-      { username: req.user.username },
-      { $max: updateFields } 
-    );
-
-    res.status(200).json({ message: "High scores checked and updated successfully" });
-  } catch (error) {
-    console.error("Error updating high score:", error);
-    res.status(500).json("Server error");
-  }
-});
-
 module.exports = router;
