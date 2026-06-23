@@ -22,7 +22,7 @@ const SavedGameSchema = new mongoose.Schema({
     },
     gameType: {
         type: String,
-        enum: ['computer', 'friend', 'mentor_session'],
+        enum: ['computer', 'friend', 'mentor'],
         required: true
     },
     computerLevel: {
@@ -44,8 +44,8 @@ const SavedGameSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['active', 'completed', 'aborted'],
-        default: 'active'
+        enum: ['won', 'lost', 'ongoing'],
+        default: 'ongoing'
     },
     createdAt: {
         type: Date,
