@@ -138,7 +138,6 @@ const AppRoutes = () => {
       <Route path="/play" element={<PlayComputer/>}/>
       <Route path="/puzzles" element={<Puzzles />} />
       <Route path="/puzzle-streak" element={<PuzzleStreak />} />
-      <Route path="/puzzle-dash" element={<PuzzleDash />} />
       <Route path="/lessons-selection" element={<LessonSelection />} />
       <Route path="/lessons" element={<LessonOverlay />} />
       <Route path="/learnings" element={<Lessons />} />
