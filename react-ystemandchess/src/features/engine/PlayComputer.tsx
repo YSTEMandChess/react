@@ -9,6 +9,8 @@ import { useSocketChessEngine } from '../lessons/piece-lessons/lesson-overlay/ho
 import { useChessSocket } from '../lessons/piece-lessons/lesson-overlay/hooks/useChessSocket';
 import type { GameMetaData } from './SelectGame';
 import type { User } from './SelectGame';
+import { useCookies } from 'react-cookie';
+import { SetPermissionLevel } from "../../globals"
 //Ideas
 //check login validation for if we need to retrieve games 
 //change all of this to talk to the server have the server do the retireval  saving and editing of information 
@@ -22,19 +24,25 @@ const controlBtnClass =
   "enabled:hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed";
 
 const PlayComputer: React.FC = () => {
+
+
+
+const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false)
+    const [cookies, setCookie, removeCookie] = useCookies(["login"])
+
+    const user = useRef<User>(null)
+
+  //chessboard, socket, player color, difficulty , sessionstart, movehistory, highlighted sqaures, gamemodal toggle, game end message toggle , fen
   const chessBoardRef = useRef<ChessBoardRef>(null);
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<any | null>(null);
   const gameRef = useRef<Chess>(new Chess());
   const playerColorRef = useRef<'white' | 'black'>('white');
-  const sessionStartedRef = useRef<boolean>(false);
-  const difficultyRef = useRef<Difficulty>(10);
   const movesContainerRef = useRef<HTMLDivElement>(null);
 
   const [fen, setFen] = useState<string>("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   const [playerColor, setPlayerColor] = useState<'white' | 'black'>('white');
-  const [difficulty, setDifficulty] = useState<Difficulty>(10);
+  const [difficulty, setDifficulty] = useState<number>(10);
   const location = useLocation();
-  const [isThinking, setIsThinking] = useState(false);
   const [connected, setConnected] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
@@ -42,13 +50,45 @@ const PlayComputer: React.FC = () => {
   const [showSettings, setShowSettings] = useState(true);
   const [showGameEndModal, setShowGameEndModal] = useState(false);
   const [gameEndMessage, setGameEndMessage] = useState('');
-  const gameMetaData = useRef<GameMetaData>()
+  const gameMetaData = useRef<GameMetaData>(null);
+  const [yourTurn, setYourTurn]= useState<boolean>(false);
 
-  // When the user clicks "Play" in the navbar while a game is active, reset to settings
+  //functions to write
+    //start game 
 
-  //Step 1 : connecting to stockfish
+  //reset function
+  //handle player move function
+  //handle opponent move 
 
-  //Reset left over refs on refresh 
+useEffect(() => {
+        if (!cookies.login) {
+            setIsLoggedIn(false);
+            return;
+        }
+
+        const verifyAndLoad = async () => {
+            try {
+                const UInfo = await SetPermissionLevel(cookies, removeCookie);
+
+                if (UInfo?.error) {
+                    setIsLoggedIn(false);
+                    return;
+                }
+                setIsLoggedIn(true);
+                const { username, firstName, lastName, role, email, id } = UInfo
+                user.current = { username, firstName, lastName, role, email, id }
+
+            } catch (err) {
+                console.error("Auth check failed:", err);
+                setIsLoggedIn(false);
+            }
+        };
+
+        verifyAndLoad();
+        console.log("Logged in")
+
+    }, [cookies.login]);
+
   useEffect(() => {
     if (!sessionStartedRef.current) return;
     socketRef.current?.emit('end-session');
@@ -82,33 +122,36 @@ const PlayComputer: React.FC = () => {
     });
   }, []);
 
+  const onConnection= (isConnected: boolean) =>{
+    setConnected(isConnected)
+  }
+  const onDisconnection= (isConnected: boolean) =>{
+    setConnected(isConnected)
+  }
+
   useEffect(() => {
-    
+    //starting up the session
+    if (!connected){
+      gameMetaData.current= location.state
+
     const socketSettings = {
-      student: 
+      student: gameMetaData.current.user?.firstName || "",
+      serverUrl: environment.urls.chessServerURL,
+      onConnect: onConnection,
+      onDisconnect : onDisconnection,
     }
 
-    const socket = useChessSocket()
-
-    const socket = io(environment.urls.stockfishServerURL, {
-      transports: ['websocket'],
-      reconnection: true,
-    });
+    const socket = useChessSocket(socketSettings)
     socketRef.current = socket;
 
-    socket.on('connect', () => setConnected(true));
+    socketRef.current.
+    
     socket.on('disconnect', () => {
       setConnected(false);
       setSessionStarted(false);
       sessionStartedRef.current = false;
     });
-    socket.on('session-started', ({ success }) => {
-      setSessionStarted(true);
-      sessionStartedRef.current = true;
-      if (success && playerColorRef.current === 'black') {
-        requestComputerMove(gameRef.current.fen());
-      }
-    });
+    
     socket.on('session-error', ({ error }) => {
       console.error('Session error:', error);
       alert('Failed to start session: ' + error);
@@ -156,6 +199,7 @@ const PlayComputer: React.FC = () => {
   }, [connected]);
 
   const handleMove = useCallback((move: Move) => {
+    if (yourTurn){
     try {
       const moveResult = gameRef.current.move({
         from: move.from,
@@ -171,14 +215,24 @@ const PlayComputer: React.FC = () => {
 
       if (checkGameStatus()) return;
 
+      gameMetaData.current.movesList=moveHistory
+      gameMetaData.current.fen=fen
+      gameMetaData.current.updatedAt= Date.now().toString()
+
       if (socketRef.current) {
-        socketRef.current.emit('update-fen', { fen: newFen });
-        requestComputerMove(newFen);
+        socketRef.current.playerMove(gameMetaData)
+        setYourTurn(prev => !prev)
+       
       }
+
     } catch (error) {
       console.error('Error handling move:', error);
     }
-  }, [requestComputerMove]);
+  }
+  else{
+    //setloading
+  }
+}, [requestComputerMove]);
 
   const checkGameStatus = useCallback((): boolean => {
     const game = gameRef.current;
@@ -205,32 +259,86 @@ const PlayComputer: React.FC = () => {
     }
     return false;
   }, []);
-
+ 
   const resetGame = useCallback(() => {
     gameRef.current.reset();
+    if (chessBoardRef.current) chessBoardRef.current.reset();
+    setDifficulty(10)
+    setSessionStarted(false)
+    setMoveHistory([])
     const startFen = gameRef.current.fen();
     setFen(startFen);
     setMoveHistory([]);
     setHighlightSquares([]);
-    setIsThinking(false);
-    if (chessBoardRef.current) chessBoardRef.current.reset();
-    if (socketRef.current && sessionStartedRef.current) {
-      socketRef.current.emit('update-fen', { fen: startFen });
-      if (playerColorRef.current === 'black') {
-        setTimeout(() => requestComputerMove(startFen), 500);
+    playerColor == "white" ? setYourTurn(true) : setYourTurn(false);
+    setShowSettings(true);
+    setShowGameEndModal(false);
+    setGameEndMessage("");
+    socketRef.current= null
+  }, []);
+
+  const loadGame = () =>{
+    if (location.state){
+      const gameMetaData : GameMetaData = location.state
+      if (socketRef.current){
+        const newGame : GameMetaData= socketRef.current.getMostRecentGameInfo(gameMetaData)
+        gameRef.current= new Chess(newGame.fen)
+        chessBoardRef.current.setPosition(fen)
+        setDifficulty(newGame.computerLevel)
+        setSessionStarted(socketRef.current.sessionStarted())
+        setMoveHistory(newGame.movesList)
+        setHighlightSquares([])
+      const [, activeColor] = newGame.fen.split(" ");
+     const turn= activeColor === "w" ? "white" : "black";
+     turn === playerColor ? setYourTurn(true) : setYourTurn(false)
+     setShowSettings(false)
+         setShowGameEndModal(false);
+             setGameEndMessage("");
       }
     }
-  }, [requestComputerMove]);
-
-  const newGame = useCallback(() => {
-    if (socketRef.current && sessionStartedRef.current) {
-      socketRef.current.emit('end-session');
+    else{
+      if ((user.current) && socketRef.current){
+        const newGame : GameMetaData = {
+        userId: user.current.id,
+        user?: user.current,                                                                                                                                                                                                                                                         
+        gameName: "Me vs Computer",
+        gameType: "computer" ,
+        computerLevel: difficulty,
+        fen: fen,
+        movesList: moveHistory,
+        playerColor: playerColor,
+        status: "ongoing",
+        createdAt: Date.now().toString(),
+        updatedAt: Date.now().toString()
     }
-    resetGame();
-    setShowSettings(true);
-    setSessionStarted(false);
-    sessionStartedRef.current = false;
-  }, [resetGame]);
+    socketRef.current.saveNewGame(newGame)}
+      else{
+        if (socketRef.current){
+          socketRef.current.createNewGameNoSaveState();
+        }
+      }
+    }
+      if (socketRef.current){
+        const newGame : GameMetaData= socketRef.current.getMostRecentGameInfo(gameMetaData)
+        gameRef.current= new Chess(newGame.fen)
+        chessBoardRef.current.setPosition(fen)
+        setDifficulty(newGame.computerLevel)
+        setSessionStarted(socketRef.current.sessionStarted())
+        setMoveHistory(newGame.movesList)
+        setHighlightSquares([])
+      const [, activeColor] = newGame.fen.split(" ");
+     const turn= activeColor === "w" ? "white" : "black";
+     turn === playerColor ? setYourTurn(true) : setYourTurn(false)
+     setShowSettings(false)
+         setShowGameEndModal(false);
+             setGameEndMessage("");
+    }
+  }
+
+  const startGame = () =>{
+
+  }
+
 
   const undoMove = useCallback(() => {
     if (moveHistory.length < 2) return;

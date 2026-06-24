@@ -26,8 +26,8 @@ interface UseChessSocketOptions {
   onMessage?: (msg: string) => void;
   onRoleAssigned?: (role: "host" | "guest") => void;
   onColorAssigned?: (color: PlayerColor) => void;
-  onConnect? :(isConnected) => void; 
-  onDisconnect?: (isConnected) => void;
+  onConnect? :(isConnected: boolean) => void; 
+  onDisconnect?: (isConnected : boolean) => void;
 }
 
 // ======== CENTRALIZED FEN NORMALIZATION ========
@@ -132,6 +132,13 @@ export const useChessSocket = ({
       setConnected(false);
       if (onDisconnect){
         onDisconnect(connected)
+      }
+    });
+    socket.on('session-started', ({ success }) => {
+      setSessionStarted(true);
+      sessionStartedRef.current = true;
+      if (success && playerColorRef.current === 'black') {
+        requestComputerMove(gameRef.current.fen());
       }
     });
 

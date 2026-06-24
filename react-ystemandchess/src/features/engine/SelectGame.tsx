@@ -8,11 +8,11 @@ import { environment } from "../../environments/environment";
 import { useNavigate } from "react-router";
 
 export type GameMetaData = {
-        userId: string,
+        userId?: number,
         user?: User,                                                                                                                                                                                                                                                         
         opponent?: User,
-        uuid: string,
-        opponentId: string,
+        uuid?: string,
+        opponentId?: string,
         gameName: string,
         gameType: "computer" | "friend" | "mentor",
         computerLevel: number | null,
