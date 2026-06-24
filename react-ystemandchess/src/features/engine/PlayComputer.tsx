@@ -7,7 +7,8 @@ import ChessBoard, { ChessBoardRef } from '../../components/ChessBoard/ChessBoar
 import { environment } from "../../environments/environment";
 import { useSocketChessEngine } from '../lessons/piece-lessons/lesson-overlay/hooks/useSocketChessEngine';
 import { useChessSocket } from '../lessons/piece-lessons/lesson-overlay/hooks/useChessSocket';
-
+import type { GameMetaData } from './SelectGame';
+import type { User } from './SelectGame';
 //Ideas
 //check login validation for if we need to retrieve games 
 //change all of this to talk to the server have the server do the retireval  saving and editing of information 
@@ -41,11 +42,13 @@ const PlayComputer: React.FC = () => {
   const [showSettings, setShowSettings] = useState(true);
   const [showGameEndModal, setShowGameEndModal] = useState(false);
   const [gameEndMessage, setGameEndMessage] = useState('');
+  const gameMetaData = useRef<GameMetaData>()
 
   // When the user clicks "Play" in the navbar while a game is active, reset to settings
 
   //Step 1 : connecting to stockfish
 
+  //Reset left over refs on refresh 
   useEffect(() => {
     if (!sessionStartedRef.current) return;
     socketRef.current?.emit('end-session');
@@ -80,6 +83,12 @@ const PlayComputer: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    
+    const socketSettings = {
+      student: 
+    }
+
+    const socket = useChessSocket()
 
     const socket = io(environment.urls.stockfishServerURL, {
       transports: ['websocket'],

@@ -1,32 +1,16 @@
 //check login
 //check for games
 
-import { useEffect, useRef, useState } from "react"
+import { MouseEventHandler, useEffect, useRef, useState } from "react"
 import { useCookies } from "react-cookie"
 import { SetPermissionLevel } from "../../globals"
 import { environment } from "../../environments/environment";
+import { useNavigate } from "react-router";
 
-
-const SelectGame = () => {
-    type User = {
-        username: string,
-        firstName: string,
-        lastName: string,
-        role: string,
-        email: string,
-        id: number
-    }
-
-    type Game = {
-        student: User,
-        opponent: User,
-        timeAllotted?: string,
-        turn?: "Your Turn" | "Their Turn",
-        playerColor?: "Black" | "White"
-    }
-
-    type GameMetaData = {
+export type GameMetaData = {
         userId: string,
+        user?: User,                                                                                                                                                                                                                                                         
+        opponent?: User,
         uuid: string,
         opponentId: string,
         gameName: string,
@@ -39,12 +23,29 @@ const SelectGame = () => {
         createdAt: string,
         updatedAt: string
     }
+   export type User = {
+        username: string,
+        firstName: string,
+        lastName: string,
+        role: string,
+        email: string,
+        id: number
+    }
+
+    
+
+const SelectGame = () => {
+    
+    
+
+   
+    const navigate = useNavigate();
 
     const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false)
     const [cookies, setCookie, removeCookie] = useCookies(["login"])
 
     const user = useRef<User>(null)
-    const [games, setGames] = useState<Game[]>(null)
+    const [games, setGames] = useState<GameMetaData[]>(null)
     const [loading, setLoading] = useState<boolean>(false)
 
     useEffect(() => {
@@ -78,13 +79,14 @@ const SelectGame = () => {
 
     }, [cookies.login]);
 
-    const convertGameDataToGame = async (gameInfo: GameMetaData): Promise<Game> => {
+    const addOpponentInfo = async (gameInfo: GameMetaData): Promise<GameMetaData> => {
         try {
             const opponentId = gameInfo.opponentId
             const res = await fetch(`${environment.urls.middlewareURL}/user/getUser/${opponentId}`);
-            const opponentInfo = await res.json() as User
-            const newGame: Game = { student: user.current, opponent: opponentInfo }
-            return newGame
+            const opponentInfo = await res.json() as User;
+            gameInfo.opponent= opponentInfo;
+            gameInfo.user = user.current
+            return gameInfo
         }
         catch (error) {
             console.log(error)
@@ -94,16 +96,16 @@ const SelectGame = () => {
     const getGames = async () => {
         try {
             const res = await fetch(`${environment.urls.middlewareURL}/savedGames/student/${user.current.id}`)
-            const data = await res.json()
+            const data = await res.json() 
             if (!data || data.length === 0) {
                 return
             }
             const res2 = await fetch(`${environment.urls.middlewareURL}/savedGames/batch`, {
-                method: "PATCH",
-                body: JSON.stringify(data)
+                method: "POST",
+                body: JSON.stringify({uuids:data})
             })
             const data2 = await res2.json() as GameMetaData[]
-            const games = await Promise.all(data2.map(item => convertGameDataToGame(item)))
+            const games = await Promise.all(data2.map(item => addOpponentInfo(item))) as GameMetaData[]
 
             setGames(games)
         }
@@ -111,26 +113,42 @@ const SelectGame = () => {
             console.log(error)
         }
     }
-
+const handleNav = (game) : MouseEventHandler =>{
+    navigate("/play", {state: game})
+    return
+}
 
     if (isLoggedIn) {
         return (
-            <div>
-                {games?.map((game, index) =>
-                    <h1 key={index}>{game.student.username}</h1>
-                )}
+            <div >
+                <div className="flex justify-items-end">
+                    <button onClick={()=>{navigate("/play")}} className=""> Start New Game</button>
+                    
+               
+                
             </div>
+            {games?.map((game, index) =>
+            <div key={index}>
+                <button onClick={()=>{handleNav(game)}}> 
+                    <h1 >{game.user.username}</h1>
+                    </button>
+
+
+                    </div>
+                )}
+             </div>
         )
     }
 
     else {
         return (
-            <div></div>
+             <button onClick={()=>{navigate("/play")}} className=""> Start New Game</button>
         )
     }
 }
 
 export default SelectGame
+
 
 {/* TODO: on game click, navigate to /game and pass game data via state
     navigate('/game', { state: { game } })

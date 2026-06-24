@@ -26,6 +26,8 @@ interface UseChessSocketOptions {
   onMessage?: (msg: string) => void;
   onRoleAssigned?: (role: "host" | "guest") => void;
   onColorAssigned?: (color: PlayerColor) => void;
+  onConnect? :(isConnected) => void; 
+  onDisconnect?: (isConnected) => void;
 }
 
 // ======== CENTRALIZED FEN NORMALIZATION ========
@@ -81,6 +83,8 @@ export const useChessSocket = ({
   onRemoveGrey,
   onReset,
   onError,
+  onConnect, 
+  onDisconnect,
   onMessage,
   onRoleAssigned,
   onColorAssigned,
@@ -119,10 +123,16 @@ export const useChessSocket = ({
     // on connect
     socket.on("connect", () => {
       setConnected(true);
+      if (onConnect){
+        onConnect(connected)
+      }
     });
 
     socket.on("disconnect", (reason: any) => {
       setConnected(false);
+      if (onDisconnect){
+        onDisconnect(connected)
+      }
     });
 
     socket.on("connect_error", (error: any) => {
