@@ -16,11 +16,16 @@ const controlBtnClass =
 const PlayComputer: React.FC = () => {
   const chessBoardRef = useRef<ChessBoardRef>(null);
   const socketRef = useRef<Socket | null>(null);
+  const tutorSocketRef = useRef<Socket | null>(null);
   const gameRef = useRef<Chess>(new Chess());
   const playerColorRef = useRef<'white' | 'black'>('white');
   const sessionStartedRef = useRef<boolean>(false);
   const difficultyRef = useRef<Difficulty>(10);
   const movesContainerRef = useRef<HTMLDivElement>(null);
+  const fenBeforeMoveRef = useRef<string>('');
+  const playerLastMoveRef = useRef<string>('');
+  const tutorReadyRef = useRef<boolean>(false);
+  const showTutorRef = useRef<boolean>(true);
 
   const [fen, setFen] = useState<string>("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   const [playerColor, setPlayerColor] = useState<'white' | 'black'>('white');
@@ -34,16 +39,27 @@ const PlayComputer: React.FC = () => {
   const [showSettings, setShowSettings] = useState(true);
   const [showGameEndModal, setShowGameEndModal] = useState(false);
   const [gameEndMessage, setGameEndMessage] = useState('');
+  const [showTutor, setShowTutor] = useState(true);
+  const [tutorMessage, setTutorMessage] = useState<string | null>(null);
+  const [isTutorThinking, setIsTutorThinking] = useState(false);
 
   // When the user clicks "Play" in the navbar while a game is active, reset to settings
   useEffect(() => {
     if (!sessionStartedRef.current) return;
     socketRef.current?.emit('end-session');
+    if (tutorSocketRef.current) {
+      tutorSocketRef.current.disconnect();
+      tutorSocketRef.current = null;
+      tutorReadyRef.current = false;
+    }
     gameRef.current.reset();
     setFen(gameRef.current.fen());
     setMoveHistory([]);
     setHighlightSquares([]);
     setIsThinking(false);
+    setTutorMessage(null);
+    setIsTutorThinking(false);
+    playerLastMoveRef.current = '';
     if (chessBoardRef.current) chessBoardRef.current.reset();
     setShowSettings(true);
     setSessionStarted(false);
@@ -53,6 +69,7 @@ const PlayComputer: React.FC = () => {
   useEffect(() => { playerColorRef.current = playerColor; }, [playerColor]);
   useEffect(() => { sessionStartedRef.current = sessionStarted; }, [sessionStarted]);
   useEffect(() => { difficultyRef.current = difficulty; }, [difficulty]);
+  useEffect(() => { showTutorRef.current = showTutor; }, [showTutor]);
   useEffect(() => {
     if (movesContainerRef.current) {
       movesContainerRef.current.scrollTop = movesContainerRef.current.scrollHeight;
@@ -133,9 +150,45 @@ const PlayComputer: React.FC = () => {
       fen: gameRef.current.fen(),
     });
     setShowSettings(false);
+
+    // Separate socket exclusively for tutor evaluations
+    const tutorSocket = io(environment.urls.stockfishServerURL, {
+      transports: ['websocket'],
+      reconnection: true,
+    });
+    tutorSocketRef.current = tutorSocket;
+
+    tutorSocket.on('connect', () => {
+      tutorSocket.emit('start-session', {
+        sessionType: 'tutor',
+        fen: gameRef.current.fen(),
+      });
+    });
+    tutorSocket.on('session-started', () => {
+      tutorReadyRef.current = true;
+    });
+    tutorSocket.on('evaluation-complete', ({ mode, move }: { mode: string; move: string }) => {
+      if (mode !== 'move' || !move) return;
+      const playerMove = playerLastMoveRef.current;
+      if (!playerMove) return;
+      // Compare first 4 chars (from+to) — ignore promotion edge cases
+      const matchesPlayer = move.slice(0, 4) === playerMove.slice(0, 4);
+      if (matchesPlayer) {
+        setTutorMessage("Excellent! That's exactly what Stockfish recommends.");
+      } else {
+        const from = move.slice(0, 2);
+        const to = move.slice(2, 4);
+        setTutorMessage(`Stockfish recommends ${from}→${to} instead.`);
+      }
+      setIsTutorThinking(false);
+    });
+    tutorSocket.on('evaluation-error', () => {
+      setIsTutorThinking(false);
+    });
   }, [connected]);
 
   const handleMove = useCallback((move: Move) => {
+    const fenBefore = gameRef.current.fen();
     try {
       const moveResult = gameRef.current.move({
         from: move.from,
@@ -143,6 +196,9 @@ const PlayComputer: React.FC = () => {
         promotion: move.promotion,
       });
       if (!moveResult) return;
+
+      // Record the player's move in UCI format for tutor comparison
+      playerLastMoveRef.current = `${move.from}${move.to}${move.promotion ?? ''}`;
 
       const newFen = gameRef.current.fen();
       setFen(newFen);
@@ -154,6 +210,17 @@ const PlayComputer: React.FC = () => {
       if (socketRef.current) {
         socketRef.current.emit('update-fen', { fen: newFen });
         requestComputerMove(newFen);
+      }
+
+      // Ask tutor: what was the best move from the position before the player moved?
+      if (showTutorRef.current && tutorReadyRef.current && tutorSocketRef.current) {
+        setIsTutorThinking(true);
+        setTutorMessage(null);
+        tutorSocketRef.current.emit('evaluate-fen', {
+          fen: fenBefore,
+          move: '',
+          level: 10,
+        });
       }
     } catch (error) {
       console.error('Error handling move:', error);
@@ -193,6 +260,9 @@ const PlayComputer: React.FC = () => {
     setMoveHistory([]);
     setHighlightSquares([]);
     setIsThinking(false);
+    setTutorMessage(null);
+    setIsTutorThinking(false);
+    playerLastMoveRef.current = '';
     if (chessBoardRef.current) chessBoardRef.current.reset();
     if (socketRef.current && sessionStartedRef.current) {
       socketRef.current.emit('update-fen', { fen: startFen });
@@ -205,6 +275,11 @@ const PlayComputer: React.FC = () => {
   const newGame = useCallback(() => {
     if (socketRef.current && sessionStartedRef.current) {
       socketRef.current.emit('end-session');
+    }
+    if (tutorSocketRef.current) {
+      tutorSocketRef.current.disconnect();
+      tutorSocketRef.current = null;
+      tutorReadyRef.current = false;
     }
     resetGame();
     setShowSettings(true);
@@ -323,17 +398,42 @@ const PlayComputer: React.FC = () => {
             </button>
           </div>
 
-          {/* ── Chessboard ── */}
-          <div className="mb-8 shadow-xl rounded-lg overflow-hidden">
-            <ChessBoard
-              mode="engine"
-              ref={chessBoardRef}
-              fen={fen}
-              orientation={playerColor}
-              highlightSquares={highlightSquares}
-              onMove={handleMove}
-              disabled={isThinking}
-            />
+          {/* ── Chessboard + Tutor panel ── */}
+          <div className="flex gap-6 items-start mb-8">
+            <div className="shadow-xl rounded-lg overflow-hidden">
+              <ChessBoard
+                mode="engine"
+                ref={chessBoardRef}
+                fen={fen}
+                orientation={playerColor}
+                highlightSquares={highlightSquares}
+                onMove={handleMove}
+                disabled={isThinking}
+              />
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={showTutor}
+                  onChange={e => setShowTutor(e.target.checked)}
+                  className="w-4 h-4 accent-primary"
+                />
+                <span className="font-semibold text-dark text-sm">Show Tutor</span>
+              </label>
+
+              {showTutor && (
+                <div className="bg-light border-2 border-dark rounded-2xl p-5 w-56">
+                  <h3 className="font-bold text-dark text-base mb-3">Stockfish Tutor</h3>
+                  <p className="text-sm text-muted leading-relaxed">
+                    {isTutorThinking
+                      ? 'Analyzing your move...'
+                      : tutorMessage ?? 'Make a move to get instant feedback.'}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* ── Move history ── */}
