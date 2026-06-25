@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Chess } from 'chess.js';
 import { io, Socket } from 'socket.io-client';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { Move } from '../../core/types/chess';
 import ChessBoard, { ChessBoardRef } from '../../components/ChessBoard/ChessBoard';
 import { environment } from "../../environments/environment";
@@ -11,6 +11,7 @@ import type { GameMetaData } from './SelectGame';
 import type { User } from './SelectGame';
 import { useCookies } from 'react-cookie';
 import { SetPermissionLevel } from "../../globals"
+import { Navigate } from 'react-router';
 //Ideas
 //check login validation for if we need to retrieve games 
 //change all of this to talk to the server have the server do the retireval  saving and editing of information 
@@ -31,12 +32,12 @@ const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false)
     const [cookies, setCookie, removeCookie] = useCookies(["login"])
 
     const user = useRef<User>(null)
+    const navigate = useNavigate()
 
   //chessboard, socket, player color, difficulty , sessionstart, movehistory, highlighted sqaures, gamemodal toggle, game end message toggle , fen
   const chessBoardRef = useRef<ChessBoardRef>(null);
   const socketRef = useRef<any | null>(null);
   const gameRef = useRef<Chess>(new Chess());
-  const playerColorRef = useRef<'white' | 'black'>('white');
   const movesContainerRef = useRef<HTMLDivElement>(null);
 
   const [fen, setFen] = useState<string>("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -44,7 +45,6 @@ const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false)
   const [difficulty, setDifficulty] = useState<number>(10);
   const location = useLocation();
   const [connected, setConnected] = useState(false);
-  const [sessionStarted, setSessionStarted] = useState(false);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
   const [showSettings, setShowSettings] = useState(true);
@@ -89,114 +89,61 @@ useEffect(() => {
 
     }, [cookies.login]);
 
+
+
   useEffect(() => {
-    if (!sessionStartedRef.current) return;
-    socketRef.current?.emit('end-session');
-    gameRef.current.reset();
-    setFen(gameRef.current.fen());
-    setMoveHistory([]);
-    setHighlightSquares([]);
-    setIsThinking(false);
-    if (chessBoardRef.current) chessBoardRef.current.reset();
-    setShowSettings(true);
-    setSessionStarted(false);
-    sessionStartedRef.current = false;
+    resetGame();
+    connectToServer();
+    loadGame();
   }, [location.key]);
 
-  useEffect(() => { playerColorRef.current = playerColor; }, [playerColor]);
-  useEffect(() => { sessionStartedRef.current = sessionStarted; }, [sessionStarted]);
-  useEffect(() => { difficultyRef.current = difficulty; }, [difficulty]);
   useEffect(() => {
     if (movesContainerRef.current) {
       movesContainerRef.current.scrollTop = movesContainerRef.current.scrollHeight;
     }
   }, [moveHistory]);
 
-  const requestComputerMove = useCallback((currentFen: string) => {
-    if (!socketRef.current || !sessionStartedRef.current) return;
-    setIsThinking(true);
-    socketRef.current.emit('evaluate-fen', {
-      fen: currentFen,
-      move: '',
-      level: difficultyRef.current,
-    });
-  }, []);
 
-  const onConnection= (isConnected: boolean) =>{
-    setConnected(isConnected)
-  }
-  const onDisconnection= (isConnected: boolean) =>{
-    setConnected(isConnected)
-  }
 
-  useEffect(() => {
-    //starting up the session
-    if (!connected){
-      gameMetaData.current= location.state
-
-    const socketSettings = {
+const connectToServer = () =>{
+  const socketSettings = {
       student: gameMetaData.current.user?.firstName || "",
       serverUrl: environment.urls.chessServerURL,
-      onConnect: onConnection,
-      onDisconnect : onDisconnection,
     }
-
     const socket = useChessSocket(socketSettings)
     socketRef.current = socket;
+    return true
+}
 
-    socketRef.current.
-    
-    socket.on('disconnect', () => {
-      setConnected(false);
-      setSessionStarted(false);
-      sessionStartedRef.current = false;
-    });
-    
-    socket.on('session-error', ({ error }) => {
-      console.error('Session error:', error);
-      alert('Failed to start session: ' + error);
-    });
-    socket.on('evaluation-complete', ({ mode, move }) => {
-      if (mode === 'move' && move) {
-        try {
-          const moveResult = gameRef.current.move(move);
-          if (moveResult) {
-            const updatedFen = gameRef.current.fen();
-            setFen(updatedFen);
-            setHighlightSquares([moveResult.from, moveResult.to]);
-            setMoveHistory(prev => [...prev, `${moveResult.from} -> ${moveResult.to}`]);
-            if (chessBoardRef.current) {
-              chessBoardRef.current.setPosition(updatedFen);
-              chessBoardRef.current.highlightMove(moveResult.from, moveResult.to);
-            }
-            checkGameStatus();
-          }
-        } catch (err) {
-          console.error('Failed to apply computer move:', err);
-        }
-        setIsThinking(false);
-      }
-    });
-    socket.on('evaluation-error', ({ error }) => {
-      console.error('Evaluation error:', error);
-      setIsThinking(false);
-      alert('Engine error: ' + error);
-    });
+const startGame = () =>{
+  connected ? setShowSettings(false) : setShowSettings(true)
+}
 
-    return () => { socket.disconnect(); };
-  }, [requestComputerMove]);
+  const onOpponentMove = (data: { fen: string; move?: Move }) =>{
+    if (!yourTurn){
+      const moveResult = gameRef.current.move({
+        from: data.move.from,
+        to: data.move.to,
+        promotion: data.move.promotion,
+      });
+      if (!moveResult) return;
 
-  const startSession = useCallback(() => {
-    if (!connected || !socketRef.current) {
-      alert('Not connected to server');
-      return;
+      setFen(gameRef.current.fen())
+      setYourTurn(prev=> !prev)
+      setHighlightSquares([data.move.from, data.move.to]);
+      setMoveHistory(prev => [...prev, `${data.move.from} -> ${data.move.to}`]);
+
+      if (checkGameStatus()) return;
+
+      gameMetaData.current.movesList=moveHistory
+      gameMetaData.current.fen=fen
+      gameMetaData.current.updatedAt= Date.now().toString()
+      socketRef.current.saveGame(gameMetaData)
     }
-    socketRef.current.emit('start-session', {
-      sessionType: 'player-vs-computer',
-      fen: gameRef.current.fen(),
-    });
-    setShowSettings(false);
-  }, [connected]);
+    else{
+      console.log("Not the Opponent's turn")
+    }
+  }
 
   const handleMove = useCallback((move: Move) => {
     if (yourTurn){
@@ -218,21 +165,20 @@ useEffect(() => {
       gameMetaData.current.movesList=moveHistory
       gameMetaData.current.fen=fen
       gameMetaData.current.updatedAt= Date.now().toString()
+      socketRef.current.saveGame(gameMetaData)
 
       if (socketRef.current) {
-        socketRef.current.playerMove(gameMetaData)
-        setYourTurn(prev => !prev)
-       
+        socketRef.current.playMove(gameMetaData)
+        setYourTurn(prev => !prev) 
       }
-
     } catch (error) {
       console.error('Error handling move:', error);
     }
   }
   else{
-    //setloading
+    console.log("It's not your turn")
   }
-}, [requestComputerMove]);
+}, []);
 
   const checkGameStatus = useCallback((): boolean => {
     const game = gameRef.current;
@@ -240,21 +186,28 @@ useEffect(() => {
       const winner = game.turn() === 'w' ? 'Black' : 'White';
       setGameEndMessage(`Checkmate! ${winner} wins!`);
       setShowGameEndModal(true);
+      endGame("won")
       return true;
     }
     if (game.isDraw() || game.isStalemate()) {
       setGameEndMessage(game.isStalemate() ? 'Stalemate! Draw!' : 'Game over: Draw!');
       setShowGameEndModal(true);
+      endGame("draw")
+
       return true;
     }
     if (game.isThreefoldRepetition()) {
       setGameEndMessage('Draw by threefold repetition!');
       setShowGameEndModal(true);
+      endGame("draw")
+
       return true;
     }
     if (game.isInsufficientMaterial()) {
       setGameEndMessage('Draw by insufficient material!');
       setShowGameEndModal(true);
+      endGame("draw")
+
       return true;
     }
     return false;
@@ -264,7 +217,6 @@ useEffect(() => {
     gameRef.current.reset();
     if (chessBoardRef.current) chessBoardRef.current.reset();
     setDifficulty(10)
-    setSessionStarted(false)
     setMoveHistory([])
     const startFen = gameRef.current.fen();
     setFen(startFen);
@@ -277,6 +229,17 @@ useEffect(() => {
     socketRef.current= null
   }, []);
 
+  const endGame = (outcome : "won" | "lost" | "ongoing" | "draw") =>{
+    if (location.state){
+      gameMetaData.current.status= outcome;
+      socketRef.current.saveGame(gameMetaData);
+      return
+    }
+    else{
+      return
+    }
+  }
+
   const loadGame = () =>{
     if (location.state){
       const gameMetaData : GameMetaData = location.state
@@ -285,7 +248,6 @@ useEffect(() => {
         gameRef.current= new Chess(newGame.fen)
         chessBoardRef.current.setPosition(fen)
         setDifficulty(newGame.computerLevel)
-        setSessionStarted(socketRef.current.sessionStarted())
         setMoveHistory(newGame.movesList)
         setHighlightSquares([])
       const [, activeColor] = newGame.fen.split(" ");
@@ -300,7 +262,7 @@ useEffect(() => {
       if ((user.current) && socketRef.current){
         const newGame : GameMetaData = {
         userId: user.current.id,
-        user?: user.current,                                                                                                                                                                                                                                                         
+        user: user.current,                                                                                                                                                                                                                                                         
         gameName: "Me vs Computer",
         gameType: "computer" ,
         computerLevel: difficulty,
@@ -323,7 +285,6 @@ useEffect(() => {
         gameRef.current= new Chess(newGame.fen)
         chessBoardRef.current.setPosition(fen)
         setDifficulty(newGame.computerLevel)
-        setSessionStarted(socketRef.current.sessionStarted())
         setMoveHistory(newGame.movesList)
         setHighlightSquares([])
       const [, activeColor] = newGame.fen.split(" ");
@@ -335,13 +296,14 @@ useEffect(() => {
     }
   }
 
-  const startGame = () =>{
-
-  }
-
 
   const undoMove = useCallback(() => {
     if (moveHistory.length < 2) return;
+    if (gameMetaData.current) {
+      if (gameMetaData.current.gameType != "computer"){
+        return
+      }
+    }
     gameRef.current.undo();
     gameRef.current.undo();
     const newFen = gameRef.current.fen();
@@ -351,6 +313,7 @@ useEffect(() => {
     if (chessBoardRef.current) chessBoardRef.current.setPosition(newFen);
     if (socketRef.current) socketRef.current.emit('update-fen', { fen: newFen });
   }, [moveHistory.length]);
+  
 
   const difficulties: { label: string; value: Difficulty }[] = [
     { label: 'Easy', value: 1 },
@@ -429,22 +392,19 @@ useEffect(() => {
           </div>
 
 
-          <button className="btn-green w-full mt-8 mb-4" onClick={startSession} disabled={!connected}>
-            {connected ? 'Start Game' : 'Connecting...'}
+          <button className="btn-green w-full mt-8 mb-4" onClick={()=>{startGame}}>
+            {!connected ? 'Start Game' : 'Connecting...'}
           </button>
         </div>
       ) : (
         <>
           {/* ── Game controls ── */}
           <div className="flex gap-3 mb-8 flex-wrap justify-center">
-            <button className={controlBtnClass} onClick={undoMove} disabled={moveHistory.length < 2 || isThinking}>
+            <button className={controlBtnClass} onClick={undoMove} disabled={moveHistory.length < 2 || !yourTurn}>
               Undo
             </button>
-            <button className={controlBtnClass} onClick={resetGame} disabled={isThinking}>
+            <button className={controlBtnClass} onClick={resetGame} disabled={!yourTurn}>
               Reset
-            </button>
-            <button className={controlBtnClass} onClick={newGame}>
-              New Game
             </button>
             <button className={controlBtnClass} onClick={() => chessBoardRef.current?.flip()}>
               Flip Board
@@ -460,7 +420,7 @@ useEffect(() => {
               orientation={playerColor}
               highlightSquares={highlightSquares}
               onMove={handleMove}
-              disabled={isThinking}
+              disabled={!yourTurn}
             />
           </div>
 
@@ -514,7 +474,7 @@ useEffect(() => {
             <div className="flex gap-3">
               <button
                 className="btn-green flex-1"
-                onClick={() => { setShowGameEndModal(false); newGame(); }}
+                onClick={() => {navigate("/play")}}
               >
                 New Game
               </button>
@@ -529,6 +489,7 @@ useEffect(() => {
         </div>
       )}
     </div>
+    
   );
 };
 

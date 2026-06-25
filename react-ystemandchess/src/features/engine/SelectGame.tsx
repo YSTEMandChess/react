@@ -19,7 +19,7 @@ export type GameMetaData = {
         fen: string,
         movesList: string[],
         playerColor: "white" | "black",
-        status: "won" | "lost" | "ongoing",
+        status: "won" | "lost" | "ongoing" | "draw",
         createdAt: string,
         updatedAt: string
     }
