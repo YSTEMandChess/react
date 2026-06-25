@@ -11,7 +11,6 @@ import type { GameMetaData } from './SelectGame';
 import type { User } from './SelectGame';
 import { useCookies } from 'react-cookie';
 import { SetPermissionLevel } from "../../globals"
-import { Navigate } from 'react-router';
 //Ideas
 //check login validation for if we need to retrieve games 
 //change all of this to talk to the server have the server do the retireval  saving and editing of information 
@@ -25,9 +24,6 @@ const controlBtnClass =
   "enabled:hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed";
 
 const PlayComputer: React.FC = () => {
-
-
-
 const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false)
     const [cookies, setCookie, removeCookie] = useCookies(["login"])
 
@@ -65,7 +61,6 @@ useEffect(() => {
             setIsLoggedIn(false);
             return;
         }
-
         const verifyAndLoad = async () => {
             try {
                 const UInfo = await SetPermissionLevel(cookies, removeCookie);
@@ -83,10 +78,8 @@ useEffect(() => {
                 setIsLoggedIn(false);
             }
         };
-
         verifyAndLoad();
         console.log("Logged in")
-
     }, [cookies.login]);
 
 
@@ -103,15 +96,17 @@ useEffect(() => {
     }
   }, [moveHistory]);
 
-
-
 const connectToServer = () =>{
   const socketSettings = {
       student: gameMetaData.current.user?.firstName || "",
       serverUrl: environment.urls.chessServerURL,
+      onMove: onOpponentMove,
+      onLastMove : endGame
+      
     }
     const socket = useChessSocket(socketSettings)
     socketRef.current = socket;
+    setConnected(socketRef.current.connected)
     return true
 }
 
@@ -131,12 +126,15 @@ const startGame = () =>{
       setFen(gameRef.current.fen())
       setYourTurn(prev=> !prev)
       setHighlightSquares([data.move.from, data.move.to]);
-      setMoveHistory(prev => [...prev, `${data.move.from} -> ${data.move.to}`]);
+const moveStr = data.move.promotion 
+  ? `${data.move.from} -> ${data.move.to} (${data.move.promotion})`
+  : `${data.move.from} -> ${data.move.to}`;
 
+setMoveHistory(prev => [...prev, moveStr]);
       if (checkGameStatus()) return;
 
       gameMetaData.current.movesList=moveHistory
-      gameMetaData.current.fen=fen
+      gameMetaData.current.fen= gameRef.current.fen()
       gameMetaData.current.updatedAt= Date.now().toString()
       socketRef.current.saveGame(gameMetaData)
     }
@@ -158,7 +156,12 @@ const startGame = () =>{
       const newFen = gameRef.current.fen();
       setFen(newFen);
       setHighlightSquares([move.from, move.to]);
-      setMoveHistory(prev => [...prev, `${move.from} -> ${move.to}`]);
+      const moveStr = move.promotion 
+  ? `${move.from} -> ${move.to} (${move.promotion})`
+  : `${move.from} -> ${move.to}`;
+
+setMoveHistory(prev => [...prev, moveStr]);
+      
 
       if (checkGameStatus()) return;
 
@@ -229,10 +232,11 @@ const startGame = () =>{
     socketRef.current= null
   }, []);
 
-  const endGame = (outcome : "won" | "lost" | "ongoing" | "draw") =>{
+  const endGame = (outcome : "won" | "lost" | "ongoing" | "draw" ) =>{
     if (location.state){
       gameMetaData.current.status= outcome;
       socketRef.current.saveGame(gameMetaData);
+      socketRef.current.endGame()
       return
     }
     else{
@@ -240,70 +244,60 @@ const startGame = () =>{
     }
   }
 
-  const loadGame = () =>{
-    if (location.state){
-      const gameMetaData : GameMetaData = location.state
-      if (socketRef.current){
-        const newGame : GameMetaData= socketRef.current.getMostRecentGameInfo(gameMetaData)
-        gameRef.current= new Chess(newGame.fen)
-        chessBoardRef.current.setPosition(fen)
-        setDifficulty(newGame.computerLevel)
-        setMoveHistory(newGame.movesList)
-        setHighlightSquares([])
-      const [, activeColor] = newGame.fen.split(" ");
-     const turn= activeColor === "w" ? "white" : "black";
-     turn === playerColor ? setYourTurn(true) : setYourTurn(false)
-     setShowSettings(false)
-         setShowGameEndModal(false);
-             setGameEndMessage("");
-      }
-    }
-    else{
-      if ((user.current) && socketRef.current){
-        const newGame : GameMetaData = {
-        userId: user.current.id,
-        user: user.current,                                                                                                                                                                                                                                                         
-        gameName: "Me vs Computer",
-        gameType: "computer" ,
-        computerLevel: difficulty,
-        fen: fen,
-        movesList: moveHistory,
-        playerColor: playerColor,
-        status: "ongoing",
-        createdAt: Date.now().toString(),
-        updatedAt: Date.now().toString()
-    }
-    socketRef.current.saveNewGame(newGame)}
-      else{
-        if (socketRef.current){
-          socketRef.current.createNewGameNoSaveState();
-        }
-      }
-    }
-      if (socketRef.current){
-        const newGame : GameMetaData= socketRef.current.getMostRecentGameInfo(gameMetaData)
-        gameRef.current= new Chess(newGame.fen)
-        chessBoardRef.current.setPosition(fen)
-        setDifficulty(newGame.computerLevel)
-        setMoveHistory(newGame.movesList)
-        setHighlightSquares([])
-      const [, activeColor] = newGame.fen.split(" ");
-     const turn= activeColor === "w" ? "white" : "black";
-     turn === playerColor ? setYourTurn(true) : setYourTurn(false)
-     setShowSettings(false)
-         setShowGameEndModal(false);
-             setGameEndMessage("");
-    }
-  }
 
+const loadGame = () => {
+  if (!socketRef.current) return;
+
+  if (location.state) {
+    const savedMeta: GameMetaData = location.state;
+    const newGame = socketRef.current.getMostRecentGameInfo(savedMeta);
+    applyGameState(newGame);
+  } else if (user.current) {
+    const newGame: GameMetaData = {
+      userId: user.current.id,
+      user: user.current,
+      gameName: "Me vs Computer",
+      gameType: "computer",
+      computerLevel: difficulty,
+      fen,
+      movesList: moveHistory,
+      playerColor,
+      status: "ongoing",
+      createdAt: Date.now().toString(),
+      updatedAt: Date.now().toString(),
+    };
+    gameMetaData.current = newGame;
+    socketRef.current.saveNewGame(newGame);
+    navigate(location.pathname, { state: newGame, replace: true });
+    applyGameState(newGame);
+  } else {
+    socketRef.current.createNewGameNoSaveState();
+  }
+};
+
+// extracted so you're not copy-pasting it twice
+const applyGameState = (game: GameMetaData) => {
+  gameRef.current = new Chess(game.fen);
+  chessBoardRef.current.setPosition(game.fen); // use game.fen, not stale fen
+  setDifficulty(game.computerLevel);
+  setMoveHistory(game.movesList);
+  setHighlightSquares([]);
+  const [, activeColor] = game.fen.split(" ");
+  setYourTurn((activeColor === "w" ? "white" : "black") === playerColor);
+  setShowSettings(false);
+  setShowGameEndModal(false);
+  setGameEndMessage("");
+};
 
   const undoMove = useCallback(() => {
+
+    //need to work on undo functionality 
     if (moveHistory.length < 2) return;
     if (gameMetaData.current) {
       if (gameMetaData.current.gameType != "computer"){
         return
       }
-    }
+    }/*
     gameRef.current.undo();
     gameRef.current.undo();
     const newFen = gameRef.current.fen();
@@ -311,7 +305,7 @@ const startGame = () =>{
     setMoveHistory(prev => prev.slice(0, -2));
     setHighlightSquares([]);
     if (chessBoardRef.current) chessBoardRef.current.setPosition(newFen);
-    if (socketRef.current) socketRef.current.emit('update-fen', { fen: newFen });
+    if (socketRef.current) socketRef.current.emit('update-fen', { fen: newFen }); */
   }, [moveHistory.length]);
   
 
@@ -392,7 +386,7 @@ const startGame = () =>{
           </div>
 
 
-          <button className="btn-green w-full mt-8 mb-4" onClick={()=>{startGame}}>
+          <button className="btn-green w-full mt-8 mb-4" onClick={()=>{startGame()}}>
             {!connected ? 'Start Game' : 'Connecting...'}
           </button>
         </div>

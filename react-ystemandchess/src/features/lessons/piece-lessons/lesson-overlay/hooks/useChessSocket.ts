@@ -1,6 +1,51 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { Move, BoardState, MousePosition, GameConfig, GameMode, PlayerColor } from "../../../../../core/types/chess";
+import type { GameMetaData } from "../../../../engine/SelectGame";
+
+
+/*
+
+    
+    socket.on('disconnect', () => {
+      setConnected(false);
+      setSessionStarted(false);
+      sessionStartedRef.current = false;
+    });
+    
+    socket.on('session-error', ({ error }) => {
+      console.error('Session error:', error);
+      alert('Failed to start session: ' + error);
+    });
+    socket.on('evaluation-complete', ({ mode, move }) => {
+      if (mode === 'move' && move) {
+        try {
+          const moveResult = gameRef.current.move(move);
+          if (moveResult) {
+            const updatedFen = gameRef.current.fen();
+            setFen(updatedFen);
+            setHighlightSquares([moveResult.from, moveResult.to]);
+            setMoveHistory(prev => [...prev, `${moveResult.from} -> ${moveResult.to}`]);
+            if (chessBoardRef.current) {
+              chessBoardRef.current.setPosition(updatedFen);
+              chessBoardRef.current.highlightMove(moveResult.from, moveResult.to);
+            }
+            checkGameStatus();
+          }
+        } catch (err) {
+          console.error('Failed to apply computer move:', err);
+        }
+        setIsThinking(false);
+      }
+    });
+    socket.on('evaluation-error', ({ error }) => {
+      console.error('Evaluation error:', error);
+      setIsThinking(false);
+      alert('Engine error: ' + error);
+    });
+
+    return () => { socket.disconnect(); };
+    */
 
 interface UseChessSocketOptions {
   student: string;
@@ -63,7 +108,7 @@ const normalizeFen = (fen: string): string => {
   }
 
   return paddedParts.join(" ");
-};
+}; 
 
 export const useChessSocket = ({
   student,
@@ -134,13 +179,12 @@ export const useChessSocket = ({
         onDisconnect(connected)
       }
     });
+
+    
     socket.on('session-started', ({ success }) => {
-      setSessionStarted(true);
-      sessionStartedRef.current = true;
-      if (success && playerColorRef.current === 'black') {
-        requestComputerMove(gameRef.current.fen());
-      }
+      console.log("AI is connected");
     });
+    
 
     socket.on("connect_error", (error: any) => {
       console.error("Connection error:", error);
@@ -190,6 +234,17 @@ export const useChessSocket = ({
         console.error("Invalid boardstate:", err);
       }
     });
+
+    socket.on('evaluation-complete', ({ gameMetaData }) => {
+  const lastMove = gameMetaData.movesList[gameMetaData.movesList.length - 1];
+  const [from, rest] = lastMove.split(" -> ");
+  const [to, promotionPart] = rest.split(" (");
+  const promotion = promotionPart ? promotionPart.replace(")", "") : undefined;
+
+  if (onMove) {
+    onMove({ fen: gameMetaData.fen, move: { from, to, promotion } });
+  }
+});
 
     // color (explicit)
     socket.on("color", (msg: string) => {
@@ -311,6 +366,8 @@ export const useChessSocket = ({
       if (onError) onError(msg);
     });
 
+    
+
     // cleanup when component unmounts
     return () => {
       try {
@@ -370,6 +427,33 @@ export const useChessSocket = ({
     },
     []
   );
+
+  const saveGame = (gameMetaData: GameMetaData) =>{
+    socketRef.current?.emit("saveGame", gameMetaData)
+    console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
+  }
+
+  const playMove = (gameMetaData: GameMetaData) =>{
+    socketRef.current?.emit("playMove", gameMetaData)
+    console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
+  }
+
+  const getMostRecentGameInfo = (gameMetaData: GameMetaData) =>{
+    socketRef.current?.emit("getMostRecentGameInfo", gameMetaData)
+    console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
+    socketRef.current.on("onMostRecentGameInfo", (msg: GameMetaData)=>{
+      return msg
+    })
+  }
+
+  const saveNewGame = (gameMetaData: GameMetaData) =>{
+    socketRef.current?.emit("saveNewGame", gameMetaData)
+    console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
+  }
+
+
+
+
 
   const sendMove = useCallback((move: Move) => {
     const data = {
@@ -551,6 +635,10 @@ export const useChessSocket = ({
     sendMove,
     undo,
     setExpectedMove,
+    saveGame,
+    playMove,
+    getMostRecentGameInfo,
+    saveNewGame,
 
     // State management
     setGameState,
@@ -569,6 +657,7 @@ export const useChessSocket = ({
     // Communication
     sendMousePosition,
     sendMessage,
+    
 
     // Mouse tracking helpers
     startMouseTracking,

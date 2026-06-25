@@ -44,7 +44,7 @@ const SavedGameSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['won', 'lost', 'ongoing'],
+        enum: ['won', 'lost', 'ongoing', 'draw'],
         default: 'ongoing'
     },
     createdAt: {
