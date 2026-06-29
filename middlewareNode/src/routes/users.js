@@ -93,7 +93,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, password, first, last, email, role, students } =
+    const { username, password, first, last, email, role, students, zipcode, gender, gradeLevel } =
       req.query;
 
     //Error catching when using mongoose functions like Users.findOne()
@@ -142,6 +142,9 @@ router.post(
                 role: "student",
                 accountCreatedAt: currDate.toLocaleString(),
                 timePlayed: 0,
+                zipcode: student.zipcode || null,
+                gender: student.gender || null,
+                gradeLevel: student.gradeLevel || null,
               });
               await newStudent.save(async function (err, user) {
                 if(err) {
@@ -172,6 +175,9 @@ router.post(
         email,
         role,
         accountCreatedAt: currDate.toLocaleString(),
+        zipcode: zipcode || null,
+        gender: gender || null,
+        gradeLevel: gradeLevel || null,
       });
       await mainUser.save();
 
