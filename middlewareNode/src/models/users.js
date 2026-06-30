@@ -59,10 +59,14 @@ const usersSchema = new mongoose.Schema(
       ],
       default: () => require("./defaultLessons"),
     },
-    // Analytics demographic fields — optional, collected over time via profile updates
+    // Analytics demographic fields, optional, collected over time via profile updates
     zipcode:    { type: String, default: null, index: true },
     gender:     { type: String, enum: ["M", "F", "Other", null], default: null },
     gradeLevel: { type: String, default: null },
+    // Parent occupation, collected at parent signup
+    occupation: { type: String, default: null },
+    // Child date of birth, collected at add child
+    birthday:   { type: String, default: null },
   },
   { versionKey: false },
 );

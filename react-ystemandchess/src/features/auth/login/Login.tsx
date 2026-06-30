@@ -188,12 +188,6 @@ const Login = () => {
         aria-label="Account Options"
       >
         <a
-          href="/signup"
-          className="text-dark border-b-2 border-transparent hover:border-dark transition-colors"
-        >
-          Create a new account
-        </a>
-        <a
           href="/reset-password"
           className="text-dark border-b-2 border-transparent hover:border-dark transition-colors"
         >
