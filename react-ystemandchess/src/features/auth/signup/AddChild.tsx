@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { environment } from "../../../environments/environment";
@@ -27,6 +27,24 @@ const AddChild = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasChildren, setHasChildren] = useState(false);
+
+  useEffect(() => {
+    const checkChildren = async () => {
+      try {
+        const response = await fetch(`${environment.urls.middlewareURL}/user/children`, {
+          headers: { Authorization: `Bearer ${cookies.login}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setHasChildren(Array.isArray(data) && data.length > 0);
+        }
+      } catch (error) {
+        setHasChildren(false);
+      }
+    };
+    checkChildren();
+  }, [cookies.login]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -115,7 +133,8 @@ const AddChild = () => {
 
   return (
     <AuthLayout
-      step={1}
+      step={hasChildren ? undefined : 1}
+      tightSides
       panelTitle="Set up your child's account"
     >
       <h1 className="text-3xl font-bold text-dark mb-6 text-center">Add a Child</h1>

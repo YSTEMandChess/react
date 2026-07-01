@@ -128,6 +128,11 @@ const MentorSignUp = () => {
   return (
     <AuthLayout
       panelTitle="Share your knowledge, change a life"
+      links={[
+        { label: "About Us", to: "/about-us" },
+        { label: "Our Mission", to: "/mission" },
+        { label: "Online Expansion", to: "/online-expansion" },
+      ]}
     >
       <h1 className="text-3xl font-bold text-dark mb-6 text-center">Mentor Sign Up</h1>
 

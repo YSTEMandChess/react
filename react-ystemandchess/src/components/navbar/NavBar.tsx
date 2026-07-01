@@ -402,7 +402,7 @@ const NavBar = () => {
                 <div className="flex flex-col gap-2">
                   {/* Dynamic profile link based on user role */}
                   <Link
-                    to={`/${role}-profile`}
+                    to={role === "parent" ? "/signup/parent/section" : `/${role}-profile`}
                     onClick={profileToggleDropdown}
                     className="text-base text-gray transition-colors hover:text-primary"
                   >
@@ -412,7 +412,7 @@ const NavBar = () => {
                   {/* Conditional link for parent users only */}
                   {role === "parent" && (
                     <Link
-                      to="/parent-add-student"
+                      to="/signup/parent/add-child"
                       onClick={profileToggleDropdown}
                       className="text-base text-gray transition-colors hover:text-primary"
                     >
