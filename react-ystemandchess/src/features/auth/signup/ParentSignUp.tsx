@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { environment } from "../../../environments/environment";
+import AuthLayout from "./AuthLayout";
 
 const inputClass = (invalid: boolean) =>
-  `w-full rounded-lg border-2 px-4 py-3 text-sm text-dark bg-white caret-dark
+  `w-full rounded-lg border-2 px-4 py-3.5 text-base text-dark bg-white caret-dark
    focus:outline-none focus:shadow-none transition-colors ${
      invalid ? "border-red" : "border-borderLight focus:border-primary"
    }`;
@@ -119,14 +120,17 @@ const ParentSignUp = () => {
       expires.setDate(expires.getDate() + 1);
       setCookie("login", loginData.token, { expires, path: "/" });
 
-      navigate("/signup/parent/add-child");
+      navigate("/signup/parent/section");
     } catch (error) {
       setErrors((prev) => ({ ...prev, general: "Sign up failed. Please try again." }));
     }
   };
 
   return (
-    <div className="min-h-[71vh] flex flex-col items-center justify-center px-4 py-12">
+    <AuthLayout
+      step={0}
+      panelTitle="Helping your child develop critical thinking skills"
+    >
       <h1 className="text-3xl font-bold text-dark mb-6 text-center">Parent Sign Up</h1>
 
       {errors.general && (
@@ -136,12 +140,12 @@ const ParentSignUp = () => {
       )}
 
       <form
-        className="w-full max-w-sm bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-4"
+        className="w-full max-w-md bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-4"
         aria-label="Parent Sign Up Form"
         onSubmit={handleSubmit}
       >
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="username" className="text-sm font-bold text-dark">Username</label>
+          <label htmlFor="username" className="text-base font-bold text-dark">Username</label>
           <input
             type="text"
             name="username"
@@ -156,7 +160,7 @@ const ParentSignUp = () => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-sm font-bold text-dark">Email</label>
+          <label htmlFor="email" className="text-base font-bold text-dark">Email</label>
           <input
             type="email"
             name="email"
@@ -170,9 +174,9 @@ const ParentSignUp = () => {
           {errors.email && <span className="text-red text-xs">{errors.email}</span>}
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex flex-col gap-1.5 flex-1">
-            <label htmlFor="firstName" className="text-sm font-bold text-dark">First Name</label>
+            <label htmlFor="firstName" className="text-base font-bold text-dark">First Name</label>
             <input
               type="text"
               name="firstName"
@@ -187,7 +191,7 @@ const ParentSignUp = () => {
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1">
-            <label htmlFor="lastName" className="text-sm font-bold text-dark">Last Name</label>
+            <label htmlFor="lastName" className="text-base font-bold text-dark">Last Name</label>
             <input
               type="text"
               name="lastName"
@@ -203,7 +207,7 @@ const ParentSignUp = () => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="occupation" className="text-sm font-bold text-dark">Occupation</label>
+          <label htmlFor="occupation" className="text-base font-bold text-dark">Occupation</label>
           <input
             type="text"
             name="occupation"
@@ -218,7 +222,7 @@ const ParentSignUp = () => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="password" className="text-sm font-bold text-dark">Password</label>
+          <label htmlFor="password" className="text-base font-bold text-dark">Password</label>
           <input
             type="password"
             name="password"
@@ -233,7 +237,7 @@ const ParentSignUp = () => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="retypedPassword" className="text-sm font-bold text-dark">Re-enter Password</label>
+          <label htmlFor="retypedPassword" className="text-base font-bold text-dark">Re-enter Password</label>
           <input
             type="password"
             name="retypedPassword"
@@ -248,7 +252,7 @@ const ParentSignUp = () => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="zipcode" className="text-sm font-bold text-dark">Zip Code</label>
+          <label htmlFor="zipcode" className="text-base font-bold text-dark">Zip Code</label>
           <input
             type="text"
             name="zipcode"
@@ -276,7 +280,7 @@ const ParentSignUp = () => {
           <button type="submit" className="btn-yellow px-10">Sign Up</button>
         </div>
       </form>
-    </div>
+    </AuthLayout>
   );
 };
 

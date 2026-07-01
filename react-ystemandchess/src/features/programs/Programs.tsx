@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import img2096 from "../../assets/images/student/1000002096.png";
 import img2094 from "../../assets/images/student/1000002094.png";
 import img2097 from "../../assets/images/student/1000002097.png";
@@ -7,6 +8,7 @@ import TreesGroup from "../../assets/images/Trees-Group.png";
 import "./Programs.scss";
 
 export const Programs = () => {
+  const navigate = useNavigate();
   return (
     <main className="programs-page">
       {/* 2. Two-Column Hero Section */}
@@ -66,7 +68,7 @@ export const Programs = () => {
               free and reduced lunch.<br/>
               Our lessons are free.
             </p>
-            <button className="join-now-btn">Join Now!</button>
+            <button className="join-now-btn" onClick={() => navigate("/signup/parent")}>Join Now!</button>
           </div>
         </div>
 
@@ -93,7 +95,7 @@ export const Programs = () => {
               First lesson is FREE.<br/>
               Cancel anytime.
             </p>
-            <button className="apply-now-btn">Apply Now!</button>
+            <button className="apply-now-btn" onClick={() => navigate("/signup/parent")}>Apply Now!</button>
           </div>
         </div>
       </section>
@@ -146,7 +148,7 @@ export const Programs = () => {
             <div className="offer-item">Java</div>
           </div>
           
-          <button className="offer-btn">
+          <button className="offer-btn" onClick={() => navigate("/signup/parent")}>
             Apply Now!
           </button>
         </div>

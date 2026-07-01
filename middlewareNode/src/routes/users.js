@@ -242,14 +242,18 @@ router.post(
       });
       const savedStudent = await newStudent.save();
 
-      //Create the default activities entry for the new student
-      const newActivities = await selectActivities();
-      const activitiesEntry = new Activities({
-        userId: savedStudent.id,
-        activities: newActivities,
-        completedDates: [],
-      });
-      await activitiesEntry.save();
+      //Seed default activities for the new student, best effort so it never blocks account creation
+      try {
+        const newActivities = await selectActivities();
+        const activitiesEntry = new Activities({
+          userId: savedStudent.id,
+          activities: newActivities,
+          completedDates: [],
+        });
+        await activitiesEntry.save();
+      } catch (activitiesError) {
+        console.error("Error creating activities for student: ", activitiesError.message);
+      }
 
       return res.status(200).json("Added student");
     } catch (error) {

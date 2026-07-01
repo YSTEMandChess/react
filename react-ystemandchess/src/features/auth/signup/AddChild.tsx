@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { environment } from "../../../environments/environment";
+import AuthLayout from "./AuthLayout";
 
 const inputClass = (invalid: boolean) =>
-  `w-full rounded-lg border-2 px-4 py-3 text-sm text-dark bg-white caret-dark
+  `w-full rounded-lg border-2 px-4 py-3.5 text-base text-dark bg-white caret-dark
    focus:outline-none focus:shadow-none transition-colors ${
      invalid ? "border-red" : "border-borderLight focus:border-primary"
    }`;
@@ -113,168 +114,168 @@ const AddChild = () => {
   };
 
   return (
-    <div className="min-h-[71vh] flex flex-col items-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <h2 className="text-2xl font-bold text-dark mb-6">Parent Section</h2>
-        <h1 className="text-3xl font-bold text-dark mb-6 text-center">Add a Child</h1>
+    <AuthLayout
+      step={1}
+      panelTitle="Set up your child's account"
+    >
+      <h1 className="text-3xl font-bold text-dark mb-6 text-center">Add a Child</h1>
 
-        {errors.general && (
-          <p className="text-red font-semibold mb-4 text-center" role="alert">
-            {errors.general}
-          </p>
-        )}
+      {errors.general && (
+        <p className="text-red font-semibold mb-4 text-center" role="alert">
+          {errors.general}
+        </p>
+      )}
 
-        <form
-          className="w-full bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-4"
-          aria-label="Add a Child Form"
-          onSubmit={handleSubmit}
-        >
-          <div className="flex gap-4">
-            <div className="flex flex-col gap-1.5 flex-1">
-              <label htmlFor="firstName" className="text-sm font-bold text-dark">First Name</label>
-              <input
-                type="text"
-                name="firstName"
-                id="firstName"
-                placeholder="First Name"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                required
-                className={inputClass(!!errors.firstName)}
-              />
-              {errors.firstName && <span className="text-red text-xs">{errors.firstName}</span>}
-            </div>
-
-            <div className="flex flex-col gap-1.5 flex-1">
-              <label htmlFor="lastName" className="text-sm font-bold text-dark">Last Name</label>
-              <input
-                type="text"
-                name="lastName"
-                id="lastName"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                required
-                className={inputClass(!!errors.lastName)}
-              />
-              {errors.lastName && <span className="text-red text-xs">{errors.lastName}</span>}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="username" className="text-sm font-bold text-dark">Username</label>
+      <form
+        className="w-full max-w-md bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-4"
+        aria-label="Add a Child Form"
+        onSubmit={handleSubmit}
+      >
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-1.5 flex-1">
+            <label htmlFor="firstName" className="text-base font-bold text-dark">First Name</label>
             <input
               type="text"
-              name="username"
-              id="username"
-              placeholder="Username"
-              value={formData.username}
+              name="firstName"
+              id="firstName"
+              placeholder="First Name"
+              value={formData.firstName}
               onChange={handleInputChange}
               required
-              className={inputClass(!!errors.username)}
+              className={inputClass(!!errors.firstName)}
             />
-            {errors.username && <span className="text-red text-xs">{errors.username}</span>}
+            {errors.firstName && <span className="text-red text-xs">{errors.firstName}</span>}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-sm font-bold text-dark">Email</label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              placeholder="you@example.com"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              className={inputClass(!!errors.email)}
-            />
-            {errors.email && <span className="text-red text-xs">{errors.email}</span>}
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-sm font-bold text-dark">Password</label>
-            <input
-              type="password"
-              name="password"
-              id="password"
-              placeholder="Create a password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              className={inputClass(!!errors.password)}
-            />
-            {errors.password && <span className="text-red text-xs">{errors.password}</span>}
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="retypedPassword" className="text-sm font-bold text-dark">Re-enter Password</label>
-            <input
-              type="password"
-              name="retypedPassword"
-              id="retypedPassword"
-              placeholder="Re-enter password"
-              value={formData.retypedPassword}
-              onChange={handleInputChange}
-              required
-              className={inputClass(!!errors.retypedPassword)}
-            />
-            {errors.retypedPassword && <span className="text-red text-xs">{errors.retypedPassword}</span>}
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex flex-col gap-1.5 flex-1">
-              <label htmlFor="birthday" className="text-sm font-bold text-dark">Birthday</label>
-              <input
-                type="date"
-                name="birthday"
-                id="birthday"
-                value={formData.birthday}
-                onChange={handleInputChange}
-                required
-                className={inputClass(!!errors.birthday)}
-              />
-              {errors.birthday && <span className="text-red text-xs">{errors.birthday}</span>}
-            </div>
-
-            <div className="flex flex-col gap-1.5 flex-1">
-              <label htmlFor="gender" className="text-sm font-bold text-dark">Gender</label>
-              <select
-                name="gender"
-                id="gender"
-                value={formData.gender}
-                onChange={handleInputChange}
-                className={inputClass(false)}
-              >
-                <option value="">Prefer not to say</option>
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="gradeLevel" className="text-sm font-bold text-dark">Grade Level</label>
+          <div className="flex flex-col gap-1.5 flex-1">
+            <label htmlFor="lastName" className="text-base font-bold text-dark">Last Name</label>
             <input
               type="text"
-              name="gradeLevel"
-              id="gradeLevel"
-              placeholder="Grade Level"
-              value={formData.gradeLevel}
+              name="lastName"
+              id="lastName"
+              placeholder="Last Name"
+              value={formData.lastName}
               onChange={handleInputChange}
               required
-              className={inputClass(!!errors.gradeLevel)}
+              className={inputClass(!!errors.lastName)}
             />
-            {errors.gradeLevel && <span className="text-red text-xs">{errors.gradeLevel}</span>}
+            {errors.lastName && <span className="text-red text-xs">{errors.lastName}</span>}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="username" className="text-base font-bold text-dark">Username</label>
+          <input
+            type="text"
+            name="username"
+            id="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleInputChange}
+            required
+            className={inputClass(!!errors.username)}
+          />
+          {errors.username && <span className="text-red text-xs">{errors.username}</span>}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="email" className="text-base font-bold text-dark">Email</label>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            placeholder="you@example.com"
+            value={formData.email}
+            onChange={handleInputChange}
+            required
+            className={inputClass(!!errors.email)}
+          />
+          {errors.email && <span className="text-red text-xs">{errors.email}</span>}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="password" className="text-base font-bold text-dark">Password</label>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Create a password"
+            value={formData.password}
+            onChange={handleInputChange}
+            required
+            className={inputClass(!!errors.password)}
+          />
+          {errors.password && <span className="text-red text-xs">{errors.password}</span>}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="retypedPassword" className="text-base font-bold text-dark">Re-enter Password</label>
+          <input
+            type="password"
+            name="retypedPassword"
+            id="retypedPassword"
+            placeholder="Re-enter password"
+            value={formData.retypedPassword}
+            onChange={handleInputChange}
+            required
+            className={inputClass(!!errors.retypedPassword)}
+          />
+          {errors.retypedPassword && <span className="text-red text-xs">{errors.retypedPassword}</span>}
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-1.5 flex-1">
+            <label htmlFor="birthday" className="text-base font-bold text-dark">Birthday</label>
+            <input
+              type="date"
+              name="birthday"
+              id="birthday"
+              value={formData.birthday}
+              onChange={handleInputChange}
+              required
+              className={inputClass(!!errors.birthday)}
+            />
+            {errors.birthday && <span className="text-red text-xs">{errors.birthday}</span>}
           </div>
 
-          <div className="flex justify-center gap-4 pt-2">
-            <button type="submit" className="btn-yellow px-10">Add</button>
-            <button type="button" onClick={handleCancel} className="btn-cancel px-10">Cancel</button>
+          <div className="flex flex-col gap-1.5 flex-1">
+            <label htmlFor="gender" className="text-base font-bold text-dark">Gender</label>
+            <select
+              name="gender"
+              id="gender"
+              value={formData.gender}
+              onChange={handleInputChange}
+              className={inputClass(false)}
+            >
+              <option value="">Prefer not to say</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="gradeLevel" className="text-base font-bold text-dark">Grade Level</label>
+          <input
+            type="text"
+            name="gradeLevel"
+            id="gradeLevel"
+            placeholder="Grade Level"
+            value={formData.gradeLevel}
+            onChange={handleInputChange}
+            required
+            className={inputClass(!!errors.gradeLevel)}
+          />
+          {errors.gradeLevel && <span className="text-red text-xs">{errors.gradeLevel}</span>}
+        </div>
+
+        <div className="flex justify-center gap-4 pt-2">
+          <button type="submit" className="btn-yellow px-10">Add</button>
+          <button type="button" onClick={handleCancel} className="btn-cancel px-10">Cancel</button>
+        </div>
+      </form>
+    </AuthLayout>
   );
 };
 

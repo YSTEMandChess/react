@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { environment } from "../../../environments/environment";
+import AuthLayout from "./AuthLayout";
 
 const inputClass = (invalid: boolean) =>
-  `w-full rounded-lg border-2 px-4 py-3 text-sm text-dark bg-white caret-dark
+  `w-full rounded-lg border-2 px-4 py-3.5 text-base text-dark bg-white caret-dark
    focus:outline-none focus:shadow-none transition-colors ${
      invalid ? "border-red" : "border-borderLight focus:border-primary"
    }`;
@@ -27,30 +28,6 @@ const MentorSignUp = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [termsFlag, setTermsFlag] = useState(false);
-
-  const [matchingStudents, setMatchingStudents] = useState<string[]>([]);
-  const [usernameToSearch, setUserToSearch] = useState("");
-  const [activeDropdown, setActiveDropdown] = useState(false);
-  const [dropdownLoading, setDropdownLoading] = useState(false);
-  const [assignedMenteeUsername, setAssignedMenteeUsername] = useState<string | null>(null);
-
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        setActiveDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -85,44 +62,6 @@ const MentorSignUp = () => {
     return Object.keys(next).length === 0;
   };
 
-  const handleMenteeSearchChange = async (searchText: string) => {
-    setUserToSearch(searchText);
-    setAssignedMenteeUsername(null);
-
-    if (searchText.trim() === "") {
-      setActiveDropdown(false);
-      setMatchingStudents([]);
-      setDropdownLoading(false);
-      return;
-    }
-
-    setActiveDropdown(true);
-    setDropdownLoading(true);
-    try {
-      const response = await fetch(
-        `${environment.urls.middlewareURL}/user/mentorless?keyword=${searchText}`,
-        { method: "GET" }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const usernames = await response.json();
-      setMatchingStudents(usernames.slice(0, 10));
-    } catch (error) {
-      setMatchingStudents([]);
-      setErrors((prev) => ({ ...prev, general: "Failed to fetch student list." }));
-    } finally {
-      setDropdownLoading(false);
-    }
-  };
-
-  const handleSelectMentee = (selectedUsername: string) => {
-    setAssignedMenteeUsername(selectedUsername);
-    setUserToSearch(selectedUsername);
-    setActiveDropdown(false);
-    setMatchingStudents([]);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -131,10 +70,6 @@ const MentorSignUp = () => {
       return;
     }
     if (!validate()) {
-      return;
-    }
-    if (!assignedMenteeUsername) {
-      setErrors((prev) => ({ ...prev, general: "Please select your mentee" }));
       return;
     }
 
@@ -180,20 +115,9 @@ const MentorSignUp = () => {
       }
 
       const loginData = await loginResponse.json();
-      const jwtToken = loginData.token;
       const expires = new Date();
       expires.setDate(expires.getDate() + 1);
-      setCookie("login", jwtToken, { expires, path: "/" });
-
-      await fetch(
-        `${environment.urls.middlewareURL}/user/updateMentorship?mentorship=${encodeURIComponent(
-          assignedMenteeUsername
-        )}`,
-        {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${jwtToken}` },
-        }
-      );
+      setCookie("login", loginData.token, { expires, path: "/" });
 
       navigate("/");
     } catch (error) {
@@ -202,7 +126,9 @@ const MentorSignUp = () => {
   };
 
   return (
-    <div className="min-h-[71vh] flex flex-col items-center justify-center px-4 py-12">
+    <AuthLayout
+      panelTitle="Share your knowledge, change a life"
+    >
       <h1 className="text-3xl font-bold text-dark mb-6 text-center">Mentor Sign Up</h1>
 
       {errors.general && (
@@ -212,13 +138,13 @@ const MentorSignUp = () => {
       )}
 
       <form
-        className="w-full max-w-sm bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-4"
+        className="w-full max-w-md bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-4"
         aria-label="Mentor Sign Up Form"
         onSubmit={handleSubmit}
       >
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex flex-col gap-1.5 flex-1">
-            <label htmlFor="firstName" className="text-sm font-bold text-dark">First Name</label>
+            <label htmlFor="firstName" className="text-base font-bold text-dark">First Name</label>
             <input
               type="text"
               name="firstName"
@@ -233,7 +159,7 @@ const MentorSignUp = () => {
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1">
-            <label htmlFor="lastName" className="text-sm font-bold text-dark">Last Name</label>
+            <label htmlFor="lastName" className="text-base font-bold text-dark">Last Name</label>
             <input
               type="text"
               name="lastName"
@@ -249,7 +175,7 @@ const MentorSignUp = () => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-sm font-bold text-dark">Email</label>
+          <label htmlFor="email" className="text-base font-bold text-dark">Email</label>
           <input
             type="email"
             name="email"
@@ -264,7 +190,7 @@ const MentorSignUp = () => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="username" className="text-sm font-bold text-dark">Username</label>
+          <label htmlFor="username" className="text-base font-bold text-dark">Username</label>
           <input
             type="text"
             name="username"
@@ -279,7 +205,7 @@ const MentorSignUp = () => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="password" className="text-sm font-bold text-dark">Password</label>
+          <label htmlFor="password" className="text-base font-bold text-dark">Password</label>
           <input
             type="password"
             name="password"
@@ -294,7 +220,7 @@ const MentorSignUp = () => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="retypedPassword" className="text-sm font-bold text-dark">Re-enter Password</label>
+          <label htmlFor="retypedPassword" className="text-base font-bold text-dark">Re-enter Password</label>
           <input
             type="password"
             name="retypedPassword"
@@ -308,37 +234,39 @@ const MentorSignUp = () => {
           {errors.retypedPassword && <span className="text-red text-xs">{errors.retypedPassword}</span>}
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="zipcode" className="text-sm font-bold text-dark">Zip Code</label>
-          <input
-            type="text"
-            name="zipcode"
-            id="zipcode"
-            placeholder="Zip Code"
-            value={formData.zipcode}
-            onChange={handleInputChange}
-            className={inputClass(false)}
-          />
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-1.5 flex-1">
+            <label htmlFor="zipcode" className="text-base font-bold text-dark">Zip Code</label>
+            <input
+              type="text"
+              name="zipcode"
+              id="zipcode"
+              placeholder="Zip Code"
+              value={formData.zipcode}
+              onChange={handleInputChange}
+              className={inputClass(false)}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5 flex-1">
+            <label htmlFor="gender" className="text-base font-bold text-dark">Gender</label>
+            <select
+              name="gender"
+              id="gender"
+              value={formData.gender}
+              onChange={handleInputChange}
+              className={inputClass(false)}
+            >
+              <option value="">Prefer not to say</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="gender" className="text-sm font-bold text-dark">Gender</label>
-          <select
-            name="gender"
-            id="gender"
-            value={formData.gender}
-            onChange={handleInputChange}
-            className={inputClass(false)}
-          >
-            <option value="">Prefer not to say</option>
-            <option value="M">Male</option>
-            <option value="F">Female</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="education" className="text-sm font-bold text-dark">Current Occupation / Education</label>
+          <label htmlFor="education" className="text-base font-bold text-dark">Current Occupation / Education</label>
           <input
             type="text"
             name="education"
@@ -350,40 +278,16 @@ const MentorSignUp = () => {
           />
         </div>
 
-        <div className="flex flex-col gap-1.5 relative">
-          <label htmlFor="mentee-search-input" className="text-sm font-bold text-dark">Find a Student</label>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="mentee-search-input" className="text-base font-bold text-muted">Find a Student</label>
           <input
-            ref={inputRef}
             type="text"
             id="mentee-search-input"
-            placeholder="Find a student"
-            value={usernameToSearch}
-            onChange={(e) => handleMenteeSearchChange(e.target.value)}
-            autoComplete="off"
-            className={inputClass(false)}
+            placeholder="Available after signup"
+            disabled
+            className="w-full rounded-lg border-2 border-borderLight px-4 py-3.5 text-base bg-soft text-muted cursor-not-allowed"
           />
-          {activeDropdown && (
-            <div
-              ref={dropdownRef}
-              className="absolute top-full left-0 z-20 mt-1 w-full rounded-lg border-2 border-borderLight bg-white shadow-lg"
-            >
-              {dropdownLoading ? (
-                <div className="px-4 py-2 text-sm text-gray">Loading...</div>
-              ) : matchingStudents.length > 0 ? (
-                matchingStudents.map((name) => (
-                  <div
-                    key={name}
-                    onClick={() => handleSelectMentee(name)}
-                    className="px-4 py-2 text-sm text-dark cursor-pointer hover:bg-soft"
-                  >
-                    {name}
-                  </div>
-                ))
-              ) : (
-                <div className="px-4 py-2 text-sm text-gray">No matching students found.</div>
-              )}
-            </div>
-          )}
+          <span className="text-xs text-muted">Student matching is coming soon.</span>
         </div>
 
         <div className="flex items-center gap-2 text-sm">
@@ -401,7 +305,7 @@ const MentorSignUp = () => {
           <button type="submit" className="btn-yellow px-10">Sign Up</button>
         </div>
       </form>
-    </div>
+    </AuthLayout>
   );
 };
 

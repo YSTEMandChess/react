@@ -88,7 +88,7 @@ const Login = () => {
             console.log(payload["role"]);
             break;
           case "parent":
-            window.location.pathname = "/parent";
+            window.location.pathname = "/signup/parent/section";
             break;
           case "mentor":
             window.location.pathname = "/mentor-profile";
