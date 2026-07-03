@@ -22,6 +22,7 @@ type GameInstance = {
     newGame?: boolean;
     boardState?: any
     puzzle?: any
+    pastStates?: any
 }
 
 interface GameManager {
@@ -98,7 +99,6 @@ class GameManager {
 
                 boardState: board,
                 pastStates: [],
-
             };
 
             this.ongoingGames.push(newGame);
@@ -202,13 +202,13 @@ class GameManager {
             student: {
                 username: student,
                 id: role === "student" ? socketId : null,
-                color: studentColor,
+                color: studentColor as ("black" | "white"),
                 credentials: credentials,
             },
             mentor: {
                 username: mentor,
                 id: role === "mentor" ? socketId : null,
-                color: mentorColor
+                color: mentorColor as ("black" | "white")
             },
             boardState: board,
             pastStates: [],
@@ -503,7 +503,7 @@ class GameManager {
      */
     getGameBySocketId(socketId) {
         return this.ongoingGames.find(
-            (game) => game.student.id === socketId || game.mentor.id === socketId
+            (game) => game.student.id === socketId || game.mentor.id === socketId || game.opponent.id === socketId
         );
     }
 }
