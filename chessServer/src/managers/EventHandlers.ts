@@ -2,6 +2,32 @@ const GameManager = require("./GameManager");
 
 const gameManager = new GameManager();
 
+export type GameMetaData = {
+    userId?: number,
+    user?: User,
+    opponent?: User,
+    uuid?: string,
+    opponentId?: string,
+    gameName: string,
+    gameType: "computer" | "friend" | "mentor",
+    computerLevel: number | null,
+    fen: string,
+    movesList: string[],
+    playerColor: "white" | "black",
+    status: "won" | "lost" | "ongoing" | "draw",
+    createdAt: string,
+    updatedAt: string
+}
+export type User = {
+    username: string,
+    firstName: string,
+    lastName: string,
+    role: string,
+    email: string,
+    id: number
+}
+
+
 /**
  * Registers all socket event handlers for a given connection.
  * @param {Socket} socket - The connected socket instance
@@ -18,13 +44,16 @@ const registerSocketHandlers = (socket, io) => {
 
     socket.on("newgame", (msg) => {
         try {
-            const parsed = JSON.parse(msg);
+            //Code for starting Games that will be saved 
+            const { student, mentor, role, userId, user, opponent, opponentId, gameName, gameType, computerLevel, fen, movesList, playerColor, status, createdAt, updatedAt } = JSON.parse(msg)
+            const gameMetaData = { userId, user, opponent, opponentId, gameName, gameType, computerLevel, fen, movesList, playerColor, status, createdAt, updatedAt } as GameMetaData
 
             const result = gameManager.createOrJoinGame({
-                student: parsed.student,
-                mentor: parsed.mentor,
-                role: parsed.role,
-                socketId: socket.id
+                socketId: socket.id,
+                gameMetaData: gameMetaData,
+                student: student,
+                mentor: mentor,
+                role: role,
             });
 
             socket.emit(
@@ -34,6 +63,7 @@ const registerSocketHandlers = (socket, io) => {
                     color: result.color
                 })
             );
+
         }
         catch (err) {
             socket.emit("gameerror", err.message);
@@ -246,4 +276,4 @@ const registerSocketHandlers = (socket, io) => {
     });
 }
 
-module.exports = registerSocketHandlers;
+export default registerSocketHandlers

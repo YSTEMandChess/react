@@ -1,17 +1,18 @@
-require("dotenv").config();
+import "dotenv/config";
 
-const express = require("express");
-const http = require("http");
-const socketIo = require("socket.io");
-const cors = require("cors");
-const morgan = require("morgan");
-const registerSocketHandlers = require("./managers/EventHandlers");
+
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import cors from "cors";
+import morgan from "morgan";
+import registerSocketHandlers from "./managers/EventHandlers";
 
 const app = express();
 const server = http.createServer(app);
 
-// Add logging functionaility to the server
-app.use(morgan("dev")); // dev -> preset format
+// Add logging functionality to the server
+app.use(morgan("dev"));
 
 // Apply CORS middleware to handle cross-origin requests
 app.use(
@@ -23,7 +24,7 @@ app.use(
 );
 
 // Initialize Socket.IO with CORS configuration
-const io = socketIo(server, {
+const io = new Server(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
@@ -42,4 +43,4 @@ server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
 
-module.exports = { server, io };
+export { server, io };

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "bundler",
+    "target": "es2022",
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "strict": false,
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

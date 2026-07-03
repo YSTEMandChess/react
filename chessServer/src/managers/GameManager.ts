@@ -1,8 +1,33 @@
+import { GameMetaData } from "./EventHandlers";
+
 const { Chess } = require("chess.js")
 
 /**
  * GameManager class handles chess game sessions, state, and logic.
  */
+type Player = {
+    username: string;
+    id: string | null;
+    color: "white" | "black";
+}
+
+type GameInstance = {
+    student?: Player
+    mentor?: Player
+    game?: any
+    color?: any
+    opponent?: Player
+    role?: string,
+    gameMetaData?: GameMetaData;
+    newGame?: boolean;
+    boardState?: any
+    puzzle?: any
+}
+
+interface GameManager {
+    ongoingGames: GameInstance[]
+}
+
 class GameManager {
     constructor() {
         this.ongoingGames = []
@@ -13,59 +38,105 @@ class GameManager {
      * @param {Object} param0 - Contains student, mentor, role, socketId
      * @returns {Object} Game object, assigned color, and new game status
      */
-    createOrJoinGame({ student, mentor, role, socketId }) {
+    createOrJoinGame({ student, mentor, role, socketId, stockfishSocket, gameMetaData }: { student: string, mentor: string, role: string, socketId: string, stockfishSocket: string, gameMetaData: GameMetaData }): GameInstance {
+
+        const { userId, user, opponent, opponentId, gameName, gameType, computerLevel, fen, movesList, playerColor, status, createdAt, updatedAt } = gameMetaData
+
         let game = this.ongoingGames.find(
-            (g) => g.student.username === student || g.mentor.username === mentor
+            (g) => g.student.username === student || g.mentor.username === mentor || user?.username === g.student.username || opponent?.username === g.opponent.username
         );
 
-        if (role != "student" && role != "mentor") {
-            throw new Error("Invalid role!");
-        }
-
-        // Player already in a game
         if (game) {
             console.log("already in a game")
             if (role == "student") {
                 game.student.id = socketId;
-                return { game, color: game.student.color, newGame: false };
+                return game;
+                // return { game, color: game.student.color, newGame: false };
             }
             else if (role == "mentor") {
                 game.mentor.id = socketId;
-                return { game, color: game.mentor.color, newGame: false };
+                return game
+                // return { game, color: game.mentor.color, newGame: false };
             }
-            else {
-                throw new Error("Invalid role!");
+            else if (gameMetaData.user?.username == game.student.username) {
+                game.student.id = socketId
+                return game
+            }
+            else if (game.gameMetaData.opponent?.username == game.opponent.username) {
+                game.opponent.id = socketId
+                return game
             }
         }
-
         console.log("creating new game in game manager")
         // Create a new game instance
         const board = new Chess();
-        const studentColor = role === "student" ? "black" : "white";
-        const mentorColor = role === "student" ? "white" : "black";
 
-        const newGame = {
-            student: {
-                username: student,
-                id: role === "student" ? socketId : null,
-                color: studentColor
-            },
-            mentor: {
-                username: mentor,
-                id: role === "mentor" ? socketId : null,
-                color: mentorColor
-            },
-            boardState: board,
-            pastStates: []
-        };
+        if (gameMetaData?.fen) {
+            const validation = Chess.validateFen(gameMetaData.fen);
+            if (validation.ok) {
+                board.load(gameMetaData.fen);
+            } else {
+                console.error("Invalid FEN string skipped:", validation.error);
+            }
+        }
 
-        this.ongoingGames.push(newGame);
+        const studentColor: "white" | "black" = role === "student" ? "black" : "white";
+        const mentorColor: "white" | "black" = role === "student" ? "white" : "black";
+        if (!gameMetaData) {
+            const newGame = {
+                student: {
+                    username: student,
+                    id: role === "student" ? socketId : null,
+                    color: studentColor
 
-        return {
-            game: newGame,
-            color: role === "student" ? studentColor : mentorColor,
-            newGame: true
-        };
+                },
+                mentor: {
+                    username: mentor,
+                    id: role === "mentor" ? socketId : null,
+                    color: mentorColor as "black" | "white"
+                },
+
+                boardState: board,
+                pastStates: [],
+
+            };
+
+            this.ongoingGames.push(newGame);
+            return {
+                game: newGame,
+                color: role === "student" ? studentColor : mentorColor,
+                newGame: true
+            };
+
+        }
+        else if (gameMetaData) {
+
+            const loadingGame = {
+                student: {
+                    username: game.gameMetaData.user?.username,
+                    id: socketId,
+                    color: game.gameMetaData.playerColor
+
+                },
+                mentor: {
+                    username: mentor,
+                    id: role === "mentor" ? socketId : null,
+                    color: mentorColor
+                },
+                opponent: {
+                    username: game.gameMetaData.opponent?.username || "stockfish",
+                    id: game.gameMetaData.gameType == "computer" ? stockfishSocket : null,
+                    color: gameMetaData.playerColor === "black" ? "white" : "black" as "black" | "white"
+                },
+                boardState: board,
+                pastStates: game.gameMetaData.movesList,
+                gameMetaData: gameMetaData
+
+            }
+            this.ongoingGames.push(loadingGame);
+            return loadingGame
+
+        }
     }
 
     /**
