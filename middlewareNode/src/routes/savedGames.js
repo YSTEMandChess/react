@@ -60,6 +60,7 @@ const addNewGame = async (req, res, next) => {
 };
 
 // Push new game id to student game array 
+//Task : make this function also callable on its own to add a game to another student for friend x friend gameplay 
 const addGameToStudent = async (req, res) => {
     try {
         const id = req.body.studentId;

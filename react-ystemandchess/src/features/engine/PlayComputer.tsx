@@ -274,6 +274,7 @@ const PlayComputer: React.FC = () => {
       applyGameState(newGame);
     }
     chessSocketRef.current.startNewGame();
+    //edit start new game to take gameMetadata 
   };
 
 
