@@ -91,8 +91,8 @@ class GameManager {
                 game.student.id = socketId; // record guest socket id
                 socket.emit("guest"); // notify client that they join as guest
                 const socket2 = io.sockets.sockets.get(game.mentor.id);
-                socket2.emit("guest"); 
-                socket.emit("boardstate", JSON.stringify({ 
+                socket2.emit("guest");
+                socket.emit("boardstate", JSON.stringify({
                     boardState: game.boardState.fen(), // pass existing game state to guest client
                     color: game.student.color
                 }));
@@ -104,10 +104,10 @@ class GameManager {
                 game.mentor.id = socketId; // record guest socket id
                 socket.emit("guest"); // notify client that they join as guest
                 const socket2 = io.sockets.sockets.get(game.student.id);
-                socket2.emit("guest"); 
-                socket.emit("boardstate", JSON.stringify({ 
+                socket2.emit("guest");
+                socket.emit("boardstate", JSON.stringify({
                     boardState: game.boardState.fen(), // pass existing game state to guest client
-                    color: game.student.color 
+                    color: game.student.color
                 }));
                 socket.emit("message", JSON.stringify({ message: game.puzzle }));
                 console.log("emtting hints!!", game.puzzle);
@@ -171,7 +171,7 @@ class GameManager {
         }
 
         const board = game.boardState;
-        const move = {from: moveFrom, to: moveTo};
+        const move = { from: moveFrom, to: moveTo };
         //console.log(move, typeof(move), typeof(move)==='object');
         const moveResult = board.move(move);
         console.log(moveResult);
@@ -199,37 +199,37 @@ class GameManager {
             const capLetter = moveResult.captured; // 'q','r','n','b','p'
             const name = capLetter ? captureMap[capLetter] : null;
             if (name) {
-            activityEvents.push({
-                name,
-                meta: {
-                from: moveResult.from,
-                to: moveResult.to,
-                san: moveResult.san
-                },
-                at: Date.now()
-            });
+                activityEvents.push({
+                    name,
+                    meta: {
+                        from: moveResult.from,
+                        to: moveResult.to,
+                        san: moveResult.san
+                    },
+                    at: Date.now()
+                });
             }
         }
 
         // Castling
         if (flags.includes("k") || flags.includes("q")) {
             activityEvents.push({
-            name: "performCastle",
-            meta: { san: moveResult.san },
-            at: Date.now()
+                name: "performCastle",
+                meta: { san: moveResult.san },
+                at: Date.now()
             });
         }
         //console.log(activityEvents);
         //console.log('student info',game.student);
-        return { 
-                result: {
-                            boardState: board.fen(),
-                            move: moveResult,
-                            studentId: game.student.id,
-                            mentorId: game.mentor.id,
-                            studentUsername: game.student.username,
-                        },
-                activityEvents: activityEvents
+        return {
+            result: {
+                boardState: board.fen(),
+                move: moveResult,
+                studentId: game.student.id,
+                mentorId: game.mentor.id,
+                studentUsername: game.student.username,
+            },
+            activityEvents: activityEvents
         };
     }
 
@@ -298,10 +298,10 @@ class GameManager {
         const mentorSocket = io.sockets.sockets.get(gameInfo.mentorId);
 
         if (studentSocket) {
-        studentSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
+            studentSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
         }
         if (mentorSocket) {
-        mentorSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
+            mentorSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
         }
     }
 

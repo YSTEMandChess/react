@@ -16,9 +16,9 @@ export interface Move {
 }
 
 export interface GameConfig {
-  mentor: string;
-  student: string;
-  role: UserRole;
+  mentor?: string;
+  student?: string;
+  role?: UserRole;
 }
 
 export interface BoardState {
