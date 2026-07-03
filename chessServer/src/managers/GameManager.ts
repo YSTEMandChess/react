@@ -48,12 +48,12 @@ class GameManager {
 
         if (game) {
             console.log("already in a game")
-            if (role == "student") {
+            if (role == "student" && game.student) {
                 game.student.id = socketId;
                 return game;
                 // return { game, color: game.student.color, newGame: false };
             }
-            else if (role == "mentor") {
+            else if (role == "mentor" && game.mentor) {
                 game.mentor.id = socketId;
                 return game
                 // return { game, color: game.mentor.color, newGame: false };
@@ -72,9 +72,9 @@ class GameManager {
         const board = new Chess();
 
         if (gameMetaData?.fen) {
-            const validation = Chess.validateFen(gameMetaData.fen);
+            const validation = Chess.validateFen(fen);
             if (validation.ok) {
-                board.load(gameMetaData.fen);
+                board.load(fen || "");
             } else {
                 console.error("Invalid FEN string skipped:", validation.error);
             }
@@ -82,7 +82,7 @@ class GameManager {
 
         const studentColor: "white" | "black" = role === "student" ? "black" : "white";
         const mentorColor: "white" | "black" = role === "student" ? "white" : "black";
-        if (!gameMetaData) {
+        if (!createdAt) {
             const newGame = {
                 student: {
                     username: student,
@@ -93,7 +93,7 @@ class GameManager {
                 mentor: {
                     username: mentor,
                     id: role === "mentor" ? socketId : null,
-                    color: mentorColor as "black" | "white"
+                    color: mentorColor as ("black" | "white")
                 },
 
                 boardState: board,
@@ -113,9 +113,9 @@ class GameManager {
 
             const loadingGame = {
                 student: {
-                    username: game.gameMetaData.user?.username,
+                    username: user?.username,
                     id: socketId,
-                    color: game.gameMetaData.playerColor
+                    color: playerColor
 
                 },
                 mentor: {
@@ -124,12 +124,12 @@ class GameManager {
                     color: mentorColor
                 },
                 opponent: {
-                    username: game.gameMetaData.opponent?.username || "stockfish",
-                    id: game.gameMetaData.gameType == "computer" ? stockfishSocket : null,
-                    color: gameMetaData.playerColor === "black" ? "white" : "black" as "black" | "white"
+                    username: opponent?.username || "stockfish",
+                    id: gameType == "computer" ? stockfishSocket : null,
+                    color: playerColor === "black" ? "white" : "black" as ("black" | "white")
                 },
                 boardState: board,
-                pastStates: game.gameMetaData.movesList,
+                pastStates: movesList,
                 gameMetaData: gameMetaData
 
             }
