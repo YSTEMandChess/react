@@ -80,7 +80,7 @@ function getChessPieceImage(peice)
 }
 
 
-const socket = io('http://localhost:3001');
+const socket = io('/', { path: '/socket.io/' });
 
 
 let defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
