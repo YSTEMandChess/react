@@ -1,0 +1,111 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999; // above everything
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  width: 70%;
+  max-width: 1000px;
+  background-color: white;
+  border-radius: 12px;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s ease;
+}
+
+/* Close X button in top-right */
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 4rem;
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  font-weight: bold;
+
+  &:hover {
+    color: darkred;
+  }
+}
+
+/* Grid layout for badges */
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Each badge card */
+.badge-card {
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.badge-card:hover {
+  transform: scale(1.03);
+}
+
+/* Icon inside card */
+.badge-icon img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+/* Badge name text */
+.badge-name {
+  margin-top: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Text under locked badges */
+.badge-locked-text {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  color: #999;
+}
+
+/* Greyed-out look for locked badges */
+.badge-card.locked {
+  opacity: 0.45;
+  filter: grayscale(90%);
+}
+
+/* Highlight earned badges with green border */
+.badge-card.earned {
+  border: 2px solid #4caf50;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

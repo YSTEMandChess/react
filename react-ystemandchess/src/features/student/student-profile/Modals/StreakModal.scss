@@ -1,0 +1,228 @@
+// ==========================
+// Streak Modal Overlay
+// ==========================
+.streak-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+
+  // ==========================
+  // Modal Content Container
+  // ==========================
+  .modal-content {
+    width: 80vw;
+    max-width: 62.5rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    position: relative;
+    box-shadow: 0 0.5rem 1.875rem rgba(0, 0, 0, 0.25);
+    animation: slideUp 0.3s ease;
+    background-color: #E5F3D2;
+    z-index: 1;
+
+    // ==========================
+    // Close Button
+    // ==========================
+    .close-button {
+      position: absolute;
+      top: 1rem;
+      right: -0.2rem;
+      width: 3.125rem;
+      height: 3.125rem;
+      background-color: #fff;
+      color: #FF0000;
+      border: 0.15625rem solid #FF0000;
+      border-radius: 50%;
+      font-size: 2.5rem;
+      font-weight: bold;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: #FF0000;
+        color: white;
+      }
+    }
+
+    // ==========================
+    // Speech Bubbles
+    // ==========================
+    .speech-bubble-container {
+      position: absolute;
+      width: 12.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 2;
+      pointer-events: none;
+
+      .speech-box {
+        background-color: #FFF8D1;
+        border-radius: 1rem;
+        padding: 0.75rem 1rem;
+        font-family: 'Lato', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #000;
+        line-height: 1.4;
+        text-align: left;
+        position: relative;
+        width: 100%;
+      }
+
+      .speech-tail {
+        width: 2.25rem;
+        height: auto;
+      }
+
+      &.left {
+        top: 8.1875rem;
+        left: 1.875rem;
+
+        .speech-tail {
+          margin-top: -0.9375rem;
+          margin-left: 5rem;
+        }
+      }
+
+      &.right {
+        top: 33.1875rem;
+        right: 1.0625rem;
+
+        .speech-box {
+          padding: 0.75rem 1rem;
+          width: 13.75rem;
+        }
+
+        .speech-tail {
+          margin-top: -5.625rem;
+          margin-left: -3.75rem;
+          width: 3.125rem;
+        }
+      }
+    }
+
+    // ==========================
+    // Characters
+    // ==========================
+    .leaning-left-inside {
+      position: absolute;
+      left: 0;
+      top: 7.25rem;
+      width: 21.875rem !important;
+      height: auto !important;
+      display: block;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .leaning-right-inside {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      top: 7.25rem;
+      width: 15.625rem !important;
+      height: auto !important;
+      display: block;
+      z-index: 0;
+      pointer-events: none;
+    }
+  }
+}
+
+// ==========================
+// Streak Clock Section
+// ==========================
+.streak-header {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  margin: 3rem auto 5rem auto;
+
+  .streak-clock {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .streak-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    color: #000;
+    line-height: 1;
+
+    .big {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+
+    .small {
+      font-size: 0.9rem;
+      margin-top: 0.4rem;
+    }
+
+    &.streak-left {
+      top: 50%;
+      left: 34.5%;
+      transform: translate(-50%, -50%);
+    }
+
+    &.streak-right {
+      top: 50%;
+      left: 73%;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+// ==========================
+// Calendar Image Section
+// ==========================
+.calendar-image-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+
+  .calendar-image {
+    width: 55%;
+    max-width: 37.5rem;
+    height: auto;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.15);
+  }
+}
+
+// ==========================
+// Animations
+// ==========================
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(2.5rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
