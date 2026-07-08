@@ -635,14 +635,16 @@ export const useChessSocket = ({
     sendMove,
     undo,
     setExpectedMove,
-    saveGame,
+   
     playMove,
-    getMostRecentGameInfo,
-    saveNewGame,
+     
 
     // State management
     setGameState,
     setGameStateWithColor,
+    saveGame,
+    getMostRecentGameInfo,
+    saveNewGame,
 
     // Visual feedback
     sendHighlight,

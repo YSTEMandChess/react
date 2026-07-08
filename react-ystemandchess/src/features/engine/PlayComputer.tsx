@@ -49,12 +49,7 @@ const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false)
   const gameMetaData = useRef<GameMetaData>(null);
   const [yourTurn, setYourTurn]= useState<boolean>(false);
 
-  //functions to write
-    //start game 
 
-  //reset function
-  //handle player move function
-  //handle opponent move 
 
 useEffect(() => {
         if (!cookies.login) {
@@ -85,9 +80,11 @@ useEffect(() => {
 
 
   useEffect(() => {
+
     resetGame();
     connectToServer();
     loadGame();
+    if (checkGameStatus()) return;
   }, [location.key]);
 
   useEffect(() => {
@@ -131,12 +128,13 @@ const moveStr = data.move.promotion
   : `${data.move.from} -> ${data.move.to}`;
 
 setMoveHistory(prev => [...prev, moveStr]);
-      if (checkGameStatus()) return;
 
       gameMetaData.current.movesList=moveHistory
       gameMetaData.current.fen= gameRef.current.fen()
       gameMetaData.current.updatedAt= Date.now().toString()
       socketRef.current.saveGame(gameMetaData)
+            if (checkGameStatus()) return;
+
     }
     else{
       console.log("Not the Opponent's turn")
@@ -163,12 +161,13 @@ setMoveHistory(prev => [...prev, moveStr]);
 setMoveHistory(prev => [...prev, moveStr]);
       
 
-      if (checkGameStatus()) return;
+      
 
       gameMetaData.current.movesList=moveHistory
       gameMetaData.current.fen=fen
       gameMetaData.current.updatedAt= Date.now().toString()
       socketRef.current.saveGame(gameMetaData)
+      if (checkGameStatus()) return;
 
       if (socketRef.current) {
         socketRef.current.playMove(gameMetaData)
@@ -275,7 +274,6 @@ const loadGame = () => {
   }
 };
 
-// extracted so you're not copy-pasting it twice
 const applyGameState = (game: GameMetaData) => {
   gameRef.current = new Chess(game.fen);
   chessBoardRef.current.setPosition(game.fen); // use game.fen, not stale fen

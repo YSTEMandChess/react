@@ -7,7 +7,7 @@ const gameManager = new GameManager();
  * @param {Socket} socket - The connected socket instance
  * @param {Server} io - The Socket.IO server instance
  */
-const registerSocketHandlers = (socket, io) => {
+const registerSocketHandlers = (socket, io, stockfish) => {
     console.log("A user connected to socket:", socket.id);
 
     /**
@@ -37,6 +37,8 @@ const registerSocketHandlers = (socket, io) => {
             socket.emit("gameerror", err.message);
         }
     });
+
+
 
     /**
      * Handles creating a new puzzle or joining an existing one
@@ -103,12 +105,7 @@ const registerSocketHandlers = (socket, io) => {
                         }
                     }
                 }
-
             }
-
-            /*
-
-            */
         }
         catch (err) {
             socket.emit("error", err.message);
@@ -193,6 +190,8 @@ const registerSocketHandlers = (socket, io) => {
         }
     });
 
+
+    
     /**
      * Broadcasts any simple string messages
      * Expected payload: { message }
@@ -242,6 +241,9 @@ const registerSocketHandlers = (socket, io) => {
         io.to(result.mentorId).emit("reset");
         console.log("game ended successfully")
     });
+
+
+
 }
 
 module.exports = registerSocketHandlers;
