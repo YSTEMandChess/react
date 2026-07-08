@@ -1,17 +1,21 @@
-require("dotenv").config();
+import "dotenv/config";
 
-const express = require("express");
-const http = require("http");
-const socketIo = require("socket.io"); // The Server constructor
-const { io: ioClient } = require("socket.io-client"); // The Client factory
-const cors = require("cors");
-const morgan = require("morgan");
-const registerSocketHandlers = require("./managers/EventHandlers");
+
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import cors from "cors";
+import morgan from "morgan";
+import registerSocketHandlers from "./managers/EventHandlers";
+import { io as ioClient } from "socket.io-client";
 
 const app = express();
 const server = http.createServer(app);
 
+// Add logging functionality to the server
 app.use(morgan("dev"));
+
+// Apply CORS middleware to handle cross-origin requests
 app.use(
   cors({
     origin: "*",
@@ -20,8 +24,8 @@ app.use(
   })
 );
 
-// 1. Your existing Socket.IO SERVER (for your frontend client)
-const io = socketIo(server, {
+// Initialize Socket.IO with CORS configuration
+const io = new Server(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
@@ -30,7 +34,7 @@ const io = socketIo(server, {
 });
 
 // 2. New Socket.IO CLIENT connection (to the Stockfish engine service)
-const STOCKFISH_SERVER_URL = process.env.STOCKFISH_SERVER_URL ;
+const STOCKFISH_SERVER_URL = process.env.STOCKFISH_SERVER_URL;
 const stockfishSocket = ioClient(STOCKFISH_SERVER_URL, {
   autoConnect: true,
   reconnection: true,
@@ -55,5 +59,4 @@ server.listen(PORT, () => {
   console.log(`Chess Server listening on port ${PORT}`);
 });
 
-// Export stockfishSocket along with the others if needed elsewhere
-module.exports = { server, io, stockfishSocket };
+export { server, io };

@@ -71,8 +71,8 @@ interface UseChessSocketOptions {
   onMessage?: (msg: string) => void;
   onRoleAssigned?: (role: "host" | "guest") => void;
   onColorAssigned?: (color: PlayerColor) => void;
-  onConnect? :(isConnected: boolean) => void; 
-  onDisconnect?: (isConnected : boolean) => void;
+  onConnect?: (isConnected: boolean) => void;
+  onDisconnect?: (isConnected: boolean) => void;
 }
 
 // ======== CENTRALIZED FEN NORMALIZATION ========
@@ -102,13 +102,13 @@ const normalizeFen = (fen: string): string => {
   // Partial FEN with 2-5 fields - pad to 6 fields
   const defaults = ["w", "KQkq", "-", "0", "1"];
   const paddedParts = [...parts];
-  
+
   while (paddedParts.length < 6) {
     paddedParts.push(defaults[paddedParts.length - 1]);
   }
 
   return paddedParts.join(" ");
-}; 
+};
 
 export const useChessSocket = ({
   student,
@@ -128,7 +128,7 @@ export const useChessSocket = ({
   onRemoveGrey,
   onReset,
   onError,
-  onConnect, 
+  onConnect,
   onDisconnect,
   onMessage,
   onRoleAssigned,
@@ -168,23 +168,23 @@ export const useChessSocket = ({
     // on connect
     socket.on("connect", () => {
       setConnected(true);
-      if (onConnect){
+      if (onConnect) {
         onConnect(connected)
       }
     });
 
     socket.on("disconnect", (reason: any) => {
       setConnected(false);
-      if (onDisconnect){
+      if (onDisconnect) {
         onDisconnect(connected)
       }
     });
 
-    
+
     socket.on('session-started', ({ success }) => {
       console.log("AI is connected");
     });
-    
+
 
     socket.on("connect_error", (error: any) => {
       console.error("Connection error:", error);
@@ -236,15 +236,15 @@ export const useChessSocket = ({
     });
 
     socket.on('evaluation-complete', ({ gameMetaData }) => {
-  const lastMove = gameMetaData.movesList[gameMetaData.movesList.length - 1];
-  const [from, rest] = lastMove.split(" -> ");
-  const [to, promotionPart] = rest.split(" (");
-  const promotion = promotionPart ? promotionPart.replace(")", "") : undefined;
+      const lastMove = gameMetaData.movesList[gameMetaData.movesList.length - 1];
+      const [from, rest] = lastMove.split(" -> ");
+      const [to, promotionPart] = rest.split(" (");
+      const promotion = promotionPart ? promotionPart.replace(")", "") : undefined;
 
-  if (onMove) {
-    onMove({ fen: gameMetaData.fen, move: { from, to, promotion } });
-  }
-});
+      if (onMove) {
+        onMove({ fen: gameMetaData.fen, move: { from, to, promotion } });
+      }
+    });
 
     // color (explicit)
     socket.on("color", (msg: string) => {
@@ -366,7 +366,7 @@ export const useChessSocket = ({
       if (onError) onError(msg);
     });
 
-    
+
 
     // cleanup when component unmounts
     return () => {
@@ -390,6 +390,8 @@ export const useChessSocket = ({
       student: studentRef.current,
       role: roleRef.current
     };
+
+    //write the version with gamestate
     console.log("Starting new game:", data);
     socketRef.current?.emit("newgame", JSON.stringify(data));
   }, []);
@@ -406,10 +408,10 @@ export const useChessSocket = ({
 
   const setGameState = useCallback((fenToSet: string) => {
     const normalizedFen = normalizeFen(fenToSet);
-    
+
     // CRITICAL: Update currentFenRef immediately BEFORE sending to server
     currentFenRef.current = normalizedFen;
-    
+
     const data = { state: normalizedFen };
     socketRef.current?.emit("setstate", JSON.stringify(data));
   }, []);
@@ -417,36 +419,47 @@ export const useChessSocket = ({
   const setGameStateWithColor = useCallback(
     (fenToSet: string, color: PlayerColor, hints?: string) => {
       const normalizedFen = normalizeFen(fenToSet);
-      
+
       // Update currentFenRef immediately before sending to server
       // This prevents the validation logic from thinking the server's echo is a move response
       currentFenRef.current = normalizedFen;
-      
+
       const data = { state: normalizedFen, color, hints: hints || "" };
       socketRef.current?.emit("setstateColor", JSON.stringify(data));
     },
     []
   );
 
-  const saveGame = (gameMetaData: GameMetaData) =>{
+  const saveGame = (gameMetaData: GameMetaData) => {
     socketRef.current?.emit("saveGame", gameMetaData)
     console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
   }
 
-  const playMove = (gameMetaData: GameMetaData) =>{
+  const playMove = (gameMetaData: GameMetaData) => {
     socketRef.current?.emit("playMove", gameMetaData)
     console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
   }
 
-  const getMostRecentGameInfo = (gameMetaData: GameMetaData) =>{
-    socketRef.current?.emit("getMostRecentGameInfo", gameMetaData)
-    console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
-    socketRef.current.on("onMostRecentGameInfo", (msg: GameMetaData)=>{
-      return msg
-    })
-  }
+  const getMostRecentGameInfo = (
+    gameMetaData: GameMetaData
+  ): Promise<GameMetaData> => {
+    return new Promise((resolve) => {
+      socketRef.current?.emit("getMostRecentGameInfo", gameMetaData);
 
-  const saveNewGame = (gameMetaData: GameMetaData) =>{
+      console.log(
+        `Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`
+      );
+
+      socketRef.current?.on(
+        "onMostRecentGameInfo",
+        (msg: GameMetaData) => {
+          resolve(msg);
+        }
+      );
+    });
+  };
+
+  const saveNewGame = (gameMetaData: GameMetaData) => {
     socketRef.current?.emit("saveNewGame", gameMetaData)
     console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
   }
@@ -659,7 +672,7 @@ export const useChessSocket = ({
     // Communication
     sendMousePosition,
     sendMessage,
-    
+
 
     // Mouse tracking helpers
     startMouseTracking,
@@ -671,5 +684,8 @@ export const useChessSocket = ({
     // Refs for direct access
     socketRef,
     currentFenRef,
+    mentorRef,
+    studentRef,
+    roleRef
   };
 };

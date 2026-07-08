@@ -2,6 +2,32 @@ const GameManager = require("./GameManager");
 
 const gameManager = new GameManager();
 
+export type GameMetaData = {
+    userId?: number,
+    user?: User,
+    opponent?: User,
+    uuid?: string,
+    opponentId?: string,
+    gameName: string,
+    gameType: "computer" | "friend" | "mentor",
+    computerLevel: number | null,
+    fen: string,
+    movesList: string[],
+    playerColor: "white" | "black",
+    status: "won" | "lost" | "ongoing" | "draw",
+    createdAt: string,
+    updatedAt: string
+}
+export type User = {
+    username: string,
+    firstName: string,
+    lastName: string,
+    role: string,
+    email: string,
+    id: number
+}
+
+
 /**
  * Registers all socket event handlers for a given connection.
  * @param {Socket} socket - The connected socket instance
@@ -14,24 +40,30 @@ const registerSocketHandlers = (socket, io, stockfish) => {
      * Handles creating a new game or joining an existing one
      * Expected payload: { student, mentor, role }
      */
+    //going to destucture to be able to to take new game data type
+
     socket.on("newgame", (msg) => {
         try {
-            const parsed = JSON.parse(msg);
+            //Code for starting Games that will be saved 
+            const { student, mentor, role, userId, user, opponent, opponentId, gameName, gameType, computerLevel, fen, movesList, playerColor, status, createdAt, updatedAt } = JSON.parse(msg)
+            const gameMetaData = { userId, user, opponent, opponentId, gameName, gameType, computerLevel, fen, movesList, playerColor, status, createdAt, updatedAt } as GameMetaData
 
             const result = gameManager.createOrJoinGame({
-                student: parsed.student,
-                mentor: parsed.mentor,
-                role: parsed.role,
-                socketId: socket.id
+                socketId: socket.id,
+                gameMetaData: gameMetaData,
+                student: student,
+                mentor: mentor,
+                role: role,
             });
 
             socket.emit(
                 "boardstate",
                 JSON.stringify({
-                boardState: result.game.boardState.fen(),
-                color: result.color
+                    boardState: result.game.boardState.fen(),
+                    color: result.color
                 })
             );
+
         }
         catch (err) {
             socket.emit("gameerror", err.message);
@@ -47,7 +79,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
     socket.on("newPuzzle", (msg) => {
         try {
             const parsed = JSON.parse(msg);
-            console.log('data',parsed, msg);
+            console.log('data', parsed, msg);
             // create the new puzzle
             gameManager.createOrJoinPuzzle({
                 student: parsed.student,
@@ -74,12 +106,12 @@ const registerSocketHandlers = (socket, io, stockfish) => {
             const state = res.result;
             gameManager.broadcastBoardState(res.result, io);
             console.log('Move: ', res);
-            if(!computerMove && credentials) {
-                const activityEvents = res.activityEvents;   
+            if (!computerMove && credentials) {
+                const activityEvents = res.activityEvents;
                 if (activityEvents && activityEvents.length > 0) {
-                    const studentId = state.studentId;   
+                    const studentId = state.studentId;
                     const payload = {
-                        activities: activityEvents, 
+                        activities: activityEvents,
                         lastMove: { from, to, san: state.move?.san }
                     };
                     console.log('Payload', payload);
@@ -92,16 +124,16 @@ const registerSocketHandlers = (socket, io, stockfish) => {
                                 method: "PUT",
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'Authentication' : `Bearer ${credentials}`,
+                                    'Authentication': `Bearer ${credentials}`,
                                 },
                                 body: JSON.stringify({
                                     activityName: payload.activities[0].name,
                                 })
                             });
-                            console.log('response',response);
+                            console.log('response', response);
                             socket.emit("completeActivity");
                         } catch (e) {
-                            console.log('Error: ', e);                            
+                            console.log('Error: ', e);
                         }
                     }
                 }
@@ -140,7 +172,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
             io.to(result.studentId).emit("reset");
             io.to(result.mentorId).emit("reset");
             console.log("game ended successfully")
-        } 
+        }
         catch (err) {
             console.log("error", err.message);
             socket.emit("error", err.message);
@@ -218,12 +250,12 @@ const registerSocketHandlers = (socket, io, stockfish) => {
     // Generic relay handler
     relayEvents.forEach((eventName) => {
         socket.on(eventName, (msg) => {
-        try {
-            const data = JSON.parse(msg);
-            gameManager.relayToOpponent(socket.id, eventName, data, io);
-        } catch (err) {
-            socket.emit("error", err.message);
-        }
+            try {
+                const data = JSON.parse(msg);
+                gameManager.relayToOpponent(socket.id, eventName, data, io);
+            } catch (err) {
+                socket.emit("error", err.message);
+            }
         });
     });
 
@@ -246,4 +278,4 @@ const registerSocketHandlers = (socket, io, stockfish) => {
 
 }
 
-module.exports = registerSocketHandlers;
+export default registerSocketHandlers

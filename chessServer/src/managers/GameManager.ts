@@ -1,35 +1,33 @@
+import { GameMetaData } from "./EventHandlers";
+
 const { Chess } = require("chess.js")
 
 /**
  * GameManager class handles chess game sessions, state, and logic.
  */
-/*
+type Player = {
+    username: string;
+    id: string | null;
+    color: "white" | "black";
+}
 
-export type GameMetaData = {
-        userId?: number,
-        user?: User,                                                                                                                                                                                                                                                         
-        opponent?: User,
-        uuid?: string,
-        opponentId?: string,
-        gameName: string,
-        gameType: "computer" | "friend" | "mentor",
-        computerLevel: number | null,
-        fen: string,
-        movesList: string[],
-        playerColor: "white" | "black",
-        status: "won" | "lost" | "ongoing" | "draw",
-        createdAt: string,
-        updatedAt: string
-    }
-   export type User = {
-        username: string,
-        firstName: string,
-        lastName: string,
-        role: string,
-        email: string,
-        id: number
-    }
-        */
+type GameInstance = {
+    student?: Player
+    mentor?: Player
+    game?: any
+    color?: any
+    opponent?: Player
+    role?: string,
+    gameMetaData?: GameMetaData;
+    newGame?: boolean;
+    boardState?: any
+    puzzle?: any
+    pastStates?: any
+}
+
+interface GameManager {
+    ongoingGames: GameInstance[]
+}
 
 class GameManager {
     constructor() {
@@ -41,59 +39,104 @@ class GameManager {
      * @param {Object} param0 - Contains student, mentor, role, socketId
      * @returns {Object} Game object, assigned color, and new game status
      */
-    createOrJoinGame({ student, mentor, role, socketId }) {
+    createOrJoinGame({ student, mentor, role, socketId, stockfishSocket, gameMetaData }: { student: string, mentor: string, role: string, socketId: string, stockfishSocket: string, gameMetaData: GameMetaData }): GameInstance {
+
+        const { userId, user, opponent, opponentId, gameName, gameType, computerLevel, fen, movesList, playerColor, status, createdAt, updatedAt } = gameMetaData
+
         let game = this.ongoingGames.find(
-            (g) => g.student.username === student || g.mentor.username === mentor
+            (g) => g.student.username === student || g.mentor.username === mentor || user?.username === g.student.username || opponent?.username === g.opponent.username
         );
 
-        if (role != "student" && role != "mentor") {
-            throw new Error("Invalid role!");
-        }
-
-        // Player already in a game
         if (game) {
             console.log("already in a game")
-            if (role == "student") {
+            if (role == "student" && game.student) {
                 game.student.id = socketId;
-                return { game, color: game.student.color, newGame: false };
+                return game;
+                // return { game, color: game.student.color, newGame: false };
             }
-            else if (role == "mentor") {
+            else if (role == "mentor" && game.mentor) {
                 game.mentor.id = socketId;
-                return { game, color: game.mentor.color, newGame: false };
+                return game
+                // return { game, color: game.mentor.color, newGame: false };
             }
-            else {
-                throw new Error("Invalid role!");
+            else if (gameMetaData.user?.username == game.student.username) {
+                game.student.id = socketId
+                return game
+            }
+            else if (game.gameMetaData.opponent?.username == game.opponent.username) {
+                game.opponent.id = socketId
+                return game
             }
         }
-
         console.log("creating new game in game manager")
         // Create a new game instance
         const board = new Chess();
-        const studentColor = role === "student" ? "black" : "white";
-        const mentorColor = role === "student" ? "white" : "black";
 
-        const newGame = {
-            student: {
-                username: student,
-                id: role === "student" ? socketId : null,
-                color: studentColor
-            },
-            mentor: {
-                username: mentor,
-                id: role === "mentor" ? socketId : null,
-                color: mentorColor
-            },
-            boardState: board,
-            pastStates: []
-        };
+        if (gameMetaData?.fen) {
+            const validation = Chess.validateFen(fen);
+            if (validation.ok) {
+                board.load(fen || "");
+            } else {
+                console.error("Invalid FEN string skipped:", validation.error);
+            }
+        }
 
-        this.ongoingGames.push(newGame);
+        const studentColor: "white" | "black" = role === "student" ? "black" : "white";
+        const mentorColor: "white" | "black" = role === "student" ? "white" : "black";
+        if (!createdAt) {
+            const newGame = {
+                student: {
+                    username: student,
+                    id: role === "student" ? socketId : null,
+                    color: studentColor
 
-        return {
-            game: newGame,
-            color: role === "student" ? studentColor : mentorColor,
-            newGame: true
-        };
+                },
+                mentor: {
+                    username: mentor,
+                    id: role === "mentor" ? socketId : null,
+                    color: mentorColor as ("black" | "white")
+                },
+
+                boardState: board,
+                pastStates: [],
+            };
+
+            this.ongoingGames.push(newGame);
+            return {
+                game: newGame,
+                color: role === "student" ? studentColor : mentorColor,
+                newGame: true
+            };
+
+        }
+        else if (gameMetaData) {
+
+            const loadingGame = {
+                student: {
+                    username: user?.username,
+                    id: socketId,
+                    color: playerColor
+
+                },
+                mentor: {
+                    username: mentor,
+                    id: role === "mentor" ? socketId : null,
+                    color: mentorColor
+                },
+                opponent: {
+                    username: opponent?.username || "stockfish",
+                    id: gameType == "computer" ? stockfishSocket : null,
+                    color: playerColor === "black" ? "white" : "black" as ("black" | "white")
+                },
+                boardState: board,
+                pastStates: movesList,
+                gameMetaData: gameMetaData
+
+            }
+            this.ongoingGames.push(loadingGame);
+            return loadingGame
+
+        }
     }
 
     /**
@@ -119,8 +162,8 @@ class GameManager {
                 game.student.id = socketId; // record guest socket id
                 socket.emit("guest"); // notify client that they join as guest
                 const socket2 = io.sockets.sockets.get(game.mentor.id);
-                socket2.emit("guest"); 
-                socket.emit("boardstate", JSON.stringify({ 
+                socket2.emit("guest");
+                socket.emit("boardstate", JSON.stringify({
                     boardState: game.boardState.fen(), // pass existing game state to guest client
                     color: game.student.color
                 }));
@@ -132,10 +175,10 @@ class GameManager {
                 game.mentor.id = socketId; // record guest socket id
                 socket.emit("guest"); // notify client that they join as guest
                 const socket2 = io.sockets.sockets.get(game.student.id);
-                socket2.emit("guest"); 
-                socket.emit("boardstate", JSON.stringify({ 
+                socket2.emit("guest");
+                socket.emit("boardstate", JSON.stringify({
                     boardState: game.boardState.fen(), // pass existing game state to guest client
-                    color: game.student.color 
+                    color: game.student.color
                 }));
                 socket.emit("message", JSON.stringify({ message: game.puzzle }));
                 console.log("emtting hints!!", game.puzzle);
@@ -159,13 +202,13 @@ class GameManager {
             student: {
                 username: student,
                 id: role === "student" ? socketId : null,
-                color: studentColor,
+                color: studentColor as ("black" | "white"),
                 credentials: credentials,
             },
             mentor: {
                 username: mentor,
                 id: role === "mentor" ? socketId : null,
-                color: mentorColor
+                color: mentorColor as ("black" | "white")
             },
             boardState: board,
             pastStates: [],
@@ -199,7 +242,7 @@ class GameManager {
         }
 
         const board = game.boardState;
-        const move = {from: moveFrom, to: moveTo};
+        const move = { from: moveFrom, to: moveTo };
         //console.log(move, typeof(move), typeof(move)==='object');
         const moveResult = board.move(move);
         console.log(moveResult);
@@ -227,37 +270,37 @@ class GameManager {
             const capLetter = moveResult.captured; // 'q','r','n','b','p'
             const name = capLetter ? captureMap[capLetter] : null;
             if (name) {
-            activityEvents.push({
-                name,
-                meta: {
-                from: moveResult.from,
-                to: moveResult.to,
-                san: moveResult.san
-                },
-                at: Date.now()
-            });
+                activityEvents.push({
+                    name,
+                    meta: {
+                        from: moveResult.from,
+                        to: moveResult.to,
+                        san: moveResult.san
+                    },
+                    at: Date.now()
+                });
             }
         }
 
         // Castling
         if (flags.includes("k") || flags.includes("q")) {
             activityEvents.push({
-            name: "performCastle",
-            meta: { san: moveResult.san },
-            at: Date.now()
+                name: "performCastle",
+                meta: { san: moveResult.san },
+                at: Date.now()
             });
         }
         //console.log(activityEvents);
         //console.log('student info',game.student);
-        return { 
-                result: {
-                            boardState: board.fen(),
-                            move: moveResult,
-                            studentId: game.student.id,
-                            mentorId: game.mentor.id,
-                            studentUsername: game.student.username,
-                        },
-                activityEvents: activityEvents
+        return {
+            result: {
+                boardState: board.fen(),
+                move: moveResult,
+                studentId: game.student.id,
+                mentorId: game.mentor.id,
+                studentUsername: game.student.username,
+            },
+            activityEvents: activityEvents
         };
     }
 
@@ -326,10 +369,10 @@ class GameManager {
         const mentorSocket = io.sockets.sockets.get(gameInfo.mentorId);
 
         if (studentSocket) {
-        studentSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
+            studentSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
         }
         if (mentorSocket) {
-        mentorSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
+            mentorSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
         }
     }
 
@@ -460,7 +503,7 @@ class GameManager {
      */
     getGameBySocketId(socketId) {
         return this.ongoingGames.find(
-            (game) => game.student.id === socketId || game.mentor.id === socketId
+            (game) => game.student.id === socketId || game.mentor.id === socketId || game.opponent.id === socketId
         );
     }
 }
