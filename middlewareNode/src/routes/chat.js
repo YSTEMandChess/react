@@ -148,14 +148,14 @@ const rateLimiter = (req, res, next) => {
   next();
 };
 
-// Helper to interact with the LLM API (supports self-hosted via OPENAI_BASE_URL)
-// IMPORTANT: Set OPENAI_API_KEY in your .env file — never hardcode credentials here.
+// Helper to interact with the Gemini API (supports Google's OpenAI-compatible endpoint)
+// IMPORTANT: Set GEMINI_API_KEY in your .env file — never hardcode credentials here.
 const getLlmApiConfig = () => {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const baseUrl = process.env.OPENAI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai';
-  const model = process.env.OPENAI_MODEL || 'gemini-2.5-flash';
+  const apiKey = (process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || '').trim();
+  const baseUrl = (process.env.GEMINI_BASE_URL || process.env.OPENAI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai').trim();
+  const model = (process.env.GEMINI_MODEL || process.env.OPENAI_MODEL || 'gemini-2.5-flash').trim();
   if (!apiKey) {
-    console.warn('[WARNING] OPENAI_API_KEY is not set. LLM calls will fail. Please set it in middlewareNode/.env');
+    console.warn('[WARNING] GEMINI_API_KEY is not set. LLM calls will fail. Please set it in middlewareNode/.env');
   }
   return { apiKey, baseUrl, model };
 };
@@ -816,4 +816,3 @@ Rules:
 });
 
 module.exports = router;
-

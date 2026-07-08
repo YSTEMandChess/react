@@ -28,9 +28,13 @@ type Analysis = {
   matchScore?: number;
   // points mapped from matchScore (0..100)
   matchPoints?: number;
+  // human-readable explanation of why botPreference was chosen
   // optional numeric score from local heuristic or engine (centipawns-ish for engine, heuristic scale for local)
   score?: number | null;
+  botPreferenceReason?: string;
 };
+
+const GEMINI_FALLBACK_TEXT = "I couldn't get a Gemini response right now, so here's the quick takeaway: check move safety, piece activity, and king safety.";
 
 
 
@@ -101,7 +105,7 @@ function localAnalyze(fenBefore: string, fenAfter: string, moveUci: string) {
 
   // center control bonus (increase to favor opening center moves like e4/d4)
   const centerSquares = new Set(['e4', 'd4', 'e5', 'd5']);
-  if (centerSquares.has(to)) score += 3;
+  let isOpeningCenterPawnPush = false;
 
   // attempt to apply the move on a local Chess instance to inspect result flags
   try {
@@ -130,6 +134,41 @@ function localAnalyze(fenBefore: string, fenAfter: string, moveUci: string) {
     if (moveObj) {
       // detect castling by from/to pattern
       const isCastling = (from === 'e1' && (to === 'g1' || to === 'c1')) || (from === 'e8' && (to === 'g8' || to === 'c8'));
+      const isCenterMove = centerSquares.has(to);
+      const isPawnMove = moveObj.piece === 'p';
+
+      if (isCenterMove) {
+        if (isPawnMove) {
+          isOpeningCenterPawnPush = true;
+          const minorStartSquares = sideMoved === 'w'
+            ? ['b1', 'g1', 'c1', 'f1']
+            : ['b8', 'g8', 'c8', 'f8'];
+          const undevelopedMinorPieces = minorStartSquares.filter((sq) => {
+            const piece = chBefore.get(sq as any);
+            return piece && piece.color === sideMoved && (piece.type === 'n' || piece.type === 'b');
+          }).length;
+          const hasDevelopment = undevelopedMinorPieces < minorStartSquares.length;
+
+          // Check if both d and e pawns are advanced after this move (both on 4th/5th rank).
+          const dPawn = ch.get(sideMoved === 'w' ? 'd4' : ('d5' as any));
+          const ePawn = ch.get(sideMoved === 'w' ? 'e4' : ('e5' as any));
+          const bothCenterPawnsAdvanced = !!(
+            dPawn && dPawn.type === 'p' && dPawn.color === sideMoved &&
+            ePawn && ePawn.type === 'p' && ePawn.color === sideMoved
+          );
+
+          // Central pawn pushes are fine, but they should not dominate the score before development.
+          if (fullmoveNum <= 2) {
+            score += bothCenterPawnsAdvanced ? -1 : 0;
+          } else if (hasDevelopment) {
+            score += bothCenterPawnsAdvanced ? 0 : 1;
+          } else {
+            score += bothCenterPawnsAdvanced ? -2 : 0;
+          }
+        } else {
+          score += fullmoveNum <= 6 ? 2 : 1;
+        }
+      }
 
       // compute opponent moves after the move
       const afterMoves = ch.moves({ verbose: true }) as any[];
@@ -229,7 +268,26 @@ function localAnalyze(fenBefore: string, fenAfter: string, moveUci: string) {
   let analysisText: string[] = [];
   if (delta > 0) analysisText.push(`Net material gain of ${delta}.`);
   else if (delta < 0) analysisText.push(`Net material loss of ${Math.abs(delta)}.`);
+
+  // Check if both d and e center pawns are now on 4th/5th rank
+  try {
+    const chAfter = new Chess(fenAfter);
+    const dPawnAfter = chAfter.get(sideMoved === 'w' ? 'd4' : ('d5' as any));
+    const ePawnAfter = chAfter.get(sideMoved === 'w' ? 'e4' : ('e5' as any));
+    const bothAdvancedNow = (dPawnAfter && dPawnAfter.type === 'p' && dPawnAfter.color === sideMoved) &&
+                            (ePawnAfter && ePawnAfter.type === 'p' && ePawnAfter.color === sideMoved);
+    if (bothAdvancedNow && fullmoveNum <= 8) {
+      analysisText.push('⚠️ Both center pawns advanced: exposes queen and king to knight/bishop attacks. Develop pieces first.');
+      moveIndicator = 'Mistake';
+    }
+  } catch (e) {
+    // ignore FEN parsing errors
+  }
+
   if (centerSquares.has(to)) analysisText.push('Move controls the center.');
+  if (isOpeningCenterPawnPush && fullmoveNum <= 8) {
+    analysisText.push('Early central pawns help, but development and king safety matter more in the opening.');
+  }
   if ((moveUci && moveUci.length >= 4) && ((moveUci === 'g1f3') || (moveUci === 'b1c3') || (moveUci === 'g8f6') || (moveUci === 'b8c6'))) {
     analysisText.push('Minor piece development.');
   }
@@ -255,6 +313,11 @@ function localAnalyze(fenBefore: string, fenAfter: string, moveUci: string) {
     // small but notable loss — nudge toward Inaccuracy/Mistake
     if (moveIndicator === 'Best' || moveIndicator === 'Good') moveIndicator = 'Neutral';
     else moveIndicator = 'Mistake';
+  }
+
+  // Opening center pawn pushes should not be overcalled "Best" because they can leave the king and queen exposed.
+  if (isOpeningCenterPawnPush && fullmoveNum <= 8 && moveIndicator === 'Best') {
+    moveIndicator = 'Good';
   }
 
   // Determine botPreference from the heuristic numeric score
@@ -295,6 +358,36 @@ function computeBotPreferenceFromEngine(bestMove: string | null | undefined, mov
   }
   if (bestMove) return 'Less';
   return 'Unknown';
+}
+
+// Build a human-friendly explanation for why a botPreference was chosen
+function buildBotPreferenceReason(opts: { engineBest?: string | null | undefined; moveUci?: string | undefined; engineScore?: number | null | undefined; moveScore?: { matchScore: number; points: number; botPreference: Analysis['botPreference'] } | null | undefined; indicator?: Analysis['moveIndicator'] | undefined; }): string {
+  const { engineBest, moveUci, engineScore, moveScore, indicator } = opts;
+  const normalize = (u?: string | null | undefined) => (u || '').toString().toLowerCase().replace(/[qrbn]$/, '');
+  try {
+    if (engineBest && moveUci && normalize(engineBest) === normalize(moveUci)) {
+      return `Exact engine best-move match (${engineBest}).`;
+    }
+    if (typeof engineScore === 'number') {
+      if (engineScore >= 100) return `Engine score ${engineScore} → favors the mover (>=100 => More).`;
+      if (engineScore <= -100) return `Engine score ${engineScore} → disfavors the mover (<=-100 => Less).`;
+      return `Engine score ${engineScore} → near-equal (thresholds: >=100 More, <=-100 Less).`;
+    }
+    if (moveScore) {
+      const p = moveScore.points;
+      const s = moveScore.matchScore;
+      if (p >= 95) return `High match to preferred move (${p}/100, matchScore ${s}).`;
+      if (p <= 15) return `Low match to preferred move (${p}/100, matchScore ${s}).`;
+      return `Partial agreement (${p}/100, matchScore ${s}).`;
+    }
+    if (indicator) {
+      const inferred = inferBotPreferenceFromIndicator(indicator);
+      return `Inferred from move indicator '${indicator}' → ${inferred}.`;
+    }
+    return 'No engine score or match data available.';
+  } catch (e) {
+    return '';
+  }
 }
 
 // Compute how close the player's move is to the engine's recommendation.
@@ -421,6 +514,82 @@ function computeFavorsCenter(moveUci: string | undefined, fenBefore: string | un
   return fullmoveNum <= 8 && centerSquares.has(to);
 }
 
+// Detect an early "second center pawn push" (e-pawn already advanced, then d-pawn push or vice-versa)
+// before enough minor-piece development. This should be treated as cautionary, not automatically "Good".
+function isEarlySecondCenterPawnPush(moveUci: string | undefined, fenBefore: string | undefined): boolean {
+  if (!moveUci || !fenBefore || moveUci.length < 4) return false;
+  const fullmoveNum = Number(fenBefore.split(' ')[5] || '1');
+  if (fullmoveNum > 8) return false;
+
+  const from = moveUci.slice(0, 2).toLowerCase();
+  const to = moveUci.slice(2, 4).toLowerCase();
+  const sideMoved: 'w' | 'b' = (fenBefore.split(' ')[1] === 'w') ? 'w' : 'b';
+
+  const validSecondPush =
+    (sideMoved === 'w' && ((from === 'd2' && to === 'd4') || (from === 'e2' && to === 'e4'))) ||
+    (sideMoved === 'b' && ((from === 'd7' && to === 'd5') || (from === 'e7' && to === 'e5')));
+  if (!validSecondPush) return false;
+
+  try {
+    const chBefore = new Chess(fenBefore);
+    const otherCenterSquare = sideMoved === 'w'
+      ? (from === 'd2' ? 'e4' : 'd4')
+      : (from === 'd7' ? 'e5' : 'd5');
+    const otherCenterPawn = chBefore.get(otherCenterSquare as any);
+    if (!otherCenterPawn || otherCenterPawn.type !== 'p' || otherCenterPawn.color !== sideMoved) return false;
+
+    const minorStartSquares = sideMoved === 'w'
+      ? ['b1', 'g1', 'c1', 'f1']
+      : ['b8', 'g8', 'c8', 'f8'];
+    const undevelopedMinorPieces = minorStartSquares.filter((sq) => {
+      const piece = chBefore.get(sq as any);
+      return piece && piece.color === sideMoved && (piece.type === 'n' || piece.type === 'b');
+    }).length;
+
+    // If 3-4 minor pieces are still on original squares, development is still lagging.
+    return undevelopedMinorPieces >= 3;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Opening center pawn pushes can be useful, but they should not be labeled as top-tier play
+// before the position is developed enough to support them.
+function enforceOpeningCenterPawnCaution(analysisObj: any, moveUci: string | undefined, fenBefore: string | undefined) {
+  try {
+    if (!analysisObj || !moveUci || !fenBefore) return analysisObj;
+    const fullmoveNum = Number(fenBefore.split(' ')[5] || '1');
+    if (fullmoveNum > 4) return analysisObj;
+    const to = moveUci.length >= 4 ? moveUci.slice(2, 4).toLowerCase() : '';
+    const from = moveUci.length >= 2 ? moveUci.slice(0, 2).toLowerCase() : '';
+    const centerSquares = new Set(['e4', 'd4', 'e5', 'd5']);
+    const startingPawnSquares = new Set(['e2', 'd2', 'e7', 'd7']);
+    if (!centerSquares.has(to) || !startingPawnSquares.has(from)) return analysisObj;
+
+    if (analysisObj.moveIndicator === 'Best') {
+      analysisObj.moveIndicator = 'Good';
+    }
+
+    if (isEarlySecondCenterPawnPush(moveUci, fenBefore)) {
+      if (analysisObj.moveIndicator === 'Best' || analysisObj.moveIndicator === 'Good' || analysisObj.moveIndicator === 'Book') {
+        analysisObj.moveIndicator = 'Neutral';
+      }
+      if (analysisObj.botPreference === 'More') {
+        analysisObj.botPreference = 'Equal';
+      }
+      const caution = 'Second early center-pawn push can overextend the center; develop minor pieces and secure king safety first.';
+      if (!analysisObj.Analysis) {
+        analysisObj.Analysis = caution;
+      } else if (!/second early center-pawn push|overextend the center/i.test(String(analysisObj.Analysis))) {
+        analysisObj.Analysis = `${analysisObj.Analysis} ${caution}`;
+      }
+    }
+  } catch (e) {
+    // ignore enforcement errors
+  }
+  return analysisObj;
+}
+
 // Helper: detect early side-pawn opening moves that are considered poor practice
 function isEarlySidePawnMove(moveUci: string | undefined, fenBefore: string | undefined): boolean {
   if (!moveUci || !fenBefore) return false;
@@ -447,6 +616,22 @@ function enforceEarlySidePawnBlunder(analysisObj: any, moveUci: string | undefin
     // ignore enforcement errors
   }
   return analysisObj;
+}
+
+// Final enforcement helper: ensure the early side-pawn blunder rule is applied as a last-step override
+function ensureEarlySidePawnEnforcement(analysisObj: any, moveUci: string | undefined, fenBefore: string | undefined, previousMatchPoints: number | null = null) {
+  try {
+    if (!moveUci) return analysisObj;
+    // If there's no analysis object (e.g. raw text), return as-is
+    if (!analysisObj) return analysisObj;
+    // Re-apply the early-side-pawn rule so engine/server results cannot override it
+    enforceEarlySidePawnBlunder(analysisObj, moveUci, fenBefore);
+    enforceOpeningCenterPawnCaution(analysisObj, moveUci, fenBefore);
+    // Re-apply bot preference rules so 'Less' maps to Mistake/Blunder as intended
+    return applyBotPreferenceRules(analysisObj, previousMatchPoints) || analysisObj;
+  } catch (e) {
+    return analysisObj;
+  }
 }
 
 // Attempt to run in-browser Stockfish if the `stockfish` package is installed.
@@ -592,7 +777,10 @@ const getAiFeedbackForMove = async (
     // eslint-disable-next-line no-console
     console.warn('Failed to fetch AI feedback from middleware, using default:', err);
   }
-  return baseAnalysis;
+  return {
+    ...baseAnalysis,
+    Analysis: GEMINI_FALLBACK_TEXT,
+  };
 };
 
 const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter, moveUci, uciHistory, onRequestGotoFen }) => {
@@ -750,10 +938,18 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                                     // ignore scoring errors
                                   }
 
+                                      // Provide a human-friendly reason for the botPreference
+                                      try {
+                                        explanation.botPreferenceReason = buildBotPreferenceReason({ engineBest: sfResult.bestMove, moveUci, engineScore: typeof sfResult.score === 'number' ? sfResult.score : null, moveScore: typeof sfResult.score === 'number' ? { matchScore: explanation.matchScore ?? 0, points: explanation.matchPoints ?? 0, botPreference: explanation.botPreference } : undefined, indicator: explanation.moveIndicator });
+                                      } catch (e) {}
+
                                       // Enforce early side-pawn blunder rule (e.g. f2f4, c2c4, f7f5, c7c5)
                                       enforceEarlySidePawnBlunder(explanation, moveUci, fenBefore);
                                       // apply user-defined botPreference rules (Less => Mistake/Blunder)
-                                      const finalExplanation = applyBotPreferenceRules(explanation, prevMatchPoints) || null;
+                                      let finalExplanation = applyBotPreferenceRules(explanation, prevMatchPoints) || null;
+                                      // Ensure early side-pawn rule overrides any engine labels
+                                      finalExplanation = ensureEarlySidePawnEnforcement(finalExplanation, moveUci, fenBefore, prevMatchPoints) || finalExplanation;
+                                      setAnalysis(finalExplanation);
                                       const finalExplanationWithAi = finalExplanation ? await getAiFeedbackForMove(finalExplanation, fenBefore, fenAfter, moveUci || '', sfResult.bestMove, typeof sfResult.score === 'number' ? sfResult.score : null) : null;
                                       if (cancelled) return;
                                       setAnalysis(finalExplanationWithAi);
@@ -796,10 +992,12 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                               norm.matchScore = mv.matchScore;
                               norm.matchPoints = mv.points;
                               norm.botPreference = norm.botPreference || mv.botPreference;
+                                // human readable reason
+                                norm.botPreferenceReason = buildBotPreferenceReason({ engineBest: undefined, moveUci, engineScore: norm.score ?? null, moveScore: mv, indicator: norm.moveIndicator });
                             } catch (e) {}
                             // Enforce early side-pawn detection
                             enforceEarlySidePawnBlunder(norm, moveUci, fenBefore);
-                            const finalNorm = applyBotPreferenceRules(norm, prevMatchPoints) || null;
+                            const finalNorm = ensureEarlySidePawnEnforcement(norm, moveUci, fenBefore, prevMatchPoints) || null;
                             const finalNormWithAi = finalNorm ? await getAiFeedbackForMove(finalNorm, fenBefore, fenAfter, moveUci || '', null, norm.score ?? null) : null;
                             if (cancelled) return;
                             setAnalysis(finalNormWithAi);
@@ -891,7 +1089,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
             } catch (e) {}
             // Enforce early side-pawn detection
             enforceEarlySidePawnBlunder(norm, moveUci, fenBefore);
-            const finalNorm = applyBotPreferenceRules(norm, prevMatchPoints) || null;
+            const finalNorm = ensureEarlySidePawnEnforcement(norm, moveUci, fenBefore, prevMatchPoints) || null;
             const finalNormWithAi = finalNorm ? await getAiFeedbackForMove(finalNorm, fenBefore, fenAfter, moveUci || '', null, norm.score ?? null) : null;
             if (cancelled) return;
             setAnalysis(finalNormWithAi);
@@ -930,14 +1128,14 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
               return;
             }
           } else {
-            // No JSON-looking substring — log and show raw text
+          // No JSON-looking substring — log and show a placeholder instead of raw text
             // eslint-disable-next-line no-console
             console.error('StockfishTutor: non-JSON response from analyze endpoint:', rawText);
             // If the server returned an HTML error like "Cannot POST /api/analyze" inform the user with guidance
             if (/Cannot POST/i.test(rawText) || /Cannot GET/i.test(rawText) || /Not Found/i.test(rawText)) {
               setError(`Analysis endpoint not found at ${usedEndpoint}. Server returned: ${rawText.split('\n')[0]}. Check that the analysis server is running and that the URL in your environment is correct.`);
             } else {
-              setAnalysis({ Analysis: rawText });
+            setAnalysis({ Analysis: GEMINI_FALLBACK_TEXT });
             }
             setIsAnalyzing(false);
             return;
@@ -966,11 +1164,11 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
               parsed = JSON.parse(cleaned);
             } catch (e) {
               // parsing failed, store raw text instead
-              parsed = { Analysis: cleaned };
+              parsed = { Analysis: GEMINI_FALLBACK_TEXT };
             }
           } else {
-            // not JSON — return raw explanation text
-            parsed = { Analysis: cleaned };
+            // not JSON — return a placeholder instead of raw explanation text
+            parsed = { Analysis: GEMINI_FALLBACK_TEXT };
           }
         } else if (expl && typeof expl === 'object') {
           parsed = expl as Analysis;
@@ -1018,6 +1216,10 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
               (parsed as any).matchScore = mv.matchScore;
               (parsed as any).matchPoints = mv.points;
               parsed.botPreference = parsed.botPreference || mv.botPreference;
+              // human-friendly reason explaining the preference
+              try {
+                parsed.botPreferenceReason = buildBotPreferenceReason({ engineBest, moveUci, engineScore: typeof engineScore === 'number' ? engineScore : null, moveScore: mv, indicator: parsed.moveIndicator });
+              } catch (e) {}
               // Debug: show what we computed from engineBest/engineScore
               // eslint-disable-next-line no-console
               console.debug('StockfishTutor: engineBest, engineScore, computed mv ->', { engineBest, engineScore, mv });
@@ -1052,7 +1254,9 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
         const elapsed = Date.now() - startedAt;
         if (elapsed < minDisplayTime) await new Promise((r) => setTimeout(r, minDisplayTime - elapsed));
         if (cancelled) return;
-        setAnalysis(parsed || null);
+        // Final enforcement: make sure early side-pawn blunders are honored regardless of server labels
+        const finalParsed = ensureEarlySidePawnEnforcement(parsed || null, moveUci, fenBefore, prevMatchPoints) || parsed || null;
+        setAnalysis(finalParsed);
         setIsAnalyzing(false);
       } catch (err: any) {
         setError(err?.message || 'Network error');
@@ -1138,6 +1342,9 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
             {analysis.botPreference && (
               <span className={styles.detailPill}>Preference: {analysis.botPreference}</span>
             )}
+            {analysis.botPreferenceReason && (
+              <span className={styles.detailPill} title={analysis.botPreferenceReason}>Why: {analysis.botPreferenceReason}</span>
+            )}
             {typeof analysis.favorsCenter === 'boolean' && (
               <span className={styles.detailPill}>
                 {analysis.favorsCenter ? '🎯 Controls Center' : '↔️ Side Play'}
@@ -1182,4 +1389,3 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
 };
 
 export default StockfishTutor;
-
