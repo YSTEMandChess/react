@@ -282,9 +282,16 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         );
       case "mentor":
         return (
-          <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
-            <h2>Mentor</h2>
-            <p>This is the content for the Mentor tab.</p>
+          <div id="inventory-content-mentor" className="inventory-content active-content flex flex-col items-center">
+            <h2>Mentor Session</h2>
+            <div className="inventory-content-line mb-4"></div>
+            <iframe
+              src="/chessclient/parent.html"
+              title="Chess Board"
+              className="w-full max-w-[800px] h-[600px] border border-borderLight rounded-lg shadow-sm"
+              frameBorder="0"
+              allowFullScreen
+            ></iframe>
           </div>
         );
       case "learning":

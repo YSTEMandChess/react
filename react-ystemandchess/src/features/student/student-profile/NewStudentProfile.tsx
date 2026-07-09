@@ -359,9 +359,15 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     
     case "mentor":
       return (
-        <div className="w-full h-full">
-          <h2 className="text-2xl font-bold text-dark mb-4">Mentor</h2>
-          <p className="text-gray">This is the content for the Mentor tab.</p>
+        <div className="w-full h-full flex flex-col items-center">
+          <h2 className="text-2xl font-bold text-dark mb-4">Mentor Session</h2>
+          <iframe
+            src="/chessclient/parent.html"
+            title="Chess Board"
+            className="w-full max-w-[800px] h-[600px] border border-borderLight rounded-lg shadow-sm"
+            frameBorder="0"
+            allowFullScreen
+          ></iframe>
         </div>
       );
     
