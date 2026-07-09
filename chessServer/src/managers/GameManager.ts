@@ -234,29 +234,38 @@ class GameManager {
      * @param {*} moveTo 
      * @returns {Object} Updated board state, move details, and socket IDs
      */
-    makeMove(socketId, moveFrom, moveTo) {
-        const game = this.getGameBySocketId(socketId);
+     makeMove(socketId, moveFrom, moveTo, promotion){
 
+        //Get the Game
+        const game = this.getGameBySocketId(socketId);
         if (!game) {
             throw new Error("Game not found for this socket!");
         }
 
+        //Update the Game Here
         const board = game.boardState;
-        const move = { from: moveFrom, to: moveTo };
+        const move = { from: moveFrom, to: moveTo, promotion: promotion?? null };
         //console.log(move, typeof(move), typeof(move)==='object');
         const moveResult = board.move(move);
-        console.log(moveResult);
 
+        console.log(moveResult);
+           const moveStr = promotion
+        ? `${move.from} -> ${move.to} (${move.promotion})`
+        : `${move.from} -> ${move.to}`;
+
+        if (game.gameMetaData.movesList){
+            game.gameMetaData.movesList.push(moveStr)
+            game.gameMetaData.fen= board.fen()
+        }
+        
         if (!moveResult) {
             throw new Error("Invalid move!");
         }
-
         // Save board state
         game.pastStates.push(board.fen())
-
+        
         const flags = moveResult.flags || ""; // e.g., 'c' capture, 'k'/'q' castle, 'e' en passant, 'p' promotion
         const activityEvents = [];
-
         const captureMap = {
             q: "captureQueen",
             r: "captureRook",
@@ -281,7 +290,6 @@ class GameManager {
                 });
             }
         }
-
         // Castling
         if (flags.includes("k") || flags.includes("q")) {
             activityEvents.push({
@@ -292,13 +300,19 @@ class GameManager {
         }
         //console.log(activityEvents);
         //console.log('student info',game.student);
+//check for an outbound to send the game to so if the opponent is currently in the game we can send the board 
+
+//return the game to be used for client
         return {
             result: {
                 boardState: board.fen(),
                 move: moveResult,
                 studentId: game.student.id,
                 mentorId: game.mentor.id,
+                opponentId : game.opponent.id,
                 studentUsername: game.student.username,
+                gameMetaData: game.gameMetaData
+                
             },
             activityEvents: activityEvents
         };
@@ -367,12 +381,16 @@ class GameManager {
 
         const studentSocket = io.sockets.sockets.get(gameInfo.studentId);
         const mentorSocket = io.sockets.sockets.get(gameInfo.mentorId);
+        const opponentSocket = io.sockets.sockets.get(gameInfo.opponentId)
 
         if (studentSocket) {
             studentSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
         }
         if (mentorSocket) {
             mentorSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
+        }
+        if (opponentSocket) {
+            opponentSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
         }
     }
 

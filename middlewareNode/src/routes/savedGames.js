@@ -59,11 +59,13 @@ const addNewGame = async (req, res, next) => {
     }
 };
 
+
 // Push new game id to student game array 
 //Task : make this function also callable on its own to add a game to another student for friend x friend gameplay 
 const addGameToStudent = async (req, res) => {
     try {
         const id = req.body.studentId;
+        const id2= req.body.opponentId
         const game = req.game;
         const student = await users.findById(id);
         if (!student) {
@@ -73,8 +75,23 @@ const addGameToStudent = async (req, res) => {
         if (alreadySaved) {
             return res.status(500).json({ message: "Game has been saved under this ID already" });
         }
+        
         student.savedGames.push(game);
         await student.save();
+
+        if (id2){
+        const opponent = await users.findById(id);
+        if (!opponent) {
+            return res.status(404).json({ message: "No student in DB" });
+        }
+        const alreadySaved = opponent.savedGames.some((item) => item === game);
+        if (alreadySaved) {
+            return res.status(500).json({ message: "Game has been saved under this ID already" });
+        }
+        
+        opponent.savedGames.push(game)
+        await opponent.save()
+        }
         return res.status(200).json({ message: "Game has been successfully paired with student" });
     } catch (error) {
         return res.status(500).json({ error: error.message });

@@ -384,11 +384,14 @@ export const useChessSocket = ({
 
   // ======== Outgoing commands ========
 
-  const startNewGame = useCallback(() => {
+  const startNewGame = useCallback((game?: GameMetaData) => {
+
     const data: GameConfig = {
       mentor: mentorRef.current,
       student: studentRef.current,
-      role: roleRef.current
+      role: roleRef.current,
+      ...game
+
     };
 
     //write the version with gamestate

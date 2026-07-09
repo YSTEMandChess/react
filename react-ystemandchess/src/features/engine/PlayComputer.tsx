@@ -252,6 +252,23 @@ const PlayComputer: React.FC = () => {
   };
 
   const loadGame = async () => {
+    const defaultGame : GameMetaData= {userId: null,
+    user:null,
+    opponent: null,
+    uuid: null,
+    opponentId: null,
+    gameName:"Guest Game",
+    gameType: "guest",
+    computerLevel: difficulty,
+    fen: fen,
+    movesList: [],
+    playerColor: playerColor,
+    status: "ongoing",
+    createdAt: Date.now.toString(),
+  updatedAt:Date.now.toString() }
+
+    gameMetaData.current= defaultGame
+    
     if (location.state) {
       const savedMeta: GameMetaData = location.state;
       const newGame = await chessSocketRef?.current.getMostRecentGameInfo(savedMeta);
@@ -274,7 +291,7 @@ const PlayComputer: React.FC = () => {
       chessSocketRef?.current.saveNewGame(newGame);
       applyGameState(newGame);
     }
-    chessSocketRef.current.startNewGame();
+    chessSocketRef.current.startNewGame(gameMetaData);
     //edit start new game to take gameMetadata 
   };
 

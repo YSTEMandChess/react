@@ -14,7 +14,7 @@ export type GameMetaData = {
         uuid?: string,
         opponentId?: string,
         gameName: string,
-        gameType: "computer" | "friend" | "mentor",
+        gameType: "computer" | "friend" | "mentor" | "guest",
         computerLevel: number | null,
         fen: string,
         movesList: string[],
