@@ -485,19 +485,23 @@ function applyBotPreferenceRules(a?: Analysis | null, previousMatchPoints: numbe
       a.moveIndicator = 'Mistake';
     }
   }
-  // If the engine/bot has equal preference (neither favors nor disfavors), but
   // If the engine/bot has equal preference (neither favors nor disfavors), use
-  // matchPoints to decide a sensible label. Previously very low matchPoints
-  // were incorrectly promoted to 'Good' which made poor moves appear positive.
-  // Use conservative thresholds: very low -> 'Mistake', low -> 'Neutral',
-  // mid -> 'Good'. Leave higher labels (e.g. 'Best') unchanged when appropriate.
+  // matchPoints to decide a sensible label.
+  // Thresholds: very low -> 'Mistake', low -> 'Neutral', mid -> 'Good',
+  // high (>80) -> 'Good', near-exact/exact (>=95) -> 'Best'.
+  // An exact Stockfish UCI match returns botPreference 'More' (handled above),
+  // but near-exact agreement with an equal evaluation is still excellent play.
   if (botPref === 'Equal') {
     if (typeof matchPoints === 'number') {
-      if (matchPoints <= 25) {
+      if (matchPoints >= 95) {
+        a.moveIndicator = 'Best';
+      } else if (matchPoints > 80) {
+        a.moveIndicator = 'Good';
+      } else if (matchPoints <= 25) {
         a.moveIndicator = 'Mistake';
       } else if (matchPoints <= 50) {
         a.moveIndicator = 'Neutral';
-      } else if (matchPoints <= 80) {
+      } else {
         a.moveIndicator = 'Good';
       }
     }
@@ -743,7 +747,7 @@ async function analyzeWithStockfish(fenBefore: string, fenAfter: string, moveUci
 }
 
 const getAiFeedbackForMove = async (
-  baseAnalysis: Analysis,
+  analysisForPrompt: Analysis,
   fenBefore: string,
   fenAfter: string,
   moveUci: string,
@@ -760,15 +764,19 @@ const getAiFeedbackForMove = async (
         moveUci,
         bestMove,
         score,
-        moveIndicator: baseAnalysis.moveIndicator,
-        nextStepHint: baseAnalysis.nextStepHint,
+        moveIndicator: analysisForPrompt.moveIndicator,
+        nextStepHint: analysisForPrompt.nextStepHint,
+        analysisText: analysisForPrompt.Analysis,
+        botPreference: analysisForPrompt.botPreference,
+        favorsCenter: analysisForPrompt.favorsCenter,
+        botPreferenceReason: analysisForPrompt.botPreferenceReason,
       }),
     });
     if (response.ok) {
       const data = await response.json();
       if (data && data.success && data.feedback) {
         return {
-          ...baseAnalysis,
+          ...analysisForPrompt,
           Analysis: data.feedback,
         };
       }
@@ -778,7 +786,7 @@ const getAiFeedbackForMove = async (
     console.warn('Failed to fetch AI feedback from middleware, using default:', err);
   }
   return {
-    ...baseAnalysis,
+    ...analysisForPrompt,
     Analysis: GEMINI_FALLBACK_TEXT,
   };
 };
@@ -1232,7 +1240,12 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
               parsed = applyBotPreferenceRules(parsed, prevMatchPoints) || parsed;
             } catch (e) {}
 
-            // Fetch AI feedback for the server analysis path
+            // Apply the final override before asking the chat model to explain the move
+            try {
+              parsed = ensureEarlySidePawnEnforcement(parsed || null, moveUci, fenBefore, prevMatchPoints) || parsed || null;
+            } catch (e) {}
+
+            // Fetch AI feedback for the server analysis path using the final rating
             if (parsed) {
               parsed = await getAiFeedbackForMove(parsed, fenBefore, fenAfter, moveUci || '', engineBest, typeof engineScore === 'number' ? engineScore : null);
               if (cancelled) return;
@@ -1254,9 +1267,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
         const elapsed = Date.now() - startedAt;
         if (elapsed < minDisplayTime) await new Promise((r) => setTimeout(r, minDisplayTime - elapsed));
         if (cancelled) return;
-        // Final enforcement: make sure early side-pawn blunders are honored regardless of server labels
-        const finalParsed = ensureEarlySidePawnEnforcement(parsed || null, moveUci, fenBefore, prevMatchPoints) || parsed || null;
-        setAnalysis(finalParsed);
+        setAnalysis(parsed);
         setIsAnalyzing(false);
       } catch (err: any) {
         setError(err?.message || 'Network error');
