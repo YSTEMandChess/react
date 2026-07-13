@@ -11,6 +11,17 @@
 # production
 /build
 
+# boilerplate files
+/public/favicon.ico
+/public/logo192.png
+/public/logo512.png
+/public/manifest.json
+/public/robots.txt
+
+# lockfiles
+package-lock.json
+/public/chessclient/package-lock.json
+
 # misc
 .DS_Store
 .env.local

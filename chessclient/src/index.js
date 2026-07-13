@@ -1,13 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <div style={{ padding: '20px', fontFamily: 'sans-serif', textAlign: 'center' }}>
+      <h1>Chess Client Static Server</h1>
+      <p>Static files are served under <code>/chessclient/index.html</code></p>
+    </div>
   </React.StrictMode>
 );
 

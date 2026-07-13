@@ -1,15 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./NewMentorProfile.scss";
-import Images from "../../../assets/images/imageImporter";
-import { SetPermissionLevel } from '../../../globals'; 
+import Images from "../../images/imageImporter";
+import { SetPermissionLevel } from '../../globals'; 
 import { useCookies } from 'react-cookie';
-import { environment } from "../../../environments/environment";
+import { environment } from '../../environments/environment';
 import { useNavigate } from "react-router";
-import StatsChart from "../../student/student-profile/StatsChart";
-import Lessons from "../../lessons/lessons-main/Lessons";
-import LessonSelection from "../../lessons/lessons-selection/LessonsSelection";
-import LessonOverlay from "../../lessons/piece-lessons/lesson-overlay/Lesson-overlay";
-import Puzzles from "../../puzzles/Puzzles";
+import { StatsChart } from "../NewStudentProfile/StatsChart";
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
@@ -43,15 +39,13 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
 
   // data for chart plotting
   const [displayMonths, setDisplayMonths] = useState(6); // display data from 6 many months back 
-  const [displayEvents, setDisplayEvents] = useState(["website", "play", "lesson", "puzzle", "mentor"])
-  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May"]); // display the time as X-axis
-  const [dataAxis, setDataAxis] = useState<{[key: string]: number[]}>({website: [0, 0, 0, 0, 0],}); // time spent on events each month
+  const [monthAxis, setMonthAxis] = useState(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
+  const [dataAxis, setDataAxis] = useState([0, 0, 0, 0, 0, 0]); // time spent on events each month
 
   // student info
   const [studentFirstName, setStudentFirstName] = useState("");
   const [studentLastName, setStudentLastName] = useState("");
   const [studentUsername, setStudentUsername] = useState("");
-  const [iframeReady, setIframeReady] = useState(false);
 
   // event tracking for pagination
   const [events, setEvents] = useState([]);
@@ -62,68 +56,16 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
 
   // current date for display
   const [date, setDate] = useState(() => new Date().toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-    })
-  );
-
-  // states for lessons tab
-  const [lessonSelected, setLessonSelected] = useState(false); // whether user has navigated into a lesson
-  const [piece, setPiece] = useState(""); // lesson name for props
-  const [lessonNum, setLessonNum] = useState(0); // lesson number for props
+    month: 'long',
+    day: 'numeric',
+  })
+);
 
   // Runs once upon first render
   useEffect(()=>{
     fetchStudentData().catch(err => console.log(err)); // fetch student data when the component mounts
     fetchUserData().catch(err => console.log(err)); // fetch user data when the component mounts
   }, [])
-
-  useEffect(() => {
-    const handleMessage = (e: MessageEvent) => {
-      if (e.origin !== window.location.origin) return;
-      if (e.data === 'ReadyToRecieve') {
-        setIframeReady(true);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
-  useEffect(() => {
-    if (iframeReady && username) {
-      const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
-      if (iframe && iframe.contentWindow) {
-        const data = {
-          command: "userinfo",
-          student: studentUsername || "",
-          mentor: username,
-          role: "mentor"
-        };
-        iframe.contentWindow.postMessage(JSON.stringify(data), window.location.origin);
-      }
-    }
-  }, [iframeReady, username, studentUsername]);
-
-  const handleNewGame = () => {
-    const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage(JSON.stringify({ command: "newgame" }), window.location.origin);
-    }
-  };
-
-  const handleEndGame = () => {
-    const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage(JSON.stringify({ command: "endgame" }), window.location.origin);
-    }
-  };
-
-  const handleUndo = () => {
-    const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage(JSON.stringify({ command: "undo" }), window.location.origin);
-    }
-  };
 
   // Loads student data only after hasStudent has been updated
   useEffect(() => {
@@ -184,6 +126,8 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     setPuzzleTime(dataStats.puzzle);
   }
 
+
+
   const fetchStudentData = async () => {
     fetch(`${environment.urls.middlewareURL}/user/getMentorship`, {
       method: 'GET',
@@ -194,7 +138,8 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
           setStudentFirstName(data.firstName);
           setStudentLastName(data.lastName);
           setStudentUsername(data.username);
-          setHasStudent(true);
+          setHasStudent(true)
+          console.log(data)
         }
       });
   }
@@ -244,29 +189,19 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     try {
       // fetch the time spent on the website in the past few months
       const response = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&events=${displayEvents.join(",")}&months=${displayMonths}`, 
+        `${environment.urls.middlewareURL}/timeTracking/graph-data?username=${username}&eventType=website&months=${displayMonths}`,
         {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${cookies.login}` }
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${cookies.login}` }
         }
       );
-      const data = await response.json(); 
-
-      const newDataAxis = {} as {[key: string]: number[]};
-      for(let i = 0; i < displayEvents.length; i++)
-      {
-        // get time spent for each event for plotting
-        let event = displayEvents[i];
-        let value = data[event];
-        let months = value.map(item => item.monthText); // month list for ploting
-        let times = value.map(item => item.timeSpent); // timeSpent for plotting
-
-        setMonthAxis(months);
-        newDataAxis[event] = times;
-      }
+      const data = await response.json();
+      const months = data.map(item => item.monthText); // month list for plotting
+      const times = data.map(item => item.timeSpent); // timeSpent for plotting
 
       // update for graph plotting
-      setDataAxis(newDataAxis); 
+      setMonthAxis(months);
+      setDataAxis(times);
     } catch (err) {
       console.error("Failed to fetch events", err);
     }
@@ -330,59 +265,23 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         );
       case "mentor":
         return (
-          <div id="inventory-content-mentor" className="inventory-content active-content flex flex-col items-center">
-            <h2>Mentor Session</h2>
-            <div className="inventory-content-line mb-4"></div>
-            <div className="flex gap-3 mb-4">
-              <button
-                onClick={handleNewGame}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
-              >
-                Start New Game
-              </button>
-              <button
-                onClick={handleUndo}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
-              >
-                Undo
-              </button>
-              <button
-                onClick={handleEndGame}
-                className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
-              >
-                End Game
-              </button>
-            </div>
-            <iframe
-              id="chess-board-iframe"
-              src="/chessclient/index.html"
-              title="Chess Board"
-              className="w-full max-w-[800px] h-[600px] border border-borderLight rounded-lg shadow-sm"
-              frameBorder="0"
-              allowFullScreen
-            ></iframe>
+          <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
+            <h2>Mentor</h2>
+            <p>This is the content for the Mentor tab.</p>
           </div>
         );
       case "learning":
         return (
           <div id="inventory-content-learning" className="inventory-content active-content">
-            <Lessons styleType={"profile"}/>
+            <h2>Learning</h2>
+            <p>This is the content for the Learning tab.</p>
           </div>
         );
       case "chessLessons":
         return (
           <div id="inventory-content-lessons" className="inventory-content active-content">
-            {lessonSelected ? (
-              <LessonOverlay propPieceName={piece} propLessonNumber={lessonNum} navigateFunc={() => {
-                setLessonSelected(false);
-              }} styleType="profile"/>
-            ) : (
-              <LessonSelection styleType="profile" onGo={(selectedScenario, lessonNum) => { 
-                setLessonSelected(true);
-                setPiece(selectedScenario);
-                setLessonNum(lessonNum);
-              }}/>
-            )}
+            <h2>Chess Lessons</h2>
+            <p>This is the content for the Chess Lessons tab.</p>
           </div>
         );
       case "games":
@@ -395,7 +294,8 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
       case "puzzles":
         return (
           <div id="inventory-content-puzzles" className="inventory-content active-content">
-            <Puzzles student={studentUsername} mentor={username} role={"mentor"} styleType="profile"/>
+            <h2>Puzzles</h2>
+            <p>This is the content for the Puzzles tab.</p>
           </div>
         );
       case "playComputer":
@@ -428,8 +328,6 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     }
   };
 
-  const tabContent = useMemo(() => renderTabContent(), [activeTab, events, loading, hasMore]);
-
   return (
     <main id="main-inventory-content">
       <section className="inv-intro">
@@ -457,7 +355,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         </div>
         <div className="inv-inventory-analytics">
           <div className="inv-inventory-analytics-graph">
-            <StatsChart key={monthAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
+            <StatsChart key={dataAxis.join(',')} monthAxis={monthAxis} dataAxis={dataAxis}/>
           </div>
           <div className="inv-inventory-analytics-metrics">
             <h3>Time Spent:</h3>
@@ -497,7 +395,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
             </ul>
           </nav>
 
-          <div className="inv-inventory-content-content">{tabContent}</div>
+          <div className="inv-inventory-content-content">{renderTabContent()}</div>
         </div>
       </section>) : (
       <section className="no-student-message">
