@@ -26,6 +26,7 @@ services:
       - chessserver
       - middleware
       - stockfishserver
+      - chessclient
       - ystemandchess
 
   chessserver:
@@ -79,6 +80,16 @@ services:
     volumes:
       - ../middleware:/var/www/html 
 
+  chessclient:
+    image: chessclient:${TAG}
+    container_name: chessclient
+    environment:
+      - PARENT=ystemandchess
+    networks:
+      - ysc-net
+    expose:
+      - "80"
+
   ystemandchess:
     image: ystemandchess:${TAG}
     container_name: ystemandchess
@@ -95,5 +106,6 @@ services:
       - middleware
       - stockfishserver
       - chessserver
+      - chessclient
     volumes:
       - ../YStemAndChess:/usr/src/app

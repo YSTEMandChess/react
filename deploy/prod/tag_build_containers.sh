@@ -11,7 +11,7 @@ echo ""
 # Move to parent directory (where service folders are)
 cd ../.. || exit 1
 
-services=(react-ystemandchess chessServer middlewareNode stockfishServer)
+services=(react-ystemandchess chessclient chessServer middlewareNode stockfishServer)
 
 for service in "${services[@]}"
 do
