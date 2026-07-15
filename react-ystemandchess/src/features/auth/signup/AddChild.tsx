@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { environment } from "../../../environments/environment";
 import AuthLayout from "./AuthLayout";
+import stemette from "../../../assets/images/StreakProgressAssets/stemette.svg";
 
 const inputClass = (invalid: boolean) =>
   `w-full rounded-lg border-2 px-4 py-3.5 text-base text-dark bg-white caret-dark
@@ -132,7 +133,14 @@ const AddChild = () => {
   };
 
   return (
-    <AuthLayout
+    <div className="relative">
+      <img
+        src={stemette}
+        alt=""
+        aria-hidden="true"
+        className="hidden lg:block absolute top-0 right-8 w-40 xl:w-48 h-auto pointer-events-none"
+      />
+      <AuthLayout
       step={hasChildren ? undefined : 1}
       tightSides
       panelTitle="Set up your child's account"
@@ -294,7 +302,8 @@ const AddChild = () => {
           <button type="button" onClick={handleCancel} className="btn-cancel px-10">Cancel</button>
         </div>
       </form>
-    </AuthLayout>
+      </AuthLayout>
+    </div>
   );
 };
 

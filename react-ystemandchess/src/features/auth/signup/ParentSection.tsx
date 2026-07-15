@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { environment } from "../../../environments/environment";
 import mascot from "../../../assets/images/student/STEMy_Mascot_transparent.png";
+import treesGroup from "../../../assets/images/Trees-Group.png";
 import OnboardingSteps from "./OnboardingSteps";
 
 type Child = {
@@ -55,8 +56,8 @@ const ParentSection = () => {
 
         <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8">
           <img
-            src={mascot}
-            alt="STEMy mascot"
+            src={treesGroup}
+            alt="Group of Y STEM mascots playing chess"
             className="hidden lg:block w-72 xl:w-80 h-auto shrink-0 relative -left-[120px]"
           />
 
@@ -107,17 +108,25 @@ const ParentSection = () => {
                 </p>
               </div>
 
-              <button
-                type="button"
-                disabled={!selected}
-                onClick={goToStudent}
-                className="flex flex-col items-center justify-center gap-4 w-full max-w-[16rem] aspect-square shrink-0 rounded-2xl bg-primary text-light text-xl font-semibold shadow-md transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-              >
-                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-                Go to Student Page
-              </button>
+              <div className="flex flex-col items-center gap-6 shrink-0">
+                <button
+                  type="button"
+                  disabled={!selected}
+                  onClick={goToStudent}
+                  className="flex flex-col items-center justify-center gap-3 w-full max-w-[11rem] aspect-square shrink-0 rounded-2xl bg-primary text-light text-lg font-semibold shadow-md transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                  Go to Student Page
+                </button>
+
+                <img
+                  src={mascot}
+                  alt="STEMy mascot"
+                  className="hidden lg:block w-40 xl:w-48 h-auto"
+                />
+              </div>
             </div>
           </div>
         </div>
