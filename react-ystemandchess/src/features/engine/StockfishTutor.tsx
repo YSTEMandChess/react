@@ -32,6 +32,11 @@ type Analysis = {
   // optional numeric score from local heuristic or engine (centipawns-ish for engine, heuristic scale for local)
   score?: number | null;
   botPreferenceReason?: string;
+  // NEW: explicit evaluation metrics
+  proximityType?: 'exact' | 'sameDestination' | 'samePiece' | 'similar' | 'distant';
+  centipawnLoss?: number | null; // positive = material lost, negative = material gained
+  positionEvalBefore?: number | null; // centipawn evaluation before move
+  positionEvalAfter?: number | null; // centipawn evaluation after move
 };
 
 const GEMINI_FALLBACK_TEXT = "I couldn't get a Gemini response right now, so here's the quick takeaway: check move safety, piece activity, and king safety.";
@@ -391,21 +396,28 @@ function buildBotPreferenceReason(opts: { engineBest?: string | null | undefined
 }
 
 // Compute how close the player's move is to the engine's recommendation.
-// Returns a matchScore in [0,1], integer matchPoints (0..100), and a suggested botPreference.
-function computeMoveScore(bestMove: string | null | undefined, moveUci: string | undefined, engineScore: number | null | undefined, fenBefore: string | undefined): { matchScore: number; points: number; botPreference: Analysis['botPreference'] } {
-  if (!moveUci) return { matchScore: 0, points: 0, botPreference: 'Unknown' };
-  // exact match
-  // Treat as exact only when UCI (ignoring promotion suffix) matches exactly.
+// Now returns detailed proximity type and centipawn loss metrics.
+function computeMoveScore(bestMove: string | null | undefined, moveUci: string | undefined, engineScore: number | null | undefined, fenBefore: string | undefined, bestMoveScore: number | null | undefined = null): { matchScore: number; points: number; botPreference: Analysis['botPreference']; proximityType?: Analysis['proximityType']; centipawnLoss?: number | null } {
+  if (!moveUci) return { matchScore: 0, points: 0, botPreference: 'Unknown', proximityType: 'distant', centipawnLoss: null };
+  
+  // Normalize UCI strings for comparison
   const normalizeUci = (u?: string | null) => (u || '').toString().toLowerCase().replace(/[qrbn]$/, '');
+  
+  // exact match
   if (bestMove && normalizeUci(bestMove) === normalizeUci(moveUci)) {
-    return { matchScore: 1, points: 100, botPreference: 'More' };
+    return { matchScore: 1, points: 100, botPreference: 'More', proximityType: 'exact', centipawnLoss: 0 };
   }
 
   // Try destination similarity and piece-type similarity as fallback heuristics
   const moveTo = moveUci.length >= 4 ? moveUci.slice(2, 4) : '';
   const bestTo = bestMove && bestMove.length >= 4 ? bestMove.slice(2, 4) : '';
   let score = 0;
-  if (bestTo && moveTo && bestTo === moveTo) score = 0.75; // same destination
+  let proximityType: Analysis['proximityType'] = 'distant';
+  
+  if (bestTo && moveTo && bestTo === moveTo) {
+    score = 0.75; // same destination
+    proximityType = 'sameDestination';
+  }
 
   // if we can inspect piece types, reward same-piece moves
   try {
@@ -416,7 +428,10 @@ function computeMoveScore(bestMove: string | null | undefined, moveUci: string |
       const bestPiece = ch.get(bestFrom)?.type;
       const movedPiece = ch.get(movedFrom)?.type;
       if (bestPiece && movedPiece && bestPiece === movedPiece) {
-        score = Math.max(score, 0.5);
+        if (score < 0.5) {
+          score = 0.5;
+          proximityType = 'samePiece';
+        }
       }
     }
   } catch (e) {
@@ -424,23 +439,40 @@ function computeMoveScore(bestMove: string | null | undefined, moveUci: string |
   }
 
   // If engine score is provided and indicates the position is close, give moderate credit
+  let centipawnLoss: number | null = null;
   if (typeof engineScore === 'number') {
     // engineScore is in centipawns from side-to-move perspective
-    const abs = Math.abs(engineScore);
+    centipawnLoss = Math.abs(engineScore);
+    
     // Be slightly more conservative: require closer agreement to award higher score.
-    if (abs <= 20) {
-      score = Math.max(score, 0.6);
-    } else if (abs <= 60) {
-      score = Math.max(score, 0.4);
-    } else if (abs <= 150) {
-      score = Math.max(score, 0.25);
+    if (centipawnLoss <= 20) {
+      if (score < 0.6) {
+        score = 0.6;
+        proximityType = 'similar';
+      }
+    } else if (centipawnLoss <= 60) {
+      if (score < 0.4) {
+        score = 0.4;
+        proximityType = 'similar';
+      }
+    } else if (centipawnLoss <= 150) {
+      if (score < 0.25) {
+        score = 0.25;
+        proximityType = 'distant';
+      }
     } else {
-      score = Math.max(score, 0.1);
+      if (score < 0.1) {
+        score = 0.1;
+        proximityType = 'distant';
+      }
     }
   }
 
   // default small credit if none of the above applied
-  if (score === 0) score = 0.2;
+  if (score === 0) {
+    score = 0.2;
+    proximityType = 'distant';
+  }
 
   const points = Math.round(Math.min(1, Math.max(0, score)) * 100);
   let pref: Analysis['botPreference'];
@@ -448,7 +480,7 @@ function computeMoveScore(bestMove: string | null | undefined, moveUci: string |
   else if (score <= 0.15) pref = 'Less';
   else pref = 'Equal';
 
-  return { matchScore: score, points, botPreference: pref };
+  return { matchScore: score, points, botPreference: pref, proximityType, centipawnLoss };
 }
 
 // Infer bot preference from a qualitative moveIndicator when engine numeric data is not available
@@ -460,9 +492,55 @@ function inferBotPreferenceFromIndicator(ind?: Analysis['moveIndicator']): Analy
   return 'Unknown';
 }
 
-// Enforce rule: if botPreference === 'Less' then the move should be considered at least a 'Mistake'.
-// If the point decrement (100 - matchPoints) is greater than 10, consider it a 'Blunder'.
-function applyBotPreferenceRules(a?: Analysis | null, previousMatchPoints: number | null = null): Analysis | null {
+// Backward-compatible alias for older typo usage.
+function inferBotPreferenceFormIndicator(ind?: Analysis['moveIndicator']): Analysis['botPreference'] {
+  return inferBotPreferenceFromIndicator(ind);
+}
+
+// Improved blunder detection based on centipawn loss and game phase
+// Blunders are moves that lose significant material or position advantage
+function detectBlunderByCentipawnLoss(centipawnLoss: number | null | undefined, matchPoints: number | null | undefined, moveIndicator?: Analysis['moveIndicator'], fenBefore?: string): Analysis['moveIndicator'] | undefined {
+  if (centipawnLoss === null || centipawnLoss === undefined) {
+    return moveIndicator; // can't determine without engine score
+  }
+
+  const fullmoveNum = fenBefore ? Number(fenBefore.split(' ')[5] || '1') : 1;
+  
+  // Centipawn loss thresholds vary by game phase
+  // Opening (moves 1-8): hangings are rare and highly punishable
+  // Midgame (moves 9-40): more active play, but still punish big losses
+  // Endgame (40+): small losses can be critical
+  let blunderThreshold = 200; // default: 2 pawns of material
+  let mistakeThreshold = 50;  // default: half a pawn
+  
+  if (fullmoveNum <= 8) {
+    // Opening: any hanging of material is immediately bad
+    blunderThreshold = 250; // 2.5 pawns
+    mistakeThreshold = 75;
+  } else if (fullmoveNum <= 40) {
+    // Midgame: more aggressive, but still punish significant losses
+    blunderThreshold = 200; // 2 pawns
+    mistakeThreshold = 50;
+  } else {
+    // Endgame: even 1 pawn loss can be critical
+    blunderThreshold = 150; // 1.5 pawns
+    mistakeThreshold = 30;
+  }
+
+  // If the move loses a queen or more (900+ centipawns), always a blunder
+  if (centipawnLoss >= 900) return 'Blunder';
+  // If the move loses a rook or more (500+ centipawns), very likely a blunder
+  if (centipawnLoss >= 500) return 'Blunder';
+  // If meets blunder threshold
+  if (centipawnLoss >= blunderThreshold) return 'Blunder';
+  // If meets mistake threshold
+  if (centipawnLoss >= mistakeThreshold && centipawnLoss < blunderThreshold) return 'Mistake';
+  
+  return moveIndicator;
+}
+
+// Enhanced version of applyBotPreferenceRules that also considers centipawn loss
+function applyBotPreferenceRulesV2(a?: Analysis | null, previousMatchPoints: number | null = null): Analysis | null {
   if (!a) return a ?? null;
   const botPref = a.botPreference;
   // Determine current matchPoints if present, otherwise derive from matchScore
@@ -470,34 +548,45 @@ function applyBotPreferenceRules(a?: Analysis | null, previousMatchPoints: numbe
   if (typeof a.matchPoints === 'number') matchPoints = a.matchPoints;
   else if (typeof a.matchScore === 'number') matchPoints = Math.round(Math.max(0, Math.min(1, a.matchScore)) * 100);
 
+  // IMPROVED: Use centipawn loss as primary signal for blunders
+  // If there's significant centipawn loss, that overrides previous classifications
+  if (typeof a.centipawnLoss === 'number' && a.centipawnLoss > 0) {
+    const updatedIndicator = detectBlunderByCentipawnLoss(a.centipawnLoss, matchPoints, a.moveIndicator, a.score?.toString?.());
+    if (updatedIndicator && (updatedIndicator === 'Blunder' || updatedIndicator === 'Mistake')) {
+      a.moveIndicator = updatedIndicator;
+    }
+  }
+
   if (botPref === 'Less') {
     if (typeof matchPoints === 'number') {
       // compute decrement relative to previousMatchPoints if available, otherwise relative to 100
       const base = typeof previousMatchPoints === 'number' ? previousMatchPoints : 100;
       const decrement = base - matchPoints;
-      if (decrement > 10) {
+      // IMPROVED: lower threshold for blunder detection (was 10, now 25 for midgame sensitivity)
+      if (decrement > 25) {
         a.moveIndicator = 'Blunder';
-      } else {
+      } else if (decrement > 5) {
         a.moveIndicator = 'Mistake';
+      } else {
+        a.moveIndicator = 'Neutral';
       }
     } else {
       // no match points available: mark as Mistake by default
       a.moveIndicator = 'Mistake';
     }
   }
-  // If the engine/bot has equal preference (neither favors nor disfavors), use
-  // matchPoints to decide a sensible label.
-  // Thresholds: very low -> 'Mistake', low -> 'Neutral', mid -> 'Good',
-  // high (>80) -> 'Good', near-exact/exact (>=95) -> 'Best'.
-  // An exact Stockfish UCI match returns botPreference 'More' (handled above),
-  // but near-exact agreement with an equal evaluation is still excellent play.
+  
   if (botPref === 'Equal') {
     if (typeof matchPoints === 'number') {
       if (matchPoints >= 95) {
         a.moveIndicator = 'Best';
       } else if (matchPoints > 80) {
         a.moveIndicator = 'Good';
-      } else if (matchPoints <= 25) {
+      } else if (matchPoints <= 15) {
+        // IMPROVED: was 25, now more sensitive to poor moves
+        a.moveIndicator = 'Blunder';
+      } else if (matchPoints <= 35) {
+        // IMPROVED: expanded Mistake range
         a.moveIndicator = 'Mistake';
       } else if (matchPoints <= 50) {
         a.moveIndicator = 'Neutral';
@@ -632,7 +721,7 @@ function ensureEarlySidePawnEnforcement(analysisObj: any, moveUci: string | unde
     enforceEarlySidePawnBlunder(analysisObj, moveUci, fenBefore);
     enforceOpeningCenterPawnCaution(analysisObj, moveUci, fenBefore);
     // Re-apply bot preference rules so 'Less' maps to Mistake/Blunder as intended
-    return applyBotPreferenceRules(analysisObj, previousMatchPoints) || analysisObj;
+    return applyBotPreferenceRulesV2(analysisObj, previousMatchPoints) || analysisObj;
   } catch (e) {
     return analysisObj;
   }
@@ -940,6 +1029,8 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                                 const moveScore = computeMoveScore(sfResult.bestMove, moveUci, typeof sfResult.score === 'number' ? sfResult.score : null, fenBefore);
                                     explanation.matchScore = moveScore.matchScore;
                                     explanation.matchPoints = moveScore.points;
+                                    explanation.proximityType = moveScore.proximityType;
+                                    explanation.centipawnLoss = moveScore.centipawnLoss;
                                     // prefer engine-based botPreference but fall back to moveScore suggestion
                                     explanation.botPreference = explanation.botPreference || moveScore.botPreference;
                                   } catch (e) {
@@ -954,7 +1045,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                                       // Enforce early side-pawn blunder rule (e.g. f2f4, c2c4, f7f5, c7c5)
                                       enforceEarlySidePawnBlunder(explanation, moveUci, fenBefore);
                                       // apply user-defined botPreference rules (Less => Mistake/Blunder)
-                                      let finalExplanation = applyBotPreferenceRules(explanation, prevMatchPoints) || null;
+                                      let finalExplanation = applyBotPreferenceRulesV2(explanation, prevMatchPoints) || null;
                                       // Ensure early side-pawn rule overrides any engine labels
                                       finalExplanation = ensureEarlySidePawnEnforcement(finalExplanation, moveUci, fenBefore, prevMatchPoints) || finalExplanation;
                                       setAnalysis(finalExplanation);
@@ -999,6 +1090,8 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                               const mv = computeMoveScore(undefined, moveUci, norm.score ?? null, fenBefore);
                               norm.matchScore = mv.matchScore;
                               norm.matchPoints = mv.points;
+                              norm.proximityType = mv.proximityType;
+                              norm.centipawnLoss = mv.centipawnLoss;
                               norm.botPreference = norm.botPreference || mv.botPreference;
                                 // human readable reason
                                 norm.botPreferenceReason = buildBotPreferenceReason({ engineBest: undefined, moveUci, engineScore: norm.score ?? null, moveScore: mv, indicator: norm.moveIndicator });
@@ -1093,6 +1186,8 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
               const mv = computeMoveScore(undefined, moveUci, norm.score ?? null, fenBefore);
               norm.matchScore = mv.matchScore;
               norm.matchPoints = mv.points;
+              norm.proximityType = mv.proximityType;
+              norm.centipawnLoss = mv.centipawnLoss;
               norm.botPreference = norm.botPreference || mv.botPreference;
             } catch (e) {}
             // Enforce early side-pawn detection
@@ -1223,6 +1318,8 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
               const mv = computeMoveScore(engineBest, moveUci, typeof engineScore === 'number' ? engineScore : null, fenBefore);
               (parsed as any).matchScore = mv.matchScore;
               (parsed as any).matchPoints = mv.points;
+              (parsed as any).proximityType = mv.proximityType;
+              (parsed as any).centipawnLoss = mv.centipawnLoss;
               parsed.botPreference = parsed.botPreference || mv.botPreference;
               // human-friendly reason explaining the preference
               try {
@@ -1237,7 +1334,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
             // Enforce early side-pawn detection then apply user rule: botPreference 'Less' => Mistake; if (100 - matchPoints) > 10 => Blunder
             try {
               enforceEarlySidePawnBlunder(parsed, moveUci, fenBefore);
-              parsed = applyBotPreferenceRules(parsed, prevMatchPoints) || parsed;
+              parsed = applyBotPreferenceRulesV2(parsed, prevMatchPoints) || parsed;
             } catch (e) {}
 
             // Apply the final override before asking the chat model to explain the move
@@ -1335,6 +1432,18 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
       else if (ind === 'Mistake') indicatorClass = styles.indicatorMistake;
       else if (ind === 'Blunder') indicatorClass = styles.indicatorBlunder;
 
+      // Helper to describe proximity type in human terms
+      const getProximityLabel = (proximityType?: string): string => {
+        switch (proximityType) {
+          case 'exact': return '🎯 Exact Match';
+          case 'sameDestination': return '📍 Same Square';
+          case 'samePiece': return '♟️ Same Piece';
+          case 'similar': return '≈ Similar';
+          case 'distant': return '↔️ Different';
+          default: return '';
+        }
+      };
+
       return (
         <div className={styles.bubbleAnalysis}>
           <div className={styles.bubbleHeaderRow}>
@@ -1350,6 +1459,16 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
           <p className={styles.bubbleText}>{analysis.Analysis ?? 'No explanation provided.'}</p>
           
           <div className={styles.detailsRow}>
+            {analysis.proximityType && (
+              <span className={styles.detailPill} title="How your move compares to the engine's choice">
+                {getProximityLabel(analysis.proximityType)}
+              </span>
+            )}
+            {typeof analysis.centipawnLoss === 'number' && analysis.centipawnLoss > 0 && (
+              <span className={styles.detailPill} title="Evaluation loss in centipawns (1 pawn = 100 cp)">
+                📉 Loss: {Math.round(analysis.centipawnLoss / 100 * 10) / 10}pt
+              </span>
+            )}
             {analysis.botPreference && (
               <span className={styles.detailPill}>Preference: {analysis.botPreference}</span>
             )}
