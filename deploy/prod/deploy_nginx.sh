@@ -3,7 +3,9 @@
 
 CONF_SRC="deploy/prod/ystem.conf"
 CONF_DEST="/etc/nginx/sites-available/ystem.conf"
-CONF_LINK="/etc/nginx/sites-enabled/ystem.conf"
+CONF_LIVE="/etc/nginx/sites-enabled/ystem.conf"
+BACKUP_DIR="$HOME/nginx-backups"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
 if [ ! -f "$CONF_SRC" ]; then
     echo "ERROR: Source file $CONF_SRC not found!"
@@ -11,13 +13,16 @@ if [ ! -f "$CONF_SRC" ]; then
     exit 1
 fi
 
-echo "Copying config..."
+echo "Backing up current live config..."
+mkdir -p "$BACKUP_DIR"
+sudo cp "$CONF_LIVE" "$BACKUP_DIR/ystem.conf.bak-$TIMESTAMP"
+echo "Backup saved to $BACKUP_DIR/ystem.conf.bak-$TIMESTAMP"
+
+echo "Copying config to sites-available..."
 sudo cp "$CONF_SRC" "$CONF_DEST"
 
-if [ ! -L "$CONF_LINK" ]; then
-    echo "Creating symlink..."
-    sudo ln -s "$CONF_DEST" "$CONF_LINK"
-fi
+echo "Copying config to sites-enabled (live)..."
+sudo cp "$CONF_SRC" "$CONF_LIVE"
 
 echo "Testing Nginx configuration..."
 sudo nginx -t
@@ -28,5 +33,6 @@ if [ $? -eq 0 ]; then
     echo "Deployment successful!"
 else
     echo "ERROR: Nginx configuration test failed. Changes NOT reloaded."
+    echo "Live config was NOT touched beyond this backup — sites-available copy updated only."
     exit 1
 fi
