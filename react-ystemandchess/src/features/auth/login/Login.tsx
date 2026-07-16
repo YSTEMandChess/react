@@ -122,7 +122,7 @@ const Login = () => {
         src={treesGroup}
         alt=""
         aria-hidden="true"
-        className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 w-[36rem] xl:w-[40rem] h-auto pointer-events-none -ml-16 xl:-ml-24"
+        className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 w-[36rem] xl:w-[40rem] h-auto pointer-events-none"
       />
 
       <img
@@ -151,6 +151,12 @@ const Login = () => {
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 translate-x-full w-60 h-auto"
+        />
+        <img
+          src={stemmy}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute top-14 -left-24 -translate-y-1/2 w-24 h-auto"
         />
         <div className="flex flex-col gap-1.5">
           <label htmlFor="username" id="username-label" className="text-sm font-bold text-dark">

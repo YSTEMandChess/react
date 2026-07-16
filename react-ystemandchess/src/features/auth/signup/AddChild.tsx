@@ -138,7 +138,7 @@ const AddChild = () => {
         src={stemette}
         alt=""
         aria-hidden="true"
-        className="hidden lg:block absolute top-0 right-8 w-40 xl:w-48 h-auto pointer-events-none"
+        className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-80 xl:w-96 h-auto pointer-events-none"
       />
       <AuthLayout
       step={hasChildren ? undefined : 1}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { environment } from "../../../environments/environment";
 import AuthLayout from "./AuthLayout";
+import stemmyVine from "../../../assets/images/ActivitiesAssets/stemmy.svg";
 
 const inputClass = (invalid: boolean) =>
   `w-full rounded-lg border-2 px-4 py-3.5 text-base text-dark bg-white caret-dark
@@ -127,7 +128,14 @@ const ParentSignUp = () => {
   };
 
   return (
-    <AuthLayout
+    <div className="relative">
+      <img
+        src={stemmyVine}
+        alt=""
+        aria-hidden="true"
+        className="hidden lg:block absolute top-0 left-0 w-56 xl:w-64 h-auto pointer-events-none -scale-x-100"
+      />
+      <AuthLayout
       step={0}
       panelTitle="Helping your child develop critical thinking skills"
     >
@@ -280,7 +288,8 @@ const ParentSignUp = () => {
           <button type="submit" className="btn-yellow px-10">Sign Up</button>
         </div>
       </form>
-    </AuthLayout>
+      </AuthLayout>
+    </div>
   );
 };
 

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { environment } from "../../../environments/environment";
 import AuthLayout from "./AuthLayout";
+import stemmyVine from "../../../assets/images/ActivitiesAssets/stemmy.svg";
 
 const inputClass = (invalid: boolean) =>
   `w-full rounded-lg border-2 px-4 py-3.5 text-base text-dark bg-white caret-dark
@@ -126,7 +127,14 @@ const MentorSignUp = () => {
   };
 
   return (
-    <AuthLayout
+    <div className="relative">
+      <img
+        src={stemmyVine}
+        alt=""
+        aria-hidden="true"
+        className="hidden lg:block absolute top-16 left-0 w-72 xl:w-80 h-auto pointer-events-none -scale-x-100"
+      />
+      <AuthLayout
       panelTitle="Share your knowledge, change a life"
       links={[
         { label: "About Us", to: "/about-us" },
@@ -310,7 +318,8 @@ const MentorSignUp = () => {
           <button type="submit" className="btn-yellow px-10">Sign Up</button>
         </div>
       </form>
-    </AuthLayout>
+      </AuthLayout>
+    </div>
   );
 };
 

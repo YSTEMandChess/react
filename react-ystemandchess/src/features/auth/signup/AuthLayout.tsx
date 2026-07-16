@@ -23,9 +23,13 @@ const defaultLinks: SideLink[] = [
 const AuthLayout = ({ panelTitle, step, tightSides, links = defaultLinks, children }: AuthLayoutProps) => {
   return (
     <div className="min-h-[71vh] flex items-center gap-8 px-4 lg:px-60 py-12">
-      <aside className={`hidden lg:flex flex-col justify-center gap-10 w-64 shrink-0 ${tightSides ? "lg:ml-48" : ""}`}>
+      <aside className={`hidden lg:flex flex-col justify-center shrink-0 ${tightSides ? "w-44 gap-6 lg:-ml-12 lg:origin-left lg:scale-150 lg:translate-x-16" : "w-64 gap-10"}`}>
         {links.map((b) => (
-          <Link key={b.to} to={b.to} className="btn-yellow w-full text-center py-6">
+          <Link
+            key={b.to}
+            to={b.to}
+            className={`btn-yellow w-full text-center ${tightSides ? "py-3 text-sm" : "py-6"}`}
+          >
             {b.label}
           </Link>
         ))}
@@ -36,7 +40,7 @@ const AuthLayout = ({ panelTitle, step, tightSides, links = defaultLinks, childr
         {children}
       </div>
 
-      <aside className={`hidden lg:flex flex-col items-center justify-center gap-6 w-72 shrink-0 ${tightSides ? "lg:mr-48" : ""}`}>
+      <aside className={`hidden lg:flex flex-col items-center justify-center gap-6 w-72 shrink-0 ${tightSides ? "lg:-mr-40 lg:-translate-x-24" : ""}`}>
         <img src={mascot} alt="STEMy mascot" className="w-full h-auto" />
         <p className="text-center text-2xl font-bold text-dark leading-relaxed">
           {panelTitle}
