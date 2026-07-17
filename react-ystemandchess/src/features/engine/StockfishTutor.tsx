@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { environment } from '../../environments/environment';
 import styles from './StockfishTutor.module.scss';
 import { CoachMascot, CoachExpression } from '../../components/animations/CoachMascot/CoachMascot';
@@ -711,8 +711,82 @@ function enforceEarlySidePawnBlunder(analysisObj: any, moveUci: string | undefin
   return analysisObj;
 }
 
+// Pure detection: returns a human-readable threat description if the player's move
+// leaves a high-value piece immediately capturable, or null if there is no such threat.
+// Does NOT mutate any object — callers can forward this string to the AI before overriding.
+function detectHangingPiece(fenBefore: string | undefined, fenAfter: string | undefined): string | null {
+  try {
+    if (!fenBefore || !fenAfter) return null;
+    const sideMoved: 'w' | 'b' = (fenBefore.split(' ')[1] === 'w') ? 'w' : 'b';
+    const chAfter = new Chess(fenAfter);
+    const opponentToMove: 'w' | 'b' = chAfter.turn() as 'w' | 'b';
+    if (opponentToMove === sideMoved) return null;
+    const opponentMoves = chAfter.moves({ verbose: true }) as any[];
+    const valueByPiece: Record<string, number> = { q: 9, r: 5, b: 3, n: 3, p: 1, k: 0 };
+    const majorThreats = opponentMoves.filter((m: any) => !!m?.captured && (valueByPiece[m.captured] || 0) >= 3);
+    if (majorThreats.length === 0) return null;
+    const queenThreat = majorThreats.some((m: any) => m.captured === 'q');
+    const rookThreat  = majorThreats.some((m: any) => m.captured === 'r');
+    const minorThreatCount = majorThreats.filter((m: any) => m.captured === 'b' || m.captured === 'n').length;
+    const maxThreatValue = majorThreats.reduce((mx: number, m: any) => Math.max(mx, valueByPiece[m.captured] || 0), 0);
+    if (queenThreat) return 'This move leaves the queen immediately capturable by the opponent — this is a serious blunder.';
+    if (rookThreat || maxThreatValue >= 5) return 'This move leaves a rook or major piece immediately capturable by the opponent — this is a blunder.';
+    if (minorThreatCount >= 2) return 'This move leaves multiple pieces immediately capturable by the opponent — this is a blunder.';
+    if (minorThreatCount >= 1) return 'This move leaves a piece immediately capturable by the opponent — this is a mistake.';
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+// If the player's move leaves high-value pieces immediately capturable, treat it as a serious error.
+function enforceHangingPowerPieceBlunder(analysisObj: any, fenBefore: string | undefined, fenAfter: string | undefined) {
+  try {
+    if (!analysisObj || !fenBefore || !fenAfter) return analysisObj;
+    const sideMoved: 'w' | 'b' = (fenBefore.split(' ')[1] === 'w') ? 'w' : 'b';
+    const chAfter = new Chess(fenAfter);
+    const opponentToMove: 'w' | 'b' = chAfter.turn() as 'w' | 'b';
+    if (opponentToMove === sideMoved) return analysisObj;
+
+    const opponentMoves = chAfter.moves({ verbose: true }) as any[];
+    const valueByPiece: Record<string, number> = { q: 9, r: 5, b: 3, n: 3, p: 1, k: 0 };
+    const majorThreats = opponentMoves.filter((m: any) => !!m?.captured && (valueByPiece[m.captured] || 0) >= 3);
+    if (majorThreats.length === 0) return analysisObj;
+
+    const queenThreat = majorThreats.some((m: any) => m.captured === 'q');
+    const rookThreat = majorThreats.some((m: any) => m.captured === 'r');
+    const minorThreatCount = majorThreats.filter((m: any) => m.captured === 'b' || m.captured === 'n').length;
+    const maxThreatValue = majorThreats.reduce((mx: number, m: any) => Math.max(mx, valueByPiece[m.captured] || 0), 0);
+
+    if (queenThreat || rookThreat || minorThreatCount >= 2 || maxThreatValue >= 5) {
+      analysisObj.moveIndicator = 'Blunder';
+      analysisObj.botPreference = 'Less';
+      if (typeof analysisObj.matchPoints !== 'number' || analysisObj.matchPoints > 10) analysisObj.matchPoints = 10;
+      if (typeof analysisObj.matchScore !== 'number' || analysisObj.matchScore > 0.1) analysisObj.matchScore = 0.1;
+      const warning = queenThreat
+        ? 'Blunder: your move leaves the queen immediately capturable by the opponent.'
+        : 'Blunder: your move leaves a high-value piece immediately capturable by the opponent.';
+      if (!analysisObj.Analysis) analysisObj.Analysis = warning;
+      else if (!/immediately capturable|leaves the queen/i.test(String(analysisObj.Analysis))) analysisObj.Analysis = `${analysisObj.Analysis} ${warning}`;
+      return analysisObj;
+    }
+
+    if (minorThreatCount >= 1) {
+      if (analysisObj.moveIndicator !== 'Blunder') analysisObj.moveIndicator = 'Mistake';
+      analysisObj.botPreference = 'Less';
+      if (typeof analysisObj.matchPoints !== 'number' || analysisObj.matchPoints > 25) analysisObj.matchPoints = 25;
+      if (typeof analysisObj.matchScore !== 'number' || analysisObj.matchScore > 0.25) analysisObj.matchScore = 0.25;
+      const warning = 'Mistake: your move leaves a piece immediately capturable by the opponent.';
+      if (!analysisObj.Analysis) analysisObj.Analysis = warning;
+      else if (!/immediately capturable|leaves a piece/i.test(String(analysisObj.Analysis))) analysisObj.Analysis = `${analysisObj.Analysis} ${warning}`;
+    }
+  } catch (e) {
+    // ignore enforcement errors
+  }
+  return analysisObj;
+}
+
 // Final enforcement helper: ensure the early side-pawn blunder rule is applied as a last-step override
-function ensureEarlySidePawnEnforcement(analysisObj: any, moveUci: string | undefined, fenBefore: string | undefined, previousMatchPoints: number | null = null) {
+function ensureEarlySidePawnEnforcement(analysisObj: any, moveUci: string | undefined, fenBefore: string | undefined, fenAfter: string | undefined, previousMatchPoints: number | null = null) {
   try {
     if (!moveUci) return analysisObj;
     // If there's no analysis object (e.g. raw text), return as-is
@@ -841,7 +915,8 @@ const getAiFeedbackForMove = async (
   fenAfter: string,
   moveUci: string,
   bestMove?: string | null,
-  score?: number | null
+  score?: number | null,
+  hangingPieceThreat?: string | null
 ): Promise<Analysis> => {
   try {
     const response = await fetch(`${environment.urls.middlewareURL}/chat/chess-feedback`, {
@@ -859,6 +934,7 @@ const getAiFeedbackForMove = async (
         botPreference: analysisForPrompt.botPreference,
         favorsCenter: analysisForPrompt.favorsCenter,
         botPreferenceReason: analysisForPrompt.botPreferenceReason,
+        hangingPieceThreat: hangingPieceThreat ?? null,
       }),
     });
     if (response.ok) {
@@ -1047,10 +1123,13 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                                       // apply user-defined botPreference rules (Less => Mistake/Blunder)
                                       let finalExplanation = applyBotPreferenceRulesV2(explanation, prevMatchPoints) || null;
                                       // Ensure early side-pawn rule overrides any engine labels
-                                      finalExplanation = ensureEarlySidePawnEnforcement(finalExplanation, moveUci, fenBefore, prevMatchPoints) || finalExplanation;
+                                      finalExplanation = ensureEarlySidePawnEnforcement(finalExplanation, moveUci, fenBefore, fenAfter, prevMatchPoints) || finalExplanation;
                                       setAnalysis(finalExplanation);
-                                      const finalExplanationWithAi = finalExplanation ? await getAiFeedbackForMove(finalExplanation, fenBefore, fenAfter, moveUci || '', sfResult.bestMove, typeof sfResult.score === 'number' ? sfResult.score : null) : null;
+                                      const hangingThreat = detectHangingPiece(fenBefore, fenAfter);
+                                      const finalExplanationWithAi = finalExplanation ? await getAiFeedbackForMove(finalExplanation, fenBefore, fenAfter, moveUci || '', sfResult.bestMove, typeof sfResult.score === 'number' ? sfResult.score : null, hangingThreat) : null;
+
                                       if (cancelled) return;
+                                      if (finalExplanationWithAi) enforceHangingPowerPieceBlunder(finalExplanationWithAi, fenBefore, fenAfter);
                                       setAnalysis(finalExplanationWithAi);
                                       // store current matchPoints for the next turn (push onto stack)
                                       if (finalExplanationWithAi && typeof finalExplanationWithAi.matchPoints === 'number') {
@@ -1098,9 +1177,11 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                             } catch (e) {}
                             // Enforce early side-pawn detection
                             enforceEarlySidePawnBlunder(norm, moveUci, fenBefore);
-                            const finalNorm = ensureEarlySidePawnEnforcement(norm, moveUci, fenBefore, prevMatchPoints) || null;
-                            const finalNormWithAi = finalNorm ? await getAiFeedbackForMove(finalNorm, fenBefore, fenAfter, moveUci || '', null, norm.score ?? null) : null;
+                            const finalNorm = ensureEarlySidePawnEnforcement(norm, moveUci, fenBefore, fenAfter, prevMatchPoints) || null;
+                            const hangingThreat = detectHangingPiece(fenBefore, fenAfter);
+                            const finalNormWithAi = finalNorm ? await getAiFeedbackForMove(finalNorm, fenBefore, fenAfter, moveUci || '', null, norm.score ?? null, hangingThreat) : null;
                             if (cancelled) return;
+                            if (finalNormWithAi) enforceHangingPowerPieceBlunder(finalNormWithAi, fenBefore, fenAfter);
                             setAnalysis(finalNormWithAi);
                             try {
                               if (finalNormWithAi && typeof finalNormWithAi.matchPoints === 'number') pushMatchPoints(finalNormWithAi.matchPoints);
@@ -1192,9 +1273,11 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
             } catch (e) {}
             // Enforce early side-pawn detection
             enforceEarlySidePawnBlunder(norm, moveUci, fenBefore);
-            const finalNorm = ensureEarlySidePawnEnforcement(norm, moveUci, fenBefore, prevMatchPoints) || null;
-            const finalNormWithAi = finalNorm ? await getAiFeedbackForMove(finalNorm, fenBefore, fenAfter, moveUci || '', null, norm.score ?? null) : null;
+            const finalNorm = ensureEarlySidePawnEnforcement(norm, moveUci, fenBefore, fenAfter, prevMatchPoints) || null;
+            const hangingThreat = detectHangingPiece(fenBefore, fenAfter);
+            const finalNormWithAi = finalNorm ? await getAiFeedbackForMove(finalNorm, fenBefore, fenAfter, moveUci || '', null, norm.score ?? null, hangingThreat) : null;
             if (cancelled) return;
+            if (finalNormWithAi) enforceHangingPowerPieceBlunder(finalNormWithAi, fenBefore, fenAfter);
             setAnalysis(finalNormWithAi);
             try {
               if (finalNormWithAi && typeof finalNormWithAi.matchPoints === 'number') setPrevMatchPoints(finalNormWithAi.matchPoints);
@@ -1339,13 +1422,15 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
 
             // Apply the final override before asking the chat model to explain the move
             try {
-              parsed = ensureEarlySidePawnEnforcement(parsed || null, moveUci, fenBefore, prevMatchPoints) || parsed || null;
+              parsed = ensureEarlySidePawnEnforcement(parsed || null, moveUci, fenBefore, fenAfter, prevMatchPoints) || parsed || null;
             } catch (e) {}
 
             // Fetch AI feedback for the server analysis path using the final rating
+            const hangingThreat = detectHangingPiece(fenBefore, fenAfter);
             if (parsed) {
-              parsed = await getAiFeedbackForMove(parsed, fenBefore, fenAfter, moveUci || '', engineBest, typeof engineScore === 'number' ? engineScore : null);
+              parsed = await getAiFeedbackForMove(parsed, fenBefore, fenAfter, moveUci || '', engineBest, typeof engineScore === 'number' ? engineScore : null, hangingThreat);
               if (cancelled) return;
+              enforceHangingPowerPieceBlunder(parsed, fenBefore, fenAfter);
             }
 
             try {
