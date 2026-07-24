@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import StatsChart from "./StatsChart";
 import Puzzles from "../../puzzles/Puzzles";
 import PlayComputer from "../../engine/PlayComputer";
+import PlayStudent from "./PlayStudent";
 import StreakModal from "./Modals/StreakModal";
 import ActivitiesModal from "./Modals/ActivitiesModal";
 import BadgesModal from "./Modals/BadgesModal";
@@ -59,6 +60,10 @@ const TABS = {
   playComputer: {
     label: "Play with Computer",
     icon: playComputerIcon,
+  },
+  playStudent: {
+    label: "Play a Student",
+    icon: gamesIcon,
   },
   recordings: {
     label: "Recordings",
@@ -428,6 +433,13 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       return (
         <div className="w-full h-full">
           <PlayComputer />
+        </div>
+      );
+
+    case "playStudent":
+      return (
+        <div className="w-full h-full">
+          <PlayStudent username={username} />
         </div>
       );
     

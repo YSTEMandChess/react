@@ -58,6 +58,7 @@ app.use("/lessons", require("./routes/lessons"));
 app.use("/activities", require("./routes/activities"));
 app.use("/streak", streakRoutes);
 app.use("/badges", require("./routes/badges"));
+app.use("/challenge", require("./routes/challenge"));
 app.use("/analytics", analyticsLimiter, adminGuard, require("./routes/analytics"));
 
 // Start server on specified port

@@ -3,6 +3,57 @@ const GameManager = require("./GameManager");
 const gameManager = new GameManager();
 
 /**
+ * STUB — awards weavels to the winner of a student-vs-student game.
+ *
+ * This is intentionally a no-op placeholder until Karthik confirms the
+ * gamification currency contract (see the open questions in
+ * documentation/student-vs-student-weavels-design.md §7):
+ *   - where the weavels balance lives,
+ *   - the credit API shape / whether to call it vs emit an event,
+ *   - the award amount and idempotency key (should be the gameId).
+ *
+ * Mirrors the existing activity pattern in the "move" handler, which PUTs to
+ * `${MIDDLEWARE_URL}/activities/:username/activity` with a Bearer credential.
+ *
+ * @param {string} winnerUsername
+ * @param {string} credentials - Bearer token of the reporting client
+ */
+const awardWeavels = async (winnerUsername, credentials) => {
+    console.log(`[weavels][stub] would award weavels to winner: ${winnerUsername}`);
+    // TODO(Karthik contract): replace with real credit call, e.g.
+    // await fetch(`${process.env.MIDDLEWARE_URL}/weavels/credit`, {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json", Authentication: `Bearer ${credentials}` },
+    //     body: JSON.stringify({ username: winnerUsername, amount: /* TBD */, reason: "pvp_win", gameId: /* TBD */ }),
+    // });
+};
+
+/**
+ * Notifies both players that the game is over and, for a decisive result,
+ * awards weavels to the winner. Shared by the checkmate/draw path (a move that
+ * ends the game), resignation, and disconnect-as-forfeit so all three behave
+ * identically. A draw has no winnerUsername, so no award fires.
+ *
+ * @param {string[]} playerIds - both players' socket ids (nulls tolerated)
+ * @param {Object} outcome - { over, reason, winnerUsername?, loserUsername? }
+ * @param {Server} io
+ * @param {string} [credentials] - Bearer token of the reporting client
+ */
+const emitGameOver = async (playerIds, outcome, io, credentials) => {
+    const payload = JSON.stringify(outcome);
+    playerIds.forEach((id) => {
+        if (id) io.to(id).emit("gameover", payload);
+    });
+
+    // Award on any decisive result (checkmate / resign / disconnect forfeit),
+    // never on a draw. Keyed on the game so a reconnect/replay can't double-award.
+    // STUB until Karthik's real weavels credit API (§7) lands.
+    if (outcome.winnerUsername) {
+        await awardWeavels(outcome.winnerUsername, credentials);
+    }
+};
+
+/**
  * Registers all socket event handlers for a given connection.
  * @param {Socket} socket - The connected socket instance
  * @param {Server} io - The Socket.IO server instance
@@ -35,6 +86,54 @@ const registerSocketHandlers = (socket, io) => {
         }
         catch (err) {
             socket.emit("gameerror", err.message);
+        }
+    });
+
+    /**
+     * Handles creating or joining a student-vs-student (PvP) game by gameId.
+     * The gameId + both usernames come from an accepted challenge (middleware).
+     * Expected payload: { gameId, challenger, opponent, username }
+     */
+    socket.on("newpvpgame", (msg) => {
+        try {
+            const parsed = JSON.parse(msg);
+
+            const result = gameManager.createOrJoinPvpGame({
+                gameId: parsed.gameId,
+                challenger: parsed.challenger,
+                opponent: parsed.opponent,
+                username: parsed.username,
+                socketId: socket.id
+            });
+
+            socket.emit(
+                "boardstate",
+                JSON.stringify({
+                    boardState: result.game.boardState.fen(),
+                    color: result.color
+                })
+            );
+        }
+        catch (err) {
+            socket.emit("gameerror", err.message);
+        }
+    });
+
+    /**
+     * Handles a player resigning the current game.
+     * The resigning player loses; the opponent wins and is awarded weavels.
+     */
+    socket.on("resign", async () => {
+        try {
+            const res = gameManager.resign(socket.id, "resign");
+            if (!res) {
+                return; // no active game for this socket
+            }
+            const { game, outcome } = res;
+            await emitGameOver([game.student.id, game.mentor.id], outcome, io);
+        }
+        catch (err) {
+            socket.emit("error", err.message);
         }
     });
 
@@ -72,6 +171,13 @@ const registerSocketHandlers = (socket, io) => {
             const state = res.result;
             gameManager.broadcastBoardState(res.result, io);
             console.log('Move: ', res);
+
+            // Game over? Notify both players and (once confirmed) award weavels
+            // to the winner. See documentation/student-vs-student-weavels-design.md.
+            const outcome = state.outcome;
+            if (outcome && outcome.over) {
+                await emitGameOver([state.studentId, state.mentorId], outcome, io, credentials);
+            }
             if(!computerMove && credentials) {
                 const activityEvents = res.activityEvents;   
                 if (activityEvents && activityEvents.length > 0) {
@@ -228,11 +334,21 @@ const registerSocketHandlers = (socket, io) => {
         });
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
         const game = gameManager.getGameBySocketId(socket.id);
         if (!game) {
             console.log("game not found for this socket")
             return;
+        }
+
+        // In a student-vs-student game, leaving mid-game is a forfeit: the
+        // opponent wins (and is awarded weavels). Mentor-vs-student games are
+        // practice, so a disconnect just resets with no result. §6.
+        if (game.isPvp) {
+            const res = gameManager.resign(socket.id, "disconnect");
+            if (res && res.outcome.winnerUsername) {
+                await emitGameOver([game.student.id, game.mentor.id], res.outcome, io);
+            }
         }
 
         const result = gameManager.endGame(game.student.username, game.mentor.username);
