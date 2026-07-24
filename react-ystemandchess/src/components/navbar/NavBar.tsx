@@ -299,6 +299,16 @@ const NavBar = () => {
         Puzzles
       </Link>
 
+      {/* Analytics link — visible only to admin users */}
+      {role === "admin" && (
+        <Link
+          to="/analytics"
+          className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
+        >
+          Analytics
+        </Link>
+      )}
+
       {/* Conditional rendering: Show login link only when user is not authenticated */}
       {!username && (
         <Link
