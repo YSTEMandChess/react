@@ -10,7 +10,7 @@ const initializeSocket = (socket) => {
   // Start a new Stockfish session for the client
   socket.on("start-session", ({ sessionType, fen }) => {
     try {
-      stockfishManager.registerSession(socket, sessionType, fen);
+      stockfishManager.registerSession(socket, sessionType, fen, gameSocket);
       socket.emit("session-started", { success: true, id: socket.id });
     } catch (err) {
       socket.emit("session-error", { error: err.message });
@@ -27,9 +27,9 @@ const initializeSocket = (socket) => {
   });
 
   // Request Stockfish to evaluate a position
-  socket.on("evaluate-fen", ({ fen, move, level }) => {
+  socket.on("evaluate-fen", ({gameSocket, fen, move, level }) => {
     try {
-      stockfishManager.evaluateFen(socket.id, fen, move, level);
+      stockfishManager.evaluateFen(socket.id, gameSocket, fen, move, level);
     } catch (err) {
       socket.emit("evaluation-error", { error: err.message });
     }

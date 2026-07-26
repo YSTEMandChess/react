@@ -92,6 +92,8 @@ class StockfishManager {
           newFEN,
         });
 
+        session.socket.emit("move", )
+
         session.awaitingResponse = false;
         session.outputBuffer = [];
       }
@@ -112,7 +114,7 @@ class StockfishManager {
    * @param {string} fen - Optional FEN string for initial board position
    * @param {boolean} infoMode - Whether to return detailed analysis
    */
-  registerSession(socket, sessionType, fen = null, infoMode = false) {
+  registerSession(socket, sessionType,gameSocket, fen = null, infoMode = false) {
     const socketId = socket.id;
 
     // Ensure session doesn't already exist
@@ -131,6 +133,7 @@ class StockfishManager {
       id: sessionId,
       sessionType,
       gameFen: fen,
+      gameSocket: gameSocket,
       infoMode,
       stockfishEngine: engine,
       gameInstance: game,

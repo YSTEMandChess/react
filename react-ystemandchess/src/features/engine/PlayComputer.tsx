@@ -73,7 +73,8 @@ const PlayComputer: React.FC = () => {
           return;
         }
         setIsLoggedIn(true);
-        const { username, firstName, lastName, role, email, id } =
+        if (UInfo){
+           const { username, firstName, lastName, role, email, id } =
           UInfo;
         user.current = {
           username,
@@ -83,13 +84,15 @@ const PlayComputer: React.FC = () => {
           email,
           id,
         };
+        }
+       
       } catch (err) {
         console.error("Auth check failed:", err);
         setIsLoggedIn(false);
       }
     };
     verifyAndLoad();
-    console.log("Logged in");
+    console.log("Logged in attempted");
   }, [cookies.login]);
 
   useEffect(() => {
@@ -114,6 +117,26 @@ const PlayComputer: React.FC = () => {
         movesContainerRef.current.scrollHeight;
     }
   }, [moveHistory]);
+
+  //write a useeffect function that takes in whos turn it is to call stockfish to sned a move
+
+  useEffect(() => {
+    if (!yourTurn ){
+      if (gameMetaData.current.gameType=="computer" || gameMetaData.current.gameType=="guest"){
+         const moveType: Move ={
+          from: null,
+  to: null,
+  promotion: null,
+  piece: null,
+  captured: null,
+  flags: null,
+  computerMove: true,
+  username: gameMetaData.current.user.username }
+        
+        chessSocketRef?.current.sendMove(moveType);
+      }
+    }
+  }, [yourTurn]);
 
   const startGame = () => {
     chessSocketRef.current ? setShowSettings(false) : setShowSettings(true);
@@ -171,8 +194,17 @@ const PlayComputer: React.FC = () => {
         gameMetaData.current.movesList = moveHistory;
         gameMetaData.current.fen = fen;
         gameMetaData.current.updatedAt = Date.now().toString();
-        chessSocketRef?.current.saveGame(gameMetaData.current);
-        chessSocketRef?.current.playMove(gameMetaData.current);
+        const moveType: Move ={
+          from: moveResult.from,
+  to: moveResult.to,
+  promotion: moveResult.promotion,
+  piece: moveResult.piece,
+  captured: moveResult.captured,
+  flags: moveResult.flags,
+  computerMove: false,
+  username: gameMetaData.current.user.username      }
+        
+        chessSocketRef?.current.sendMove(moveType);
         setYourTurn((prev) => !prev);
       } catch (error) {
         console.error("Error handling move:", error);
@@ -181,6 +213,7 @@ const PlayComputer: React.FC = () => {
       console.log("It's not your turn");
     }
   }, []);
+
 
   const checkGameStatus = useCallback((): boolean => {
     const game = gameRef.current;
@@ -271,7 +304,7 @@ const PlayComputer: React.FC = () => {
     
     if (location.state) {
       const savedMeta: GameMetaData = location.state;
-      const newGame = await chessSocketRef?.current.getMostRecentGameInfo(savedMeta);
+      const newGame : GameMetaData = await chessSocketRef?.current.getMostRecentGameInfo(savedMeta);
       applyGameState(newGame);
     } else if (user.current) {
       const newGame: GameMetaData = {
@@ -287,15 +320,12 @@ const PlayComputer: React.FC = () => {
         createdAt: Date.now().toString(),
         updatedAt: Date.now().toString(),
       };
-      gameMetaData.current = newGame;
       chessSocketRef?.current.saveNewGame(newGame);
       applyGameState(newGame);
     }
     chessSocketRef.current.startNewGame(gameMetaData);
     //edit start new game to take gameMetadata 
   };
-
-
 
   const applyGameState = (game: GameMetaData) => {
     gameRef.current = new Chess(game.fen);
@@ -312,6 +342,7 @@ const PlayComputer: React.FC = () => {
     chessSocketRef.current.mentorRef = ""
     chessSocketRef.current.studentRef = game.user?.username
     chessSocketRef.current.roleRef = "student"
+    gameMetaData.current=game
   };
 
   const undoMove = useCallback(() => {

@@ -1,4 +1,5 @@
 import { URLSearchParams } from "url";
+import { GameInstance } from "./GameManager";
 
 const GameManager = require("./GameManager");
 
@@ -64,6 +65,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         createdAt,
         updatedAt,
       } = JSON.parse(msg);
+
       const gameMetaData = {
         userId,
         user,
@@ -80,15 +82,28 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         updatedAt,
       } as GameMetaData;
 
+      if (gameType != "friend" || gameType != "mentor") {
+        const getStockfishSessionId = await startStockfish(
+          stockfish,
+          gameMetaData,
+        );
+        if (getStockfishSessionId) {
+          gameMetaData.opponentId = getStockfishSessionId;
+        } else {
+          throw new Error("Can't get Stockfish to start session");
+        }
+      }
+
       const result = gameManager.createOrJoinGame({
         socketId: socket.id,
         gameMetaData: gameMetaData,
         student: student,
         mentor: mentor,
+        stockfishSocket: stockfish,
         role: role,
       });
 
-      if (gameMetaData.gameType != "guest") {
+      if (result.gameType != "guest") {
         console.log("saving new Game to backend");
         const res = await fetch(
           `${process.env.MIDDLEWARE_URL}/savedGames/addgame`,
@@ -114,6 +129,25 @@ const registerSocketHandlers = (socket, io, stockfish) => {
     }
   });
 
+  const startStockfish = (stockfish: any, gameMetaData: GameMetaData) => {
+    return new Promise<string>((resolve, reject) => {
+      stockfish.emit("start-session", {
+        sessionType: "pvp",
+        fen: gameMetaData.fen,
+        gameSocket: socket,
+      });
+
+      stockfish.once("session-started", (msg: string) => {
+        const { success, id } = JSON.parse(msg);
+
+        if (success) {
+          resolve(id);
+        } else {
+          reject(new Error("Failed to start Stockfish session."));
+        }
+      });
+    });
+  };
   /**
    * Handles creating a new puzzle or joining an existing one
    * Expected payload: { student, mentor, role }
@@ -148,83 +182,96 @@ const registerSocketHandlers = (socket, io, stockfish) => {
       const { from, to, promotion, computerMove, username, credentials } =
         JSON.parse(msg);
 
-      const res = await gameManager.makeMove(socket.id, from, to, promotion);
-      const state = res.result;
-      const gameMetaData = state.gameMetaData as GameMetaData;
-      gameManager.broadcastBoardState(res.result, io);
-      console.log("Move: ", res);
-      if (!computerMove && credentials) {
-        const activityEvents = res.activityEvents;
-        if (activityEvents && activityEvents.length > 0) {
-          const studentId = state.studentId;
-          const payload = {
-            activities: activityEvents,
-            lastMove: { from, to, san: state.move?.san },
-          };
-          console.log("Payload", payload);
-          const studentSocket = io.sockets.sockets.get(studentId);
-          //console.log('student socket', studentSocket);
-          if (studentSocket) {
-            try {
-              console.log(
-                "route:",
-                `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`,
-              );
-              const response = await fetch(
-                `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`,
-                {
-                  method: "PUT",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authentication: `Bearer ${credentials}`,
+      const game = gameManager.getGameBySocketId(socket) as GameInstance;
+      if (computerMove) {
+        const fen = game.gameMetaData.fen;
+        const level = game.gameMetaData.computerLevel;
+        stockfish.emit("evaluate-fen", {
+          gameSocket: socket,
+          fen: fen,
+          level: level,
+        });
+      }
+
+      if (from && to) {
+        const res = await gameManager.makeMove(socket.id, from, to, promotion);
+        const state = res.result;
+        const gameMetaData = state.gameMetaData as GameMetaData;
+        gameManager.broadcastBoardState(res.result, io);
+        console.log("Move: ", res);
+        if (!computerMove && credentials) {
+          const activityEvents = res.activityEvents;
+          if (activityEvents && activityEvents.length > 0) {
+            const studentId = state.studentId;
+            const payload = {
+              activities: activityEvents,
+              lastMove: { from, to, san: state.move?.san },
+            };
+            console.log("Payload", payload);
+            const studentSocket = io.sockets.sockets.get(studentId);
+            //console.log('student socket', studentSocket);
+            if (studentSocket) {
+              try {
+                console.log(
+                  "route:",
+                  `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`,
+                );
+                const response = await fetch(
+                  `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`,
+                  {
+                    method: "PUT",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authentication: `Bearer ${credentials}`,
+                    },
+                    body: JSON.stringify({
+                      activityName: payload.activities[0].name,
+                    }),
                   },
-                  body: JSON.stringify({
-                    activityName: payload.activities[0].name,
-                  }),
-                },
-              );
-              console.log("response", response);
-              socket.emit("completeActivity");
-            } catch (e) {
-              console.log("Error: ", e);
+                );
+                console.log("response", response);
+                socket.emit("completeActivity");
+              } catch (e) {
+                console.log("Error: ", e);
+              }
             }
           }
         }
-      }
-      //update game in backend
-      if (gameMetaData.gameType !== "guest") {
-        console.log("Saving game to the backend...");
+        //update game in backend
+        if (gameMetaData.gameType !== "guest") {
+          console.log("Saving game to the backend...");
 
-        const { movesList, fen, uuid } = gameMetaData;
-        const updatedAt = new Date().toISOString();
+          const { movesList, fen, uuid } = gameMetaData;
+          const updatedAt = new Date().toISOString();
 
-        const newGameSettings = {
-          movesList,
-          fen,
-          updatedAt,
-        };
+          const newGameSettings = {
+            movesList,
+            fen,
+            updatedAt,
+          };
 
-        try {
-          const res = await fetch(
-            `${process.env.MIDDLEWARE_URL}/savedGames/game/${uuid}`,
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
+          try {
+            const res = await fetch(
+              `${process.env.MIDDLEWARE_URL}/savedGames/game/${uuid}`,
+              {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(newGameSettings),
               },
-              body: JSON.stringify(newGameSettings),
-            },
-          );
+            );
 
-          if (!res.ok) {
-            throw new Error("Failed to save game.");
+            if (!res.ok) {
+              throw new Error("Failed to save game.");
+            }
+
+            const data = await res.json();
+
+            console.log("Saved to backend!", data);
+          } catch (error) {
+            console.error("Error saving game:", error);
           }
-
-          const data = await res.json();
-
-          console.log("Saved to backend!", data);
-        } catch (error) {
-          console.error("Error saving game:", error);
         }
       }
     } catch (err) {
@@ -232,6 +279,108 @@ const registerSocketHandlers = (socket, io, stockfish) => {
       console.log("error thrown", err);
     }
   });
+
+  socket.on("evaluation-complete", async (data) => {
+    try {
+      const { mode, move, moveDetails, newFEN, gameSocket } = data;
+
+      // Standardize socket ID lookup (handles data passing or active socket)
+      const socketId = gameSocket?.id || socket.id;
+      const game = gameManager.getGameBySocketId(socketId) as GameInstance;
+
+      if (!game) {
+        throw new Error("Game instance not found for the given socket ID.");
+      }
+
+      // Process move execution if the evaluation returned a playable move
+      if (mode === "move" && moveDetails) {
+        const { from, to, promotion } = moveDetails;
+
+        // Make the move in gameManager using the engine's move parameters
+        const res = await gameManager.makeMove(socketId, from, to, promotion);
+        const state = res.result;
+        const gameMetaData = state.gameMetaData as GameMetaData;
+
+        // Broadcast the updated state to all clients in the room/game
+        gameManager.broadcastBoardState(res.result, io);
+        console.log("Engine Move Executed: ", res);
+
+        // Handle activity events if applicable
+        const activityEvents = res.activityEvents;
+        if (activityEvents && activityEvents.length > 0) {
+          const studentId = state.studentId;
+          const payload = {
+            activities: activityEvents,
+            lastMove: { from, to, san: state.move?.san },
+          };
+
+          const studentSocket = io.sockets.sockets.get(studentId);
+          if (studentSocket) {
+            try {
+              const response = await fetch(
+                `${process.env.MIDDLEWARE_URL}/activities/engine/activity`,
+                {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    activityName: payload.activities[0].name,
+                  }),
+                },
+              );
+
+              if (response.ok) {
+                socket.emit("completeActivity");
+              }
+            } catch (e) {
+              console.error("Error updating activity:", e);
+            }
+          }
+        }
+
+        // Persist saved game updates back to the middleware server
+        if (gameMetaData && gameMetaData.gameType !== "guest") {
+          console.log("Saving engine-updated game to backend...");
+
+          const { movesList, fen, uuid } = gameMetaData;
+          const updatedAt = new Date().toISOString();
+
+          const newGameSettings = {
+            movesList,
+            fen,
+            updatedAt,
+          };
+
+          try {
+            const res = await fetch(
+              `${process.env.MIDDLEWARE_URL}/savedGames/game/${uuid}`,
+              {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(newGameSettings),
+              },
+            );
+
+            if (!res.ok) {
+              throw new Error("Failed to save game after engine move.");
+            }
+
+            const data = await res.json();
+            console.log("Saved engine move to backend!", data);
+          } catch (error) {
+            console.error("Error saving game after engine move:", error);
+          }
+        }
+      }
+    } catch (err) {
+      socket.emit("error", err.message);
+      console.error("Error in evaluation-complete handler:", err);
+    }
+  });
+
   socket.on("completeActivity", () => {
     console.log("activity completed");
   });

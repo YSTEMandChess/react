@@ -1,6 +1,5 @@
 import "dotenv/config";
 
-
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
@@ -21,7 +20,7 @@ app.use(
     origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
-  })
+  }),
 );
 
 // Initialize Socket.IO with CORS configuration
@@ -34,7 +33,8 @@ const io = new Server(server, {
 });
 
 // 2. New Socket.IO CLIENT connection (to the Stockfish engine service)
-const STOCKFISH_SERVER_URL = process.env.STOCKFISH_SERVER_URL;
+const STOCKFISH_SERVER_URL =
+  process.env.STOCKFISH_SERVER_URL || "http://localhost:5000";
 const stockfishSocket = ioClient(STOCKFISH_SERVER_URL, {
   autoConnect: true,
   reconnection: true,

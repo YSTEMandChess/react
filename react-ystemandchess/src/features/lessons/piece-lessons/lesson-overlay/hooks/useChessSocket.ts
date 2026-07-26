@@ -1,8 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
-import { Move, BoardState, MousePosition, GameConfig, GameMode, PlayerColor } from "../../../../../core/types/chess";
+import {
+  Move,
+  BoardState,
+  MousePosition,
+  GameConfig,
+  GameMode,
+  PlayerColor,
+} from "../../../../../core/types/chess";
 import type { GameMetaData } from "../../../../engine/SelectGame";
-
 
 /*
 
@@ -77,7 +83,7 @@ interface UseChessSocketOptions {
 
 // ======== CENTRALIZED FEN NORMALIZATION ========
 const normalizeFen = (fen: string): string => {
-  if (!fen || typeof fen !== 'string') {
+  if (!fen || typeof fen !== "string") {
     console.warn("Invalid FEN input:", fen);
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; // Default starting position
   }
@@ -138,7 +144,9 @@ export const useChessSocket = ({
   const [fen, setFen] = useState<string>("");
   const [connected, setConnected] = useState(false);
   const [playerColor, setPlayerColor] = useState<PlayerColor | null>(null);
-  const [assignedRole, setAssignedRole] = useState<"host" | "guest" | null>(null);
+  const [assignedRole, setAssignedRole] = useState<"host" | "guest" | null>(
+    null,
+  );
 
   // ======== refs ========
   const socketRef = useRef<Socket | null>(null);
@@ -169,22 +177,20 @@ export const useChessSocket = ({
     socket.on("connect", () => {
       setConnected(true);
       if (onConnect) {
-        onConnect(connected)
+        onConnect(connected);
       }
     });
 
     socket.on("disconnect", (reason: any) => {
       setConnected(false);
       if (onDisconnect) {
-        onDisconnect(connected)
+        onDisconnect(connected);
       }
     });
 
-
-    socket.on('session-started', ({ success }) => {
+    socket.on("session-started", ({ success }) => {
       console.log("AI is connected");
     });
-
 
     socket.on("connect_error", (error: any) => {
       console.error("Connection error:", error);
@@ -229,17 +235,19 @@ export const useChessSocket = ({
         if (onBoardStateChange) {
           onBoardStateChange(newFen, (parsed as any).color);
         }
-
       } catch (err) {
         console.error("Invalid boardstate:", err);
       }
     });
 
-    socket.on('evaluation-complete', ({ gameMetaData }) => {
-      const lastMove = gameMetaData.movesList[gameMetaData.movesList.length - 1];
+    socket.on("evaluation-complete", ({ gameMetaData }) => {
+      const lastMove =
+        gameMetaData.movesList[gameMetaData.movesList.length - 1];
       const [from, rest] = lastMove.split(" -> ");
       const [to, promotionPart] = rest.split(" (");
-      const promotion = promotionPart ? promotionPart.replace(")", "") : undefined;
+      const promotion = promotionPart
+        ? promotionPart.replace(")", "")
+        : undefined;
 
       if (onMove) {
         onMove({ fen: gameMetaData.fen, move: { from, to, promotion } });
@@ -366,8 +374,6 @@ export const useChessSocket = ({
       if (onError) onError(msg);
     });
 
-
-
     // cleanup when component unmounts
     return () => {
       try {
@@ -385,13 +391,11 @@ export const useChessSocket = ({
   // ======== Outgoing commands ========
 
   const startNewGame = useCallback((game?: GameMetaData) => {
-
     const data: GameConfig = {
       mentor: mentorRef.current,
       student: studentRef.current,
       role: roleRef.current,
-      ...game
-
+      ...game,
     };
 
     //write the version with gamestate
@@ -403,7 +407,7 @@ export const useChessSocket = ({
     const data: GameConfig = {
       mentor: mentorRef.current,
       student: studentRef.current,
-      role: roleRef.current
+      role: roleRef.current,
     };
     console.log("Starting new puzzle:", data);
     socketRef.current?.emit("newPuzzle", JSON.stringify(data));
@@ -430,46 +434,50 @@ export const useChessSocket = ({
       const data = { state: normalizedFen, color, hints: hints || "" };
       socketRef.current?.emit("setstateColor", JSON.stringify(data));
     },
-    []
+    [],
   );
 
   const saveGame = (gameMetaData: GameMetaData) => {
-    socketRef.current?.emit("saveGame", gameMetaData)
-    console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
-  }
+    socketRef.current?.emit("saveGame", gameMetaData);
+    console.log(
+      `Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`,
+    );
+  };
 
   const playMove = (gameMetaData: GameMetaData) => {
-    socketRef.current?.emit("playMove", gameMetaData)
-    console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
-  }
-
+    socketRef.current?.emit("playMove", gameMetaData);
+    console.log(
+      `Playing a move between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`,
+    );
+  };
+  const stockfishMove = (gameMetaData: GameMetaData) => {
+    socketRef.current?.emit("stockfishMove", gameMetaData);
+    console.log(
+      `Calling a stockfish Move for Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`,
+    );
+  };
   const getMostRecentGameInfo = (
-    gameMetaData: GameMetaData
+    gameMetaData: GameMetaData,
   ): Promise<GameMetaData> => {
     return new Promise((resolve) => {
       socketRef.current?.emit("getMostRecentGameInfo", gameMetaData);
 
       console.log(
-        `Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`
+        `Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`,
       );
 
-      socketRef.current?.on(
-        "onMostRecentGameInfo",
-        (msg: GameMetaData) => {
-          resolve(msg);
-        }
-      );
+      socketRef.current?.on("onMostRecentGameInfo", (msg: GameMetaData) => {
+        resolve(msg);
+      });
     });
   };
 
   const saveNewGame = (gameMetaData: GameMetaData) => {
-    socketRef.current?.emit("saveNewGame", gameMetaData)
-    console.log(`Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`)
-  }
-
-
-
-
+    socketRef.current?.emit("saveNewGame", gameMetaData);
+    console.log(
+      `Saving Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`,
+    );
+  };
 
   const sendMove = useCallback((move: Move) => {
     const data = {
@@ -492,7 +500,7 @@ export const useChessSocket = ({
       from,
       to,
       mentor: mentorRef.current,
-      student: studentRef.current
+      student: studentRef.current,
     };
     // Store for puzzle validation
     highlightFromRef.current = from;
@@ -505,7 +513,7 @@ export const useChessSocket = ({
       from,
       to,
       mentor: mentorRef.current,
-      student: studentRef.current
+      student: studentRef.current,
     };
     socketRef.current?.emit("highlight", JSON.stringify(data));
   }, []);
@@ -515,7 +523,7 @@ export const useChessSocket = ({
       x,
       y,
       mentor: mentorRef.current,
-      student: studentRef.current
+      student: studentRef.current,
     };
     socketRef.current?.emit("mousexy", JSON.stringify(data));
   }, []);
@@ -524,7 +532,7 @@ export const useChessSocket = ({
     const data = {
       mentor: mentorRef.current,
       student: studentRef.current,
-      piece
+      piece,
     };
     socketRef.current?.emit("piecedrag", JSON.stringify(data));
   }, []);
@@ -532,7 +540,7 @@ export const useChessSocket = ({
   const sendPieceDrop = useCallback(() => {
     const data = {
       mentor: mentorRef.current,
-      student: studentRef.current
+      student: studentRef.current,
     };
     socketRef.current?.emit("piecedrop", JSON.stringify(data));
   }, []);
@@ -541,7 +549,7 @@ export const useChessSocket = ({
     const data = {
       mentor: mentorRef.current,
       student: studentRef.current,
-      to: square
+      to: square,
     };
     socketRef.current?.emit("addgrey", JSON.stringify(data));
   }, []);
@@ -549,7 +557,7 @@ export const useChessSocket = ({
   const sendRemoveGrey = useCallback(() => {
     const data = {
       mentor: mentorRef.current,
-      student: studentRef.current
+      student: studentRef.current,
     };
     socketRef.current?.emit("removegrey", JSON.stringify(data));
   }, []);
@@ -558,7 +566,7 @@ export const useChessSocket = ({
     const data = {
       mentor: mentorRef.current,
       student: studentRef.current,
-      role: roleRef.current
+      role: roleRef.current,
     };
     console.log("Sending undo");
     socketRef.current?.emit("undo", JSON.stringify(data));
@@ -568,7 +576,7 @@ export const useChessSocket = ({
     const data = {
       mentor: mentorRef.current,
       student: studentRef.current,
-      role: roleRef.current
+      role: roleRef.current,
     };
     console.log("Ending game");
     socketRef.current?.emit("endgame", JSON.stringify(data));
@@ -590,7 +598,7 @@ export const useChessSocket = ({
       const y = e.clientY;
       sendMousePosition(x, y);
     },
-    [sendMousePosition]
+    [sendMousePosition],
   );
 
   const startMouseTracking = useCallback(() => {
@@ -625,13 +633,13 @@ export const useChessSocket = ({
     (info: {
       mentor?: string;
       student?: string;
-      role?: "mentor" | "student" | "host" | "guest"
+      role?: "mentor" | "student" | "host" | "guest";
     }) => {
       if (info.mentor) mentorRef.current = info.mentor;
       if (info.student) studentRef.current = info.student;
       if (info.role) roleRef.current = info.role;
     },
-    []
+    [],
   );
 
   // ======== Public API ========
@@ -651,9 +659,8 @@ export const useChessSocket = ({
     sendMove,
     undo,
     setExpectedMove,
-   
+
     playMove,
-     
 
     // State management
     setGameState,
@@ -676,7 +683,6 @@ export const useChessSocket = ({
     sendMousePosition,
     sendMessage,
 
-
     // Mouse tracking helpers
     startMouseTracking,
     stopMouseTracking,
@@ -689,6 +695,6 @@ export const useChessSocket = ({
     currentFenRef,
     mentorRef,
     studentRef,
-    roleRef
+    roleRef,
   };
 };
