@@ -41,16 +41,15 @@ const PlayComputer: React.FC = () => {
   const [fen, setFen] = useState<string>(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   );
-  const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
+  const [playerColor, setPlayerColor] = useState<"white" | "black">(null);
   const [difficulty, setDifficulty] = useState<number>(10);
   const location = useLocation();
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
-  const [showSettings, setShowSettings] = useState(true);
   const [showGameEndModal, setShowGameEndModal] = useState(false);
   const [gameEndMessage, setGameEndMessage] = useState("");
   const gameMetaData = useRef<GameMetaData>(null);
-  const [yourTurn, setYourTurn] = useState<boolean>(false);
+  const [yourTurn, setYourTurn] = useState<boolean>(null);
 
   //functions to write
   //start game
@@ -108,6 +107,7 @@ const PlayComputer: React.FC = () => {
     resetGame();
 
     loadGame();
+    setYourTurn(isPlayersTurn(fen, playerColor));
     if (checkGameStatus()) return;
   }, [location.key]);
 
@@ -118,7 +118,6 @@ const PlayComputer: React.FC = () => {
     }
   }, [moveHistory]);
 
-  //write a useeffect function that takes in whos turn it is to call stockfish to sned a move
 
   useEffect(() => {
     if (!yourTurn ){
@@ -138,9 +137,18 @@ const PlayComputer: React.FC = () => {
     }
   }, [yourTurn]);
 
-  const startGame = () => {
-    chessSocketRef.current ? setShowSettings(false) : setShowSettings(true);
-  };
+ 
+const isPlayersTurn = (
+  fen: string,
+  playerColor: "white" | "black",
+): boolean => {
+  const turn = fen.split(" ")[1]; // "w" or "b"
+
+  return (
+    (turn === "w" && playerColor === "white") ||
+    (turn === "b" && playerColor === "black")
+  );
+};
 
   const onOpponentMove = (data: { fen: string; move?: Move }) => {
     if (!yourTurn) {
@@ -259,9 +267,9 @@ const PlayComputer: React.FC = () => {
     setFen(startFen);
     setMoveHistory([]);
     setHighlightSquares([]);
-    playerColor == "white" ? setYourTurn(true) : setYourTurn(false);
-    setShowSettings(true);
+    setYourTurn(null);
     setShowGameEndModal(false);
+    setPlayerColor(null)
     if (chessSocketRef) {
       chessSocketRef.current.mentorRef = ""
       chessSocketRef.current.studentRef = ""
@@ -335,7 +343,6 @@ const PlayComputer: React.FC = () => {
     setHighlightSquares([]);
     const [, activeColor] = game.fen.split(" ");
     setYourTurn((activeColor === "w" ? "white" : "black") === playerColor);
-    setShowSettings(false);
     setShowGameEndModal(false);
     setGameEndMessage("");
     location.state = game
@@ -363,106 +370,13 @@ const PlayComputer: React.FC = () => {
     if (socketRef.current) socketRef.current.emit('update-fen', { fen: newFen }); */
   }, [moveHistory.length]);
 
-  const difficulties: { label: string; value: Difficulty }[] = [
-    { label: "Easy", value: 1 },
-    { label: "Medium", value: 5 },
-    { label: "Hard", value: 10 },
-    { label: "Expert", value: 15 },
-    { label: "Master", value: 20 },
-  ];
 
   return (
     <div className="flex flex-col items-center mt-8 px-4 py-8 bg-soft">
       <h1 className="text-3xl font-bold text-dark mb-8 text-center">
-        Play vs Computer
+        Y Stem and Chess Match
       </h1>
 
-      {showSettings ? (
-        /* ── Settings card ── */
-        <div className="bg-light border-2 border-dark rounded-2xl shadow-md p-10 flex flex-col items-center w-full max-w-lg">
-          <h2 className="text-2xl font-bold text-dark mb-8 text-center">
-            Game Settings
-          </h2>
-
-          {/* Play as */}
-          <div className="w-full">
-            <label className="block mb-3 font-semibold text-lg text-muted">
-              Play as
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                className={`py-5 font-semibold text-lg rounded-xl border-solid bg-white text-dark
-                  transition-all duration-200 hover:-translate-y-0.5
-                  ${playerColor === "white" ? "border-primary shadow-md scale-[1.02]" : "border-borderLight"}`}
-                onClick={() => setPlayerColor("white")}
-              >
-                White
-              </button>
-              <button
-                className={`py-5 font-semibold text-lg rounded-xl border-solid bg-dark text-light
-                  transition-all duration-200 hover:-translate-y-0.5
-                  ${playerColor === "black" ? "border-primary shadow-md scale-[1.02]" : "border-borderLight"}`}
-                onClick={() => setPlayerColor("black")}
-              >
-                Black
-              </button>
-            </div>
-          </div>
-
-          {/* Difficulty */}
-          <div className="w-full mt-6">
-            <label className="block mb-3 font-semibold text-lg text-muted">
-              Difficulty
-            </label>
-            <div className="grid grid-cols-3 gap-3 w-full">
-              {difficulties
-                .slice(0, 3)
-                .map(({ label, value }) => (
-                  <button
-                    key={value}
-                    className={`py-3 rounded-xl border-solid font-semibold
-                    transition-all duration-200 hover:-translate-y-0.5
-                    ${difficulty === value
-                        ? "bg-primary text-light border-primary"
-                        : "bg-white text-dark border-borderLight hover:border-primary"
-                      }`}
-                    onClick={() => setDifficulty(value)}
-                  >
-                    {label}
-                  </button>
-                ))}
-            </div>
-            <div className="grid grid-cols-2 gap-3 w-full mt-3">
-              {difficulties.slice(3).map(({ label, value }) => (
-                <button
-                  key={value}
-                  className={`py-3 rounded-xl border-solid font-semibold
-                    transition-all duration-200 hover:-translate-y-0.5
-                    ${difficulty === value
-                      ? "bg-primary text-light border-primary"
-                      : "bg-white text-dark border-borderLight hover:border-primary"
-                    }`}
-                  onClick={() => setDifficulty(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button
-            className="btn-green w-full mt-8 mb-4"
-            onClick={() => {
-              startGame();
-            }}
-          >
-            {!chessSocketRef?.current.connected
-              ? "Start Game"
-              : "Connecting..."}
-          </button>
-        </div>
-      ) : (
-        <>
           {/* ── Game controls ── */}
           <div className="flex gap-3 mb-8 flex-wrap justify-center">
             <button
@@ -539,8 +453,8 @@ const PlayComputer: React.FC = () => {
               )}
             </div>
           </div>
-        </>
-      )}
+        
+      
 
       {/* ── Game end modal ── */}
       {showGameEndModal && (
