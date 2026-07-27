@@ -37,7 +37,6 @@ button {
       border-2 border-dark
       transition-transform transition-shadow transition-colors duration-500
       hover:scale-105
-      hover:shadow-lg
       hover:bg-black
       active:scale-95
       focus-visible:outline-none
@@ -72,4 +71,13 @@ button {
     scrollbar-width: thin;
     scrollbar-color: #7FCC26 #E5F3D2;
   }
+}
+
+@layer components {
+    .bg-soft {
+        /* Path is relative to this CSS file (src/index.css). Adjust if your asset lives somewhere else. */
+        background-image: url('./assets/images/chess-piece-pattern.svg');
+        background-repeat: repeat;
+        background-size: 100%;
+    }
 }

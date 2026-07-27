@@ -9,9 +9,20 @@ const app = express();
 const cors = require("cors");
 const config = require("config");
 const streakRoutes = require("./routes/streak");
+const adminGuard   = require("./middleware/adminGuard");
+const rateLimit    = require("express-rate-limit");
 
-// Enable scheduler
+const analyticsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: parseInt(process.env.ANALYTICS_RATE_LIMIT_MAX) || 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later" },
+});
+
+// Enable schedulers
 require("./scheduler/activitiesScheduler.js");
+require("./scheduler/analyticsSummaryScheduler.js");
 
 // Enable CORS for cross-origin requests
 app.use(cors(config.get("corsOptions")));
@@ -25,7 +36,7 @@ app.use(express.json({ extended: false }));
 // Configure session middleware
 app.use(
   session({
-    secret: "your_secret_key_here", // Use a long and random string for better security
+    secret: process.env.SESSION_SECRET || "dev-secret-change-in-prod",
     resave: false,
     saveUninitialized: false,
   })
@@ -48,6 +59,7 @@ app.use("/activities", require("./routes/activities"));
 app.use("/streak", streakRoutes);
 app.use("/badges", require("./routes/badges"));
 app.use("/chat", require("./routes/chat"));
+app.use("/analytics", analyticsLimiter, adminGuard, require("./routes/analytics"));
 
 // Start server on specified port
 const PORT = process.env.PORT || 8000;

@@ -1,0 +1,7 @@
+[
+  { "zipcode": "30301", "totalStudents": 14, "avgTotalTimeHours": 8.3  },
+  { "zipcode": "30302", "totalStudents": 9,  "avgTotalTimeHours": 6.7  },
+  { "zipcode": "30303", "totalStudents": 22, "avgTotalTimeHours": 10.1 },
+  { "zipcode": "30305", "totalStudents": 5,  "avgTotalTimeHours": 4.9  },
+  { "zipcode": "30306", "totalStudents": 18, "avgTotalTimeHours": 7.5  }
+]
