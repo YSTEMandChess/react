@@ -1,5 +1,4 @@
 // Main server configuration for the Node.js middleware API
-require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const connectDB = require("./config/db");
@@ -9,20 +8,10 @@ const app = express();
 const cors = require("cors");
 const config = require("config");
 const streakRoutes = require("./routes/streak");
-const adminGuard   = require("./middleware/adminGuard");
-const rateLimit    = require("express-rate-limit");
+const leaderboardRoutes = require("./routes/leaderboard");
 
-const analyticsLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: parseInt(process.env.ANALYTICS_RATE_LIMIT_MAX) || 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Too many requests, please try again later" },
-});
-
-// Enable schedulers
+// Enable scheduler
 require("./scheduler/activitiesScheduler.js");
-require("./scheduler/analyticsSummaryScheduler.js");
 
 // Enable CORS for cross-origin requests
 app.use(cors(config.get("corsOptions")));
@@ -36,7 +25,7 @@ app.use(express.json({ extended: false }));
 // Configure session middleware
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "dev-secret-change-in-prod",
+    secret: process.env.SESSION_SECRET || config.get("sessionSecret"),
     resave: false,
     saveUninitialized: false,
   })
@@ -58,7 +47,7 @@ app.use("/lessons", require("./routes/lessons"));
 app.use("/activities", require("./routes/activities"));
 app.use("/streak", streakRoutes);
 app.use("/badges", require("./routes/badges"));
-app.use("/analytics", analyticsLimiter, adminGuard, require("./routes/analytics"));
+app.use("/leaderboard", require("./routes/leaderboard"));
 
 // Start server on specified port
 const PORT = process.env.PORT || 8000;
