@@ -15,6 +15,7 @@
  */
 
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./ActivitiesModal.scss";
 import { ReactComponent as GrowthBox } from "../../../../assets/images/ActivitiesAssets/growth_box.svg";
 import { ReactComponent as WaterMeter } from "../../../../assets/images/ActivitiesAssets/water_meter.svg";
@@ -25,8 +26,6 @@ import { ReactComponent as TopicBag } from "../../../../assets/images/Activities
 import { ReactComponent as ShortBottomVine} from "../../../../assets/images/ActivitiesAssets/short_bottom_vine.svg";
 import { ReactComponent as BottomVine} from "../../../../assets/images/ActivitiesAssets/bottom_vine.svg";
 import { ReactComponent as Stemmy} from "../../../../assets/images/ActivitiesAssets/stemmy.svg";
-import { ReactComponent as CompletedIcon} from "../../../../assets/images/ActivitiesAssets/activitiescomplete.svg";
-import { ReactComponent as IncompleteArrow} from "../../../../assets/images/ActivitiesAssets/activitiesincomplete.svg";
 import { environment } from "../../../../environments/environment"; 
 import { useCookies } from "react-cookie";
 import { parseActivities } from "../../../../core/utils/activityNames";
@@ -37,20 +36,18 @@ import { parseActivities } from "../../../../core/utils/activityNames";
  * @param {string} username - Username to fetch activities for
  */
 const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username: string }) => {
+  const navigate = useNavigate();
+
   // Close modal only when clicking the background overlay (not child elements)
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
-    
+
   const [cookies] = useCookies(['login']);
-  
   const [activities, setActivities] = useState(null);
   const [loading, setLoading] = useState(true);
-
-
-  
 
   const fetchActivities = async () => {
     try {
@@ -72,7 +69,7 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
     }
     
   }
- useEffect(() => {
+  useEffect(() => {
       fetchActivities()
         .catch(err => {
           console.error(err)
@@ -109,33 +106,34 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
 
             {/* Task banner button */}
             <button className="task-button">
-              Complete Daily Tasks to <br /> Water and Grow your Seed!
+              Complete Tasks to Water<br />and Grow your Seed!
             </button>
 
             {/* Stack of daily activity buttons. Activities are hard coded for now.*/}
             <div className="button-stack">
               {activities.map((activity, idx) => {
-  return (
-    <button
-      key={idx}
-      className={`activity-button ${
-        activity.completed ? "completed" : "incomplete"
-      }`}
-    >
-      {activity.completed ? (
-        <span className="completed-badge" aria-hidden="true">
-          <CompletedIcon />
-        </span>
-      ) : (
-        <span className="arrow-badge" aria-hidden="true">
-          <IncompleteArrow />
-        </span>
-      )}
-
-      <span className="task">{activity.name}</span>
-    </button>
-  );
-})}
+                //Use activity.completed to change visual for complete or incomplete task
+                return (
+                  <button 
+                    className={`activity-button ${activity.completed ? 'completed' : ''}`} 
+                    key={idx}
+                    onClick={() => {
+                      // Only route if the task isn't completed yet
+                      if (!activity.completed) {
+                        onClose(); // Close the modal overlay first
+                        // If you ever need to pass the specific task ID to the next page:
+                        // navigate(`${activity.route}?taskId=${activity.id}`);
+                        navigate(activity.route);
+                      }
+                    }}
+                  >
+                    <span className="label">Daily Activity</span><br />
+                    <span className="action">{activity.displayName}</span>
+                    {activity.completed ? <div>t</div> : <div>f</div>}
+                  </button>
+                  //check completed status, display conditional, then complete task in puzzles to check
+                )
+              })}
             </div>
           </div>
         </div>
