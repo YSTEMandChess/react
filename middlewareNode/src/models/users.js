@@ -59,10 +59,24 @@ const usersSchema = new mongoose.Schema(
       ],
       default: () => require("./defaultLessons"),
     },
-    // Analytics demographic fields — optional, collected over time via profile updates
-    zipcode:    { type: String, default: null, index: true },
-    gender:     { type: String, enum: ["M", "F", "Other", null], default: null },
-    gradeLevel: { type: String, default: null },
+    // Tracks the user's highest ever Puzzle Streak
+    highestStreak: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    // Tracks the user's highest ever Puzzle Dash score
+    // highestDashScore: {
+    //   type: Number,
+    //   required: false,
+    //   default: 0,
+    // },
+    // // Highest Combo Set by user
+    // highestDashCombo: {
+    //   type: Number,
+    //   required: false,
+    //   default: 0,
+    // }
   },
   { versionKey: false },
 );
