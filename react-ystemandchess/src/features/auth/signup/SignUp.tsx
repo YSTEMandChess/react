@@ -144,7 +144,7 @@ const Signup = () => {
 
     // Verifies the format of the email address
     const emailVerification = (email: string) => {
-        const isValid = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}/.test(email);
+        const isValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/.test(email);
         setEmailFlag(isValid);
         setErrors((prev) => ({
             ...prev,
