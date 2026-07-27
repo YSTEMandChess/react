@@ -4,7 +4,7 @@ import { io, Socket } from 'socket.io-client';
 import { useLocation } from 'react-router';
 import { Move } from '../../core/types/chess';
 import ChessBoard, { ChessBoardRef } from '../../components/ChessBoard/ChessBoard';
-import { environment } from "../../environments/environment";
+import { environment } from "../../environments";
 
 type Difficulty = 1 | 5 | 10 | 15 | 20;
 
@@ -70,7 +70,8 @@ const PlayComputer: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const socket = io(environment.urls.stockfishServerURL, {
+    const socket = io({
+      path: environment.urls.stockfishServerURL + 'socket.io/',
       transports: ['websocket'],
       reconnection: true,
     });

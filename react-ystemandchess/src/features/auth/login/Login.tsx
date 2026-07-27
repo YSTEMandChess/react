@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from 'react';
-import { environment } from "../../../environments/environment";
+import { environment } from "../../../environments";
 import { useCookies } from 'react-cookie';
 
 const Login = () => {
@@ -51,7 +51,7 @@ const Login = () => {
       setLoginError("");
     }
 
-    let url = `${environment.urls.middlewareURL}/auth/login?username=${username}&password=${password}`;
+    let url = `${environment.urls.middlewareURL.replace(/\/$/, '')}/auth/login?username=${encodeURIComponent(username.trim())}&password=${encodeURIComponent(password.trim())}`;
 
     const httpGetAsync = (theUrl: string, callback: any, onError: any) => {
       let xmlHttp = new XMLHttpRequest();
