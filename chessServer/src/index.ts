@@ -52,6 +52,7 @@ stockfishSocket.on("connect_error", (err) => {
 io.on("connection", (socket) => {
   // Pass stockfishSocket down so your event handlers can talk to it
   registerSocketHandlers(socket, io, stockfishSocket);
+  console.log(" conncteuneond");
 });
 
 const PORT = process.env.PORT || 3001;

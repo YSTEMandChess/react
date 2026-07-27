@@ -180,7 +180,7 @@ const SelectGame = () => {
             opponentId: opponent ? String(opponent.id) : null,
             gameName: gameNameFor(gameType, opponent),
             gameType: gameType,
-            computerLevel: gameType === "computer" ? difficulty : null,
+            computerLevel: gameType === "computer" || "guest" ? difficulty : null,
             fen: STARTING_FEN,
             movesList: [],
             playerColor: playerColor,

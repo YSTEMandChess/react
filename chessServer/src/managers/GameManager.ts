@@ -1,6 +1,7 @@
 import { GameMetaData } from "./EventHandlers";
 
 const { Chess } = require("chess.js");
+import { validateFen } from "chess.js";
 
 /**
  * GameManager class handles chess game sessions, state, and logic.
@@ -44,125 +45,154 @@ class GameManager {
     mentor,
     role,
     socketId,
-    stockfishSocket,
+    stockfishSocketId,
     gameMetaData,
   }: {
     student: string;
     mentor: string;
     role: string;
     socketId: string;
-    stockfishSocket: string;
+    stockfishSocketId?: string;
     gameMetaData: GameMetaData;
-  }): GameInstance {
-    const {
-      userId,
-      user,
-      opponent,
-      opponentId,
-      gameName,
-      gameType,
-      computerLevel,
-      fen,
-      movesList,
-      playerColor,
-      status,
-      createdAt,
-      updatedAt,
-    } = gameMetaData;
+  }): {
+    game: GameInstance;
+    color: "white" | "black";
+    newGame: boolean;
+  } {
+    const { user, opponent, gameType, fen, movesList, playerColor, createdAt } =
+      gameMetaData;
 
     let game = this.ongoingGames.find(
       (g) =>
-        g.student.username === student ||
-        g.mentor.username === mentor ||
-        user?.username === g.student.username ||
-        opponent?.username === g.opponent.username,
+        g.student?.username === student ||
+        g.mentor?.username === mentor ||
+        g.student?.username === user?.username ||
+        g.opponent?.username === opponent?.username,
     );
 
     if (game) {
-      console.log("already in a game");
-      if (role == "student" && game.student) {
+      if (role === "student" && game.student) {
         game.student.id = socketId;
-        return game;
-        // return { game, color: game.student.color, newGame: false };
-      } else if (role == "mentor" && game.mentor) {
+
+        return {
+          game,
+          color: game.student.color,
+          newGame: false,
+        };
+      }
+
+      if (role === "mentor" && game.mentor) {
         game.mentor.id = socketId;
-        return game;
-        // return { game, color: game.mentor.color, newGame: false };
-      } else if (gameMetaData.user?.username == game.student.username) {
+
+        return {
+          game,
+          color: game.mentor.color,
+          newGame: false,
+        };
+      }
+
+      if (user?.username === game.student?.username) {
         game.student.id = socketId;
-        return game;
-      } else if (
-        game.gameMetaData.opponent?.username == game.opponent.username
-      ) {
-        game.opponent.id = socketId;
-        return game;
+
+        return {
+          game,
+          color: game.student.color,
+          newGame: false,
+        };
+      }
+
+      if (opponent?.username === game.opponent?.username) {
+        if (game.opponent) {
+          game.opponent.id = socketId;
+        }
+
+        return {
+          game,
+          color: game.opponent?.color ?? "white",
+          newGame: false,
+        };
       }
     }
-    console.log("creating new game in game manager");
-    // Create a new game instance
     const board = new Chess();
 
-    if (gameMetaData?.fen) {
-      const validation = Chess.validateFen(fen);
+    if (fen) {
+      const validation = validateFen(fen);
+
       if (validation.ok) {
-        board.load(fen || "");
+        board.load(fen);
       } else {
-        console.error("Invalid FEN string skipped:", validation.error);
+        console.error("Invalid FEN:", validation.error);
       }
     }
 
     const studentColor: "white" | "black" =
       role === "student" ? "black" : "white";
+
     const mentorColor: "white" | "black" =
       role === "student" ? "white" : "black";
+
     if (!createdAt) {
-      const newGame = {
+      const newGame: GameInstance = {
         student: {
           username: student,
           id: role === "student" ? socketId : null,
           color: studentColor,
         },
-        mentor: {
-          username: mentor,
-          id: role === "mentor" ? socketId : null,
-          color: mentorColor as "black" | "white",
-        },
 
-        boardState: board,
-        pastStates: [],
-      };
-
-      this.ongoingGames.push(newGame);
-      return {
-        game: newGame,
-        color: role === "student" ? studentColor : mentorColor,
-        newGame: true,
-      };
-    } else if (gameMetaData.createdAt) {
-      const loadingGame = {
-        student: {
-          username: user?.username,
-          id: socketId,
-          color: playerColor,
-        },
         mentor: {
           username: mentor,
           id: role === "mentor" ? socketId : null,
           color: mentorColor,
         },
-        opponent: {
-          username: opponent?.username || "stockfish",
-          id: gameType == "computer" ? stockfishSocket : null,
-          color:
-            playerColor === "black" ? "white" : ("black" as "black" | "white"),
-        },
+
         boardState: board,
-        pastStates: movesList,
-        gameMetaData: gameMetaData,
+        pastStates: [],
+        gameMetaData,
       };
-      this.ongoingGames.push(loadingGame);
-      return loadingGame;
+
+      this.ongoingGames.push(newGame);
+
+      return {
+        game: newGame,
+        color: role === "student" ? studentColor : mentorColor,
+        newGame: true,
+      };
     }
+
+    const loadingGame: GameInstance = {
+      student: {
+        username: user?.username ?? student,
+        id: socketId,
+        color: playerColor ?? "white",
+      },
+
+      mentor: {
+        username: mentor,
+        id: role === "mentor" ? socketId : null,
+        color: mentorColor,
+      },
+
+      opponent: {
+        username: opponent?.username ?? "stockfish",
+        id: gameType === "computer" ? (stockfishSocketId ?? null) : null,
+        color: playerColor === "black" ? "white" : "black",
+      },
+
+      boardState: board,
+      pastStates: movesList ?? [],
+      gameMetaData,
+    };
+    console.log(this.ongoingGames);
+    this.ongoingGames.push(loadingGame);
+
+    return {
+      game: loadingGame,
+      color:
+        role === "student"
+          ? loadingGame.student.color
+          : loadingGame.mentor.color,
+      newGame: false,
+    };
   }
 
   /**
@@ -264,36 +294,44 @@ class GameManager {
    * @returns {Object} Updated board state, move details, and socket IDs
    */
   makeMove(socketId, moveFrom, moveTo, promotion) {
-    //Get the Game
+    console.log("ONGOINGGAMESSS", this.ongoingGames);
+    console.log("socketId", socketId);
     const game = this.getGameBySocketId(socketId);
+
     if (!game) {
+      console.log("ongoing games", this.ongoingGames);
       throw new Error("Game not found for this socket!");
     }
-
-    //Update the Game Here
+    console.log("found it!");
     const board = game.boardState;
-    const move = { from: moveFrom, to: moveTo, promotion: promotion ?? null };
-    //console.log(move, typeof(move), typeof(move)==='object');
+
+    const move = {
+      from: moveFrom,
+      to: moveTo,
+      ...(promotion ? { promotion } : {}),
+    };
+
     const moveResult = board.move(move);
-
-    console.log(moveResult);
-    const moveStr = promotion
-      ? `${move.from} -> ${move.to} (${move.promotion})`
-      : `${move.from} -> ${move.to}`;
-
-    if (game.gameMetaData.movesList) {
-      game.gameMetaData.movesList.push(moveStr);
-      game.gameMetaData.fen = board.fen();
-    }
 
     if (!moveResult) {
       throw new Error("Invalid move!");
     }
-    // Save board state
+
+    const moveStr = promotion
+      ? `${move.from} -> ${move.to} (${promotion})`
+      : `${move.from} -> ${move.to}`;
+
+    if (game.gameMetaData?.movesList) {
+      game.gameMetaData.movesList.push(moveStr);
+      game.gameMetaData.fen = board.fen();
+    }
+
     game.pastStates.push(board.fen());
 
-    const flags = moveResult.flags || ""; // e.g., 'c' capture, 'k'/'q' castle, 'e' en passant, 'p' promotion
+    const flags = moveResult.flags || "";
+
     const activityEvents = [];
+
     const captureMap = {
       q: "captureQueen",
       r: "captureRook",
@@ -302,10 +340,13 @@ class GameManager {
       p: "capturePawn",
     };
 
-    // Capture (including en passant)
     if (flags.includes("c") || flags.includes("e")) {
-      const capLetter = moveResult.captured; // 'q','r','n','b','p'
-      const name = capLetter ? captureMap[capLetter] : null;
+      const capLetter = moveResult.captured;
+
+      const name = capLetter
+        ? captureMap[capLetter as keyof typeof captureMap]
+        : null;
+
       if (name) {
         activityEvents.push({
           name,
@@ -318,33 +359,30 @@ class GameManager {
         });
       }
     }
-    // Castling
+
     if (flags.includes("k") || flags.includes("q")) {
       activityEvents.push({
         name: "performCastle",
-        meta: { san: moveResult.san },
+        meta: {
+          san: moveResult.san,
+        },
         at: Date.now(),
       });
     }
-    //console.log(activityEvents);
-    //console.log('student info',game.student);
-    //check for an outbound to send the game to so if the opponent is currently in the game we can send the board
 
-    //return the game to be used for client
     return {
       result: {
         boardState: board.fen(),
         move: moveResult,
-        studentId: game.student.id,
-        mentorId: game.mentor.id,
-        opponentId: game.opponent.id,
-        studentUsername: game.student.username,
+        studentId: game.student?.id ?? null,
+        mentorId: game.mentor?.id ?? null,
+        opponentId: game.opponent?.id ?? null,
+        studentUsername: game.student?.username ?? null,
         gameMetaData: game.gameMetaData,
       },
-      activityEvents: activityEvents,
+      activityEvents,
     };
   }
-
   /**
    * Undoes the last move in the game.
    * @param {*} socketId
@@ -450,6 +488,8 @@ class GameManager {
     const game = this.getGameBySocketId(socketId);
 
     if (!game) {
+      console.log("ongoign games", this.ongoingGames);
+
       throw new Error("Game not found for this socket!");
     }
 
@@ -473,6 +513,8 @@ class GameManager {
     const game = this.getGameBySocketId(socketId); // find the corresponding game of the client
 
     if (!game) {
+      console.log("ongoign games", this.ongoingGames);
+
       // if game does not exist
       throw new Error("Game not found for this socket!");
     }
@@ -558,9 +600,9 @@ class GameManager {
   getGameBySocketId(socketId) {
     return this.ongoingGames.find(
       (game) =>
-        game.student.id === socketId ||
-        game.mentor.id === socketId ||
-        game.opponent.id === socketId,
+        game.student.id == socketId ||
+        game.mentor.id == socketId ||
+        game.opponent.id == socketId,
     );
   }
 }

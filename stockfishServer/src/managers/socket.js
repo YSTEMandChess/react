@@ -12,7 +12,9 @@ const initializeSocket = (socket) => {
 
   socket.on("start-session", ({ sessionType, fen, gameSocket }) => {
     try {
-      stockfishManager.registerSession(socket, sessionType, fen, gameSocket);
+            console.log("game Socketttttt", gameSocket)
+
+      stockfishManager.registerSession(socket, sessionType, fen,undefined, gameSocket);
       socket.emit("session-started", { success: true, id: socket.id });
     } catch (err) {
       socket.emit("session-error", { error: err.message });
@@ -29,10 +31,10 @@ const initializeSocket = (socket) => {
   });
 
   // Request Stockfish to evaluate a position
-  socket.on("evaluate-fen",  (fen, move, level,gameSocket ) => {
-    console.log("yoooooooo",gameSocket, fen, move, level)
+  socket.on("evaluate-fen",  ({fen, move, level,gameSocket} ) => {
     try {
-      stockfishManager.evaluateFen(socket.id, gameSocket, fen, level);
+      console.log("game Socketttttt", gameSocket)
+      stockfishManager.evaluateFen(socket.id, gameSocket, fen, move, level);
     } catch (err) {
       socket.emit("evaluation-error", { error: err.message });
     }

@@ -37,6 +37,7 @@ export type User = {
  */
 const registerSocketHandlers = (socket, io, stockfish) => {
   console.log("A user connected to socket:", socket.id);
+  console.log("A user connected to stockfish:", stockfish.id);
 
   /**
    * Handles creating a new game or joining an existing one
@@ -45,78 +46,72 @@ const registerSocketHandlers = (socket, io, stockfish) => {
   //going to destucture to be able to to take new game data type
 
   socket.on("newgame", async (msg) => {
+    console.log("starting something new");
+
     try {
-      //Code for starting Games that will be saved
-      const {
-        student,
-        mentor,
-        role,
-        userId,
-        user,
-        opponent,
-        opponentId,
-        gameName,
-        gameType,
-        computerLevel,
-        fen,
-        movesList,
-        playerColor,
-        status,
-        createdAt,
-        updatedAt,
-      } = JSON.parse(msg);
+      const parsed = JSON.parse(msg);
 
-      const gameMetaData = {
-        userId,
-        user,
-        opponent,
-        opponentId,
-        gameName,
-        gameType,
-        computerLevel,
-        fen,
-        movesList,
-        playerColor,
-        status,
-        createdAt,
-        updatedAt,
-      } as GameMetaData;
+      const { student, mentor, role, current } = parsed;
 
-      if (gameType != "friend" || gameType != "mentor") {
-        const getStockfishSessionId = await startStockfish(
+      if (!current) {
+        throw new Error("No game metadata received.");
+      }
+
+      let gameMetaData: GameMetaData = {
+        userId: current.userId,
+        user: current.user,
+        opponent: current.opponent ?? stockfish.id,
+        opponentId: current.opponentId ?? stockfish.id,
+        gameName: current.gameName,
+        gameType: current.gameType,
+        computerLevel: current.computerLevel,
+        fen: current.fen,
+        movesList: current.movesList,
+        playerColor: current.playerColor,
+        status: current.status,
+        createdAt: current.createdAt,
+        updatedAt: current.updatedAt,
+      };
+
+      if (
+        gameMetaData.gameType === "computer" ||
+        gameMetaData.gameType === "guest"
+      ) {
+        const stockfishSessionId = await startStockfish(
           stockfish,
           gameMetaData,
         );
-        if (getStockfishSessionId) {
-          gameMetaData.opponentId = getStockfishSessionId;
-        } else {
+
+        if (!stockfishSessionId) {
           throw new Error("Can't get Stockfish to start session");
         }
+
+        gameMetaData.opponentId = stockfishSessionId;
       }
 
       const result = gameManager.createOrJoinGame({
         socketId: socket.id,
-        gameMetaData: gameMetaData,
-        student: student,
-        mentor: mentor,
-        stockfishSocket: stockfish,
-        role: role,
+        student,
+        mentor,
+        role,
+        stockfishSocketId: stockfish,
+        gameMetaData,
       });
-
-      if (result.gameType != "guest") {
-        console.log("saving new Game to backend");
+      if (result.game.gameMetaData.gameType !== "guest") {
         const res = await fetch(
           `${process.env.MIDDLEWARE_URL}/savedGames/addgame`,
           {
             method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify(gameMetaData),
           },
         );
         if (!res.ok) {
-          throw new Error("Did not Save the Game to the backend.");
+          throw new Error("Did not save the game to the backend.");
         }
       }
-
       socket.emit(
         "boardstate",
         JSON.stringify({
@@ -124,27 +119,29 @@ const registerSocketHandlers = (socket, io, stockfish) => {
           color: result.color,
         }),
       );
-    } catch (err) {
+    } catch (err: any) {
+      console.error(err);
       socket.emit("gameerror", err.message);
     }
   });
 
   const startStockfish = (stockfish: any, gameMetaData: GameMetaData) => {
+    console.log("connected?", stockfish.connected);
+    console.log("id", stockfish.id);
+
     return new Promise<string>((resolve, reject) => {
-      stockfish.emit("start-session", {
-        sessionType: "pvp",
-        fen: gameMetaData.fen,
-        gameSocket: socket,
-      });
-
-      stockfish.once("session-started", (msg: string) => {
-        const { success, id } = JSON.parse(msg);
-
+      stockfish.once("session-started", ({ success, id }) => {
         if (success) {
           resolve(id);
         } else {
           reject(new Error("Failed to start Stockfish session."));
         }
+      });
+
+      stockfish.emit("start-session", {
+        sessionType: "pvp",
+        fen: gameMetaData.fen,
+        gameSocket: socket.id,
       });
     });
   };
@@ -182,20 +179,21 @@ const registerSocketHandlers = (socket, io, stockfish) => {
       const { from, to, promotion, computerMove, username, credentials } =
         JSON.parse(msg);
 
-      const game = gameManager.getGameBySocketId(socket) as GameInstance;
+      const game = gameManager.getGameBySocketId(socket.id) as GameInstance;
       if (computerMove) {
         const fen = game.gameMetaData.fen;
         const level = game.gameMetaData.computerLevel;
+
         stockfish.emit("evaluate-fen", {
-          gameSocket: socket,
+          gameSocket: socket.id,
           fen: fen,
           level: level,
         });
       }
-
       if (from && to) {
         const res = await gameManager.makeMove(socket.id, from, to, promotion);
         const state = res.result;
+        console.log("state", state);
         const gameMetaData = state.gameMetaData as GameMetaData;
         gameManager.broadcastBoardState(res.result, io);
         console.log("Move: ", res);
@@ -281,17 +279,23 @@ const registerSocketHandlers = (socket, io, stockfish) => {
   });
 
   socket.on("evaluation-complete", async (data) => {
+    console.log("got that stockfish1");
+
     try {
       const { mode, move, moveDetails, newFEN, gameSocket } = data;
+      console.log("got that stockfish1");
 
       // Standardize socket ID lookup (handles data passing or active socket)
       const socketId = gameSocket?.id || socket.id;
+      console.log("got that stockfish2");
+
       const game = gameManager.getGameBySocketId(socketId) as GameInstance;
+      console.log("got that stockfish3");
 
       if (!game) {
         throw new Error("Game instance not found for the given socket ID.");
       }
-
+      console.log("got that stockfish4");
       // Process move execution if the evaluation returned a playable move
       if (mode === "move" && moveDetails) {
         const { from, to, promotion } = moveDetails;

@@ -58,7 +58,7 @@ class StockfishManager {
 
           continue;
         }
-
+console.log(session)
         if (!session.awaitingResponse) {
           continue;
         }
@@ -101,6 +101,7 @@ class StockfishManager {
           });
 
           session.awaitingResponse = false;
+          session.infoMode = false
           continue;
         }
 
@@ -143,12 +144,10 @@ class StockfishManager {
     const session = {
       id: crypto.randomUUID(),
 
-      // Stockfish data
       sessionType,
       stockfishSocket: socketId,
 
-      // Chess server socket
-      gameSocket,
+      gameSocket: gameSocket,
 
       gameFen: fen,
 
@@ -195,6 +194,7 @@ class StockfishManager {
 
   async evaluateFen(socketId,gameSocket, fen, move = "", level = 10, ) {
     const session = this.sessions.get(socketId);
+    session.infoMode= false
 
     console.log("Looking for Stockfish session:", socketId);
 

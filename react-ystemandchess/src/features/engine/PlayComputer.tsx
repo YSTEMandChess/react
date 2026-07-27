@@ -41,7 +41,7 @@ const PlayComputer: React.FC = () => {
   const [fen, setFen] = useState<string>(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   );
-  const [playerColor, setPlayerColor] = useState<"white" | "black">(null);
+  const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
   const [difficulty, setDifficulty] = useState<number>(10);
   const location = useLocation();
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
@@ -94,62 +94,6 @@ const PlayComputer: React.FC = () => {
     console.log("Logged in attempted");
   }, [cookies.login]);
 
-  useEffect(() => {
-    const chessSocket = useChessSocket({
-      student: gameMetaData.current?.user?.firstName || "",
-      serverUrl: environment.urls.chessServerURL,
-      onMove: onOpponentMove,
-      onLastMove: endGame,
-    });
-    chessSocketRef.current = chessSocket
-
-
-    resetGame();
-
-    loadGame();
-    setYourTurn(isPlayersTurn(fen, playerColor));
-    if (checkGameStatus()) return;
-  }, [location.key]);
-
-  useEffect(() => {
-    if (movesContainerRef.current) {
-      movesContainerRef.current.scrollTop =
-        movesContainerRef.current.scrollHeight;
-    }
-  }, [moveHistory]);
-
-
-  useEffect(() => {
-    if (!yourTurn ){
-      if (gameMetaData.current.gameType=="computer" || gameMetaData.current.gameType=="guest"){
-         const moveType: Move ={
-          from: null,
-  to: null,
-  promotion: null,
-  piece: null,
-  captured: null,
-  flags: null,
-  computerMove: true,
-  username: gameMetaData.current.user.username }
-        
-        chessSocketRef?.current.sendMove(moveType);
-      }
-    }
-  }, [yourTurn]);
-
- 
-const isPlayersTurn = (
-  fen: string,
-  playerColor: "white" | "black",
-): boolean => {
-  const turn = fen.split(" ")[1]; // "w" or "b"
-
-  return (
-    (turn === "w" && playerColor === "white") ||
-    (turn === "b" && playerColor === "black")
-  );
-};
-
   const onOpponentMove = (data: { fen: string; move?: Move }) => {
     if (!yourTurn) {
       const moveResult = gameRef.current.move({
@@ -169,14 +113,101 @@ const isPlayersTurn = (
       setMoveHistory((prev) => [...prev, moveStr]);
       if (checkGameStatus()) return;
 
-      gameMetaData.current.movesList = moveHistory;
-      gameMetaData.current.fen = gameRef.current.fen();
-      gameMetaData.current.updatedAt = Date.now().toString();
-      chessSocketRef?.current.saveGame(gameMetaData.current);
+      if (gameMetaData.current) {
+        gameMetaData.current.movesList = moveHistory;
+        gameMetaData.current.fen = gameRef.current.fen();
+        gameMetaData.current.updatedAt = Date.now().toString();
+        chessSocketRef?.current.saveGame(gameMetaData.current);
+      }
     } else {
       console.log("Not the Opponent's turn");
     }
   };
+const endGame = (outcome: "won" | "lost" | "ongoing" | "draw") => {
+    if (location.state && gameMetaData.current) {
+      gameMetaData.current.status = outcome;
+      chessSocketRef?.current.saveGame(gameMetaData.current);
+      chessSocketRef?.current.endGame();
+      return;
+    } else {
+      return;
+    }
+  };
+
+const chessSocket = useChessSocket({
+  student: gameMetaData.current?.user?.firstName || "",
+  serverUrl: environment.urls.chessServer,
+  onMove: onOpponentMove,
+  onLastMove: endGame,
+});
+useEffect(() => {
+
+  const initializeGame = async () => {
+    chessSocketRef.current = chessSocket;
+
+    resetGame();
+    await loadGame();
+
+    console.log(location);
+    console.log(gameMetaData);
+
+    checkGameStatus();
+  };
+
+  initializeGame();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [location.key]);
+
+  useEffect(() => {
+    if (movesContainerRef.current) {
+      movesContainerRef.current.scrollTop =
+        movesContainerRef.current.scrollHeight;
+    }
+  }, [moveHistory]);
+
+useEffect(() => {
+  if (!fen) return;
+
+  setYourTurn(isPlayersTurn(fen, playerColor));
+}, [fen, playerColor]);
+
+  useEffect(() => {
+    if (yourTurn === false) {
+      console.log("requesting move")
+
+      if (gameMetaData.current?.gameType === "computer" || gameMetaData.current?.gameType === "guest") {
+        const moveType: Move = {
+          from: null,
+          to: null,
+          promotion: null,
+          piece: null,
+          captured: null,
+          flags: null,
+          computerMove: true,
+          username: gameMetaData.current?.user?.username ?? "",
+        };
+
+        chessSocketRef?.current.sendMove(moveType);
+      }
+    }
+  }, [yourTurn]);
+
+ 
+const isPlayersTurn = (
+  fen: string,
+  playerColor: "white" | "black",
+): boolean => {
+  const turn = fen.split(" ")[1]; // "w" or "b"
+
+  return (
+    (turn === "w" && playerColor === "white") ||
+    (turn === "b" && playerColor === "black")
+  );
+};
+
+  
+  
 
   const handleMove = useCallback((move: Move) => {
     if (yourTurn) {
@@ -199,19 +230,23 @@ const isPlayersTurn = (
 
         if (checkGameStatus()) return;
 
-        gameMetaData.current.movesList = moveHistory;
-        gameMetaData.current.fen = fen;
-        gameMetaData.current.updatedAt = Date.now().toString();
-        const moveType: Move ={
+        if (gameMetaData.current) {
+          gameMetaData.current.movesList = moveHistory;
+          gameMetaData.current.fen = newFen;
+          gameMetaData.current.updatedAt = Date.now().toString();
+        }
+
+        const moveType: Move = {
           from: moveResult.from,
-  to: moveResult.to,
-  promotion: moveResult.promotion,
-  piece: moveResult.piece,
-  captured: moveResult.captured,
-  flags: moveResult.flags,
-  computerMove: false,
-  username: gameMetaData.current.user.username      }
-        
+          to: moveResult.to,
+          promotion: moveResult.promotion,
+          piece: moveResult.piece,
+          captured: moveResult.captured,
+          flags: moveResult.flags,
+          computerMove: false,
+          username: gameMetaData.current?.user?.username ?? "",
+        };
+
         chessSocketRef?.current.sendMove(moveType);
         setYourTurn((prev) => !prev);
       } catch (error) {
@@ -220,7 +255,7 @@ const isPlayersTurn = (
     } else {
       console.log("It's not your turn");
     }
-  }, []);
+  }, [yourTurn, moveHistory]);
 
 
   const checkGameStatus = useCallback((): boolean => {
@@ -269,7 +304,7 @@ const isPlayersTurn = (
     setHighlightSquares([]);
     setYourTurn(null);
     setShowGameEndModal(false);
-    setPlayerColor(null)
+    setPlayerColor("white")
     if (chessSocketRef) {
       chessSocketRef.current.mentorRef = ""
       chessSocketRef.current.studentRef = ""
@@ -281,19 +316,11 @@ const isPlayersTurn = (
   }, []);
 
 
-  const endGame = (outcome: "won" | "lost" | "ongoing" | "draw") => {
-    if (location.state && gameMetaData.current) {
-      gameMetaData.current.status = outcome;
-      chessSocketRef?.current.saveGame(gameMetaData.current);
-      chessSocketRef?.current.endGame();
-      return;
-    } else {
-      return;
-    }
-  };
 
   const loadGame = async () => {
-    const defaultGame : GameMetaData= {userId: null,
+    console.log("callign startnewgame1")
+
+    const defaultGame : GameMetaData= location.state ?? {userId: null,
     user:null,
     opponent: null,
     uuid: null,
@@ -305,16 +332,17 @@ const isPlayersTurn = (
     movesList: [],
     playerColor: playerColor,
     status: "ongoing",
-    createdAt: Date.now.toString(),
-  updatedAt:Date.now.toString() }
+    createdAt: Date.now().toString(),
+  updatedAt: Date.now().toString() }
 
     gameMetaData.current= defaultGame
-    
+
     if (location.state) {
       const savedMeta: GameMetaData = location.state;
-      const newGame : GameMetaData = await chessSocketRef?.current.getMostRecentGameInfo(savedMeta);
-      applyGameState(newGame);
+
+      applyGameState(savedMeta);
     } else if (user.current) {
+
       const newGame: GameMetaData = {
         userId: user.current.id,
         user: user.current,
@@ -328,11 +356,13 @@ const isPlayersTurn = (
         createdAt: Date.now().toString(),
         updatedAt: Date.now().toString(),
       };
+
       chessSocketRef?.current.saveNewGame(newGame);
       applyGameState(newGame);
+
     }
     chessSocketRef.current.startNewGame(gameMetaData);
-    //edit start new game to take gameMetadata 
+
   };
 
   const applyGameState = (game: GameMetaData) => {
@@ -347,9 +377,10 @@ const isPlayersTurn = (
     setGameEndMessage("");
     location.state = game
     chessSocketRef.current.mentorRef = ""
-    chessSocketRef.current.studentRef = game.user?.username
+    chessSocketRef.current.studentRef = game.user?.username ?? ""
     chessSocketRef.current.roleRef = "student"
     gameMetaData.current=game
+    return
   };
 
   const undoMove = useCallback(() => {
