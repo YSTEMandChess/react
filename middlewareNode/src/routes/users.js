@@ -64,7 +64,7 @@ router.get("/children", passport.authenticate("jwt"), async (req, res) => {
       //Find all children for the parent user and retrieve only the username and timePlayed field
       const childrenArray = await users
         .find({ parentUsername: username })
-        .select(["timePlayed", "username"]);
+        .select(["timePlayed", "username", "firstName", "lastName"]);
       res.status(200).json(childrenArray);
     }
   } catch (error) {
@@ -93,7 +93,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, password, first, last, email, role, students, zipcode, gender, gradeLevel } =
+    const { username, password, first, last, email, role, students, zipcode, gender, gradeLevel, occupation } =
       req.query;
 
     //Error catching when using mongoose functions like Users.findOne()
@@ -113,7 +113,7 @@ router.post(
 
       //Switch statement for functionality depending on role
       if (role === "parent") {
-        let studentsArray = JSON.parse(students);
+        let studentsArray = students ? JSON.parse(students) : [];
         //Check if students array is present and is populated
         if (studentsArray && studentsArray.length > 0) {
           //Ensure student usernames aren't already in the database
@@ -178,6 +178,7 @@ router.post(
         zipcode: zipcode || null,
         gender: gender || null,
         gradeLevel: gradeLevel || null,
+        occupation: occupation || null,
       });
       await mainUser.save();
 
@@ -209,7 +210,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, password, first, last, email } = req.query;
+    const { username, password, first, last, email, birthday, gender, gradeLevel } = req.query;
 
     try {
       const sha384 = crypto.createHash("sha384");
@@ -234,9 +235,26 @@ router.post(
         parentUsername: req.user.username,
         role: "student",
         accountCreatedAt: currDate.toLocaleString(),
+        birthday: birthday || null,
+        gender: gender || null,
+        gradeLevel: gradeLevel || null,
         recordingList: [],
       });
-      await newStudent.save();
+      const savedStudent = await newStudent.save();
+
+      //Seed default activities for the new student, best effort so it never blocks account creation
+      try {
+        const newActivities = await selectActivities();
+        const activitiesEntry = new Activities({
+          userId: savedStudent.id,
+          activities: newActivities,
+          completedDates: [],
+        });
+        await activitiesEntry.save();
+      } catch (activitiesError) {
+        console.error("Error creating activities for student: ", activitiesError.message);
+      }
+
       return res.status(200).json("Added student");
     } catch (error) {
       console.error(error.message);

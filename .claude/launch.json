@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "react-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "react-ystemandchess"],
+      "port": 3000
+    }
+  ]
+}

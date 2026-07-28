@@ -151,14 +151,25 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     const uInfo = await SetPermissionLevel(cookies);
     if (uInfo.error) {
       navigate("/login");
+      return;
+    }
+    // A parent can open a specific child's profile via ?student=<username>
+    const params = new URLSearchParams(window.location.search);
+    const studentParam = params.get("student");
+    const targetUsername = studentParam || uInfo.username;
+
+    setUsername(targetUsername);
+    if (studentParam) {
+      setFirstName(params.get("name") || studentParam);
+      setLastName("");
     } else {
-      setUsername(uInfo.username);
       setFirstName(uInfo.firstName);
       setLastName(uInfo.lastName);
     }
-    fetchUsageTime(uInfo.username);
-    fetchGraphData(uInfo.username);
-    fetchActivity(uInfo.username);
+
+    fetchUsageTime(targetUsername);
+    fetchGraphData(targetUsername);
+    fetchActivity(targetUsername);
   }
 
   // Fetch mentor data
