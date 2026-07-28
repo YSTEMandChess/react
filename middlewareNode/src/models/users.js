@@ -70,6 +70,12 @@ const usersSchema = new mongoose.Schema(
     // Profile avatar — S3 object key (not a full URL) so the bucket/region
     // can change without a data migration. Presigned URLs are generated on read.
     avatarKey:  { type: String, default: null },
+    // Tracks the user's highest ever Puzzle Streak
+    highestStreak: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   { versionKey: false },
 );

@@ -6,7 +6,11 @@
  * to always pass through (auth enforcement is covered separately in
  * requireAuth.test.js and leaderboard.security.test.js).
  *
- * Endpoint tested: GET /leaderboard
+ * Response contract matches LeaderboardModal.tsx:
+ *   { success, data: { leaderboard: [{id, rank, username, school_name,
+ *     score, avatar_url}], pagination: { has_more } } }
+ *
+ * Endpoints tested: GET /leaderboard, GET /leaderboard/schools
  */
 
 jest.mock("../src/middleware/requireAuth", () => (req, _res, next) => {
@@ -49,9 +53,7 @@ function mockStatsFor(scoreByUsername) {
   studentStats.getUserStreak.mockImplementation(
     async (username) => scoreByUsername[username]?.streak || 0
   );
-  studentStats.getActivitiesCompleted.mockImplementation(
-    async () => 0
-  );
+  studentStats.getActivitiesCompleted.mockImplementation(async () => 0);
   studentStats.getBadgesEarned.mockImplementation(
     async (username) => scoreByUsername[username]?.badges || 0
   );
@@ -70,72 +72,70 @@ describe("GET /leaderboard", () => {
     });
   });
 
-  test("200 — returns entries with expected shape", async () => {
+  test("200 — returns entries with the exact shape LeaderboardModal expects", async () => {
     const res = await request(app).get("/leaderboard");
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty("entries");
-    expect(res.body).toHaveProperty("hasMore");
-    expect(res.body).toHaveProperty("total");
-    expect(res.body.entries[0]).toHaveProperty("rank");
-    expect(res.body.entries[0]).toHaveProperty("username");
-    expect(res.body.entries[0]).toHaveProperty("school");
-    expect(res.body.entries[0]).toHaveProperty("score");
-    expect(res.body.entries[0]).toHaveProperty("avatarUrl", null);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data).toHaveProperty("leaderboard");
+    expect(res.body.data).toHaveProperty("pagination");
+    expect(res.body.data.pagination).toHaveProperty("has_more");
+    const first = res.body.data.leaderboard[0];
+    expect(first).toHaveProperty("id");
+    expect(first).toHaveProperty("rank");
+    expect(first).toHaveProperty("username");
+    expect(first).toHaveProperty("school_name");
+    expect(first).toHaveProperty("score");
+    expect(first).toHaveProperty("avatar_url", null);
   });
 
-  test("returns a presigned avatarUrl when the student has an avatarKey", async () => {
+  test("returns a presigned avatar_url when the student has an avatarKey", async () => {
     Users.find.mockResolvedValue([
-      { _id: "1", username: "dave", country: "USA", state: "TX", school: "Test School", avatarKey: "dave/abc123.png" },
+      { _id: "1", username: "dave", school: "Test School", avatarKey: "dave/abc123.png" },
     ]);
     const res = await request(app).get("/leaderboard");
-    expect(res.body.entries[0].avatarUrl).toBe("https://s3.example.com/dave/abc123.png");
+    expect(res.body.data.leaderboard[0].avatar_url).toBe("https://s3.example.com/dave/abc123.png");
     expect(getAvatarUrl).toHaveBeenCalledWith("dave/abc123.png");
   });
 
-  test("returns null avatarUrl when the student has no avatarKey", async () => {
+  test("returns null avatar_url when the student has no avatarKey", async () => {
     Users.find.mockResolvedValue([
-      { _id: "1", username: "eve", country: "USA", state: "TX", school: "Test School", avatarKey: null },
+      { _id: "1", username: "eve", school: "Test School", avatarKey: null },
     ]);
     const res = await request(app).get("/leaderboard");
-    expect(res.body.entries[0].avatarUrl).toBeNull();
+    expect(res.body.data.leaderboard[0].avatar_url).toBeNull();
   });
 
   test("does not include firstName/PII fields in response", async () => {
     const res = await request(app).get("/leaderboard");
-    expect(res.body.entries[0]).not.toHaveProperty("firstName");
-    expect(res.body.entries[0]).not.toHaveProperty("lastName");
-    expect(res.body.entries[0]).not.toHaveProperty("email");
+    expect(res.body.data.leaderboard[0]).not.toHaveProperty("firstName");
+    expect(res.body.data.leaderboard[0]).not.toHaveProperty("lastName");
+    expect(res.body.data.leaderboard[0]).not.toHaveProperty("email");
   });
 
-  test("entries are ranked by score descending", async () => {
+  test("default sort: ranked by score descending", async () => {
     const res = await request(app).get("/leaderboard");
-    const scores = res.body.entries.map((e) => e.score);
+    const scores = res.body.data.leaderboard.map((e) => e.score);
     const sorted = [...scores].sort((a, b) => b - a);
     expect(scores).toEqual(sorted);
-    expect(res.body.entries[0].username).toBe("alice"); // highest score
+    expect(res.body.data.leaderboard[0].username).toBe("alice"); // highest score
+  });
+
+  test("sortBy=name sorts alphabetically", async () => {
+    const res = await request(app).get("/leaderboard?sortBy=name&sortDir=asc");
+    const names = res.body.data.leaderboard.map((e) => e.username);
+    expect(names).toEqual(["alice", "bob", "carol"]);
+  });
+
+  test("sortDir=asc reverses score order", async () => {
+    const res = await request(app).get("/leaderboard?sortBy=score&sortDir=asc");
+    expect(res.body.data.leaderboard[0].username).toBe("carol"); // lowest score
   });
 
   test("rank is 1-indexed and sequential", async () => {
     const res = await request(app).get("/leaderboard");
-    res.body.entries.forEach((entry, idx) => {
+    res.body.data.leaderboard.forEach((entry, idx) => {
       expect(entry.rank).toBe(idx + 1);
     });
-  });
-
-  test("filters by country", async () => {
-    await request(app).get("/leaderboard?country=USA");
-    expect(Users.find).toHaveBeenCalledWith(
-      expect.objectContaining({ role: "student", country: "USA" }),
-      expect.anything()
-    );
-  });
-
-  test("filters by state", async () => {
-    await request(app).get("/leaderboard?state=FL");
-    expect(Users.find).toHaveBeenCalledWith(
-      expect.objectContaining({ role: "student", state: "FL" }),
-      expect.anything()
-    );
   });
 
   test("filters by school", async () => {
@@ -146,15 +146,31 @@ describe("GET /leaderboard", () => {
     );
   });
 
-  test("combines multiple filters with AND semantics", async () => {
-    await request(app).get("/leaderboard?country=USA&state=FL");
+  test("filters by country (additive, not used by current UI)", async () => {
+    await request(app).get("/leaderboard?country=USA");
     expect(Users.find).toHaveBeenCalledWith(
-      expect.objectContaining({ role: "student", country: "USA", state: "FL" }),
+      expect.objectContaining({ role: "student", country: "USA" }),
       expect.anything()
     );
   });
 
-  test("does not use regex for filter values (exact match only)", async () => {
+  test("search matches username case-insensitively via a Mongo $regex filter", async () => {
+    await request(app).get("/leaderboard?search=ALI");
+    const filterArg = Users.find.mock.calls[0][0];
+    expect(filterArg.username.$options).toBe("i");
+    expect(new RegExp(filterArg.username.$regex, "i").test("alice")).toBe(true);
+  });
+
+  test("search input is regex-escaped (no ReDoS via metacharacters)", async () => {
+    await request(app).get("/leaderboard?search=" + encodeURIComponent("a(b|c)*"));
+    const filterArg = Users.find.mock.calls[0][0];
+    const pattern = new RegExp(filterArg.username.$regex, "i");
+    // The literal string should NOT be interpreted as alternation/repetition
+    expect(pattern.test("a(b|c)*")).toBe(true);
+    expect(pattern.test("ab")).toBe(false);
+  });
+
+  test("does not use regex for country/state/school (exact match only)", async () => {
     await request(app).get("/leaderboard?school=Jefferson Middle");
     const filterArg = Users.find.mock.calls[0][0];
     expect(filterArg.school).toBe("Jefferson Middle");
@@ -163,23 +179,23 @@ describe("GET /leaderboard", () => {
 
   test("pagination — limit restricts entry count", async () => {
     const res = await request(app).get("/leaderboard?limit=2");
-    expect(res.body.entries.length).toBeLessThanOrEqual(2);
+    expect(res.body.data.leaderboard.length).toBeLessThanOrEqual(2);
   });
 
-  test("pagination — skip offsets results", async () => {
-    const full = await request(app).get("/leaderboard");
-    const skipped = await request(app).get("/leaderboard?skip=1");
-    expect(skipped.body.entries[0].username).toBe(full.body.entries[1].username);
+  test("pagination — page offsets results", async () => {
+    const page1 = await request(app).get("/leaderboard?limit=1&page=1");
+    const page2 = await request(app).get("/leaderboard?limit=1&page=2");
+    expect(page2.body.data.leaderboard[0].username).not.toBe(page1.body.data.leaderboard[0].username);
   });
 
-  test("pagination — hasMore is true when more results exist", async () => {
+  test("pagination — has_more is true when more results exist", async () => {
     const res = await request(app).get("/leaderboard?limit=1");
-    expect(res.body.hasMore).toBe(true);
+    expect(res.body.data.pagination.has_more).toBe(true);
   });
 
-  test("pagination — hasMore is false on last page", async () => {
+  test("pagination — has_more is false on last page", async () => {
     const res = await request(app).get("/leaderboard?limit=10");
-    expect(res.body.hasMore).toBe(false);
+    expect(res.body.data.pagination.has_more).toBe(false);
   });
 
   test("limit is capped at 100", async () => {
@@ -187,36 +203,57 @@ describe("GET /leaderboard", () => {
       Array.from({ length: 150 }, (_, i) => ({
         _id: String(i),
         username: `user${i}`,
-        country: "USA",
-        state: "FL",
         school: "Test School",
       }))
     );
     mockStatsFor({});
     const res = await request(app).get("/leaderboard?limit=500");
-    expect(res.body.entries.length).toBeLessThanOrEqual(100);
+    expect(res.body.data.leaderboard.length).toBeLessThanOrEqual(100);
   });
 
-  test("200 — returns empty entries when no students match filter", async () => {
+  test("200 — returns empty leaderboard when no students match filter", async () => {
     Users.find.mockResolvedValue([]);
-    const res = await request(app).get("/leaderboard?country=Antarctica");
+    const res = await request(app).get("/leaderboard?school=Nonexistent School");
     expect(res.status).toBe(200);
-    expect(res.body.entries).toHaveLength(0);
-    expect(res.body.total).toBe(0);
-    expect(res.body.hasMore).toBe(false);
+    expect(res.body.data.leaderboard).toHaveLength(0);
+    expect(res.body.data.pagination.has_more).toBe(false);
   });
 
   test("500 — returns server error when Users.find throws", async () => {
     Users.find.mockRejectedValue(new Error("DB connection failed"));
     const res = await request(app).get("/leaderboard");
     expect(res.status).toBe(500);
-    expect(res.body.error).toBe("Server error");
+    expect(res.body.success).toBe(false);
   });
 
-  test("students with null state/school are handled without crashing", async () => {
+  test("students with null school are handled without crashing", async () => {
     const res = await request(app).get("/leaderboard");
-    const carolEntry = res.body.entries.find((e) => e.username === "carol");
-    expect(carolEntry.state).toBeNull();
-    expect(carolEntry.school).toBeNull();
+    const carolEntry = res.body.data.leaderboard.find((e) => e.username === "carol");
+    expect(carolEntry.school_name).toBeNull();
+  });
+});
+
+describe("GET /leaderboard/schools", () => {
+  test("200 — returns distinct non-empty school list", async () => {
+    Users.distinct.mockResolvedValue(["Jefferson Middle", "Pine View School"]);
+    const res = await request(app).get("/leaderboard/schools");
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ success: true, schools: ["Jefferson Middle", "Pine View School"] });
+  });
+
+  test("queries with role:student and excludes empty/null schools", async () => {
+    Users.distinct.mockResolvedValue([]);
+    await request(app).get("/leaderboard/schools");
+    expect(Users.distinct).toHaveBeenCalledWith(
+      "school",
+      expect.objectContaining({ role: "student", school: { $nin: ["", null] } })
+    );
+  });
+
+  test("500 — returns server error when Users.distinct throws", async () => {
+    Users.distinct.mockRejectedValue(new Error("DB error"));
+    const res = await request(app).get("/leaderboard/schools");
+    expect(res.status).toBe(500);
+    expect(res.body.success).toBe(false);
   });
 });

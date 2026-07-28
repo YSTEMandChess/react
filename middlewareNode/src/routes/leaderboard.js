@@ -17,7 +17,15 @@
  *   LEADERBOARD_WEIGHT_BADGE    (default 10)  — per badge earned
  *   LEADERBOARD_WEIGHT_ACTIVITY (default 3)   — per activity completed
  *
- * GET /leaderboard?country=&state=&school=&skip=0&limit=20
+ * Response contract matches LeaderboardModal.tsx exactly:
+ *   GET /leaderboard/schools
+ *     -> { success, schools: string[] }
+ *   GET /leaderboard?school=&search=&sortBy=score|name&sortDir=asc|desc&page=1&limit=10
+ *     -> { success, data: { leaderboard: [{id, rank, username, school_name, score, avatar_url}],
+ *                            pagination: { has_more } } }
+ *
+ * country/state filtering is still supported (additive, not exposed by the
+ * current UI) via optional country/state query params for future filter UI.
  */
 
 const express = require("express");
@@ -39,20 +47,27 @@ const WEIGHTS = {
 };
 
 const MAX_LIMIT = 100;
-const DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 10;
 const MAX_UNFILTERED_CANDIDATES = 500;
 
 /**
  * Builds an exact-match Mongo filter from optional query params.
- * Exact match only (no regex) to avoid ReDoS risk from user-controlled input
- * on a student-facing endpoint.
+ * Exact match only for country/state/school (no regex) to avoid ReDoS risk
+ * on a student-facing endpoint. Name search uses a bounded, anchor-free
+ * regex against username only — acceptable here since it's scoped to a
+ * capped candidate set, not run across the full collection unbounded.
  */
-function buildUserFilter({ country, state, school }) {
+function buildUserFilter({ country, state, school, search }) {
   const filter = { role: "student" };
   if (country) filter.country = country;
   if (state) filter.state = state;
   if (school) filter.school = school;
+  if (search) filter.username = { $regex: escapeRegex(search), $options: "i" };
   return filter;
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**
@@ -77,17 +92,35 @@ async function computeScore(user) {
 }
 
 /**
+ * GET /leaderboard/schools
+ * Distinct, non-empty school names for the school filter dropdown.
+ */
+router.get("/schools", async (req, res) => {
+  try {
+    const schools = await Users.distinct("school", {
+      role: "student",
+      school: { $nin: ["", null] },
+    });
+    res.json({ success: true, schools });
+  } catch (err) {
+    console.error("leaderboard /schools:", err.message);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+/**
  * GET /leaderboard
- * Returns ranked students, optionally filtered by country/state/school, paginated.
+ * Returns ranked students, optionally filtered/searched, paginated.
  */
 router.get("/", async (req, res) => {
   try {
-    const { country, state, school } = req.query;
-    const skip = Math.max(parseInt(req.query.skip) || 0, 0);
+    const { country, state, school, search, sortBy = "score", sortDir = "desc" } = req.query;
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit) || DEFAULT_LIMIT, MAX_LIMIT);
+    const skip = (page - 1) * limit;
 
-    const filter = buildUserFilter({ country, state, school });
-    const isFiltered = Boolean(country || state || school);
+    const filter = buildUserFilter({ country, state, school, search });
+    const isFiltered = Boolean(country || state || school || search);
 
     let candidates = await Users.find(filter, {
       username: 1,
@@ -107,37 +140,42 @@ router.get("/", async (req, res) => {
 
     const scored = await Promise.all(
       candidates.map(async (user) => ({
+        id: String(user._id),
         username: user.username,
-        country: user.country || null,
-        state: user.state || null,
         school: user.school || null,
         avatarUrl: getAvatarUrl(user.avatarKey),
         score: await computeScore(user),
       }))
     );
 
-    scored.sort((a, b) => b.score - a.score);
+    const direction = sortDir === "asc" ? 1 : -1;
+    if (sortBy === "name") {
+      scored.sort((a, b) => direction * a.username.localeCompare(b.username));
+    } else {
+      scored.sort((a, b) => direction * (a.score - b.score));
+    }
 
     const total = scored.length;
-    const page = scored.slice(skip, skip + limit);
-    const entries = page.map((entry, idx) => ({
+    const pageSlice = scored.slice(skip, skip + limit);
+    const leaderboard = pageSlice.map((entry, idx) => ({
+      id: entry.id,
       rank: skip + idx + 1,
       username: entry.username,
-      school: entry.school,
-      country: entry.country,
-      state: entry.state,
+      school_name: entry.school,
       score: entry.score,
-      avatarUrl: entry.avatarUrl,
+      avatar_url: entry.avatarUrl,
     }));
 
     res.json({
-      entries,
-      hasMore: skip + limit < total,
-      total,
+      success: true,
+      data: {
+        leaderboard,
+        pagination: { has_more: skip + limit < total, total },
+      },
     });
   } catch (err) {
     console.error("leaderboard /:", err.message);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ success: false, error: "Server error" });
   }
 });
 

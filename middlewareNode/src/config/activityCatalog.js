@@ -10,36 +10,40 @@
  * not a synchronized change across backend and frontend.
  */
 
+// Routes must match real entries in react-ystemandchess/src/AppRoutes.tsx —
+// there is no per-puzzle deep link today, so all puzzle-type activities land
+// on the flat /puzzles page (same granularity the frontend's own type-based
+// routing used before this catalog existed).
 const activityCatalog = {
   captureQueen: {
     taskId: "captureQueen",
     displayName: "Capture a Queen",
-    route: "/puzzles/capture-queen",
+    route: "/puzzles",
   },
   captureRook: {
     taskId: "captureRook",
     displayName: "Capture a Rook",
-    route: "/puzzles/capture-rook",
+    route: "/puzzles",
   },
   captureKnight: {
     taskId: "captureKnight",
     displayName: "Capture a Knight",
-    route: "/puzzles/capture-knight",
+    route: "/puzzles",
   },
   captureBishop: {
     taskId: "captureBishop",
     displayName: "Capture a Bishop",
-    route: "/puzzles/capture-bishop",
+    route: "/puzzles",
   },
   capturePawn: {
     taskId: "capturePawn",
     displayName: "Capture a Pawn",
-    route: "/puzzles/capture-pawn",
+    route: "/puzzles",
   },
   performCastle: {
     taskId: "performCastle",
     displayName: "Perform a Castle",
-    route: "/puzzles/perform-castle",
+    route: "/puzzles",
   },
   playMatch: {
     taskId: "playMatch",
@@ -49,7 +53,7 @@ const activityCatalog = {
   attendSession: {
     taskId: "attendSession",
     displayName: "Attend a Session",
-    route: "/mentor/sessions",
+    route: "/mentor",
   },
 };
 
@@ -64,7 +68,7 @@ function getActivityCatalogEntry(name) {
     activityCatalog[name] || {
       taskId: name,
       displayName: name,
-      route: "/dashboard",
+      route: "/student",
     }
   );
 }

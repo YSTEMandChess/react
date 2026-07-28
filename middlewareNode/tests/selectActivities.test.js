@@ -59,7 +59,7 @@ describe("selectActivities", () => {
     ]);
     const activities = await selectActivities();
     const queenActivity = activities.find((a) => a.name === "captureQueen");
-    expect(queenActivity.route).toBe("/puzzles/capture-queen");
+    expect(queenActivity.route).toBe("/puzzles");
     expect(queenActivity.taskId).toBe("captureQueen");
   });
 

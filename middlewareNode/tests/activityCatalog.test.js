@@ -29,14 +29,14 @@ describe("getActivityCatalogEntry", () => {
     const entry = getActivityCatalogEntry("captureQueen");
     expect(entry.taskId).toBe("captureQueen");
     expect(entry.displayName).toBe("Capture a Queen");
-    expect(entry.route).toBe("/puzzles/capture-queen");
+    expect(entry.route).toBe("/puzzles");
   });
 
   test("returns a fallback entry for an unknown activity name (not undefined)", () => {
     const entry = getActivityCatalogEntry("someFutureActivity");
     expect(entry).toBeDefined();
     expect(entry.taskId).toBe("someFutureActivity");
-    expect(entry.route).toBe("/dashboard");
+    expect(entry.route).toBe("/student");
   });
 
   test("fallback entry still has all required fields", () => {

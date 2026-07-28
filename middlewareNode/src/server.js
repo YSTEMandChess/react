@@ -1,5 +1,4 @@
 // Main server configuration for the Node.js middleware API
-require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const connectDB = require("./config/db");

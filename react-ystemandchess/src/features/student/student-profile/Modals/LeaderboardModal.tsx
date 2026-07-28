@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useCookies } from "react-cookie";
 import "./LeaderboardModal.scss";
 import { ReactComponent as LeaderboardIcon } from "../../../../assets/images/student/leaderboard_sidebar_icon.svg";
+import { environment } from "../../../../environments/environment";
 
 import rank1Img from "../../../../assets/images/student/Leaderboard_rank_1.svg";
 import rank2Img from "../../../../assets/images/student/Leaderboard_rank_2.svg";
 import rank3Img from "../../../../assets/images/student/Leaderboard_rank_3.svg";
 
-// AVATAR IMAGES
 import avatar1 from "../../../../assets/images/student/Leaderboard_User_avatar_1.png";
 import avatar2 from "../../../../assets/images/student/Leaderboard_User_avatar_2.png";
 import avatar3 from "../../../../assets/images/student/Leaderboard_User_avatar_3.png";
@@ -15,68 +16,133 @@ import avatarAll from "../../../../assets/images/student/Leaderboard_User_avatar
 type Props = { onClose: () => void };
 
 type Row = {
+  id: string;
   rank: number;
   name: string;
   school: string;
   score: number;
+  avatar_url: string | null;
 };
 
 const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
+  const [cookies] = useCookies(['login']);
+
+  // --- UI STATE ---
+  const [rows, setRows] = useState<Row[]>([]);
+  const [schoolsList, setSchoolsList] = useState<string[]>([]);
+  
+  // --- FILTER & SORT STATE ---
+  const [school, setSchool] = useState("All Schools");
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("score"); // 'score' or 'name'
+  const [sortDir, setSortDir] = useState("desc"); // 'asc' or 'desc'
+  
+  // --- PAGINATION STATE ---
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Close modal logic
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
   };
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // SAMPLE DATA
-  const rows: Row[] = [
-    { rank: 1, name: "princel04", school: "Jefferson Middle", score: 3882 },
-    { rank: 2, name: "jesse_chess", school: "Pine View School", score: 3790 },
-    { rank: 3, name: "mary_rose", school: "Archimedean Middle Conservatory", score: 3780 },
-    { rank: 4, name: "user_name", school: "school-name", score: 3680 },
-    { rank: 5, name: "user_name", school: "school-name", score: 3480 },
-    { rank: 6, name: "user_name", school: "school-name", score: 3110 },
-    { rank: 7, name: "user_name", school: "school-name", score: 2950 },
-    { rank: 8, name: "user_name", school: "school-name", score: 2856 },
-    { rank: 9, name: "user_name", school: "school-name", score: 2712 },
-    { rank: 10, name: "user_name", school: "school-name", score: 2636 },
-    { rank: 11, name: "user_name", school: "school-name", score: 2632 },
-  ];
+  // --- INITIAL DATA FETCH (Schools list) ---
+  useEffect(() => {
+    const fetchSchools = async () => {
+      try {
+        const res = await fetch(`${environment.urls.middlewareURL}/leaderboard/schools`, {
+          headers: { 'Authorization': `Bearer ${cookies.login}` },
+        });
+        const json = await res.json();
+        if (json.success) setSchoolsList(json.schools);
+      } catch (err) {
+        console.error("Failed to load schools", err);
+      }
+    };
+    fetchSchools();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const [rankAsc, setRankAsc] = useState(true);
+  // --- MAIN LEADERBOARD FETCH ---
+  const fetchLeaderboard = async (isReset = false) => {
+    setIsLoading(true);
+    const targetPage = isReset ? 1 : page;
 
-  const sortedRows = useMemo(() => {
-    const copy = [...rows];
-    copy.sort((a, b) => (rankAsc ? a.rank - b.rank : b.rank - a.rank));
-    return copy;
-  }, [rows, rankAsc]);
+    try {
+      const params = new URLSearchParams({
+        page: targetPage.toString(),
+        limit: "10",
+        sortBy,
+        sortDir
+      });
 
-  // SHOW ONLY FIRST 4 ROWS INITIALLY
-  const [visibleCount, setVisibleCount] = useState(4);
-  const visibleRows = sortedRows.slice(0, visibleCount);
+      if (school !== "All Schools") params.append("school", school);
+      if (search.trim() !== "") params.append("search", search.trim());
 
-  const handleLoadMore = () => {
-    setVisibleCount(sortedRows.length);
+      const response = await fetch(`${environment.urls.middlewareURL}/leaderboard?${params.toString()}`, {
+        headers: { 'Authorization': `Bearer ${cookies.login}` },
+      });
+      const json = await response.json();
+
+      if (json.success) {
+        const fetchedData = json.data.leaderboard.map((item: any) => ({
+          id: item.id,
+          rank: item.rank,
+          name: item.username,
+          school: item.school_name,
+          score: item.score,
+          avatar_url: item.avatar_url,
+        }));
+
+        setRows((prev) => (isReset ? fetchedData : [...prev, ...fetchedData]));
+        setHasMore(json.data.pagination.has_more);
+        setPage(targetPage + 1);
+      }
+    } catch (error) {
+      console.error("Error fetching leaderboard data:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const allLoaded = visibleCount >= sortedRows.length;
+  // Fetch when filters or sorting changes
+  useEffect(() => {
+    // We use a debounce effect for the search bar so it doesn't fetch on every single keystroke
+    const timer = setTimeout(() => {
+      fetchLeaderboard(true);
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [school, search, sortBy, sortDir]);
 
-  // RANK BADGES
-  const badgeForRank = (rank: number) => {
+  // --- UI HANDLERS ---
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc"); // Toggle direction
+    } else {
+      setSortBy(column);
+      setSortDir(column === "name" ? "asc" : "desc"); // Default Name A-Z, Score High-Low
+    }
+  };
+
+  const badgeForRank = (rank: number, sortByCol: string) => {
+    // Only show medals if we are actively sorting by highest score
+    if (sortByCol !== "score" || sortDir !== "desc") return null;
     if (rank === 1) return rank1Img;
     if (rank === 2) return rank2Img;
     if (rank === 3) return rank3Img;
     return null;
   };
 
-  // AVATAR IMAGE SELECTION
-  const avatarForRank = (rank: number) => {
+  const getAvatar = (rank: number, avatarUrl: string | null) => {
+    if (avatarUrl) return avatarUrl; 
     if (rank === 1) return avatar1;
     if (rank === 2) return avatar2;
     if (rank === 3) return avatar3;
@@ -85,47 +151,37 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div
-        className="modal-content"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="leaderboard-title"
-      >
+      <div className="modal-content">
         <button className="close-button" onClick={onClose} aria-label="Close modal">
           &times;
         </button>
 
-        {/* Header */}
         <header className="lb-header">
           <div className="lb-heading">
-            <button className="lb-backpill" type="button">
-              Go To
-              <br />
-              Backpack
-            </button>
-            <h2 id="leaderboard-title" className="lb-title">
-              Leaderboard
-            </h2>
+            <button className="lb-backpill" type="button">Go To<br />Backpack</button>
+            <h2 className="lb-title">Leaderboard</h2>
           </div>
           <LeaderboardIcon className="lb-crown-img" aria-hidden />
         </header>
 
-        {/* Filters */}
-        <div className="lb-filters">
-          <select>
-            <option>Country</option>
-            <option>USA</option>
-            <option>Canada</option>
-          </select>
-          <select>
-            <option>State</option>
-            <option>FL</option>
-            <option>GA</option>
-          </select>
-          <select>
-            <option>School</option>
-            <option>Jefferson Middle</option>
-            <option>Pine View School</option>
+        {/* Dynamic Filters & Search */}
+        <div className="lb-filters" style={{ display: 'flex', gap: '15px', padding: '10px 0', width: '100%' }}>
+          <input 
+            type="text" 
+            placeholder="Search by name..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '16px' }}
+          />
+          <select 
+            value={school} 
+            onChange={(e) => setSchool(e.target.value)}
+            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '16px', minWidth: '250px' }}
+          >
+            <option>All Schools</option>
+            {schoolsList.map((s, idx) => (
+              <option key={idx} value={s}>{s}</option>
+            ))}
           </select>
         </div>
 
@@ -141,55 +197,41 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
 
             <thead>
               <tr>
+                <th>Rank</th>
                 <th>
-                  <button
-                    className="lb-sort-btn"
-                    type="button"
-                    onClick={() => setRankAsc((v) => !v)}
-                  >
-                    <span>Rank</span>
-                    <svg
-                      className={`lb-sort-icon ${rankAsc ? "asc" : ""}`}
-                      viewBox="0 0 20 12"
-                      aria-hidden="true"
-                    >
-                      <path d="M2 2l8 8 8-8" />
-                    </svg>
+                  <button className="lb-sort-btn" type="button" onClick={() => handleSort("name")}>
+                    <span>Name</span>
+                    {sortBy === "name" && (
+                      <span style={{ fontSize: '12px', marginLeft: '5px' }}>{sortDir === "asc" ? "▲" : "▼"}</span>
+                    )}
                   </button>
                 </th>
-                <th>Name</th>
                 <th>School</th>
-                <th>Score</th>
+                <th>
+                  <button className="lb-sort-btn" type="button" onClick={() => handleSort("score")}>
+                    <span>Score</span>
+                    {sortBy === "score" && (
+                      <span style={{ fontSize: '12px', marginLeft: '5px' }}>{sortDir === "desc" ? "▼" : "▲"}</span>
+                    )}
+                  </button>
+                </th>
               </tr>
             </thead>
 
             <tbody>
-              {visibleRows.map((r) => {
-                const badge = badgeForRank(r.rank);
-                const avatar = avatarForRank(r.rank);
+              {rows.map((r) => {
+                const badge = badgeForRank(r.rank, sortBy);
+                const avatar = getAvatar(r.rank, r.avatar_url);
 
                 return (
-                  <tr key={`${r.rank}-${r.name}`} data-rank={r.rank}>
+                  <tr key={r.id} data-rank={r.rank}>
                     <td className="lb-rank">
-                      {badge ? (
-                        <span
-                          className="lb-rank-img"
-                          style={{ backgroundImage: `url(${badge})` }}
-                        />
-                      ) : (
-                        r.rank
-                      )}
+                      {badge ? <span className="lb-rank-img" style={{ backgroundImage: `url(${badge})` }} /> : r.rank}
                     </td>
-
                     <td className="lb-user">
-                      <img
-                        src={avatar}
-                        alt={`${r.name} avatar`}
-                        className="lb-avatar-img"
-                      />
+                      <img src={avatar} alt="avatar" className="lb-avatar-img" />
                       <span className="lb-name">{r.name}</span>
                     </td>
-
                     <td className="lb-school">{r.school}</td>
                     <td className="lb-score">{r.score}</td>
                   </tr>
@@ -199,15 +241,15 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
           </table>
         </div>
 
-        {/* LOAD MORE (OUTSIDE TABLE WRAP, POPUP SCROLLS) */}
+        {/* LOAD MORE */}
         <div className="lb-loadmore">
           <button
             className="lb-load-btn"
             type="button"
-            onClick={handleLoadMore}
-            disabled={allLoaded}
+            onClick={() => fetchLeaderboard(false)}
+            disabled={!hasMore || isLoading}
           >
-            {allLoaded ? "No more data" : "Load More"}
+            {isLoading ? "Loading..." : !hasMore ? "No more data" : "Load More"}
           </button>
         </div>
       </div>

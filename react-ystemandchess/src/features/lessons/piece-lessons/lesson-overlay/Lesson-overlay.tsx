@@ -213,7 +213,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
   // Initialize Stockfish socket for free-play mode
   useEffect(() => {
-    const stockfishSocket = io(environment.urls.stockfishURL, {
+    const stockfishSocket = io(environment.urls.stockfishServerURL, {
       transports: ['websocket'],
       reconnection: true,
     });

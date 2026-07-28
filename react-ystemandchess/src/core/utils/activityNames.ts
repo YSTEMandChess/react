@@ -13,7 +13,9 @@
 type Activity = {
     name: string,      // Activity identifier (e.g., 'captureQueen')
     type: string,      // Activity category (e.g., 'puzzle', 'lesson')
-    completed: boolean // Whether the activity is completed
+    completed: boolean, // Whether the activity is completed
+    taskId: string,    // Stable identifier from the backend activity catalog
+    route: string,     // Backend-provided route for the specific activity
 }
 
 /**
@@ -42,12 +44,13 @@ const activityNameMap: Record<string, string> = {
  * @param {Array<Activity>} names - Array of activity objects
  * @returns {Array<string>} Array of display names for the activities
  */
-export const parseActivities = (names: Array<Activity>): Array<Activity> => {
-    const namesArray = names.map((activity) => ({
-                name: activityNameMap[activity.name] || activity.name,
-                type: activity.type, 
-                completed: activity.completed,
+export const parseActivities = (names: Array<Activity>) => {
+    return names.map((activity) => ({
+        id: activity.taskId, // Stable per-activity ID from the backend catalog
+        displayName: activityNameMap[activity.name] || activity.name,
+        type: activity.type,
+        completed: activity.completed,
+        route: activity.route, // Backend-provided, specific to this activity (not just its type)
     }));
-    return namesArray;
     // TODO: Consider making API call to fetch display names dynamically
 }
