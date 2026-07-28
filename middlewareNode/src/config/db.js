@@ -22,6 +22,12 @@ async function ensureIndexes() {
     await users.createIndex({ role: 1 },    { background: true });
     await users.createIndex({ zipcode: 1 }, { background: true });
 
+    // Leaderboard filter indexes — compound with role since /leaderboard
+    // always filters on role: "student" alongside these.
+    await users.createIndex({ role: 1, country: 1 }, { background: true });
+    await users.createIndex({ role: 1, state: 1 },   { background: true });
+    await users.createIndex({ role: 1, school: 1 },  { background: true });
+
     console.log("Analytics indexes ensured");
   } catch (err) {
     console.error("Index creation warning:", err.message);

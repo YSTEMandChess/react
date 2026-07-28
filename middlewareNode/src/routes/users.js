@@ -18,6 +18,9 @@ const passport = require("passport");
 const router = express.Router();
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const AWS = require("aws-sdk");
+const multer = require("multer");
+const { v4: uuidv4 } = require("uuid");
 const { check, validationResult } = require("express-validator");
 const users = require("../models/users");
 const Activities = require("../models/activities");
@@ -507,5 +510,81 @@ router.put("/profile", passport.authenticate("jwt"), async (req, res) => {
     res.status(500).json("Server error");
   }
 });
+
+// Avatar uploads are held in memory (not on disk) then streamed straight to S3.
+const AVATAR_BUCKET = "ystemandchess-user-avatars";
+const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5MB
+
+const avatarUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_AVATAR_BYTES },
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_AVATAR_TYPES.includes(file.mimetype)) {
+      return cb(new Error("Only JPEG, PNG, or WEBP images are allowed"));
+    }
+    cb(null, true);
+  },
+});
+
+function getS3Client() {
+  return new AWS.S3({
+    apiVersion: "latest",
+    region: "us-east-2",
+    accessKeyId: config.get("awsAccessKey"),
+    secretAccessKey: config.get("awsSecretKey"),
+  });
+}
+
+/**
+ * POST /user/avatar
+ *
+ * Uploads a profile avatar image for the authenticated user, storing it in S3
+ * under a per-user key. Only ever operates on req.user's own record (same
+ * pattern as PUT /profile) — there is no :username param, so a student can
+ * never upload an avatar for another account.
+ *
+ * @access JWT authenticated users
+ */
+router.post(
+  "/avatar",
+  passport.authenticate("jwt"),
+  (req, res, next) => {
+    avatarUpload.single("avatar")(req, res, (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      next();
+    });
+  },
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "avatar file is required" });
+      }
+
+      const extension = req.file.mimetype.split("/")[1];
+      const avatarKey = `${req.user.username}/${uuidv4()}.${extension}`;
+
+      const s3 = getS3Client();
+      await s3
+        .putObject({
+          Bucket: AVATAR_BUCKET,
+          Key: avatarKey,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype,
+        })
+        .promise();
+
+      await users.updateOne(
+        { username: req.user.username },
+        { $set: { avatarKey } }
+      );
+
+      res.status(200).json({ message: "Avatar uploaded", avatarKey });
+    } catch (err) {
+      console.error("POST /user/avatar:", err.message);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
 
 module.exports = router;

@@ -63,6 +63,13 @@ const usersSchema = new mongoose.Schema(
     zipcode:    { type: String, default: null, index: true },
     gender:     { type: String, enum: ["M", "F", "Other", null], default: null },
     gradeLevel: { type: String, default: null },
+    // Leaderboard filter fields — optional, collected over time via profile updates
+    country:    { type: String, default: null, index: true },
+    state:      { type: String, default: null, index: true },
+    school:     { type: String, default: null, index: true },
+    // Profile avatar — S3 object key (not a full URL) so the bucket/region
+    // can change without a data migration. Presigned URLs are generated on read.
+    avatarKey:  { type: String, default: null },
   },
   { versionKey: false },
 );
