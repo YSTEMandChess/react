@@ -122,8 +122,8 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
                       if (!activity.completed) {
                         onClose(); // Close the modal overlay first
                         // If you ever need to pass the specific task ID to the next page:
-                        // navigate(`${activity.route}?taskId=${activity.id}`);
-                        navigate(activity.route);
+                        navigate(`${activity.route}?taskId=${activity.id}`);
+                        // navigate(activity.route);
                       }
                     }}
                   >
