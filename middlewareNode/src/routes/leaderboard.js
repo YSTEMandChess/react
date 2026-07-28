@@ -1,16 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { MongoClient, ObjectId } = require("mongodb");
+const { MongoClient } = require("mongodb");
 const config = require("config");
-require("dotenv").config();
 
-// Cache database client to prevent repeated connections
 let cachedClient = null;
 
-/**
- * Gets database client, creating connection if needed
- * @returns {import('mongodb').Db} Database instance
- */
 async function getDb() {
   if (!cachedClient) {
     cachedClient = new MongoClient(config.get("mongoURI"));
@@ -19,59 +13,61 @@ async function getDb() {
   return cachedClient.db("ystem");
 }
 
-/**
- * GET /
- * Fetches paginated leaderboard data with dynamic filters.
- * (Note: If this router is mounted at /api/v1/gamification, the endpoint becomes /api/v1/gamification/leaderboard)
- */
+// 1. NEW: Fetch distinct, dynamic list of schools directly from the database
+router.get("/schools", async (req, res) => {
+  try {
+    const db = await getDb();
+    const users = db.collection("users");
+    // Get all unique schools, filtering out empty or null values
+    const distinctSchools = await users.distinct("school", { school: { $nin: ["", null] } });
+    res.json({ success: true, schools: distinctSchools });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// 2. UPDATED: Main Leaderboard Route with Search, Sort, and Offset Pagination
 router.get("/", async (req, res) => {
   try {
     const db = await getDb();
     const leaderboardCollection = db.collection("leaderboards");
 
-    // 1. Extract query parameters from frontend request
-    const { school, state, country, limit = 10, cursor } = req.query;
-    const parsedLimit = parseInt(limit, 10);
+    const { school, search, sortBy = "score", sortDir = "desc", page = 1, limit = 10 } = req.query;
+    
+    // Setup Pagination
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
 
-    // 2. Build the dynamic query object for root filtering (cursor)
-    const rootMatch = {};
-
-    // 3. Handle Cursor-Based Pagination
-    if (cursor) {
-      // Decode the base64 cursor string (format: "score_id")
-      const decodedCursor = Buffer.from(cursor, "base64").toString("ascii");
-      const [cursorScore, cursorId] = decodedCursor.split("_");
-
-      // Find records with lower scores, OR equal scores but a higher ObjectId (to safely break ties)
-      rootMatch.$or = [
-        { score: { $lt: parseInt(cursorScore, 10) } },
-        {
-          score: parseInt(cursorScore, 10),
-          _id: { $gt: new ObjectId(cursorId) }
-        }
-      ];
-    }
-
-    // 4. Build profile filter match (for dynamically joined user data)
+    // Filter by School
     const profileMatch = {};
-    if (school && school !== "School") {
-      // Fallback: match school on leaderboard doc OR joined user doc
-      profileMatch.$or = [{ school: school }, { "userProfile.school": school }];
-    }
-    if (state && state !== "State") {
-      profileMatch["userProfile.state"] = state;
-    }
-    if (country && country !== "Country") {
-      profileMatch["userProfile.country"] = country;
+    if (school && school !== "All Schools") {
+      profileMatch["userProfile.school"] = school;
     }
 
-    // 5. Execute Mongoose Aggregation Pipeline to join users collection
+    // Search by Name
+    const rootMatch = {};
+    if (search) {
+      rootMatch.username = { $regex: search, $options: "i" }; // Case-insensitive search
+    }
+
+    // Dynamic Sorting (Name alphabetically or Score high/low)
+    const sortStage = {};
+    const direction = sortDir === "asc" ? 1 : -1;
+    if (sortBy === "name") {
+        sortStage["username"] = direction;
+    } else {
+        sortStage["score"] = direction;
+        sortStage["_id"] = 1; // Tie breaker
+    }
+
+    // Mongoose Aggregation Pipeline
     const pipeline = [
       { $match: rootMatch },
       {
         $lookup: {
           from: "users",
-          localField: "username", // Joining on username
+          localField: "username",
           foreignField: "username",
           as: "userProfile"
         }
@@ -79,58 +75,60 @@ router.get("/", async (req, res) => {
       {
         $unwind: {
           path: "$userProfile",
-          preserveNullAndEmptyArrays: true // Keep leaderboards even if user profile is missing
+          preserveNullAndEmptyArrays: true
         }
       },
       { $match: Object.keys(profileMatch).length > 0 ? profileMatch : {} },
-      { $sort: { score: -1, _id: 1 } },
-      { $limit: parsedLimit + 1 }
+      { $sort: sortStage },
+      {
+        $facet: {
+          data: [
+            { $skip: skip },
+            { $limit: limitNum },
+            {
+              $project: {
+                _id: 1,
+                username: "$username",
+                score: 1,
+                // Check new profile first, fallback to old leaderboard data, then N/A
+                school: { $ifNull: ["$userProfile.school", { $ifNull: ["$school", "N/A"] }] },
+                avatar_url: { $ifNull: ["$userProfile.avatar_url", null] }
+              }
+            }
+          ],
+          totalCount: [{ $count: "count" }]
+        }
+      }
     ];
 
     const results = await leaderboardCollection.aggregate(pipeline).toArray();
+    const data = results[0]?.data || [];
+    const total = results[0]?.totalCount[0]?.count || 0;
 
-    // 6. Determine if there is a next page & generate the next token
-    const hasMore = results.length > parsedLimit;
-    if (hasMore) {
-      results.pop(); // Remove the extra item so we only return the exact limit
-    }
-
-    let nextCursor = null;
-    if (results.length > 0 && hasMore) {
-      const lastItem = results[results.length - 1];
-      // Encode the last item's score and ID into a base64 string for the frontend
-      nextCursor = Buffer.from(`${lastItem.score}_${lastItem._id}`).toString("base64");
-    }
-
-    // 7. Map the MongoDB documents to the frontend JSON contract
-    const formattedLeaderboard = results.map((row) => ({
+    // Map and assign true rank based on pagination skip
+    const formattedLeaderboard = data.map((row, index) => ({
       id: row._id,
       username: row.username,
-      // Favor the user collection's school, fallback to leaderboard's school
-      school_name: row.userProfile?.school || row.school || "N/A",
+      school_name: row.school,
       score: row.score,
-      // Pull avatar directly from the joined user profile
-      avatar_url: row.userProfile?.avatar_url || null 
+      avatar_url: row.avatar_url,
+      rank: skip + index + 1
     }));
 
-    // 8. Send successful response
     return res.status(200).json({
       success: true,
       data: {
         leaderboard: formattedLeaderboard,
         pagination: {
-          has_more: hasMore,
-          next_cursor: nextCursor
+          has_more: skip + data.length < total,
+          total: total
         }
       }
     });
 
   } catch (error) {
     console.error("Leaderboard API Error:", error);
-    return res.status(500).json({ 
-      success: false, 
-      error: "Internal Server Error" 
-    });
+    return res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 });
 
