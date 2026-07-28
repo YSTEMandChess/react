@@ -23,6 +23,7 @@ jest.mock("passport", () => ({
   }),
 }));
 jest.mock("../src/models/users");
+jest.mock("../src/utils/avatars");
 
 const mockPutObjectPromise = jest.fn();
 jest.mock("aws-sdk", () => ({
@@ -36,6 +37,7 @@ const request = require("supertest");
 const AWS = require("aws-sdk");
 const usersRoute = require("../src/routes/users");
 const Users = require("../src/models/users");
+const { getAvatarUrl } = require("../src/utils/avatars");
 
 const app = express();
 app.use(express.json());
@@ -50,6 +52,7 @@ describe("POST /user/avatar", () => {
   beforeEach(() => {
     mockPutObjectPromise.mockResolvedValue({});
     Users.updateOne.mockResolvedValue({ modifiedCount: 1 });
+    getAvatarUrl.mockImplementation((key) => (key ? `https://s3.example.com/${key}` : null));
   });
 
   test("401 — no authenticated user", async () => {
@@ -78,6 +81,7 @@ describe("POST /user/avatar", () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty("avatarKey");
     expect(res.body.avatarKey).toMatch(/^alice\//);
+    expect(res.body.avatarUrl).toBe(`https://s3.example.com/${res.body.avatarKey}`);
     expect(mockPutObjectPromise).toHaveBeenCalledTimes(1);
     expect(Users.updateOne).toHaveBeenCalledWith(
       { username: "alice" },
@@ -149,6 +153,63 @@ describe("POST /user/avatar", () => {
         filename: "photo.png",
         contentType: "image/png",
       });
+
+    expect(res.status).toBe(500);
+  });
+});
+
+describe("GET /user/avatar", () => {
+  beforeEach(() => {
+    getAvatarUrl.mockImplementation((key) => (key ? `https://s3.example.com/${key}` : null));
+  });
+
+  test("401 — no authenticated user", async () => {
+    mockCurrentAuthUser = null;
+    const res = await request(app).get("/user/avatar");
+    expect(res.status).toBe(401);
+  });
+
+  test("200 — returns a presigned URL when the user has an avatarKey", async () => {
+    mockCurrentAuthUser = { username: "alice", role: "student" };
+    Users.findOne.mockResolvedValue({ avatarKey: "alice/photo123.png" });
+
+    const res = await request(app).get("/user/avatar");
+
+    expect(res.status).toBe(200);
+    expect(res.body.avatarUrl).toBe("https://s3.example.com/alice/photo123.png");
+    expect(Users.findOne).toHaveBeenCalledWith(
+      { username: "alice" },
+      expect.objectContaining({ avatarKey: 1 })
+    );
+  });
+
+  test("200 — returns avatarUrl: null when no avatar has been uploaded", async () => {
+    mockCurrentAuthUser = { username: "bob", role: "student" };
+    Users.findOne.mockResolvedValue({ avatarKey: null });
+
+    const res = await request(app).get("/user/avatar");
+
+    expect(res.status).toBe(200);
+    expect(res.body.avatarUrl).toBeNull();
+  });
+
+  test("always reads the authenticated user's own record, ignoring any other identifier", async () => {
+    mockCurrentAuthUser = { username: "carol", role: "student" };
+    Users.findOne.mockResolvedValue({ avatarKey: null });
+
+    await request(app).get("/user/avatar");
+
+    expect(Users.findOne).toHaveBeenCalledWith(
+      { username: "carol" },
+      expect.anything()
+    );
+  });
+
+  test("500 — returns server error on DB failure", async () => {
+    mockCurrentAuthUser = { username: "dave", role: "student" };
+    Users.findOne.mockRejectedValue(new Error("DB down"));
+
+    const res = await request(app).get("/user/avatar");
 
     expect(res.status).toBe(500);
   });

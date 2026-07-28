@@ -30,6 +30,7 @@ const {
 } = require("../template/changePasswordTemplate");
 const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
+const { getAvatarUrl } = require("../utils/avatars");
 const { MongoClient } = require("mongodb");
 const config = require("config");
 
@@ -183,6 +184,20 @@ router.post(
         gradeLevel: gradeLevel || null,
       });
       await mainUser.save();
+
+      // A student signing up directly (not via a parent's students[] list,
+      // which already seeds activities above) previously got no Activities
+      // document at all — the Activities modal would then receive
+      // activities: null from the API and silently fail to render (the
+      // fetch throws inside the modal's try/catch, loading never clears).
+      if (role === "student") {
+        const newActivities = await selectActivities();
+        await new Activities({
+          userId: mainUser._id,
+          activities: newActivities,
+          completedDates: [],
+        }).save();
+      }
 
       res.status(200).json("Added users");
     } catch (error) {
@@ -524,12 +539,15 @@ router.put("/updateHighScore", passport.authenticate("jwt", { session: false }),
 
 /**
  * PUT /user/profile
- * Allows the authenticated user to update their own demographic fields.
- * Only zipcode, gender, and gradeLevel are updatable via this endpoint.
+ * Allows the authenticated user to update their own demographic and
+ * leaderboard-filter fields (zipcode, gender, gradeLevel, country, state,
+ * school). country/state/school previously had no write path anywhere —
+ * they existed on the schema and were filterable on /leaderboard, but
+ * nothing let a student actually set them.
  */
 router.put("/profile", passport.authenticate("jwt"), async (req, res) => {
   try {
-    const { zipcode, gender, gradeLevel } = req.body;
+    const { zipcode, gender, gradeLevel, country, state, school } = req.body;
     const allowed = ["M", "F", "Other", null];
 
     if (gender !== undefined && !allowed.includes(gender))
@@ -539,6 +557,9 @@ router.put("/profile", passport.authenticate("jwt"), async (req, res) => {
     if (zipcode    !== undefined) updates.zipcode    = zipcode    || null;
     if (gender     !== undefined) updates.gender     = gender     || null;
     if (gradeLevel !== undefined) updates.gradeLevel = gradeLevel || null;
+    if (country    !== undefined) updates.country    = country    || null;
+    if (state      !== undefined) updates.state      = state      || null;
+    if (school     !== undefined) updates.school     = school     || null;
 
     if (Object.keys(updates).length === 0)
       return res.status(400).json({ error: "No updatable fields provided" });
@@ -575,6 +596,25 @@ function getS3Client() {
     secretAccessKey: config.get("awsSecretKey"),
   });
 }
+
+/**
+ * GET /user/avatar
+ *
+ * Returns a presigned URL for the authenticated user's own avatar, or
+ * avatarUrl: null if none has been uploaded yet. Self-only, same pattern
+ * as POST below — no :username param, always operates on req.user.
+ *
+ * @access JWT authenticated users
+ */
+router.get("/avatar", passport.authenticate("jwt"), async (req, res) => {
+  try {
+    const user = await users.findOne({ username: req.user.username }, { avatarKey: 1 });
+    res.json({ avatarUrl: getAvatarUrl(user?.avatarKey) });
+  } catch (err) {
+    console.error("GET /user/avatar:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 /**
  * POST /user/avatar
@@ -619,7 +659,7 @@ router.post(
         { $set: { avatarKey } }
       );
 
-      res.status(200).json({ message: "Avatar uploaded", avatarKey });
+      res.status(200).json({ message: "Avatar uploaded", avatarKey, avatarUrl: getAvatarUrl(avatarKey) });
     } catch (err) {
       console.error("POST /user/avatar:", err.message);
       res.status(500).json({ error: "Server error" });

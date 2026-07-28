@@ -30,8 +30,12 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
   // --- UI STATE ---
   const [rows, setRows] = useState<Row[]>([]);
   const [schoolsList, setSchoolsList] = useState<string[]>([]);
-  
+  const [countriesList, setCountriesList] = useState<string[]>([]);
+  const [statesList, setStatesList] = useState<string[]>([]);
+
   // --- FILTER & SORT STATE ---
+  const [country, setCountry] = useState("All Countries");
+  const [state, setState] = useState("All States");
   const [school, setSchool] = useState("All Schools");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("score"); // 'score' or 'name'
@@ -53,20 +57,23 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // --- INITIAL DATA FETCH (Schools list) ---
+  // --- INITIAL DATA FETCH (Schools / Countries / States lists) ---
   useEffect(() => {
-    const fetchSchools = async () => {
+    const authHeaders = { headers: { 'Authorization': `Bearer ${cookies.login}` } };
+
+    const fetchFilterOptions = async (path: string, key: string, setter: (v: string[]) => void) => {
       try {
-        const res = await fetch(`${environment.urls.middlewareURL}/leaderboard/schools`, {
-          headers: { 'Authorization': `Bearer ${cookies.login}` },
-        });
+        const res = await fetch(`${environment.urls.middlewareURL}/leaderboard/${path}`, authHeaders);
         const json = await res.json();
-        if (json.success) setSchoolsList(json.schools);
+        if (json.success) setter(json[key]);
       } catch (err) {
-        console.error("Failed to load schools", err);
+        console.error(`Failed to load ${path}`, err);
       }
     };
-    fetchSchools();
+
+    fetchFilterOptions('schools', 'schools', setSchoolsList);
+    fetchFilterOptions('countries', 'countries', setCountriesList);
+    fetchFilterOptions('states', 'states', setStatesList);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -83,6 +90,8 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
         sortDir
       });
 
+      if (country !== "All Countries") params.append("country", country);
+      if (state !== "All States") params.append("state", state);
       if (school !== "All Schools") params.append("school", school);
       if (search.trim() !== "") params.append("search", search.trim());
 
@@ -120,7 +129,7 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
     }, 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [school, search, sortBy, sortDir]);
+  }, [country, state, school, search, sortBy, sortDir]);
 
   // --- UI HANDLERS ---
   const handleSort = (column: string) => {
@@ -173,8 +182,28 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
             onChange={(e) => setSearch(e.target.value)}
             style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '16px' }}
           />
-          <select 
-            value={school} 
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '16px', minWidth: '160px' }}
+          >
+            <option>All Countries</option>
+            {countriesList.map((c, idx) => (
+              <option key={idx} value={c}>{c}</option>
+            ))}
+          </select>
+          <select
+            value={state}
+            onChange={(e) => setState(e.target.value)}
+            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '16px', minWidth: '160px' }}
+          >
+            <option>All States</option>
+            {statesList.map((s, idx) => (
+              <option key={idx} value={s}>{s}</option>
+            ))}
+          </select>
+          <select
+            value={school}
             onChange={(e) => setSchool(e.target.value)}
             style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '16px', minWidth: '250px' }}
           >

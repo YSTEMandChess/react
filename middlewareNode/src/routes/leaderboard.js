@@ -18,14 +18,13 @@
  *   LEADERBOARD_WEIGHT_ACTIVITY (default 3)   — per activity completed
  *
  * Response contract matches LeaderboardModal.tsx exactly:
- *   GET /leaderboard/schools
- *     -> { success, schools: string[] }
- *   GET /leaderboard?school=&search=&sortBy=score|name&sortDir=asc|desc&page=1&limit=10
- *     -> { success, data: { leaderboard: [{id, rank, username, school_name, score, avatar_url}],
+ *   GET /leaderboard/schools    -> { success, schools: string[] }
+ *   GET /leaderboard/countries  -> { success, countries: string[] }
+ *   GET /leaderboard/states     -> { success, states: string[] }
+ *   GET /leaderboard?country=&state=&school=&search=&sortBy=score|name&sortDir=asc|desc&page=1&limit=10
+ *     -> { success, data: { leaderboard: [{id, rank, username, school_name,
+ *                            country, state, score, avatar_url}],
  *                            pagination: { has_more } } }
- *
- * country/state filtering is still supported (additive, not exposed by the
- * current UI) via optional country/state query params for future filter UI.
  */
 
 const express = require("express");
@@ -92,21 +91,42 @@ async function computeScore(user) {
 }
 
 /**
+ * Builds a GET /leaderboard/<field>s handler returning distinct, non-empty
+ * values for that field — shared shape for the schools/countries/states
+ * filter-dropdown endpoints.
+ */
+function distinctFilterValuesRoute(field, responseKey) {
+  return async (req, res) => {
+    try {
+      const values = await Users.distinct(field, {
+        role: "student",
+        [field]: { $nin: ["", null] },
+      });
+      res.json({ success: true, [responseKey]: values });
+    } catch (err) {
+      console.error(`leaderboard /${responseKey}:`, err.message);
+      res.status(500).json({ success: false, error: "Server error" });
+    }
+  };
+}
+
+/**
  * GET /leaderboard/schools
  * Distinct, non-empty school names for the school filter dropdown.
  */
-router.get("/schools", async (req, res) => {
-  try {
-    const schools = await Users.distinct("school", {
-      role: "student",
-      school: { $nin: ["", null] },
-    });
-    res.json({ success: true, schools });
-  } catch (err) {
-    console.error("leaderboard /schools:", err.message);
-    res.status(500).json({ success: false, error: "Server error" });
-  }
-});
+router.get("/schools", distinctFilterValuesRoute("school", "schools"));
+
+/**
+ * GET /leaderboard/countries
+ * Distinct, non-empty country values for the country filter dropdown.
+ */
+router.get("/countries", distinctFilterValuesRoute("country", "countries"));
+
+/**
+ * GET /leaderboard/states
+ * Distinct, non-empty state values for the state filter dropdown.
+ */
+router.get("/states", distinctFilterValuesRoute("state", "states"));
 
 /**
  * GET /leaderboard
@@ -143,6 +163,8 @@ router.get("/", async (req, res) => {
         id: String(user._id),
         username: user.username,
         school: user.school || null,
+        country: user.country || null,
+        state: user.state || null,
         avatarUrl: getAvatarUrl(user.avatarKey),
         score: await computeScore(user),
       }))
@@ -162,6 +184,8 @@ router.get("/", async (req, res) => {
       rank: skip + idx + 1,
       username: entry.username,
       school_name: entry.school,
+      country: entry.country,
+      state: entry.state,
       score: entry.score,
       avatar_url: entry.avatarUrl,
     }));

@@ -60,14 +60,18 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
         },
       })
       const json = await response.json();
-      const data = json.activities.activities;
+      // json.activities can be null for an account with no seeded
+      // Activities document — fall back to an empty list instead of
+      // throwing and leaving the modal stuck in a permanent loading state.
+      const data = json.activities?.activities || [];
       const activityNames = parseActivities(data);
       setActivities(activityNames);
-      setLoading(false);
     } catch (err) {
       console.error("Error fetching activities:", err);
+      setActivities([]);
+    } finally {
+      setLoading(false);
     }
-    
   }
   useEffect(() => {
       fetchActivities()

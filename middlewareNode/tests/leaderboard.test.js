@@ -211,6 +211,58 @@ describe("GET /leaderboard", () => {
     expect(res.body.data.leaderboard.length).toBeLessThanOrEqual(100);
   });
 
+  test("EDGE-06 — unfiltered candidate set is capped at MAX_UNFILTERED_CANDIDATES (500)", async () => {
+    Users.find.mockResolvedValue(
+      Array.from({ length: 800 }, (_, i) => ({
+        _id: String(i),
+        username: `user${i}`,
+        school: "Test School",
+      }))
+    );
+    mockStatsFor({});
+    // No filters applied — unfiltered path should cap candidates before scoring.
+    const res = await request(app).get("/leaderboard?limit=100&page=8"); // page 8 * 100 = would need 800 candidates
+    // Total reported can never exceed the 500-candidate cap, regardless of
+    // how many students actually exist in the collection.
+    expect(res.body.data.leaderboard.length).toBeLessThanOrEqual(100);
+    const lastPossiblePage = Math.ceil(500 / 100);
+    const beyondCapRes = await request(app).get(`/leaderboard?limit=100&page=${lastPossiblePage + 1}`);
+    expect(beyondCapRes.body.data.leaderboard).toHaveLength(0);
+  });
+
+  test("EDGE-06 — a filtered query is NOT capped at 500 (filter narrows before scoring)", async () => {
+    Users.find.mockResolvedValue(
+      Array.from({ length: 600 }, (_, i) => ({
+        _id: String(i),
+        username: `user${i}`,
+        school: "Big School",
+      }))
+    );
+    mockStatsFor({});
+    // Page size is still capped at MAX_LIMIT (100) regardless of filtering,
+    // but the underlying candidate set for a filtered query is NOT capped
+    // at 500 — walk to the last page and confirm has_more only goes false
+    // once all 600 have been paged through, not at the unfiltered 500 cap.
+    const lastPage = await request(app).get("/leaderboard?school=Big School&limit=100&page=6");
+    expect(lastPage.body.data.leaderboard).toHaveLength(100); // 501-600 present, i.e. not capped
+    expect(lastPage.body.data.pagination.has_more).toBe(false);
+
+    const beyondRes = await request(app).get("/leaderboard?school=Big School&limit=100&page=7");
+    expect(beyondRes.body.data.leaderboard).toHaveLength(0);
+  });
+
+  test("EDGE-08 — a student with zero activity appears with score 0, not omitted", async () => {
+    Users.find.mockResolvedValue([
+      { _id: "1", username: "quiet", school: "Test School" },
+    ]);
+    mockStatsFor({}); // no entry for "quiet" -> all stats default to 0
+    const res = await request(app).get("/leaderboard");
+    expect(res.status).toBe(200);
+    expect(res.body.data.leaderboard).toHaveLength(1);
+    expect(res.body.data.leaderboard[0].username).toBe("quiet");
+    expect(res.body.data.leaderboard[0].score).toBe(0);
+  });
+
   test("200 — returns empty leaderboard when no students match filter", async () => {
     Users.find.mockResolvedValue([]);
     const res = await request(app).get("/leaderboard?school=Nonexistent School");
@@ -255,5 +307,75 @@ describe("GET /leaderboard/schools", () => {
     const res = await request(app).get("/leaderboard/schools");
     expect(res.status).toBe(500);
     expect(res.body.success).toBe(false);
+  });
+});
+
+describe("GET /leaderboard/countries", () => {
+  test("200 — returns distinct non-empty country list", async () => {
+    Users.distinct.mockResolvedValue(["USA", "Canada"]);
+    const res = await request(app).get("/leaderboard/countries");
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ success: true, countries: ["USA", "Canada"] });
+  });
+
+  test("queries with role:student and excludes empty/null countries", async () => {
+    Users.distinct.mockResolvedValue([]);
+    await request(app).get("/leaderboard/countries");
+    expect(Users.distinct).toHaveBeenCalledWith(
+      "country",
+      expect.objectContaining({ role: "student", country: { $nin: ["", null] } })
+    );
+  });
+
+  test("500 — returns server error when Users.distinct throws", async () => {
+    Users.distinct.mockRejectedValue(new Error("DB error"));
+    const res = await request(app).get("/leaderboard/countries");
+    expect(res.status).toBe(500);
+    expect(res.body.success).toBe(false);
+  });
+});
+
+describe("GET /leaderboard/states", () => {
+  test("200 — returns distinct non-empty state list", async () => {
+    Users.distinct.mockResolvedValue(["FL", "GA"]);
+    const res = await request(app).get("/leaderboard/states");
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ success: true, states: ["FL", "GA"] });
+  });
+
+  test("queries with role:student and excludes empty/null states", async () => {
+    Users.distinct.mockResolvedValue([]);
+    await request(app).get("/leaderboard/states");
+    expect(Users.distinct).toHaveBeenCalledWith(
+      "state",
+      expect.objectContaining({ role: "student", state: { $nin: ["", null] } })
+    );
+  });
+
+  test("500 — returns server error when Users.distinct throws", async () => {
+    Users.distinct.mockRejectedValue(new Error("DB error"));
+    const res = await request(app).get("/leaderboard/states");
+    expect(res.status).toBe(500);
+    expect(res.body.success).toBe(false);
+  });
+});
+
+describe("GET /leaderboard — country/state now included in entry response", () => {
+  test("entries include country and state fields", async () => {
+    Users.find.mockResolvedValue([
+      { _id: "1", username: "alice", country: "USA", state: "FL", school: "Jefferson Middle" },
+    ]);
+    mockStatsFor({ alice: { streak: 1 } });
+    const res = await request(app).get("/leaderboard");
+    expect(res.body.data.leaderboard[0]).toMatchObject({ country: "USA", state: "FL" });
+  });
+
+  test("country/state filter combined with school filter (AND semantics)", async () => {
+    Users.find.mockResolvedValue([]);
+    await request(app).get("/leaderboard?country=USA&state=FL&school=Jefferson Middle");
+    expect(Users.find).toHaveBeenCalledWith(
+      expect.objectContaining({ role: "student", country: "USA", state: "FL", school: "Jefferson Middle" }),
+      expect.anything()
+    );
   });
 });
