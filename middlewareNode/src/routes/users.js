@@ -93,13 +93,13 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, password, first, last, email, role, students, zipcode, gender, gradeLevel } =
+    const { username, password, first, last, email, role, students } =
       req.query;
 
     //Error catching when using mongoose functions like Users.findOne()
     try {
       const sha384 = crypto.createHash("sha384");
-      hashedPassword = sha384.update(password).digest("hex");
+      const hashedPassword = sha384.update(password).digest("hex");
       //Error checking to see if a user with the same username exists
       const user = await users.findOne({ username });
       if (user) {
@@ -142,9 +142,6 @@ router.post(
                 role: "student",
                 accountCreatedAt: currDate.toLocaleString(),
                 timePlayed: 0,
-                zipcode: student.zipcode || null,
-                gender: student.gender || null,
-                gradeLevel: student.gradeLevel || null,
               });
               await newStudent.save(async function (err, user) {
                 if(err) {
@@ -175,9 +172,6 @@ router.post(
         email,
         role,
         accountCreatedAt: currDate.toLocaleString(),
-        zipcode: zipcode || null,
-        gender: gender || null,
-        gradeLevel: gradeLevel || null,
       });
       await mainUser.save();
 
@@ -213,7 +207,7 @@ router.post(
 
     try {
       const sha384 = crypto.createHash("sha384");
-      hashedPassword = sha384.update(password).digest("hex");
+      const hashedPassword = sha384.update(password).digest("hex");
 
       const user = await users.findOne({ username });
       if (user) {
@@ -270,24 +264,25 @@ router.post("/resetPassword", validator, async (req, res) => {
   try {
     const { email, username } = req?.user;
     const getEmailId = await getEmail(username, email);
-    if (getEmailId) {
-      const password = req?.query;
-      const sha384 = crypto.createHash("sha384");
-      hashedPassword = sha384?.update(password?.password)?.digest("hex");
-      const hashedPasswordUpadate = await updatePassword({
-        username,
-        password: hashedPassword,
-        email,
-      });
-      if (hashedPasswordUpadate) {
-        return res.status(200).send("Changed successfully");
-      } else {
-        return res.status(400).send("Invalid data");
-      }
+    if (!getEmailId) {
+      return res.status(400).send("Invalid data");
     }
-    return res.status(200).send(hashedPasswordUpadate);
+    const password = req?.query;
+    const sha384 = crypto.createHash("sha384");
+    const hashedPassword = sha384?.update(password?.password)?.digest("hex");
+    const updatedUser = await updatePassword({
+      username,
+      password: hashedPassword,
+      email,
+    });
+    if (updatedUser) {
+      return res.status(200).send("Changed successfully");
+    } else {
+      return res.status(400).send("Invalid data");
+    }
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).send("Server error");
   }
 });
 
@@ -443,26 +438,36 @@ router.get("/getStudent", async (req, res) => {
 // verify role
 
 router.post("/verifyRole", async (req, res) => {
-  const { token } = req.body;
+  try {
+    const { token } = req.body;
 
-  if (!token.login) {
-    return res.status(400).json({ error: "Missing token" });
-  }
+    if (!token?.login) {
+      return res.status(400).json({ error: "Missing token" });
+    }
 
-  const decoded = jwt.verify(token.login, config.get("indexKey"));
+    let decoded;
+    try {
+      decoded = jwt.verify(token.login, config.get("indexKey"));
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
 
-  const user = await users
-    .findOne({ username: decoded.username })
-    .select("role");
+    const user = await users
+      .findOne({ username: decoded.username })
+      .select("role");
 
-  if (!user) {
-    return res.status(404).json({ error: "User not found" });
-  }
-  console.log(decoded.role, user.role);
-  if (decoded.role === user.role) {
-    return res.json({ verified: true });
-  } else {
-    return res.status(403).json({ error: "Role mismatch", verified: false });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (decoded.role === user.role) {
+      return res.json({ verified: true });
+    } else {
+      return res.status(403).json({ error: "Role mismatch", verified: false });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -479,31 +484,31 @@ router.get("/getUser", async (req, res) => {
   }
 });
 
-/**
- * PUT /user/profile
- * Allows the authenticated user to update their own demographic fields.
- * Only zipcode, gender, and gradeLevel are updatable via this endpoint.
- */
-router.put("/profile", passport.authenticate("jwt"), async (req, res) => {
+// @route   PUT /user/updateHighScore
+// @desc    Update the user's highest streak or dash score if they beat their record
+// @access  Public with jwt Authentication
+router.put("/updateHighScore", passport.authenticate("jwt", { session: false }), async (req, res) => {
   try {
-    const { zipcode, gender, gradeLevel } = req.body;
-    const allowed = ["M", "F", "Other", null];
+    const { streakScore, dashScore } = req.body;
+    const db = await getDb();
+    const usersCollection = db.collection("users");
 
-    if (gender !== undefined && !allowed.includes(gender))
-      return res.status(400).json({ error: "gender must be M, F, Other, or null" });
+    const updateFields = {};
+    
+    // Mongoose $max operator ensures it ONLY updates if the new score is higher than the old one!
+    if (streakScore !== undefined) updateFields.highestStreak = parseInt(streakScore);
+    if (dashScore !== undefined) updateFields.highestDashScore = parseInt(dashScore);
 
-    const updates = {};
-    if (zipcode    !== undefined) updates.zipcode    = zipcode    || null;
-    if (gender     !== undefined) updates.gender     = gender     || null;
-    if (gradeLevel !== undefined) updates.gradeLevel = gradeLevel || null;
+    if (Object.keys(updateFields).length === 0) return res.status(400).json("No scores provided");
 
-    if (Object.keys(updates).length === 0)
-      return res.status(400).json({ error: "No updatable fields provided" });
+    const result = await usersCollection.updateOne(
+      { username: req.user.username },
+      { $max: updateFields } 
+    );
 
-    await users.updateOne({ username: req.user.username }, { $set: updates });
-    res.json({ message: "Profile updated" });
-  } catch (err) {
-    console.error("PUT /user/profile:", err.message);
+    res.status(200).json({ message: "High scores checked and updated successfully" });
+  } catch (error) {
+    console.error("Error updating high score:", error);
     res.status(500).json("Server error");
   }
 });
