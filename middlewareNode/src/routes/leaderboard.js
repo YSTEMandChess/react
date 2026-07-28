@@ -33,18 +33,8 @@ router.get("/", async (req, res) => {
     const { school, state, country, limit = 10, cursor } = req.query;
     const parsedLimit = parseInt(limit, 10);
 
-    // 2. Build the dynamic query object for filtering
-    const query = {};
-
-    // Exact string match for school (based on your DB schema)
-    if (school) {
-      query.school = school;
-    }
-    
-    // Note: If state and country are added to the leaderboards collection later,
-    // you can uncomment these lines:
-    // if (state) query.state = state;
-    // if (country) query.country = country;
+    // 2. Build the dynamic query object for root filtering (cursor)
+    const rootMatch = {};
 
     // 3. Handle Cursor-Based Pagination
     if (cursor) {
@@ -53,7 +43,7 @@ router.get("/", async (req, res) => {
       const [cursorScore, cursorId] = decodedCursor.split("_");
 
       // Find records with lower scores, OR equal scores but a higher ObjectId (to safely break ties)
-      query.$or = [
+      rootMatch.$or = [
         { score: { $lt: parseInt(cursorScore, 10) } },
         {
           score: parseInt(cursorScore, 10),
@@ -62,16 +52,44 @@ router.get("/", async (req, res) => {
       ];
     }
 
-    // 4. Execute query with Sort
-    // Sort by highest score first (-1), break ties by older _id (1)
-    // Fetch limit + 1 to determine if there is a next page
-    const results = await leaderboardCollection
-      .find(query)
-      .sort({ score: -1, _id: 1 }) 
-      .limit(parsedLimit + 1)
-      .toArray();
+    // 4. Build profile filter match (for dynamically joined user data)
+    const profileMatch = {};
+    if (school && school !== "School") {
+      // Fallback: match school on leaderboard doc OR joined user doc
+      profileMatch.$or = [{ school: school }, { "userProfile.school": school }];
+    }
+    if (state && state !== "State") {
+      profileMatch["userProfile.state"] = state;
+    }
+    if (country && country !== "Country") {
+      profileMatch["userProfile.country"] = country;
+    }
 
-    // 5. Determine if there is a next page & generate the next token
+    // 5. Execute Mongoose Aggregation Pipeline to join users collection
+    const pipeline = [
+      { $match: rootMatch },
+      {
+        $lookup: {
+          from: "users",
+          localField: "username", // Joining on username
+          foreignField: "username",
+          as: "userProfile"
+        }
+      },
+      {
+        $unwind: {
+          path: "$userProfile",
+          preserveNullAndEmptyArrays: true // Keep leaderboards even if user profile is missing
+        }
+      },
+      { $match: Object.keys(profileMatch).length > 0 ? profileMatch : {} },
+      { $sort: { score: -1, _id: 1 } },
+      { $limit: parsedLimit + 1 }
+    ];
+
+    const results = await leaderboardCollection.aggregate(pipeline).toArray();
+
+    // 6. Determine if there is a next page & generate the next token
     const hasMore = results.length > parsedLimit;
     if (hasMore) {
       results.pop(); // Remove the extra item so we only return the exact limit
@@ -84,17 +102,18 @@ router.get("/", async (req, res) => {
       nextCursor = Buffer.from(`${lastItem.score}_${lastItem._id}`).toString("base64");
     }
 
-    // 6. Map the MongoDB documents to the frontend JSON contract
+    // 7. Map the MongoDB documents to the frontend JSON contract
     const formattedLeaderboard = results.map((row) => ({
       id: row._id,
       username: row.username,
-      school_name: row.school,
+      // Favor the user collection's school, fallback to leaderboard's school
+      school_name: row.userProfile?.school || row.school || "N/A",
       score: row.score,
-      // Fallback for avatar_url until a dedicated profile collection is joined
-      avatar_url: row.avatar_url || null 
+      // Pull avatar directly from the joined user profile
+      avatar_url: row.userProfile?.avatar_url || null 
     }));
 
-    // 7. Send successful response
+    // 8. Send successful response
     return res.status(200).json({
       success: true,
       data: {
