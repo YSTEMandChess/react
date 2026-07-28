@@ -77,6 +77,28 @@ const usersSchema = new mongoose.Schema(
     //   required: false,
     //   default: 0,
     // }
+
+    // Leaderboards
+    avatar_url: {
+      type: String,
+      required: false,
+      default: "", // Can default to a generic Stemmy avatar URL
+    },
+    school: {
+      type: String,
+      required: false,
+      default: "",
+    },
+    state: {
+      type: String,
+      required: false,
+      default: "",
+    },
+    country: {
+      type: String,
+      required: false,
+      default: "USA",
+    },
   },
   { versionKey: false },
 );
