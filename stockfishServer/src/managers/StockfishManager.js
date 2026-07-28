@@ -112,7 +112,7 @@ console.log(session)
           gameSocket: session.gameSocket,
           move: moveStr,
         });
-
+console.log(session.socket.id)
         session.socket.emit("evaluation-complete", {
           mode: "move",
           move: moveStr,

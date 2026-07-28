@@ -216,6 +216,7 @@ export const useChessSocket = ({
     // boardstate - primary source of truth
     socket.on("boardstate", (msg: string) => {
       try {
+        console.log("just recieved a boardstate");
         const parsed: BoardState = JSON.parse(msg);
         const rawFen = (parsed as any).boardState || (parsed as any).fen;
         const newFen = normalizeFen(rawFen);
@@ -241,6 +242,7 @@ export const useChessSocket = ({
     });
 
     socket.on("evaluation-complete", ({ gameMetaData }) => {
+      console.log(gameMetaData);
       const lastMove =
         gameMetaData.movesList[gameMetaData.movesList.length - 1];
       const [from, rest] = lastMove.split(" -> ");

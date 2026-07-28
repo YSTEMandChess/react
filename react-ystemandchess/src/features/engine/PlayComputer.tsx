@@ -94,35 +94,67 @@ const PlayComputer: React.FC = () => {
     console.log("Logged in attempted");
   }, [cookies.login]);
 
-  const onOpponentMove = (data: { fen: string; move?: Move }) => {
-    if (!yourTurn) {
+ const onOpponentMove = (data: { fen: string; move?: Move }) => {
+  if (!data.move) {
+    console.log("No move received");
+    return;
+  }
+
+  const { from, to, promotion } = data.move;
+
+  // If the move is already applied locally, ignore it
+  const currentFen = gameRef.current.fen();
+  if (currentFen === data.fen) {
+    console.log("Ignoring duplicate move");
+    return;
+  }
+
+  if (!yourTurn) {
+    try {
       const moveResult = gameRef.current.move({
-        from: data.move.from,
-        to: data.move.to,
-        promotion: data.move.promotion,
+        from,
+        to,
+        promotion,
       });
-      if (!moveResult) return;
 
-      setFen(gameRef.current.fen());
-      setYourTurn((prev) => !prev);
-      setHighlightSquares([data.move.from, data.move.to]);
-      const moveStr = data.move.promotion
-        ? `${data.move.from} -> ${data.move.to} (${data.move.promotion})`
-        : `${data.move.from} -> ${data.move.to}`;
-
-      setMoveHistory((prev) => [...prev, moveStr]);
-      if (checkGameStatus()) return;
-
-      if (gameMetaData.current) {
-        gameMetaData.current.movesList = moveHistory;
-        gameMetaData.current.fen = gameRef.current.fen();
-        gameMetaData.current.updatedAt = Date.now().toString();
-        chessSocketRef?.current.saveGame(gameMetaData.current);
+      if (!moveResult) {
+        console.log("Move was invalid, ignoring:", from, to);
+        return;
       }
-    } else {
-      console.log("Not the Opponent's turn");
+
+      const newFen = gameRef.current.fen();
+
+      setFen(newFen);
+      setHighlightSquares([from, to]);
+
+      const moveStr = promotion
+        ? `${from} -> ${to} (${promotion})`
+        : `${from} -> ${to}`;
+
+      setMoveHistory((prev) => {
+        const updated = [...prev, moveStr];
+
+        if (gameMetaData.current) {
+          gameMetaData.current.movesList = updated;
+          gameMetaData.current.fen = newFen;
+          gameMetaData.current.updatedAt = Date.now().toString();
+          chessSocketRef?.current.saveGame(gameMetaData.current);
+        }
+
+        return updated;
+      });
+
+      setYourTurn(true);
+
+      checkGameStatus();
+
+    } catch (error) {
+      console.log("Ignoring duplicate/invalid opponent move:", error);
     }
-  };
+  } else {
+    console.log("Not opponent's turn");
+  }
+};
 const endGame = (outcome: "won" | "lost" | "ongoing" | "draw") => {
     if (location.state && gameMetaData.current) {
       gameMetaData.current.status = outcome;
@@ -231,6 +263,7 @@ const isPlayersTurn = (
         if (checkGameStatus()) return;
 
         if (gameMetaData.current) {
+          console.log(moveHistory)
           gameMetaData.current.movesList = moveHistory;
           gameMetaData.current.fen = newFen;
           gameMetaData.current.updatedAt = Date.now().toString();
@@ -246,9 +279,8 @@ const isPlayersTurn = (
           computerMove: false,
           username: gameMetaData.current?.user?.username ?? "",
         };
-
+console.log("sending sumn")
         chessSocketRef?.current.sendMove(moveType);
-        setYourTurn((prev) => !prev);
       } catch (error) {
         console.error("Error handling move:", error);
       }

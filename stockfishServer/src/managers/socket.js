@@ -8,12 +8,9 @@ const stockfishManager = new StockfishManager();
  */
 const initializeSocket = (socket) => {
   // Start a new Stockfish session for the client
-        console.log('trying to start')
 
   socket.on("start-session", ({ sessionType, fen, gameSocket }) => {
     try {
-            console.log("game Socketttttt", gameSocket)
-
       stockfishManager.registerSession(socket, sessionType, fen,undefined, gameSocket);
       socket.emit("session-started", { success: true, id: socket.id });
     } catch (err) {
@@ -33,7 +30,6 @@ const initializeSocket = (socket) => {
   // Request Stockfish to evaluate a position
   socket.on("evaluate-fen",  ({fen, move, level,gameSocket} ) => {
     try {
-      console.log("game Socketttttt", gameSocket)
       stockfishManager.evaluateFen(socket.id, gameSocket, fen, move, level);
     } catch (err) {
       socket.emit("evaluation-error", { error: err.message });

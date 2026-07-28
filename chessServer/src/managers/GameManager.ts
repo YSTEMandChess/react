@@ -14,6 +14,7 @@ type Player = {
 
 export type GameInstance = {
   student?: Player;
+  uuid?: string;
   mentor?: Player;
   game?: any;
   color?: any;
@@ -59,28 +60,39 @@ class GameManager {
     color: "white" | "black";
     newGame: boolean;
   } {
-    const { user, opponent, gameType, fen, movesList, playerColor, createdAt } =
-      gameMetaData;
+    const {
+      user,
+      opponent,
+      gameType,
+      fen,
+      movesList,
+      playerColor,
+      createdAt,
+      uuid,
+    } = gameMetaData;
 
     let game = this.ongoingGames.find(
-      (g) =>
-        g.student?.username === student ||
-        g.mentor?.username === mentor ||
-        g.student?.username === user?.username ||
-        g.opponent?.username === opponent?.username,
+      (g) => g.uuid == uuid || g.uuid == socketId,
     );
 
     if (game) {
       if (role === "student" && game.student) {
-        game.student.id = socketId;
-
-        return {
-          game,
-          color: game.student.color,
-          newGame: false,
-        };
+        if (!game.student.id) {
+          game.student.id = socketId;
+          return {
+            game,
+            color: game.student.color,
+            newGame: false,
+          };
+        } else {
+          game.opponent.id = socketId;
+          return {
+            game,
+            color: game.student.color,
+            newGame: false,
+          };
+        }
       }
-
       if (role === "mentor" && game.mentor) {
         game.mentor.id = socketId;
 
@@ -90,34 +102,10 @@ class GameManager {
           newGame: false,
         };
       }
-
-      if (user?.username === game.student?.username) {
-        game.student.id = socketId;
-
-        return {
-          game,
-          color: game.student.color,
-          newGame: false,
-        };
-      }
-
-      if (opponent?.username === game.opponent?.username) {
-        if (game.opponent) {
-          game.opponent.id = socketId;
-        }
-
-        return {
-          game,
-          color: game.opponent?.color ?? "white",
-          newGame: false,
-        };
-      }
     }
     const board = new Chess();
-
     if (fen) {
       const validation = validateFen(fen);
-
       if (validation.ok) {
         board.load(fen);
       } else {
@@ -147,6 +135,7 @@ class GameManager {
 
         boardState: board,
         pastStates: [],
+        uuid: uuid || socketId,
         gameMetaData,
       };
 
@@ -179,7 +168,8 @@ class GameManager {
       },
 
       boardState: board,
-      pastStates: movesList ?? [],
+      pastStates: [],
+      uuid: uuid || socketId,
       gameMetaData,
     };
     console.log(this.ongoingGames);
@@ -294,15 +284,13 @@ class GameManager {
    * @returns {Object} Updated board state, move details, and socket IDs
    */
   makeMove(socketId, moveFrom, moveTo, promotion) {
-    console.log("ONGOINGGAMESSS", this.ongoingGames);
-    console.log("socketId", socketId);
+    console.log("calling move");
     const game = this.getGameBySocketId(socketId);
 
     if (!game) {
-      console.log("ongoing games", this.ongoingGames);
       throw new Error("Game not found for this socket!");
     }
-    console.log("found it!");
+
     const board = game.boardState;
 
     const move = {
@@ -311,10 +299,13 @@ class GameManager {
       ...(promotion ? { promotion } : {}),
     };
 
-    const moveResult = board.move(move);
+    let moveResult;
 
-    if (!moveResult) {
-      throw new Error("Invalid move!");
+    try {
+      console.log("calling moooooooveeee", move);
+      moveResult = board.move(move);
+    } catch (err) {
+      throw "ayo";
     }
 
     const moveStr = promotion
@@ -445,16 +436,24 @@ class GameManager {
   broadcastBoardState(gameInfo, io) {
     const fen = gameInfo.boardState;
 
+    console.log("sending out boardstate soon");
+
     const studentSocket = io.sockets.sockets.get(gameInfo.studentId);
     const mentorSocket = io.sockets.sockets.get(gameInfo.mentorId);
     const opponentSocket = io.sockets.sockets.get(gameInfo.opponentId);
 
     if (studentSocket) {
       studentSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
+
+      studentSocket.emit("evaluation-complete", {
+        gameMetaData: gameInfo.gameMetaData,
+      });
     }
+
     if (mentorSocket) {
       mentorSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
     }
+
     if (opponentSocket) {
       opponentSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
     }
@@ -600,10 +599,14 @@ class GameManager {
   getGameBySocketId(socketId) {
     return this.ongoingGames.find(
       (game) =>
+        game.uuid == socketId ||
         game.student.id == socketId ||
         game.mentor.id == socketId ||
         game.opponent.id == socketId,
     );
+  }
+  getGameByUUID(uuid) {
+    return this.ongoingGames.find((game) => game.uuid == uuid);
   }
 }
 
