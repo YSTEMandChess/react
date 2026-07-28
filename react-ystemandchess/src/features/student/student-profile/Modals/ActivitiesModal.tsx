@@ -129,7 +129,7 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
                   >
                     <span className="label">Daily Activity</span><br />
                     <span className="action">{activity.displayName}</span>
-                    {activity.completed ? <div>t</div> : <div>f</div>}
+                    {activity.completed ? <div className="status-icon">✅</div> : <div className="status-icon">⏳</div>}
                   </button>
                   //check completed status, display conditional, then complete task in puzzles to check
                 )
