@@ -91,21 +91,18 @@ const PlayComputer: React.FC = () => {
       }
     };
     verifyAndLoad();
-    console.log("Logged in attempted");
+    console.log("gameMetadata", gameMetaData)
   }, [cookies.login]);
 
  const onOpponentMove = (data: { fen: string; move?: Move }) => {
   if (!data.move) {
-    console.log("No move received");
     return;
   }
 
   const { from, to, promotion } = data.move;
 
-  // If the move is already applied locally, ignore it
   const currentFen = gameRef.current.fen();
   if (currentFen === data.fen) {
-    console.log("Ignoring duplicate move");
     return;
   }
 
@@ -172,6 +169,7 @@ const chessSocket = useChessSocket({
   onMove: onOpponentMove,
   onLastMove: endGame,
 });
+
 useEffect(() => {
 
   const initializeGame = async () => {
@@ -350,7 +348,6 @@ console.log("sending sumn")
 
 
   const loadGame = async () => {
-    console.log("callign startnewgame1")
 
     const defaultGame : GameMetaData= location.state ?? {userId: null,
     user:null,
@@ -399,7 +396,7 @@ console.log("sending sumn")
 
   const applyGameState = (game: GameMetaData) => {
     gameRef.current = new Chess(game.fen);
-    chessBoardRef.current.setPosition(game.fen); // use game.fen, not stale fen
+    chessBoardRef.current.setPosition(game.fen); 
     setDifficulty(game.computerLevel);
     setMoveHistory(game.movesList);
     setHighlightSquares([]);

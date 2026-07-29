@@ -38,9 +38,11 @@ const getGamesByStudent = async (req, res) => {
 
 // Add new game to database 
 const addNewGame = async (req, res, next) => {
+    console.log(req.body)
+    console.log("starting")
     try {
         const gameSettings = {
-            userId: req.body.studentId,
+            userId: req.body.userId,
             opponentId: req.body.opponentId,
             gameType: req.body.gameType,
             playerColor: req.body.playerColor,
@@ -53,8 +55,10 @@ const addNewGame = async (req, res, next) => {
         const newGame = new savedGame(gameSettings);
         const game = await newGame.save();
         req.game = game.uuid;
+        console.log("game",game)
         next();
     } catch (error) {
+        console.log(error)
         return res.status(500).json({ error: error.message });
     }
 };
@@ -63,37 +67,46 @@ const addNewGame = async (req, res, next) => {
 // Push new game id to student game array 
 //Task : make this function also callable on its own to add a game to another student for friend x friend gameplay 
 const addGameToStudent = async (req, res) => {
+    console.log("starting this tho");
+
     try {
-        const id = req.body.studentId;
-        const id2= req.body.opponentId
+        const id = req.body.userId;
+        const opponentId = req.body.opponentId;
         const game = req.game;
+
         const student = await users.findById(id);
+
         if (!student) {
             return res.status(404).json({ message: "No student in DB" });
         }
-        const alreadySaved = student.savedGames.some((item) => item === game);
-        if (alreadySaved) {
-            return res.status(500).json({ message: "Game has been saved under this ID already" });
-        }
-        
-        student.savedGames.push(game);
-        await student.save();
 
-        if (id2){
-        const opponent = await users.findById(id);
-        if (!opponent) {
-            return res.status(404).json({ message: "No student in DB" });
+        if (!student.savedGames.includes(game)) {
+            student.savedGames.push(game);
+            await student.save();
         }
-        const alreadySaved = opponent.savedGames.some((item) => item === game);
-        if (alreadySaved) {
-            return res.status(500).json({ message: "Game has been saved under this ID already" });
+
+        if (req.body.gameType === "friend") {
+            const opponent = await users.findById(opponentId);
+
+            if (!opponent) {
+                return res.status(404).json({ message: "Opponent not found" });
+            }
+
+            if (!opponent.savedGames.includes(game)) {
+                opponent.savedGames.push(game);
+                await opponent.save();
+            }
         }
-        
-        opponent.savedGames.push(game)
-        await opponent.save()
-        }
-        return res.status(200).json({ message: "Game has been successfully paired with student", uuid: game });
+
+        console.log("saved");
+
+        return res.status(200).json({
+            message: "Game has been successfully paired with student",
+            uuid: game
+        });
+
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ error: error.message });
     }
 };

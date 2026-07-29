@@ -87,6 +87,12 @@ const registerSocketHandlers = (socket, io, stockfish) => {
       }
       //save the game and use the UUID for updates
       if (gameMetaData.gameType !== "guest") {
+        gameMetaData.uuid = null;
+        console.log(
+          "Saving this Game",
+          `${process.env.MIDDLEWARE_URL}/savedGames/addgame`,
+          gameMetaData,
+        );
         const res = await fetch(
           `${process.env.MIDDLEWARE_URL}/savedGames/addgame`,
           {
@@ -97,6 +103,8 @@ const registerSocketHandlers = (socket, io, stockfish) => {
             body: JSON.stringify(gameMetaData),
           },
         );
+        console.log("Status:", res.status);
+
         if (!res.ok) {
           throw new Error("Did not save the game to the backend.");
         }
