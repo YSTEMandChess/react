@@ -36,81 +36,115 @@ const getGamesByStudent = async (req, res) => {
     }
 };
 
-// Add new game to database 
+// Add new game to database
 const addNewGame = async (req, res, next) => {
-    console.log(req.body)
-    console.log("starting")
-    try {
-        const gameSettings = {
-            userId: req.body.userId,
-            opponentId: req.body.opponentId,
-            gameType: req.body.gameType,
-            playerColor: req.body.playerColor,
-            gameName: req.body.gameName || "Untitled Match",
-            computerLevel: req.body.gameType === 'computer' ? (req.body.computerLevel || 1) : null,
-            fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-            movesList: [],
-            status: "ongoing"
-        };
-        const newGame = new savedGame(gameSettings);
-        const game = await newGame.save();
-        req.game = game.uuid;
-        console.log("game",game)
-        next();
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ error: error.message });
+  try {
+    // Game already exists
+    if (req.body.uuid) {
+      const existingGame = await savedGame.findOne({
+        uuid: req.body.uuid,
+      });
+
+      if (existingGame) {
+        req.game = existingGame.uuid;
+        req.existingGame = existingGame;
+        return next();
+      }
     }
+
+    // Create a new game
+    const gameSettings = {
+      userId: req.body.userId,
+      opponentId: req.body.opponentId,
+      gameType: req.body.gameType,
+      playerColor: req.body.playerColor,
+      gameName: req.body.gameName || "Untitled Match",
+      computerLevel:
+        req.body.gameType === "computer"
+          ? req.body.computerLevel || 1
+          : null,
+      fen:
+        req.body.fen ||
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      movesList: req.body.movesList || [],
+      status: req.body.status || "ongoing",
+    };
+
+    const game = await savedGame.create(gameSettings);
+
+    req.game = game.uuid;
+    req.createdGame = game;
+
+    return next();
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
 };
 
-
-// Push new game id to student game array 
-//Task : make this function also callable on its own to add a game to another student for friend x friend gameplay 
+// Push new game id to student's saved games
 const addGameToStudent = async (req, res) => {
-    console.log("starting this tho");
+  try {
+    const userId = req.body.userId;
+    const opponentId = req.body.opponentId;
+    const gameUuid = req.game;
 
-    try {
-        const id = req.body.userId;
-        const opponentId = req.body.opponentId;
-        const game = req.game;
+    const student = await users.findById(userId);
 
-        const student = await users.findById(id);
-
-        if (!student) {
-            return res.status(404).json({ message: "No student in DB" });
-        }
-
-        if (!student.savedGames.includes(game)) {
-            student.savedGames.push(game);
-            await student.save();
-        }
-
-        if (req.body.gameType === "friend") {
-            const opponent = await users.findById(opponentId);
-
-            if (!opponent) {
-                return res.status(404).json({ message: "Opponent not found" });
-            }
-
-            if (!opponent.savedGames.includes(game)) {
-                opponent.savedGames.push(game);
-                await opponent.save();
-            }
-        }
-
-        console.log("saved");
-
-        return res.status(200).json({
-            message: "Game has been successfully paired with student",
-            uuid: game
-        });
-
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: error.message });
+    if (!student) {
+      return res.status(404).json({
+        message: "No student in DB",
+      });
     }
-};
 
+    // Only attach game if this is a brand new one
+    if (!req.existingGame) {
+      if (!student.savedGames.includes(gameUuid)) {
+        student.savedGames.push(gameUuid);
+        await student.save();
+      }
+
+      if (req.body.gameType === "friend") {
+        const opponent = await users.findById(opponentId);
+
+        if (!opponent) {
+          return res.status(404).json({
+            message: "Opponent not found",
+          });
+        }
+
+        if (!opponent.savedGames.includes(gameUuid)) {
+          opponent.savedGames.push(gameUuid);
+          await opponent.save();
+        }
+      }
+    }
+
+    // Use whichever game object exists
+    const game = req.existingGame || req.createdGame;
+
+    return res.status(200).json({
+      message: req.existingGame
+        ? "Existing game loaded"
+        : "New game created",
+      uuid: game.uuid,
+      existing: Boolean(req.existingGame),
+
+      // Values the frontend needs
+      fen: game.fen,
+      movesList: game.movesList,
+      status: game.status,
+
+      // Entire game document if needed
+      game,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+};
 // Overwrite game settings dynamically
 const overWrite = async (req, res) => {
     try {

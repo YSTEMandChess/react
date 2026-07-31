@@ -49,7 +49,7 @@ const PlayComputer: React.FC = () => {
   const [showGameEndModal, setShowGameEndModal] = useState(false);
   const [gameEndMessage, setGameEndMessage] = useState("");
   const gameMetaData = useRef<GameMetaData>(null);
-  const [yourTurn, setYourTurn] = useState<boolean>(null);
+  const [yourTurn, setYourTurn] = useState<boolean>(true);
 
   //functions to write
   //start game
@@ -95,17 +95,23 @@ const PlayComputer: React.FC = () => {
   }, [cookies.login]);
 
  const onOpponentMove = (data: { fen: string; move?: Move }) => {
-  if (!data.move) {
+    console.log("received opponent data", data);
+
+  // board synchronization only
+  if (!data.move.from) {
+    console.log("updating board from fen", data.fen);
+
+    gameRef.current = new Chess(data.fen);
+    setYourTurn(false);
+
     return;
   }
-
   const { from, to, promotion } = data.move;
 
   const currentFen = gameRef.current.fen();
-  if (currentFen === data.fen) {
-    return;
-  }
+  
 
+console.log("checking turn", yourTurn)
   if (!yourTurn) {
     try {
       const moveResult = gameRef.current.move({
@@ -149,9 +155,9 @@ const PlayComputer: React.FC = () => {
       console.log("Ignoring duplicate/invalid opponent move:", error);
     }
   } else {
-    console.log("Not opponent's turn");
-  }
+setYourTurn(false)  }
 };
+
 const endGame = (outcome: "won" | "lost" | "ongoing" | "draw") => {
     if (location.state && gameMetaData.current) {
       gameMetaData.current.status = outcome;
@@ -198,31 +204,34 @@ useEffect(() => {
 
 useEffect(() => {
   if (!fen) return;
+  console.log("fen",fen)
+  console.log("playerColor", playerColor)
+  console.log(isPlayersTurn(fen, playerColor))
 
   setYourTurn(isPlayersTurn(fen, playerColor));
-}, [fen, playerColor]);
+}, [fen, playerColor, chessSocketRef.current]);
 
-  useEffect(() => {
-    if (yourTurn === false) {
-      console.log("requesting move")
+ useEffect(() => {
+  console.log("TURN CHANGED", yourTurn);
 
-      if (gameMetaData.current?.gameType === "computer" || gameMetaData.current?.gameType === "guest") {
-        const moveType: Move = {
-          from: null,
-          to: null,
-          promotion: null,
-          piece: null,
-          captured: null,
-          flags: null,
-          computerMove: true,
-          username: gameMetaData.current?.user?.username ?? "",
-        };
+  if (
+    yourTurn === false &&
+    gameMetaData.current?.gameType === "computer"
+  ) {
+    console.log("REQUESTING STOCKFISH MOVE");
 
-        chessSocketRef?.current.sendMove(moveType);
-      }
-    }
-  }, [yourTurn]);
-
+    chessSocketRef.current.sendMove({
+      from:null,
+      to:null,
+      promotion:null,
+      piece:null,
+      captured:null,
+      flags:null,
+      computerMove:true,
+      username: gameMetaData.current.user?.username ?? "",
+    });
+  }
+}, [yourTurn, fen]);
  
 const isPlayersTurn = (
   fen: string,
@@ -332,7 +341,7 @@ console.log("sending sumn")
     setFen(startFen);
     setMoveHistory([]);
     setHighlightSquares([]);
-    setYourTurn(null);
+    setYourTurn(true);
     setShowGameEndModal(false);
     setPlayerColor("white")
     if (chessSocketRef) {
@@ -390,6 +399,7 @@ console.log("sending sumn")
       applyGameState(newGame);
 
     }
+    console.log("calling start new game")
     chessSocketRef.current.startNewGame(gameMetaData);
 
   };

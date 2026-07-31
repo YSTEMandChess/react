@@ -1,5 +1,6 @@
 import { URLSearchParams } from "url";
 import { GameInstance } from "./GameManager";
+import { disconnect } from "cluster";
 
 const GameManager = require("./GameManager");
 
@@ -85,7 +86,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         }
         gameMetaData.opponentId = stockfishSessionId;
       }
-      //save the game and use the UUID for updates
+
       if (gameMetaData.gameType !== "guest") {
         gameMetaData.uuid = null;
         console.log(
@@ -111,14 +112,17 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         const data = await res.json();
         const { uuid } = data;
         gameMetaData.uuid = uuid;
+        const { fen } = data;
+        if (fen) {
+          gameMetaData.fen = fen;
+        }
       }
-
-      const result = gameManager.createOrJoinGame({
+      let result = gameManager.createOrJoinGame({
         socketId: socket.id,
         student,
         mentor,
         role,
-        stockfishSocketId: stockfish,
+        stockfishSocketId: stockfish.id,
         gameMetaData,
       });
 
@@ -126,6 +130,13 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         boardState: result.game.boardState.fen(),
         color: result.color,
       });
+
+      const broadcast = {
+        gameMetaData: result.game.gameMetaData,
+        boardState: result.game.boardState,
+        studentId: socket.id,
+      };
+      gameManager.broadcastBoardState(broadcast, io);
     } catch (err: any) {
       console.error(err);
       socket.emit("Error Creating a New Game", err.message);
@@ -137,8 +148,9 @@ const registerSocketHandlers = (socket, io, stockfish) => {
     console.log("id", stockfish.id);
 
     return new Promise<string>((resolve, reject) => {
-      stockfish.once("session-started", ({ success, id }) => {
+      stockfish.on("session-started", ({ success, id }) => {
         if (success) {
+          console.log("session started jfnfdnk");
           resolve(id);
         } else {
           reject(new Error("Failed to start Stockfish session."));
@@ -501,19 +513,31 @@ const registerSocketHandlers = (socket, io, stockfish) => {
 
   socket.on("disconnect", () => {
     const game = gameManager.getGameBySocketId(socket.id);
+
     if (!game) {
-      console.log("game not found for this socket");
+      console.log("game not found for this socket, disconnecting");
       return;
     }
 
     const result = gameManager.endGame(
-      game.student.username,
-      game.mentor.username,
+      game.uuid,
+      game.student?.username,
+      game.mentor?.username,
     );
 
     // reset game
-    io.to(result.studentId).emit("reset");
-    io.to(result.mentorId).emit("reset");
+    if (result.studentId) {
+      io.to(result.studentId).emit("reset");
+    }
+
+    if (result.mentorId) {
+      io.to(result.mentorId).emit("reset");
+    }
+
+    if (result.opponentId) {
+      io.to(result.opponentId).emit("reset");
+    }
+
     console.log("game ended successfully");
   });
 };

@@ -11,6 +11,8 @@ const initializeSocket = (socket) => {
 
   socket.on("start-session", ({ sessionType, fen, gameSocket }) => {
     try {
+            console.log("lookingn at info", sessionType,fen, gameSocket )
+
       stockfishManager.registerSession(socket, sessionType, fen,undefined, gameSocket);
       socket.emit("session-started", { success: true, id: socket.id });
     } catch (err) {

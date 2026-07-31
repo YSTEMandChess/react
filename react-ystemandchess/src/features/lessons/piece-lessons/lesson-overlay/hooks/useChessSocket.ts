@@ -242,6 +242,22 @@ export const useChessSocket = ({
     });
 
     socket.on("evaluation-complete", ({ gameMetaData }) => {
+      console.log("got the new board");
+      console.log(gameMetaData);
+
+      if (
+        gameMetaData.movesList == undefined ||
+        gameMetaData.movesList.length == 0
+      ) {
+        if (onMove) {
+          onMove({
+            fen: gameMetaData.fen,
+            move: { from: null, to: null, promotion: null },
+          });
+        }
+        return;
+      }
+
       console.log(gameMetaData);
       const lastMove =
         gameMetaData.movesList[gameMetaData.movesList.length - 1];

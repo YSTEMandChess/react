@@ -2,6 +2,7 @@ const { spawn } = require("child_process");
 const crypto = require("crypto");
 const { Chess } = require("chess.js");
 const path = require("path");
+const { Socket } = require("dgram");
 
 let enginePath;
 
@@ -133,10 +134,19 @@ console.log(session.socket.id)
 
   registerSession(socket, sessionType, fen = null, infoMode = false, gameSocket) {
     const socketId = socket.id; // Stockfish socket ID
+console.log("got this far1")
 
     if (this.sessions.has(socketId)) {
-      throw new Error("Session already exists!");
+     const session = this.sessions.get(socketId);
+
+    console.log("got this far alternate route2", session);
+
+    return session.readyPromise;
     }
+         
+
+    console.log("got this far2")
+
 
     const game = new Chess(fen || undefined);
     const engine = spawn(enginePath);
@@ -174,13 +184,16 @@ console.log(session.socket.id)
     session.readyPromise = new Promise((resolve) => {
       session.resolveReady = resolve;
     });
-
+console.log("got this far3")
     this.sessions.set(socketId, session);
+console.log("got this far4")
 
     this._configureEngine(socketId);
+console.log("got this far5")
 
     engine.stdin.write("uci\n");
     engine.stdin.write("isready\n");
+console.log("got this far6")
 
     console.log(
       "Started Stockfish session:",

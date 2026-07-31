@@ -408,12 +408,19 @@ class GameManager {
    * @param {*} studentUsername
    * @param {*} mentorUsername
    */
-  endGame(studentUsername, mentorUsername) {
-    const gameIndex = this.ongoingGames.findIndex(
-      (game) =>
-        game.student.username == studentUsername &&
-        game.mentor.username == mentorUsername,
-    );
+  endGame(uuid, studentUsername, mentorUsername) {
+    const gameIndex = this.ongoingGames.findIndex((game) => {
+      // UUID is the real identifier
+      if (uuid && game.uuid === uuid) {
+        return true;
+      }
+
+      // fallback if uuid is missing
+      return (
+        game.student?.username === studentUsername &&
+        game.mentor?.username === mentorUsername
+      );
+    });
 
     if (gameIndex === -1) {
       throw new Error("Game not found");
@@ -423,8 +430,9 @@ class GameManager {
 
     return {
       success: true,
-      studentId: removedGame.student.id,
-      mentorId: removedGame.mentor.id,
+      studentId: removedGame.student?.id ?? null,
+      mentorId: removedGame.mentor?.id ?? null,
+      opponentId: removedGame.opponent?.id ?? null,
     };
   }
 
@@ -436,15 +444,11 @@ class GameManager {
   broadcastBoardState(gameInfo, io) {
     const fen = gameInfo.boardState;
 
-    console.log("sending out boardstate soon");
-
     const studentSocket = io.sockets.sockets.get(gameInfo.studentId);
     const mentorSocket = io.sockets.sockets.get(gameInfo.mentorId);
     const opponentSocket = io.sockets.sockets.get(gameInfo.opponentId);
 
     if (studentSocket) {
-      studentSocket.emit("boardstate", JSON.stringify({ boardState: fen }));
-
       studentSocket.emit("evaluation-complete", {
         gameMetaData: gameInfo.gameMetaData,
       });
@@ -596,14 +600,30 @@ class GameManager {
    * @param {*} socketId
    * @returns
    */
-  getGameBySocketId(socketId) {
-    return this.ongoingGames.find(
-      (game) =>
-        game.uuid == socketId ||
-        game.student.id == socketId ||
-        game.mentor.id == socketId ||
-        game.opponent.id == socketId,
-    );
+  getGameBySocketId(socketId: string) {
+    console.log("LOOKING FOR SOCKET:", socketId);
+
+    for (const game of this.ongoingGames) {
+      console.log({
+        uuid: game.uuid,
+        student: game.student?.id,
+        mentor: game.mentor?.id,
+        opponent: game.opponent?.id,
+      });
+
+      if (
+        game.uuid === socketId ||
+        game.student?.id === socketId ||
+        game.mentor?.id === socketId ||
+        game.opponent?.id === socketId
+      ) {
+        console.log("FOUND GAME:", game.uuid);
+        return game;
+      }
+    }
+
+    console.log("NO MATCH FOUND");
+    return undefined;
   }
   getGameByUUID(uuid) {
     return this.ongoingGames.find((game) => game.uuid == uuid);

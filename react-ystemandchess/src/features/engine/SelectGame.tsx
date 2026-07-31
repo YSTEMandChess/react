@@ -43,12 +43,13 @@ const SelectGame = () => {
 
     const navigate = useNavigate();
 
-    const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false)
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
     const [cookies, setCookie, removeCookie] = useCookies(["login"])
 
     const user = useRef<User>(null)
-    const [games, setGames] = useState<GameMetaData[]>(null)
+    const [games, setGames] = useState<GameMetaData[]>([])
     const [loading, setLoading] = useState<boolean>(false)
+    const [gamesError, setGamesError] = useState<string | null>(null)
 
     const [flowStep, setFlowStep] = useState<FlowStep>("start")
     const [friendSearch, setFriendSearch] = useState<string>("")
@@ -61,6 +62,7 @@ const SelectGame = () => {
     const [selectedFriend, setSelectedFriend] = useState<User>(null)
     const [playerColor, setPlayerColor] = useState<"white" | "black">("white")
     const [difficulty, setDifficulty] = useState<number>(10)
+    const [startingGame, setStartingGame] = useState<boolean>(false)
 
     useEffect(() => {
         if (!cookies.login) {
@@ -89,7 +91,6 @@ const SelectGame = () => {
         };
 
         verifyAndLoad();
-        console.log("Logged in")
 
     }, [cookies.login]);
 
@@ -112,38 +113,69 @@ const SelectGame = () => {
         return () => clearTimeout(timeoutId)
     }, [friendSearch, flowStep]);
 
+    // Computer/guest games have no opponent to look up - only friend/mentor games do.
+    // A failed lookup shouldn't drop the game from the list, so this always resolves
+    // with a usable GameMetaData instead of swallowing errors into `undefined`.
     const addOpponentInfo = async (gameInfo: GameMetaData): Promise<GameMetaData> => {
+        const withUser = { ...gameInfo, user: user.current }
+
+        const hasOpponent = (gameInfo.gameType === "friend" || gameInfo.gameType === "mentor") && !!gameInfo.opponentId
+
+        if (!hasOpponent) {
+            return withUser
+        }
+
         try {
-            const opponentId = gameInfo.opponentId
-            const res = await fetch(`${environment.urls.middlewareURL}/user/getUser/${opponentId}`);
+            const res = await fetch(`${environment.urls.middlewareURL}/user/getUser/${gameInfo.opponentId}`);
+            if (!res.ok) {
+                console.log("Could not load opponent for game", gameInfo.uuid)
+                return withUser
+            }
             const opponentInfo = await res.json() as User;
-            gameInfo.opponent = opponentInfo;
-            gameInfo.user = user.current
-            return gameInfo
+            return { ...withUser, opponent: opponentInfo }
         }
         catch (error) {
             console.log(error)
+            return withUser
         }
     }
 
     const getGames = async () => {
+        setLoading(true)
+        setGamesError(null)
         try {
             const res = await fetch(`${environment.urls.middlewareURL}/savedGames/student/${user.current.id}`)
+            if (!res.ok) {
+                throw new Error(`Failed to load saved games (${res.status})`)
+            }
             const data = await res.json()
-            if (!data || data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
+                setGames([])
                 return
             }
+
             const res2 = await fetch(`${environment.urls.middlewareURL}/savedGames/batch`, {
                 method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ uuids: data })
             })
+            if (!res2.ok) {
+                throw new Error(`Failed to load game details (${res2.status})`)
+            }
             const data2 = await res2.json() as GameMetaData[]
-            const games = await Promise.all(data2.map(item => addOpponentInfo(item))) as GameMetaData[]
+            const enrichedGames = await Promise.all(data2.map(item => addOpponentInfo(item)))
 
-            setGames(games)
+            // most recently updated first
+            enrichedGames.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+
+            setGames(enrichedGames)
         }
         catch (error) {
             console.log(error)
+            setGamesError("Couldn't load your previous games. Try refreshing.")
+        }
+        finally {
+            setLoading(false)
         }
     }
 
@@ -153,6 +185,10 @@ const SelectGame = () => {
     const searchStudents = async (keyword: string) => {
         try {
             const res = await fetch(`${environment.urls.middlewareURL}/user/getStudent?keyword=${encodeURIComponent(keyword)}`)
+            if (!res.ok) {
+                setFriendResults([])
+                return
+            }
             const usernames = await res.json() as string[]
             setFriendResults(usernames)
         }
@@ -180,7 +216,7 @@ const SelectGame = () => {
             opponentId: opponent ? String(opponent.id) : null,
             gameName: gameNameFor(gameType, opponent),
             gameType: gameType,
-            computerLevel: gameType === "computer" || "guest" ? difficulty : null,
+            computerLevel: (gameType === "computer" || gameType === "guest") ? difficulty : null,
             fen: STARTING_FEN,
             movesList: [],
             playerColor: playerColor,
@@ -222,13 +258,61 @@ const SelectGame = () => {
         }
     }
 
-    const handleStartGame = () => {
-        const newGame = buildNewGame(pendingGameType, pendingGameType === "friend" ? selectedFriend : undefined)
-        navigate("/play", { state: newGame })
+    // Persists a brand-new game to the backend so it actually shows up later as a
+    // "previous game." Guest games have no logged-in student to attach it to
+    // (addGameToStudent 404s on a missing userId), so those just play locally.
+    const persistNewGame = async (game: GameMetaData): Promise<GameMetaData> => {
+        if (!isLoggedIn || !user.current) {
+            return game
+        }
+
+        try {
+            const res = await fetch(`${environment.urls.middlewareURL}/savedGames/addgame`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(game)
+            })
+
+            if (!res.ok) {
+                console.log("Failed to save new game, continuing without persistence")
+                return game
+            }
+
+            const saved = await res.json()
+            // server is authoritative for uuid/fen/movesList/status/timestamps;
+            // keep our locally-resolved `user`/`opponent` objects since those
+            // aren't part of the persisted schema
+            return { ...game, ...saved.game, user: game.user, opponent: game.opponent }
+        }
+        catch (error) {
+            console.log(error)
+            return game
+        }
     }
 
+    const handleStartGame = async () => {
+        setStartingGame(true)
+        try {
+            const opponent = pendingGameType === "friend" ? selectedFriend : undefined
+            const newGame = buildNewGame(pendingGameType, opponent)
+            const persistedGame = await persistNewGame(newGame)
+            navigate("/play", { state: persistedGame })
+        }
+        finally {
+            setStartingGame(false)
+        }
+    }
+
+    // The saved game only stores one `playerColor` (the creator's). If the person
+    // continuing is the opponent rather than the creator, they need the opposite
+    // color or they'd be dropped into the game playing the wrong side.
     const handleNav = (game: GameMetaData) => {
-        navigate("/play", { state: game })
+        const isCreator = !user.current || String(game.userId) === String(user.current.id)
+        const colorForViewer: "white" | "black" = isCreator
+            ? game.playerColor
+            : (game.playerColor === "white" ? "black" : "white")
+
+        navigate("/play", { state: { ...game, playerColor: colorForViewer } })
     }
 
     const resetFlow = () => {
@@ -237,6 +321,18 @@ const SelectGame = () => {
         setFriendResults([])
         setSelectedFriend(null)
         setPendingGameType(null)
+    }
+
+    const opponentLabel = (game: GameMetaData): string => {
+        if (game.gameType === "computer") return "vs Computer"
+        if (game.gameType === "guest") return "Guest Game"
+        return `vs ${game.opponent?.username ?? "Unknown"}`
+    }
+
+    const formatDate = (value: string): string => {
+        const timestamp = Number(value)
+        const date = Number.isNaN(timestamp) ? new Date(value) : new Date(timestamp)
+        return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString()
     }
 
     return (
@@ -331,8 +427,8 @@ const SelectGame = () => {
                         </div>
                     )}
 
-                    <button onClick={handleStartGame} className="">
-                        Start Game
+                    <button onClick={handleStartGame} disabled={startingGame} className="">
+                        {startingGame ? "Starting..." : "Start Game"}
                     </button>
                     <button
                         onClick={() => setFlowStep(pendingGameType === "friend" ? "friendSelect" : "mode")}
@@ -343,13 +439,22 @@ const SelectGame = () => {
                 </div>
             )}
 
-            {isLoggedIn && games?.map((game, index) => (
-                <div key={index}>
-                    <button onClick={() => { handleNav(game) }}>
-                        <h1>{game.user.username}</h1>
-                    </button>
+            {isLoggedIn && (
+                <div className="flex flex-col gap-2">
+                    <h2>Your Games</h2>
+                    {loading && <p>Loading your games...</p>}
+                    {!loading && gamesError && <p>{gamesError}</p>}
+                    {!loading && !gamesError && games.length === 0 && <p>No previous games yet.</p>}
+                    {!loading && games.map((game) => (
+                        <div key={game.uuid ?? `${game.gameName}-${game.createdAt}`}>
+                            <button onClick={() => { handleNav(game) }} className="">
+                                <h1>{game.gameName}</h1>
+                                <p>{opponentLabel(game)} · {game.status} · {formatDate(game.updatedAt)}</p>
+                            </button>
+                        </div>
+                    ))}
                 </div>
-            ))}
+            )}
         </div>
     )
 }
