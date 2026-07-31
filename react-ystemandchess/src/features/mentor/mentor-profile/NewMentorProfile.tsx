@@ -3,7 +3,7 @@ import "./NewMentorProfile.scss";
 import Images from "../../../assets/images/imageImporter";
 import { SetPermissionLevel } from '../../../globals'; 
 import { useCookies } from 'react-cookie';
-import { environment } from "../../../environments/environment";
+import { environment } from "../../../environments";
 import { useNavigate } from "react-router";
 import StatsChart from "../../student/student-profile/StatsChart";
 import Lessons from "../../lessons/lessons-main/Lessons";
@@ -51,6 +51,7 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
   const [studentFirstName, setStudentFirstName] = useState("");
   const [studentLastName, setStudentLastName] = useState("");
   const [studentUsername, setStudentUsername] = useState("");
+  const [iframeReady, setIframeReady] = useState(false);
 
   // event tracking for pagination
   const [events, setEvents] = useState([]);
@@ -76,6 +77,53 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
     fetchStudentData().catch(err => console.log(err)); // fetch student data when the component mounts
     fetchUserData().catch(err => console.log(err)); // fetch user data when the component mounts
   }, [])
+
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data === 'ReadyToRecieve') {
+        setIframeReady(true);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  useEffect(() => {
+    if (iframeReady && username) {
+      const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
+      if (iframe && iframe.contentWindow) {
+        const data = {
+          command: "userinfo",
+          student: studentUsername || "",
+          mentor: username,
+          role: "mentor"
+        };
+        iframe.contentWindow.postMessage(JSON.stringify(data), window.location.origin);
+      }
+    }
+  }, [iframeReady, username, studentUsername]);
+
+  const handleNewGame = () => {
+    const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(JSON.stringify({ command: "newgame" }), window.location.origin);
+    }
+  };
+
+  const handleEndGame = () => {
+    const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(JSON.stringify({ command: "endgame" }), window.location.origin);
+    }
+  };
+
+  const handleUndo = () => {
+    const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(JSON.stringify({ command: "undo" }), window.location.origin);
+    }
+  };
 
   // Loads student data only after hasStudent has been updated
   useEffect(() => {
@@ -282,9 +330,37 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         );
       case "mentor":
         return (
-          <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
-            <h2>Mentor</h2>
-            <p>This is the content for the Mentor tab.</p>
+          <div id="inventory-content-mentor" className="inventory-content active-content flex flex-col items-center">
+            <h2>Mentor Session</h2>
+            <div className="inventory-content-line mb-4"></div>
+            <div className="flex gap-3 mb-4">
+              <button
+                onClick={handleNewGame}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+              >
+                Start New Game
+              </button>
+              <button
+                onClick={handleUndo}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+              >
+                Undo
+              </button>
+              <button
+                onClick={handleEndGame}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+              >
+                End Game
+              </button>
+            </div>
+            <iframe
+              id="chess-board-iframe"
+              src="/chessclient/index.html"
+              title="Chess Board"
+              className="w-full max-w-[800px] h-[600px] border border-borderLight rounded-lg shadow-sm"
+              frameBorder="0"
+              allowFullScreen
+            ></iframe>
           </div>
         );
       case "learning":

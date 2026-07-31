@@ -27,7 +27,7 @@ import { ReactComponent as BottomVine} from "../../../../assets/images/Activitie
 import { ReactComponent as Stemmy} from "../../../../assets/images/ActivitiesAssets/stemmy.svg";
 import { ReactComponent as CompletedIcon} from "../../../../assets/images/ActivitiesAssets/activitiescomplete.svg";
 import { ReactComponent as IncompleteArrow} from "../../../../assets/images/ActivitiesAssets/activitiesincomplete.svg";
-import { environment } from "../../../../environments/environment"; 
+import { environment } from "../../../../environments"; 
 import { useCookies } from "react-cookie";
 import { parseActivities } from "../../../../core/utils/activityNames";
 

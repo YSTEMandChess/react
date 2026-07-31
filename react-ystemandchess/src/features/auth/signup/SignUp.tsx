@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './SignUp.scss';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments';
 
 // Define the interface for the props of the StudentTemplate component
 interface StudentTemplateProps {
@@ -144,7 +144,7 @@ const Signup = () => {
 
     // Verifies the format of the email address
     const emailVerification = (email: string) => {
-        const isValid = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}/.test(email);
+        const isValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/.test(email);
         setEmailFlag(isValid);
         setErrors((prev) => ({
             ...prev,

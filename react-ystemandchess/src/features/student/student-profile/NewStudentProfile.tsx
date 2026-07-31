@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
 import { SetPermissionLevel } from '../../../globals';
 import { useCookies } from 'react-cookie';
-import { environment } from "../../../environments/environment";
+import { environment } from "../../../environments";
 import { useNavigate } from "react-router";
 import StatsChart from "./StatsChart";
 import Puzzles from "../../puzzles/Puzzles";
@@ -89,6 +89,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [firstName, setFirstName] = useState(" ");
   const [lastName, setLastName] = useState(" ");
   const [mentorUsername, setMentorUsername] = useState("");
+  const [iframeReady, setIframeReady] = useState(false);
 
   // Time spent on different activities (header display)
   const [webTime, setWebTime] = useState(0);
@@ -136,6 +137,53 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
       console.log(err)
     }
   }, [])
+
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data === 'ReadyToRecieve') {
+        setIframeReady(true);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  useEffect(() => {
+    if (iframeReady && username) {
+      const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
+      if (iframe && iframe.contentWindow) {
+        const data = {
+          command: "userinfo",
+          student: username,
+          mentor: mentorUsername || "",
+          role: "student"
+        };
+        iframe.contentWindow.postMessage(JSON.stringify(data), window.location.origin);
+      }
+    }
+  }, [iframeReady, username, mentorUsername]);
+
+  const handleNewGame = () => {
+    const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(JSON.stringify({ command: "newgame" }), window.location.origin);
+    }
+  };
+
+  const handleEndGame = () => {
+    const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(JSON.stringify({ command: "endgame" }), window.location.origin);
+    }
+  };
+
+  const handleUndo = () => {
+    const iframe = document.getElementById('chess-board-iframe') as HTMLIFrameElement;
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(JSON.stringify({ command: "undo" }), window.location.origin);
+    }
+  };
 
   // Add scroll listener to activity feed container for infinite scroll
   useEffect(() => {
@@ -364,9 +412,36 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     
     case "mentor":
       return (
-        <div className="w-full h-full">
-          <h2 className="text-2xl font-bold text-dark mb-4">Mentor</h2>
-          <p className="text-gray">This is the content for the Mentor tab.</p>
+        <div className="w-full h-full flex flex-col items-center">
+          <h2 className="text-2xl font-bold text-dark mb-4">Mentor Session</h2>
+          <div className="flex gap-3 mb-4">
+            <button
+              onClick={handleNewGame}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+            >
+              Start New Game
+            </button>
+            <button
+              onClick={handleUndo}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+            >
+              Undo
+            </button>
+            <button
+              onClick={handleEndGame}
+              className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+            >
+              End Game
+            </button>
+          </div>
+          <iframe
+            id="chess-board-iframe"
+            src="/chessclient/index.html"
+            title="Chess Board"
+            className="w-full max-w-[800px] h-[600px] border border-borderLight rounded-lg shadow-sm"
+            frameBorder="0"
+            allowFullScreen
+          ></iframe>
         </div>
       );
     
