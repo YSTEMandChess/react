@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useCookies } from "react-cookie";
-import { environment } from "../../../environments/environment";
+import { environment } from "../../../environments";
 
 /**
  * PlayStudent — student-vs-student challenge flow (design §5b).

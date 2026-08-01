@@ -313,6 +313,11 @@ class GameManager {
         // Detect game-over so the winner can be rewarded (weavels).
         // See documentation/student-vs-student-weavels-design.md §6.
         const outcome = this.detectOutcome(game);
+        // Latch the game as finished so a later disconnect/resign on the same
+        // game can't emit a second "gameover" and double-award the winner.
+        if (outcome.over) {
+            game.isOver = true;
+        }
 
         return {
                 result: {
@@ -567,6 +572,12 @@ class GameManager {
         if (!game) {
             return null;
         }
+        // Already decided (by checkmate, an earlier resign, or a forfeit) —
+        // don't emit a second gameover or award the winner twice.
+        if (game.isOver) {
+            return null;
+        }
+        game.isOver = true;
         const loser = game.players.find((p) => p.id === socketId);
         const winner = game.players.find((p) => p.id !== socketId);
         // If the opponent never joined there's nobody to award — just end it.
