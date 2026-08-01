@@ -7,11 +7,11 @@ import { SetPermissionLevel } from "../../../globals";
 // @ts-ignore
 import MoveTracker from '../move-tracker/MoveTracker';
 import { Chess } from 'chess.js';
-import { ReactComponent as RedoIcon } from '../../../images/icons/icon_redo.svg';
-import { ReactComponent as BackIcon} from '../../../images/icons/icon_back.svg';
-import { ReactComponent as BackIconInactive} from '../../../images/icons/icon_back_inactive.svg';
-import { ReactComponent as NextIcon } from '../../../images/icons/icon_next.svg';
-import { ReactComponent as NextIconInactive } from '../../../images/icons/icon_next_inactive.svg';
+import { ReactComponent as RedoIcon } from '../../../assets/images/icons/icon_redo.svg';
+import { ReactComponent as BackIcon} from '../../../assets/images/icons/icon_back.svg';
+import { ReactComponent as BackIconInactive} from '../../../assets/images/icons/icon_back_inactive.svg';
+import { ReactComponent as NextIcon } from '../../../assets/images/icons/icon_next.svg';
+import { ReactComponent as NextIconInactive } from '../../../assets/images/icons/icon_next_inactive.svg';
 import { useNavigate, useLocation } from 'react-router';
 
 const LessonOverlay = () => {

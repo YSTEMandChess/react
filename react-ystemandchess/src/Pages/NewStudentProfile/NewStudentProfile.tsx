@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./NewStudentProfile.scss";
-import Images from "../../images/imageImporter";
+import Images from "../../assets/images/imageImporter";
 import { SetPermissionLevel } from '../../globals'; 
 import { useCookies } from 'react-cookie';
 import { environment } from '../../environments';
