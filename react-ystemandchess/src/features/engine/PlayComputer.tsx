@@ -58,62 +58,71 @@ const PlayComputer: React.FC = () => {
   //handle player move function
   //handle opponent move
 
-  useEffect(() => {
-    if (!cookies.login) {
-      setIsLoggedIn(false);
-      return;
-    }
-    const verifyAndLoad = async () => {
-      try {
-        const UInfo = await SetPermissionLevel(cookies, removeCookie);
-
-        if (UInfo?.error) {
-          setIsLoggedIn(false);
-          return;
-        }
-        setIsLoggedIn(true);
-        if (UInfo){
-           const { username, firstName, lastName, role, email, id } =
-          UInfo;
-        user.current = {
-          username,
-          firstName,
-          lastName,
-          role,
-          email,
-          id,
-        };
-        }
-       
-      } catch (err) {
-        console.error("Auth check failed:", err);
-        setIsLoggedIn(false);
-      }
-    };
-    verifyAndLoad();
-    console.log("gameMetadata", gameMetaData)
-  }, [cookies.login]);
-
- const onOpponentMove = (data: { fen: string; move?: Move }) => {
-    console.log("received opponent data", data);
-
-  // board synchronization only
-  if (!data.move.from) {
-    console.log("updating board from fen", data.fen);
-
-    gameRef.current = new Chess(data.fen);
-    setYourTurn(false);
-
+ useEffect(() => {
+  if (!cookies.login) {
+    setIsLoggedIn(false);
     return;
   }
+
+  const verifyAndLoad = async () => {
+    try {
+      const userInfo = await SetPermissionLevel(cookies, removeCookie);
+
+      if (!userInfo || userInfo.error) {
+        setIsLoggedIn(false);
+        return;
+      }
+
+      setIsLoggedIn(true);
+
+      const {
+        username,
+        firstName,
+        lastName,
+        role,
+        email,
+        id,
+      } = userInfo;
+
+      user.current = {
+        username,
+        firstName,
+        lastName,
+        role,
+        email,
+        id,
+      };
+    } catch (err) {
+      console.error("Auth check failed:", err);
+      setIsLoggedIn(false);
+    }
+  };
+
+  verifyAndLoad();
+}, [cookies.login]);
+
+ const onOpponentMove = (data: { fen: string; move?: Move }) => {
+
+  // board synchronization only
+  if (!data.move.from || !data.move.to) {
+    gameRef.current = new Chess(data.fen);
+    setYourTurn(false);
+    setFen(gameRef.current.fen())
+    return;
+  }
+
   const { from, to, promotion } = data.move;
 
-  const currentFen = gameRef.current.fen();
   
+    if (!yourTurn) {
 
-console.log("checking turn", yourTurn)
-  if (!yourTurn) {
     try {
+              const currentFen = gameRef.current.fen();
+
+
+if (data.fen == currentFen){return}
+
+
       const moveResult = gameRef.current.move({
         from,
         to,

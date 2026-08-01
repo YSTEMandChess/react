@@ -298,6 +298,9 @@ const SelectGame = () => {
             const persistedGame = await persistNewGame(newGame)
             navigate("/play", { state: persistedGame })
         }
+        catch(err){
+            console.log("Error Building / Saving the game", err)
+        }
         finally {
             setStartingGame(false)
         }

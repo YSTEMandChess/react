@@ -590,14 +590,9 @@ export const useChessSocket = ({
     socketRef.current?.emit("undo", JSON.stringify(data));
   }, []);
 
-  const endGame = useCallback(() => {
-    const data = {
-      mentor: mentorRef.current,
-      student: studentRef.current,
-      role: roleRef.current,
-    };
+  const endGame = useCallback((gameMetaData: GameMetaData) => {
     console.log("Ending game");
-    socketRef.current?.emit("endgame", JSON.stringify(data));
+    socketRef.current?.emit("endgame", gameMetaData);
   }, []);
 
   const sendMessage = useCallback((message: string) => {
