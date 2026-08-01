@@ -39,9 +39,10 @@ const selectActivities = async () => {
     const activityList = await (db.collection("activityTypes").find({})).toArray();
     const chosenActivites = [];
     const newActivities = [];
-    
-    // Select 4 unique random activities
-    while (newActivities.length < 4) {
+
+    // Select up to 4 unique random activities, capped by how many types exist
+    const target = Math.min(4, activityList.length);
+    while (newActivities.length < target) {
         const activity = {};
         
         // Randomly select an activity
