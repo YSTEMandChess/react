@@ -176,6 +176,14 @@ describe('GameManager', () => {
     })).toThrow(/not a player/);
   });
 
+  test('a decided game cannot be resigned again (no double-award)', () => {
+    const { result } = playFoolsMate(); // checkmate latches the game as over
+    expect(result.outcome.over).toBe(true);
+    // A follow-up resign/disconnect on the same game must be a no-op.
+    expect(gameManager.resign('sWhite', 'disconnect')).toBeNull();
+    expect(gameManager.resign('sBlack', 'resign')).toBeNull();
+  });
+
   test('a forfeit in a PvP game awards the win to the opponent', () => {
     gameManager.createOrJoinPvpGame({
       gameId: 'g1', challenger: 'Alice', opponent: 'Cara',
