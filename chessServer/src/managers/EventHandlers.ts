@@ -47,11 +47,13 @@ const registerSocketHandlers = (socket, io, stockfish) => {
   //going to destucture to be able to to take new game data type
 
   socket.on("newgame", async (gameMetaData) => {
+    console.log("checking game", gameMetaData);
     try {
       //Starting Up Stockfish for Guest or Computer Games
 
       //Saving non Guest Games to the backend
       if (gameMetaData.gameType !== "guest") {
+        console.log("saving game");
         gameMetaData.uuid = null;
         const res = await fetch(
           `${process.env.MIDDLEWARE_URL}/savedGames/addgame`,
@@ -68,6 +70,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
           throw new Error("Did not save the game to the backend.");
         }
         const data = await res.json();
+        console.log("added game", data);
         const { uuid } = data;
         gameMetaData.uuid = uuid;
         const { fen } = data;
@@ -161,7 +164,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         const fen = game.gameMetaData.fen;
         const level = game.gameMetaData.computerLevel;
         stockfish.emit("evaluate-fen", {
-          gameSocket: socket.id,
+          gameSocket: game.uuid,
           fen: fen,
           level: level,
         });

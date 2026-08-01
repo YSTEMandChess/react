@@ -211,9 +211,9 @@ const SelectGame = () => {
         return {
             userId: isLoggedIn ? user.current.id : null,
             user: isLoggedIn ? user.current : null,
-            opponent: opponent || null,
+            opponent: opponent ||null,
             uuid: null,
-            opponentId: opponent ? String(opponent.id) : null,
+            opponentId: opponent ? String(opponent.id) : "stockfish",
             gameName: gameNameFor(gameType, opponent),
             gameType: gameType,
             computerLevel: (gameType === "computer" || gameType === "guest") ? difficulty : null,

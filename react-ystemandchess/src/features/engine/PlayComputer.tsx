@@ -52,80 +52,56 @@ const PlayComputer: React.FC = () => {
   const [yourTurn, setYourTurn] = useState<boolean>(true);
 
 
-const onOpponentMove = (data: { fen: string; move?: Move }) => {
-  console.log("received opponent move", data);
+const onOpponentMove = (data:{fen:string; move?:Move}) => {
+  console.log("received move", data);
 
   try {
-    // If server only sends a board sync
-    if (!data.move || !data.move.from || !data.move.to) {
-      gameRef.current = new Chess(data.fen);
-      setFen(data.fen);
 
-      const history = gameRef.current.history();
-
-      setMoveHistory(
-        history.map((move) => move)
-      );
-
+    // ignore duplicate state
+    if (data.fen === gameRef.current.fen()) {
       return;
     }
-if (data.fen==gameMetaData.current.fen){
-  return
-}
 
-    const { from, to, promotion } = data.move;
+    // full sync
+    if (!data.move?.from || !data.move?.to) {
+      gameRef.current = new Chess(data.fen);
+      setFen(data.fen);
+      return;
+    }
 
 
-    const moveResult = gameRef.current.move({
-      from,
-      to,
-      promotion,
+    const result = gameRef.current.move({
+      from:data.move.from,
+      to:data.move.to,
+      promotion:data.move.promotion
     });
 
 
-    if (!moveResult) {
-      console.log(
-        "Invalid opponent move",
-        from,
-        to,
-        promotion
-      );
+    if (!result) {
+      console.log("Invalid server move");
       return;
     }
 
 
-    const newFen = gameRef.current.fen();
-
-
-    setFen(newFen);
+    setFen(gameRef.current.fen());
 
     setHighlightSquares([
-      from,
-      to
+      data.move.from,
+      data.move.to
     ]);
 
 
-    const moveStr = promotion
-      ? `${from} -> ${to} (${promotion})`
-      : `${from} -> ${to}`;
-
-
-    setMoveHistory(prev => [
+    setMoveHistory(prev=>[
       ...prev,
-      moveStr
+      `${data.move.from} -> ${data.move.to}`
     ]);
-
 
     checkGameStatus();
 
-
-  } catch(error) {
-    console.error(
-      "Opponent move error:",
-      error
-    );
+  } catch(err){
+    console.error(err);
   }
-};
+}
 
 const endGame = useCallback(
   (outcome: "won" | "lost" | "ongoing" | "draw") => {
@@ -134,7 +110,7 @@ const endGame = useCallback(
     }
 
     gameMetaData.current.status = outcome;
-    chessSocketRef.current.endGame();
+    chessSocketRef.current.endGame(gameMetaData.current);
   },
   []
 );
@@ -197,6 +173,8 @@ const chessSocket = useChessSocket({
 });
 
 
+
+
 useEffect(() => {
   if (!chessSocket.connected) {
     console.log("Waiting for chess socket to connect...");
@@ -224,10 +202,36 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (!fen) return;
-  setYourTurn(isPlayersTurn(fen, playerColor));
-}, [fen, playerColor]);
+  if (
+    gameMetaData.current?.gameType !== "computer" &&
+    gameMetaData.current?.gameType !== "guest"
+  ) {
+    return;
+  }
 
+  const currentTurn = gameRef.current.turn();
+
+  const isComputerTurn =
+    (playerColor === "white" && currentTurn === "b") ||
+    (playerColor === "black" && currentTurn === "w");
+
+  if (!isComputerTurn) {
+    return;
+  }
+
+  chessSocketRef.current.sendMove({
+    from: null,
+    to: null,
+    promotion: null,
+    piece: null,
+    captured: null,
+    flags: null,
+    computerMove: true,
+    username: gameMetaData.current.user?.username ?? "",
+    credentials: null
+  });
+
+}, [fen, playerColor]);
 
   useEffect(() => {
     if (movesContainerRef.current) {
@@ -236,89 +240,63 @@ useEffect(() => {
     }
   }, [moveHistory]);
 
-   useEffect(() => {
-  if (
-   !yourTurn  &&
-   ( gameMetaData.current?.gameType === "computer" || gameMetaData.current?.gameType === "guest" )
-  ) {
-    chessSocketRef.current.sendMove({
-      from:null,
-      to:null,
-      promotion:null,
-      piece:null,
-      captured:null,
-      flags:null,
-      computerMove:true,
-      username: gameMetaData.current.user?.username ?? "",
-      credenitals: null
-    });
-  }
-}, [yourTurn, fen]);
-
-
-
-
- 
-const isPlayersTurn = (
-  fen: string,
-  playerColor: "white" | "black",
-): boolean => {
-  const turn = fen.split(" ")[1]; // "w" or "b"
-
-  return (
-    (turn === "w" && playerColor === "white") ||
-    (turn === "b" && playerColor === "black")
-  );
-};
+  
 
   
   const handleMove = useCallback((move: Move) => {
-    if (yourTurn) {
-      try {
-        const moveResult = gameRef.current.move({
-          from: move.from,
-          to: move.to,
-          promotion: move.promotion,
-        });
-        if (!moveResult) return;
+  const currentTurn = gameRef.current.turn();
 
-        const newFen = gameRef.current.fen();
-        setFen(newFen);
-        setHighlightSquares([move.from, move.to]);
-        const moveStr = move.promotion
-          ? `${move.from} -> ${move.to} (${move.promotion})`
-          : `${move.from} -> ${move.to}`;
+  const isPlayerTurn =
+    (playerColor === "white" && currentTurn === "w") ||
+    (playerColor === "black" && currentTurn === "b");
 
-        setMoveHistory((prev) => [...prev, moveStr]);
+  if (!isPlayerTurn) {
+    console.log("It's not your turn");
+    return;
+  }
 
-        if (checkGameStatus()) return;
+  try {
+    const moveResult = gameRef.current.move({
+      from: move.from,
+      to: move.to,
+      promotion: move.promotion,
+    });
 
-        if (gameMetaData.current) {
-          console.log(moveHistory)
-          gameMetaData.current.movesList.push(moveStr);
-          gameMetaData.current.fen = newFen;
-          gameMetaData.current.updatedAt = Date.now().toString();
-        }
+    if (!moveResult) return;
 
-        const moveType: Move = {
-          from: moveResult.from,
-          to: moveResult.to,
-          promotion: moveResult.promotion,
-          piece: moveResult.piece,
-          captured: moveResult.captured,
-          flags: moveResult.flags,
-          computerMove: false,
-          username: gameMetaData.current?.user?.username ?? "",
-        }
-        chessSocketRef?.current.sendMove(moveType);
-      } catch (error) {
-        console.error("Error handling move:", error);
-      }
-    } else {
-      console.log("It's not your turn");
+    const newFen = gameRef.current.fen();
+
+    setFen(newFen);
+    setHighlightSquares([move.from, move.to]);
+
+    const moveStr = move.promotion
+      ? `${move.from} -> ${move.to} (${move.promotion})`
+      : `${move.from} -> ${move.to}`;
+
+    setMoveHistory(prev => [...prev, moveStr]);
+
+    if (gameMetaData.current) {
+      gameMetaData.current.movesList.push(moveStr);
+      gameMetaData.current.fen = newFen;
+      gameMetaData.current.updatedAt = Date.now().toString();
     }
-  }, [yourTurn]);
 
+    chessSocketRef.current.sendMove({
+      from: moveResult.from,
+      to: moveResult.to,
+      promotion: moveResult.promotion,
+      piece: moveResult.piece,
+      captured: moveResult.captured,
+      flags: moveResult.flags,
+      computerMove:false,
+      username: gameMetaData.current?.user?.username ?? "",
+    });
+
+  } catch(error) {
+    console.error(error);
+  }
+
+}, [playerColor]);
 
 const checkGameStatus = useCallback((): boolean => {
   const game = gameRef.current;
