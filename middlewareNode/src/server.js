@@ -29,10 +29,7 @@ app.use(
     saveUninitialized: false,
   })
 );
-app.use((req, res, next) => {
-  console.log(req.method, req.originalUrl);
-  next();
-});
+
 // Initialize Passport authentication middleware
 app.use(passport.initialize());
 app.use(passport.session());

@@ -46,7 +46,6 @@ class StockfishManager {
 
         if (!cleanLine) continue;
 
-        console.log("Stockfish:", cleanLine);
 
         if (cleanLine === "readyok") {
           session.engineReady = true;
@@ -59,7 +58,6 @@ class StockfishManager {
 
           continue;
         }
-console.log(session)
         if (!session.awaitingResponse) {
           continue;
         }
@@ -113,7 +111,6 @@ console.log(session)
           gameSocket: session.gameSocket,
           move: moveStr,
         });
-console.log(session.socket.id)
         session.socket.emit("evaluation-complete", {
           mode: "move",
           move: moveStr,
@@ -134,19 +131,14 @@ console.log(session.socket.id)
 
   registerSession(socket, sessionType, fen = null, infoMode = false, gameSocket) {
     const socketId = socket.id; // Stockfish socket ID
-console.log("got this far1")
 
     if (this.sessions.has(socketId)) {
      const session = this.sessions.get(socketId);
 
-    console.log("got this far alternate route2", session);
 
     return session.readyPromise;
     }
          
-
-    console.log("got this far2")
-
 
     const game = new Chess(fen || undefined);
     const engine = spawn(enginePath);
@@ -184,16 +176,12 @@ console.log("got this far1")
     session.readyPromise = new Promise((resolve) => {
       session.resolveReady = resolve;
     });
-console.log("got this far3")
     this.sessions.set(socketId, session);
-console.log("got this far4")
 
     this._configureEngine(socketId);
-console.log("got this far5")
 
     engine.stdin.write("uci\n");
     engine.stdin.write("isready\n");
-console.log("got this far6")
 
     console.log(
       "Started Stockfish session:",
@@ -209,7 +197,6 @@ console.log("got this far6")
     const session = this.sessions.get(socketId);
     session.infoMode= false
 
-    console.log("Looking for Stockfish session:", socketId);
 
     if (!session) {
       throw new Error(`Session not found for ${socketId}`);
@@ -227,7 +214,6 @@ console.log("got this far6")
 
     const depth = Math.min(parseInt(level), 30);
 
-    console.log("Sending position:", fen);
 
     if (move.length) {
       engine.stdin.write(

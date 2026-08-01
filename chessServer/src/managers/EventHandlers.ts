@@ -46,21 +46,10 @@ const registerSocketHandlers = (socket, io, stockfish) => {
    */
   //going to destucture to be able to to take new game data type
 
-  socket.on("newgame", async (gameMetaData: GameMetaData) => {
+  socket.on("newgame", async (gameMetaData) => {
     try {
       //Starting Up Stockfish for Guest or Computer Games
-      if (
-        gameMetaData.gameType === "computer" ||
-        gameMetaData.gameType === "guest"
-      ) {
-        const stockfishSessionId = await startStockfish(
-          stockfish,
-          gameMetaData,
-        );
-        if (!stockfishSessionId) {
-          throw new Error("Can't get Stockfish to start session");
-        }
-      }
+
       //Saving non Guest Games to the backend
       if (gameMetaData.gameType !== "guest") {
         gameMetaData.uuid = null;
@@ -86,13 +75,25 @@ const registerSocketHandlers = (socket, io, stockfish) => {
           gameMetaData.fen = fen;
         }
       }
+
+      if (
+        gameMetaData.gameType === "computer" ||
+        gameMetaData.gameType === "guest"
+      ) {
+        const stockfishSessionId = await startStockfish(
+          stockfish,
+          gameMetaData,
+        );
+        if (!stockfishSessionId) {
+          throw new Error("Can't get Stockfish to start session");
+        }
+      }
       //result return an object {game / newgame}
       let result = gameManager.createOrJoinGame({
         socketId: socket.id,
         stockfishSocketId: stockfish.id,
         gameMetaData,
       });
-
       gameManager.broadcastBoardState(result.game, io);
     } catch (err: any) {
       socket.emit("Error Creating a New Game", err.message);
@@ -113,7 +114,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
       stockfish.emit("start-session", {
         sessionType: "pvp",
         fen: gameMetaData.fen,
-        gameSocket: socket.id,
+        gameSocket: gameMetaData.uuid || socket.id,
       });
     });
   };
@@ -149,11 +150,14 @@ const registerSocketHandlers = (socket, io, stockfish) => {
 
   socket.on("move", async (msg) => {
     try {
-      const { from, to, promotion, computerMove, username, credentials } =
-        JSON.parse(msg);
+      const { from, to, promotion, computerMove, username, credentials } = msg;
+      console.log("testing msg", msg);
+      console.log("computer move", computerMove);
 
       const game = gameManager.getGameById(socket.id) as GameInstance;
       if (computerMove) {
+        console.log("eval fen", computerMove);
+
         const fen = game.gameMetaData.fen;
         const level = game.gameMetaData.computerLevel;
         stockfish.emit("evaluate-fen", {
@@ -246,19 +250,44 @@ const registerSocketHandlers = (socket, io, stockfish) => {
   stockfish.on(
     "evaluation-complete",
     async ({ mode, moveDetails, gameSocket }) => {
+      console.log("making stockfishmove");
+      console.log("eval complete");
+
       try {
-        const socketId = gameSocket || socket.id;
+        const socketId = gameSocket;
 
         const game = gameManager.getGameById(socketId) as GameInstance;
+
         if (!game) {
           throw new Error("Game instance not found for the given socket ID.");
         }
+
+        console.log("info", mode, moveDetails, gameSocket, socketId);
 
         if (mode !== "move" || !moveDetails) {
           return;
         }
 
-        const { from, to, promotion } = moveDetails;
+        const { from, to } = moveDetails;
+
+        // Determine promotion
+        let promotion = moveDetails.promotion;
+
+        // Stockfish may omit promotion, so infer it from pawn movement
+        if (
+          !promotion &&
+          moveDetails.piece === "p" &&
+          ((moveDetails.color === "w" && to.endsWith("8")) ||
+            (moveDetails.color === "b" && to.endsWith("1")))
+        ) {
+          promotion = "q";
+        }
+
+        console.log("Stockfish move:", {
+          from,
+          to,
+          promotion,
+        });
 
         const res = (await gameManager.makeMove(
           socketId,
@@ -352,10 +381,12 @@ const registerSocketHandlers = (socket, io, stockfish) => {
 
         gameManager.broadcastBoardState(res.game, io);
       } catch (err: any) {
+        console.error("Stockfish move error:", err);
         socket.emit("error", err.message);
       }
     },
   );
+
   socket.on("completeActivity", () => {
     console.log("activity completed");
   });
@@ -497,7 +528,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
   });
 
   socket.on("disconnect", () => {
-    const game = gameManager.getGameBySocketId(socket.id);
+    const game = gameManager.getGameById(socket.id);
 
     if (!game) {
       console.log("game not found for this socket, disconnecting");

@@ -11,7 +11,6 @@ const initializeSocket = (socket) => {
 
   socket.on("start-session", ({ sessionType, fen, gameSocket }) => {
     try {
-            console.log("lookingn at info", sessionType,fen, gameSocket )
 
       stockfishManager.registerSession(socket, sessionType, fen,undefined, gameSocket);
       socket.emit("session-started", { success: true, id: socket.id });
@@ -31,6 +30,7 @@ const initializeSocket = (socket) => {
 
   // Request Stockfish to evaluate a position
   socket.on("evaluate-fen",  ({fen, move, level,gameSocket} ) => {
+    console.log("Trying eval fen" , fen, move, level,gameSocket )
     try {
       stockfishManager.evaluateFen(socket.id, gameSocket, fen, move, level);
     } catch (err) {

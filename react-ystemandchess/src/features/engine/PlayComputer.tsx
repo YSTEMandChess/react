@@ -51,6 +51,94 @@ const PlayComputer: React.FC = () => {
   const gameMetaData = useRef<GameMetaData>(null);
   const [yourTurn, setYourTurn] = useState<boolean>(true);
 
+
+const onOpponentMove = (data: { fen: string; move?: Move }) => {
+  console.log("received opponent move", data);
+
+  try {
+    // If server only sends a board sync
+    if (!data.move || !data.move.from || !data.move.to) {
+      gameRef.current = new Chess(data.fen);
+      setFen(data.fen);
+
+      const history = gameRef.current.history();
+
+      setMoveHistory(
+        history.map((move) => move)
+      );
+
+      return;
+    }
+if (data.fen==gameMetaData.current.fen){
+  return
+}
+
+    const { from, to, promotion } = data.move;
+
+
+    const moveResult = gameRef.current.move({
+      from,
+      to,
+      promotion,
+    });
+
+
+    if (!moveResult) {
+      console.log(
+        "Invalid opponent move",
+        from,
+        to,
+        promotion
+      );
+      return;
+    }
+
+
+    const newFen = gameRef.current.fen();
+
+
+    setFen(newFen);
+
+    setHighlightSquares([
+      from,
+      to
+    ]);
+
+
+    const moveStr = promotion
+      ? `${from} -> ${to} (${promotion})`
+      : `${from} -> ${to}`;
+
+
+    setMoveHistory(prev => [
+      ...prev,
+      moveStr
+    ]);
+
+
+    checkGameStatus();
+
+
+  } catch(error) {
+    console.error(
+      "Opponent move error:",
+      error
+    );
+  }
+};
+
+const endGame = useCallback(
+  (outcome: "won" | "lost" | "ongoing" | "draw") => {
+    if (!gameMetaData.current) {
+      return;
+    }
+
+    gameMetaData.current.status = outcome;
+    chessSocketRef.current.endGame();
+  },
+  []
+);
+
   //functions to write
   //start game
 
@@ -101,83 +189,6 @@ const PlayComputer: React.FC = () => {
   verifyAndLoad();
 }, [cookies.login]);
 
- const onOpponentMove = (data: { fen: string; move?: Move }) => {
-
-  // board synchronization only
-  if (!data.move.from || !data.move.to) {
-    gameRef.current = new Chess(data.fen);
-    setYourTurn(false);
-    setFen(gameRef.current.fen())
-    return;
-  }
-
-  const { from, to, promotion } = data.move;
-
-  
-    if (!yourTurn) {
-
-    try {
-              const currentFen = gameRef.current.fen();
-
-
-if (data.fen == currentFen){return}
-
-
-      const moveResult = gameRef.current.move({
-        from,
-        to,
-        promotion,
-      });
-
-      if (!moveResult) {
-        console.log("Move was invalid, ignoring:", from, to);
-        return;
-      }
-
-      const newFen = gameRef.current.fen();
-
-      setFen(newFen);
-      setHighlightSquares([from, to]);
-
-      const moveStr = promotion
-        ? `${from} -> ${to} (${promotion})`
-        : `${from} -> ${to}`;
-
-      setMoveHistory((prev) => {
-        const updated = [...prev, moveStr];
-
-        if (gameMetaData.current) {
-          gameMetaData.current.movesList = updated;
-          gameMetaData.current.fen = newFen;
-          gameMetaData.current.updatedAt = Date.now().toString();
-          chessSocketRef?.current.saveGame(gameMetaData.current);
-        }
-
-        return updated;
-      });
-
-      setYourTurn(true);
-
-      checkGameStatus();
-
-    } catch (error) {
-      console.log("Ignoring duplicate/invalid opponent move:", error);
-    }
-  } else {
-setYourTurn(false)  }
-};
-
-const endGame = (outcome: "won" | "lost" | "ongoing" | "draw") => {
-    if (location.state && gameMetaData.current) {
-      gameMetaData.current.status = outcome;
-      chessSocketRef?.current.saveGame(gameMetaData.current);
-      chessSocketRef?.current.endGame();
-      return;
-    } else {
-      return;
-    }
-  };
-
 const chessSocket = useChessSocket({
   student: gameMetaData.current?.user?.firstName || "",
   serverUrl: environment.urls.chessServer,
@@ -185,16 +196,23 @@ const chessSocket = useChessSocket({
   onLastMove: endGame,
 });
 
+
 useEffect(() => {
+  if (!chessSocket.connected) {
+    console.log("Waiting for chess socket to connect...");
+    return;
+  }
+  
+
+  chessSocketRef.current = chessSocket;
+  console.log("Chess socket connected:", chessSocketRef.current);
 
   const initializeGame = async () => {
-    chessSocketRef.current = chessSocket;
-
     resetGame();
+
     await loadGame();
 
-    console.log(location);
-    console.log(gameMetaData);
+    console.log("Checking chess socket:", chessSocket);
 
     checkGameStatus();
   };
@@ -202,7 +220,14 @@ useEffect(() => {
   initializeGame();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [location.key]);
+}, [location.key, chessSocket.connected]);
+
+
+useEffect(() => {
+  if (!fen) return;
+  setYourTurn(isPlayersTurn(fen, playerColor));
+}, [fen, playerColor]);
+
 
   useEffect(() => {
     if (movesContainerRef.current) {
@@ -211,24 +236,11 @@ useEffect(() => {
     }
   }, [moveHistory]);
 
-useEffect(() => {
-  if (!fen) return;
-  console.log("fen",fen)
-  console.log("playerColor", playerColor)
-  console.log(isPlayersTurn(fen, playerColor))
-
-  setYourTurn(isPlayersTurn(fen, playerColor));
-}, [fen, playerColor, chessSocketRef.current]);
-
- useEffect(() => {
-  console.log("TURN CHANGED", yourTurn);
-
+   useEffect(() => {
   if (
-    yourTurn === false &&
-    gameMetaData.current?.gameType === "computer"
+   !yourTurn  &&
+   ( gameMetaData.current?.gameType === "computer" || gameMetaData.current?.gameType === "guest" )
   ) {
-    console.log("REQUESTING STOCKFISH MOVE");
-
     chessSocketRef.current.sendMove({
       from:null,
       to:null,
@@ -238,9 +250,14 @@ useEffect(() => {
       flags:null,
       computerMove:true,
       username: gameMetaData.current.user?.username ?? "",
+      credenitals: null
     });
   }
 }, [yourTurn, fen]);
+
+
+
+
  
 const isPlayersTurn = (
   fen: string,
@@ -255,8 +272,6 @@ const isPlayersTurn = (
 };
 
   
-  
-
   const handleMove = useCallback((move: Move) => {
     if (yourTurn) {
       try {
@@ -280,7 +295,7 @@ const isPlayersTurn = (
 
         if (gameMetaData.current) {
           console.log(moveHistory)
-          gameMetaData.current.movesList = moveHistory;
+          gameMetaData.current.movesList.push(moveStr);
           gameMetaData.current.fen = newFen;
           gameMetaData.current.updatedAt = Date.now().toString();
         }
@@ -294,8 +309,7 @@ const isPlayersTurn = (
           flags: moveResult.flags,
           computerMove: false,
           username: gameMetaData.current?.user?.username ?? "",
-        };
-console.log("sending sumn")
+        }
         chessSocketRef?.current.sendMove(moveType);
       } catch (error) {
         console.error("Error handling move:", error);
@@ -303,43 +317,56 @@ console.log("sending sumn")
     } else {
       console.log("It's not your turn");
     }
-  }, [yourTurn, moveHistory]);
+  }, [yourTurn]);
 
 
-  const checkGameStatus = useCallback((): boolean => {
-    const game = gameRef.current;
-    if (game.isCheckmate()) {
-      const winner = game.turn() === "w" ? "Black" : "White";
-      setGameEndMessage(`Checkmate! ${winner} wins!`);
-      setShowGameEndModal(true);
-      endGame("won");
-      return true;
-    }
-    if (game.isDraw() || game.isStalemate()) {
-      setGameEndMessage(
-        game.isStalemate() ? "Stalemate! Draw!" : "Game over: Draw!",
-      );
-      setShowGameEndModal(true);
-      endGame("draw");
+const checkGameStatus = useCallback((): boolean => {
+  const game = gameRef.current;
 
-      return true;
-    }
-    if (game.isThreefoldRepetition()) {
-      setGameEndMessage("Draw by threefold repetition!");
-      setShowGameEndModal(true);
-      endGame("draw");
+  if (game.isCheckmate()) {
+    const winner = game.turn() === "w" ? "Black" : "White";
 
-      return true;
-    }
-    if (game.isInsufficientMaterial()) {
-      setGameEndMessage("Draw by insufficient material!");
-      setShowGameEndModal(true);
-      endGame("draw");
+    setGameEndMessage(`Checkmate! ${winner} wins!`);
+    setShowGameEndModal(true);
+    endGame("won");
 
-      return true;
-    }
-    return false;
-  }, []);
+    return true;
+  }
+
+  if (game.isStalemate()) {
+    setGameEndMessage("Stalemate! Draw!");
+    setShowGameEndModal(true);
+    endGame("draw");
+
+    return true;
+  }
+
+  if (game.isThreefoldRepetition()) {
+    setGameEndMessage("Draw by threefold repetition!");
+    setShowGameEndModal(true);
+    endGame("draw");
+
+    return true;
+  }
+
+  if (game.isInsufficientMaterial()) {
+    setGameEndMessage("Draw by insufficient material!");
+    setShowGameEndModal(true);
+    endGame("draw");
+
+    return true;
+  }
+
+  if (game.isDraw()) {
+    setGameEndMessage("Game over: Draw!");
+    setShowGameEndModal(true);
+    endGame("draw");
+
+    return true;
+  }
+
+  return false;
+}, [endGame]);
 
   const resetGame = useCallback(() => {
     gameRef.current.reset();
@@ -354,8 +381,8 @@ console.log("sending sumn")
     setShowGameEndModal(false);
     setPlayerColor("white")
     if (chessSocketRef) {
-      chessSocketRef.current.mentorRef = ""
-      chessSocketRef.current.studentRef = ""
+      chessSocketRef.current.mentorRef = "mentor"
+      chessSocketRef.current.studentRef = "student"
       chessSocketRef.current.roleRef = "guest"
     }
     setGameEndMessage("");
@@ -365,53 +392,62 @@ console.log("sending sumn")
 
 
 
-  const loadGame = async () => {
+ const loadGame = async () => {
+  // Existing game (loaded from navigation) 
+  if (location.state) {
+    gameMetaData.current = location.state;
+    applyGameState(location.state);
+    console.log(gameMetaData.current)
+    chessSocketRef.current.startNewGame(gameMetaData.current);
+    return;
+  }
 
-    const defaultGame : GameMetaData= location.state ?? {userId: null,
-    user:null,
+  // Logged-in user starts a new computer game
+  if (user.current) {
+    const newGame: GameMetaData = {
+      userId: user.current.id,
+      user: user.current,
+      gameName: "Me vs Computer",
+      gameType: "computer",
+      computerLevel: difficulty,
+      fen,
+      movesList: moveHistory,
+      playerColor,
+      status: "ongoing",
+      createdAt: Date.now().toString(),
+      updatedAt: Date.now().toString(),
+    };
+
+    chessSocketRef.current.saveNewGame(newGame);
+
+    gameMetaData.current = newGame;
+    applyGameState(newGame);
+    chessSocketRef.current.startNewGame(gameMetaData.current);
+    return;
+  }
+
+  // Guest game
+  const guestGame: GameMetaData = {
+    userId: null,
+    user: null,
     opponent: null,
     uuid: null,
     opponentId: null,
-    gameName:"Guest Game",
+    gameName: "Guest Game",
     gameType: "guest",
     computerLevel: difficulty,
-    fen: fen,
+    fen,
     movesList: [],
-    playerColor: playerColor,
+    playerColor,
     status: "ongoing",
     createdAt: Date.now().toString(),
-  updatedAt: Date.now().toString() }
-
-    gameMetaData.current= defaultGame
-
-    if (location.state) {
-      const savedMeta: GameMetaData = location.state;
-
-      applyGameState(savedMeta);
-    } else if (user.current) {
-
-      const newGame: GameMetaData = {
-        userId: user.current.id,
-        user: user.current,
-        gameName: "Me vs Computer",
-        gameType: "computer",
-        computerLevel: difficulty,
-        fen,
-        movesList: moveHistory,
-        playerColor,
-        status: "ongoing",
-        createdAt: Date.now().toString(),
-        updatedAt: Date.now().toString(),
-      };
-
-      chessSocketRef?.current.saveNewGame(newGame);
-      applyGameState(newGame);
-
-    }
-    console.log("calling start new game")
-    chessSocketRef.current.startNewGame(gameMetaData);
-
+    updatedAt: Date.now().toString(),
   };
+
+  gameMetaData.current = guestGame;
+  applyGameState(guestGame);
+  chessSocketRef.current.startNewGame(gameMetaData.current);
+};
 
   const applyGameState = (game: GameMetaData) => {
     gameRef.current = new Chess(game.fen);
@@ -424,7 +460,7 @@ console.log("sending sumn")
     setShowGameEndModal(false);
     setGameEndMessage("");
     location.state = game
-    chessSocketRef.current.mentorRef = ""
+    chessSocketRef.current.mentorRef = "mentor"
     chessSocketRef.current.studentRef = game.user?.username ?? ""
     chessSocketRef.current.roleRef = "student"
     gameMetaData.current=game
@@ -552,7 +588,7 @@ console.log("sending sumn")
               <button
                 className="btn-green flex-1"
                 onClick={() => {
-                  navigate("/play");
+                  navigate("/select-game");
                 }}
               >
                 New Game

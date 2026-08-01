@@ -118,7 +118,7 @@ const normalizeFen = (fen: string): string => {
 
 export const useChessSocket = ({
   student,
-  mentor = "",
+  mentor = "mentor",
   role = "student",
   serverUrl,
   mode = "regular",
@@ -408,17 +408,10 @@ export const useChessSocket = ({
 
   // ======== Outgoing commands ========
 
-  const startNewGame = useCallback((game?: GameMetaData) => {
-    const data: GameConfig = {
-      mentor: mentorRef.current,
-      student: studentRef.current,
-      role: roleRef.current,
-      ...game,
-    };
-
-    //write the version with gamestate
-    console.log("Starting new game:", data);
-    socketRef.current?.emit("newgame", JSON.stringify(data));
+  const startNewGame = useCallback((gameMetaData: GameMetaData) => {
+    console.log(gameMetaData, "sending new game");
+    console.log(socketRef.current, "socketref");
+    socketRef.current?.emit("newgame", gameMetaData);
   }, []);
 
   const startNewPuzzle = useCallback(() => {
@@ -510,7 +503,7 @@ export const useChessSocket = ({
       credentials: move.credentials,
     };
     console.log("Sending move:", data);
-    socketRef.current?.emit("move", JSON.stringify(data));
+    socketRef.current?.emit("move", data);
   }, []);
 
   const sendLastMove = useCallback((from: string, to: string) => {
