@@ -65,7 +65,7 @@ class GameManager {
           color: gameMetaData.playerColor === "white" ? "black" : "white",
         };
       }
-
+      console.log("saved games", this.ongoingGames);
       return {
         game: existingGame,
         newGame: false,
@@ -537,8 +537,11 @@ class GameManager {
    * @returns
    */
   getGameById(Id: string) {
-    console.log("ongoing games", this.ongoingGames);
-    console.log("socket Id in question", Id);
+    console.log(
+      "Trying to get b ID here are the current ongoing games",
+      this.ongoingGames,
+    );
+
     for (const game of this.ongoingGames) {
       if (
         game.uuid === Id ||

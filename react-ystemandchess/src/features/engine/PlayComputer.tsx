@@ -49,16 +49,18 @@ const PlayComputer: React.FC = () => {
   const [showGameEndModal, setShowGameEndModal] = useState(false);
   const [gameEndMessage, setGameEndMessage] = useState("");
   const gameMetaData = useRef<GameMetaData>(null);
-  const [yourTurn, setYourTurn] = useState<boolean>(true);
+  const [backendVersionIsCreated, setBackendVersionIsCreated] = useState<Boolean>(false);
+ 
 
 
 const onOpponentMove = (data:{fen:string; move?:Move}) => {
-  console.log("received move", data);
-
   try {
 
     // ignore duplicate state
     if (data.fen === gameRef.current.fen()) {
+      setFen(null)
+      setFen(data.fen)
+      console.log('setting fen')
       return;
     }
 
@@ -122,6 +124,7 @@ const endGame = useCallback(
   //handle player move function
   //handle opponent move
 
+
  useEffect(() => {
   if (!cookies.login) {
     setIsLoggedIn(false);
@@ -170,6 +173,7 @@ const chessSocket = useChessSocket({
   serverUrl: environment.urls.chessServer,
   onMove: onOpponentMove,
   onLastMove: endGame,
+  backendConnected: setBackendVersionIsCreated
 });
 
 
@@ -201,23 +205,24 @@ useEffect(() => {
 }, [location.key, chessSocket.connected]);
 
 
-useEffect(() => {
-  if (
-    gameMetaData.current?.gameType !== "computer" &&
-    gameMetaData.current?.gameType !== "guest"
-  ) {
-    return;
-  }
+const maybeTriggerComputerMove = useCallback(() => {
 
-  const currentTurn = gameRef.current.turn();
+  const meta = gameMetaData.current;
+  if (!meta) return;
+  if (meta.gameType !== "computer" && meta.gameType !== "guest") return;
+  if (!chessSocketRef.current) return;
+  if (gameRef.current.isGameOver()) return; // don't ask the engine to move into a finished game
+  console.log("checking fi this runs2")
 
+  const currentTurn = gameRef.current.turn(); // 'w' | 'b'
   const isComputerTurn =
-    (playerColor === "white" && currentTurn === "b") ||
-    (playerColor === "black" && currentTurn === "w");
+    (meta.playerColor === "white" && currentTurn === "b") ||
+    (meta.playerColor === "black" && currentTurn === "w");
+  console.log("checking fi this runs3", isComputerTurn)
 
-  if (!isComputerTurn) {
-    return;
-  }
+  if (!isComputerTurn) return;
+  console.log("checking fi this runs4")
+  console.log("uuid", gameMetaData.current.uuid)
 
   chessSocketRef.current.sendMove({
     from: null,
@@ -227,11 +232,18 @@ useEffect(() => {
     captured: null,
     flags: null,
     computerMove: true,
-    username: gameMetaData.current.user?.username ?? "",
-    credentials: null
+    username: meta.user?.username ?? "",
+    credentials: null,
+    uuid: gameMetaData.current.uuid ?? null
   });
+}, []);
 
-}, [fen, playerColor]);
+// Runs whenever a real move lands (player move or relayed opponent/engine move)
+useEffect(() => {
+  console.log(fen, "from computer move")
+  maybeTriggerComputerMove();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [fen, backendVersionIsCreated]);
 
   useEffect(() => {
     if (movesContainerRef.current) {
@@ -355,7 +367,7 @@ const checkGameStatus = useCallback((): boolean => {
     setFen(startFen);
     setMoveHistory([]);
     setHighlightSquares([]);
-    setYourTurn(true);
+    setFen(gameRef.current.fen())
     setShowGameEndModal(false);
     setPlayerColor("white")
     if (chessSocketRef) {
@@ -377,6 +389,8 @@ const checkGameStatus = useCallback((): boolean => {
     applyGameState(location.state);
     console.log(gameMetaData.current)
     chessSocketRef.current.startNewGame(gameMetaData.current);
+      maybeTriggerComputerMove();
+
     return;
   }
 
@@ -401,6 +415,7 @@ const checkGameStatus = useCallback((): boolean => {
     gameMetaData.current = newGame;
     applyGameState(newGame);
     chessSocketRef.current.startNewGame(gameMetaData.current);
+      maybeTriggerComputerMove();
     return;
   }
 
@@ -425,26 +440,33 @@ const checkGameStatus = useCallback((): boolean => {
   gameMetaData.current = guestGame;
   applyGameState(guestGame);
   chessSocketRef.current.startNewGame(gameMetaData.current);
+    maybeTriggerComputerMove();
+
 };
 
   const applyGameState = (game: GameMetaData) => {
-    gameRef.current = new Chess(game.fen);
-    chessBoardRef.current.setPosition(game.fen); 
-    setDifficulty(game.computerLevel);
-    setMoveHistory(game.movesList);
-    setHighlightSquares([]);
-    const [, activeColor] = game.fen.split(" ");
-    setYourTurn((activeColor === "w" ? "white" : "black") === playerColor);
-    setShowGameEndModal(false);
-    setGameEndMessage("");
-    location.state = game
-    chessSocketRef.current.mentorRef = "mentor"
-    chessSocketRef.current.studentRef = game.user?.username ?? ""
-    chessSocketRef.current.roleRef = "student"
-    gameMetaData.current=game
-    return
-  };
+  gameRef.current = new Chess(game.fen);
+  chessBoardRef.current.setPosition(game.fen);
+  setFen(game.fen);                 // was missing
+  setDifficulty(game.computerLevel);
+  setMoveHistory(game.movesList);
+  setHighlightSquares([]);
+  setPlayerColor(game.playerColor); // was missing
+  const [, activeColor] = game.fen.split(" ");
+  setShowGameEndModal(false);
+  setGameEndMessage("");
+  location.state = game;
+  chessSocketRef.current.mentorRef = "mentor";
+  chessSocketRef.current.studentRef = game.user?.username ?? "";
+  chessSocketRef.current.roleRef = "student";
+  gameMetaData.current = game;
+  return;
+};
+const isYourTurn = () => {
+  if (!gameRef.current) return false;
 
+  return gameRef.current.turn() === (playerColor === "white" ? "w" : "b");
+};
   const undoMove = useCallback(() => {
     //need to work on undo functionality
     if (moveHistory.length < 2) return;
@@ -475,14 +497,14 @@ const checkGameStatus = useCallback((): boolean => {
             <button
               className={controlBtnClass}
               onClick={undoMove}
-              disabled={moveHistory.length < 2 || !yourTurn}
+              disabled={moveHistory.length < 2 || !isYourTurn}
             >
               Undo
             </button>
             <button
               className={controlBtnClass}
               onClick={resetGame}
-              disabled={!yourTurn}
+              disabled={!isYourTurn}
             >
               Reset
             </button>
@@ -503,7 +525,7 @@ const checkGameStatus = useCallback((): boolean => {
               orientation={playerColor}
               highlightSquares={highlightSquares}
               onMove={handleMove}
-              disabled={!yourTurn}
+              disabled={!isYourTurn}
             />
           </div>
 

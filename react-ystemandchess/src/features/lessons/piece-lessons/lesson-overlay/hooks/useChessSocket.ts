@@ -79,6 +79,7 @@ interface UseChessSocketOptions {
   onColorAssigned?: (color: PlayerColor) => void;
   onConnect?: (isConnected: boolean) => void;
   onDisconnect?: (isConnected: boolean) => void;
+  backendConnected?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 // ======== CENTRALIZED FEN NORMALIZATION ========
@@ -139,6 +140,7 @@ export const useChessSocket = ({
   onMessage,
   onRoleAssigned,
   onColorAssigned,
+  backendConnected,
 }: UseChessSocketOptions) => {
   // ======== state ========
   const [fen, setFen] = useState<string>("");
@@ -188,6 +190,11 @@ export const useChessSocket = ({
       }
     });
 
+    socket.on("game-added-to-backend", () => {
+      if (backendConnected) {
+        backendConnected(true);
+      }
+    });
     socket.on("session-started", ({ success }) => {
       console.log("AI is connected");
     });
@@ -386,6 +393,9 @@ export const useChessSocket = ({
       }
     });
 
+    //Newgame created
+    // gameerror
+
     // gameerror
     socket.on("gameerror", (msg: string) => {
       console.error("Game error:", msg);
@@ -501,6 +511,7 @@ export const useChessSocket = ({
       computerMove: move.computerMove,
       username: move.username,
       credentials: move.credentials,
+      uuid: move.uuid,
     };
     console.log("Sending move:", data);
     socketRef.current?.emit("move", data);

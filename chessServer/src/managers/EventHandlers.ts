@@ -54,7 +54,6 @@ const registerSocketHandlers = (socket, io, stockfish) => {
       //Saving non Guest Games to the backend
       if (gameMetaData.gameType !== "guest") {
         console.log("saving game");
-        gameMetaData.uuid = null;
         const res = await fetch(
           `${process.env.MIDDLEWARE_URL}/savedGames/addgame`,
           {
@@ -97,7 +96,9 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         stockfishSocketId: stockfish.id,
         gameMetaData,
       });
+
       gameManager.broadcastBoardState(result.game, io);
+      socket.emit("game-added-to-backend");
     } catch (err: any) {
       socket.emit("Error Creating a New Game", err.message);
     }
@@ -119,6 +120,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         fen: gameMetaData.fen,
         gameSocket: gameMetaData.uuid || socket.id,
       });
+      console.log(gameMetaData.uuid || socket.id);
     });
   };
   /**
@@ -153,11 +155,16 @@ const registerSocketHandlers = (socket, io, stockfish) => {
 
   socket.on("move", async (msg) => {
     try {
-      const { from, to, promotion, computerMove, username, credentials } = msg;
+      const { from, to, promotion, computerMove, username, credentials, uuid } =
+        msg;
       console.log("testing msg", msg);
       console.log("computer move", computerMove);
+      console.log("found uuid", uuid);
 
-      const game = gameManager.getGameById(socket.id) as GameInstance;
+      const game = gameManager.getGameById(uuid || socket.id) as GameInstance;
+      if (!game) {
+        console.log("couldn't find the game1");
+      }
       if (computerMove) {
         console.log("eval fen", computerMove);
 
@@ -260,6 +267,13 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         const socketId = gameSocket;
 
         const game = gameManager.getGameById(socketId) as GameInstance;
+        console.log("this is the socketid", socket.id);
+        console.log("this is the stockfishID", stockfish.id);
+        console.log(
+          "this is the gamesocket id that stockfish should be supposedly savign to get back to the game",
+          socketId,
+        );
+        console.log("my ongoing");
 
         if (!game) {
           throw new Error("Game instance not found for the given socket ID.");
