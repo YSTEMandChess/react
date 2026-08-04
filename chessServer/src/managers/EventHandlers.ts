@@ -91,11 +91,13 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         }
       }
       //result return an object {game / newgame}
+      console.log("creating Game");
       let result = gameManager.createOrJoinGame({
         socketId: socket.id,
         stockfishSocketId: stockfish.id,
         gameMetaData,
       });
+      console.log("created Game");
 
       gameManager.broadcastBoardState(result.game, io);
       socket.emit("game-added-to-backend");

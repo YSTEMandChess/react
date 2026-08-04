@@ -55,7 +55,7 @@ const PlayComputer: React.FC = () => {
  
 
 
-const onOpponentMove = (data:{fen:string; move?:Move}) => {
+const onOpponentMove = (data:{fen:string; move?:Move, gameMetaData: GameMetaData}) => {
   try {
 
     // ignore duplicate state
@@ -70,6 +70,8 @@ const onOpponentMove = (data:{fen:string; move?:Move}) => {
     if (!data.move?.from || !data.move?.to) {
       gameRef.current = new Chess(data.fen);
       setFen(data.fen);
+      applyGameState(data.gameMetaData)
+
       return;
     }
 

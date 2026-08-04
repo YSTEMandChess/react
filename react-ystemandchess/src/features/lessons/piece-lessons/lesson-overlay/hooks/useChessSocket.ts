@@ -63,7 +63,11 @@ interface UseChessSocketOptions {
 
   // Event callbacks
   onBoardStateChange?: (fen: string, color?: PlayerColor) => void;
-  onMove?: (data: { fen: string; move?: Move }) => void;
+  onMove?: (data: {
+    fen: string;
+    move?: Move;
+    gameMetaData?: GameMetaData;
+  }) => void;
   onHighlight?: (from: string, to: string) => void;
   onLastMove?: (from: string, to: string) => void;
   onMouseMove?: (position: MousePosition) => void;
@@ -260,6 +264,7 @@ export const useChessSocket = ({
           onMove({
             fen: gameMetaData.fen,
             move: { from: null, to: null, promotion: null },
+            gameMetaData,
           });
         }
         return;

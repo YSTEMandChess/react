@@ -51,7 +51,7 @@ const addNewGame = async (req, res, next) => {
         return next();
       }
     }
-
+console.log("this is the req body", req.body)
     // Create a new game
     const gameSettings = {
       userId: req.body.userId,
@@ -71,8 +71,10 @@ const addNewGame = async (req, res, next) => {
     };
 
     const game = await savedGame.create(gameSettings);
+    
 
     req.game = game.uuid;
+    console.log("This is the game uuid", game.uuid)
     req.createdGame = game;
 
     return next();
@@ -85,6 +87,7 @@ const addNewGame = async (req, res, next) => {
 
 // Push new game id to student's saved games
 const addGameToStudent = async (req, res) => {
+  console.log("starting this", req.body)
   try {
     const userId = req.body.userId;
     const opponentId = req.body.opponentId;
@@ -100,13 +103,20 @@ const addGameToStudent = async (req, res) => {
 
     // Only attach game if this is a brand new one
     if (!req.existingGame) {
+
       if (!student.savedGames.includes(gameUuid)) {
+
         student.savedGames.push(gameUuid);
+
         await student.save();
+
       }
 
       if (req.body.gameType === "friend") {
+
         const opponent = await users.findById(opponentId);
+
+        console.log("my opp", opponent._id)
 
         if (!opponent) {
           return res.status(404).json({
@@ -115,16 +125,19 @@ const addGameToStudent = async (req, res) => {
         }
 
         if (!opponent.savedGames.includes(gameUuid)) {
+
           opponent.savedGames.push(gameUuid);
+
           await opponent.save();
+
+
         }
       }
     }
 
     // Use whichever game object exists
     const game = req.existingGame || req.createdGame;
-
-    return res.status(200).json({
+    console.log({
       message: req.existingGame
         ? "Existing game loaded"
         : "New game created",
@@ -136,7 +149,19 @@ const addGameToStudent = async (req, res) => {
       movesList: game.movesList,
       status: game.status,
 
-      // Entire game document if needed
+      game,
+    })
+    return res.status(200).json({
+      message: req.existingGame
+        ? "Existing game loaded"
+        : "New game created",
+      uuid: game.uuid,
+      existing: Boolean(req.existingGame),
+
+      fen: game.fen,
+      movesList: game.movesList,
+      status: game.status,
+
       game,
     });
   } catch (error) {
@@ -202,14 +227,110 @@ const getMultipleGames = async (req, res) => {
     }
 };
 
+// Delete a saved game completely
+// Delete a single saved game completely
+const deleteGame = async (req, res) => {
+  try {
+    const gameUuid = req.params.id;
+
+    // Make sure the game exists
+    const game = await savedGame.findOne({ uuid: gameUuid });
+
+    if (!game) {
+      return res.status(404).json({
+        message: "Game not found",
+      });
+    }
+
+    // Remove the UUID from every user's savedGames array
+    await users.updateMany(
+      {
+        savedGames: gameUuid,
+      },
+      {
+        $pull: {
+          savedGames: gameUuid,
+        },
+      }
+    );
+
+    // Delete the game document
+    await savedGame.deleteOne({
+      uuid: gameUuid,
+    });
+
+    return res.status(200).json({
+      message: "Game deleted successfully.",
+      uuid: gameUuid,
+    });
+  } catch (error) {
+    console.error("Error deleting game:", error);
+
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+};
+
+
+const deleteAllUserGames = async (req, res) => {
+  try {
+    const user = await users.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const gameUuids = user.savedGames;
+
+    if (gameUuids.length === 0) {
+      return res.status(200).json({
+        message: "User has no saved games.",
+      });
+    }
+
+    // Delete the game documents
+    await savedGame.deleteMany({
+      uuid: { $in: gameUuids },
+    });
+
+    // Remove those UUIDs from everyone's savedGames array
+    await users.updateMany(
+      {
+        savedGames: { $in: gameUuids },
+      },
+      {
+        $pull: {
+          savedGames: {
+            $in: gameUuids,
+          },
+        },
+      }
+    );
+
+    return res.status(200).json({
+      message: "All saved games deleted.",
+      deletedGames: gameUuids.length,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+};
+
 // Register the route path
 router.post("/batch", getMultipleGames);
-
 
 // Routes mapping configuration
 router.get("/student/:id", getStudentById, getGamesByStudent);
 router.post("/addgame", addNewGame, addGameToStudent); //takes student id in the body
 router.patch("/game/:id", overWrite); //takes an object with new settings (good for updating the game)
 router.get("/game/:id", getGame); //Takes nothing but UUID as param
+router.delete("/game/:id", deleteGame);
+router.delete("/student/:id/games", deleteAllUserGames);
 
 module.exports = router;
