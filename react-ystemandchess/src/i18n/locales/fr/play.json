@@ -1,0 +1,37 @@
+{
+  "title": "Jouer contre l'Ordinateur",
+  "settings": {
+    "title": "Paramètres du Jeu",
+    "playAs": "Jouer les",
+    "white": "Blancs",
+    "black": "Noirs",
+    "difficulty": "Difficulté",
+    "levels": {
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile",
+      "expert": "Expert",
+      "master": "Maître"
+    },
+    "startGame": "Commencer la Partie",
+    "connecting": "Connexion..."
+  },
+  "controls": {
+    "undo": "Annuler",
+    "reset": "Réinitialiser",
+    "newGame": "Nouvelle Partie",
+    "flipBoard": "Pivoter l'Échiquier"
+  },
+  "moveHistory": "Historique des Coups",
+  "modal": {
+    "newGame": "Nouvelle Partie",
+    "close": "Fermer"
+  },
+  "status": {
+    "checkmate": "Échec et mat! Victoire des {{winner}}!",
+    "stalemate": "Pat! Égalité!",
+    "draw": "Fin de partie: Égalité!",
+    "threefold": "Égalité par répétition!",
+    "insufficient": "Égalité par matériel insuffisant!"
+  }
+}

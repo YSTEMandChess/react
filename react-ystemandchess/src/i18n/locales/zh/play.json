@@ -1,0 +1,37 @@
+{
+  "title": "对战电脑",
+  "settings": {
+    "title": "游戏设置",
+    "playAs": "选择执棋",
+    "white": "白棋",
+    "black": "黑棋",
+    "difficulty": "难度选择",
+    "levels": {
+      "easy": "简单",
+      "medium": "中等",
+      "hard": "困难",
+      "expert": "专家",
+      "master": "大师"
+    },
+    "startGame": "开始游戏",
+    "connecting": "连接中..."
+  },
+  "controls": {
+    "undo": "悔棋",
+    "reset": "重置",
+    "newGame": "新游戏",
+    "flipBoard": "翻转棋盘"
+  },
+  "moveHistory": "对局记录",
+  "modal": {
+    "newGame": "新游戏",
+    "close": "关闭"
+  },
+  "status": {
+    "checkmate": "将死！{{winner}} 获胜！",
+    "stalemate": "逼和！平局！",
+    "draw": "游戏结束：平局！",
+    "threefold": "三次重复走法平局！",
+    "insufficient": "子力不足平局！"
+  }
+}

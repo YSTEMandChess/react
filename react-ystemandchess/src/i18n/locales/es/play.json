@@ -1,0 +1,37 @@
+{
+  "title": "Jugar contra la Computadora",
+  "settings": {
+    "title": "Configuración del Juego",
+    "playAs": "Jugar como",
+    "white": "Blancas",
+    "black": "Negras",
+    "difficulty": "Dificultad",
+    "levels": {
+      "easy": "Fácil",
+      "medium": "Medio",
+      "hard": "Difícil",
+      "expert": "Experto",
+      "master": "Maestro"
+    },
+    "startGame": "Iniciar Juego",
+    "connecting": "Conectando..."
+  },
+  "controls": {
+    "undo": "Deshacer",
+    "reset": "Reiniciar",
+    "newGame": "Nuevo Juego",
+    "flipBoard": "Girar Tablero"
+  },
+  "moveHistory": "Historial de Movimientos",
+  "modal": {
+    "newGame": "Nuevo Juego",
+    "close": "Cerrar"
+  },
+  "status": {
+    "checkmate": "¡Jaque mate! ¡Ganan las {{winner}}!",
+    "stalemate": "¡Tablas por ahogado!",
+    "draw": "Fin del juego: ¡Empate!",
+    "threefold": "¡Empate por triple repetición!",
+    "insufficient": "¡Empate por material insuficiente!"
+  }
+}

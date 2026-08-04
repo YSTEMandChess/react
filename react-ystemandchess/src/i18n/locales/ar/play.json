@@ -1,0 +1,37 @@
+{
+  "title": "اللعب ضد الكمبيوتر",
+  "settings": {
+    "title": "إعدادات اللعبة",
+    "playAs": "العب باللون",
+    "white": "الأبيض",
+    "black": "الأسود",
+    "difficulty": "مستوى الصعوبة",
+    "levels": {
+      "easy": "سهل",
+      "medium": "متوسط",
+      "hard": "صعب",
+      "expert": "خبير",
+      "master": "ماستر"
+    },
+    "startGame": "بدء اللعبة",
+    "connecting": "جاري الاتصال..."
+  },
+  "controls": {
+    "undo": "تراجع",
+    "reset": "إعادة ضبط",
+    "newGame": "لعبة جديدة",
+    "flipBoard": "قلب الرقعة"
+  },
+  "moveHistory": "سجل النقلات",
+  "modal": {
+    "newGame": "لعبة جديدة",
+    "close": "إغلاق"
+  },
+  "status": {
+    "checkmate": "كش مات! فاز الفريق {{winner}}!",
+    "stalemate": "تعادل بالقفل!",
+    "draw": "انتهت اللعبة: تعادل!",
+    "threefold": "تعادل بتكرار الموقف ثلاث مرات!",
+    "insufficient": "تعادل لعدم كفاية قطع التثبيت!"
+  }
+}

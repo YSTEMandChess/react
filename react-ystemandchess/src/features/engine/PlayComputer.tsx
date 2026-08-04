@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Chess } from 'chess.js';
 import { io, Socket } from 'socket.io-client';
 import { useLocation } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { Move } from '../../core/types/chess';
 import ChessBoard, { ChessBoardRef } from '../../components/ChessBoard/ChessBoard';
 import { environment } from "../../environments/environment";
@@ -14,6 +15,7 @@ const controlBtnClass =
   "enabled:hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed";
 
 const PlayComputer: React.FC = () => {
+  const { t } = useTranslation('play');
   const chessBoardRef = useRef<ChessBoardRef>(null);
   const socketRef = useRef<Socket | null>(null);
   const gameRef = useRef<Chess>(new Chess());
@@ -163,28 +165,29 @@ const PlayComputer: React.FC = () => {
   const checkGameStatus = useCallback((): boolean => {
     const game = gameRef.current;
     if (game.isCheckmate()) {
-      const winner = game.turn() === 'w' ? 'Black' : 'White';
-      setGameEndMessage(`Checkmate! ${winner} wins!`);
+      const winnerKey = game.turn() === 'w' ? 'settings.black' : 'settings.white';
+      const winner = t(winnerKey);
+      setGameEndMessage(t('status.checkmate', { winner }));
       setShowGameEndModal(true);
       return true;
     }
     if (game.isDraw() || game.isStalemate()) {
-      setGameEndMessage(game.isStalemate() ? 'Stalemate! Draw!' : 'Game over: Draw!');
+      setGameEndMessage(game.isStalemate() ? t('status.stalemate') : t('status.draw'));
       setShowGameEndModal(true);
       return true;
     }
     if (game.isThreefoldRepetition()) {
-      setGameEndMessage('Draw by threefold repetition!');
+      setGameEndMessage(t('status.threefold'));
       setShowGameEndModal(true);
       return true;
     }
     if (game.isInsufficientMaterial()) {
-      setGameEndMessage('Draw by insufficient material!');
+      setGameEndMessage(t('status.insufficient'));
       setShowGameEndModal(true);
       return true;
     }
     return false;
-  }, []);
+  }, [t]);
 
   const resetGame = useCallback(() => {
     gameRef.current.reset();
@@ -224,27 +227,27 @@ const PlayComputer: React.FC = () => {
     if (socketRef.current) socketRef.current.emit('update-fen', { fen: newFen });
   }, [moveHistory.length]);
 
-  const difficulties: { label: string; value: Difficulty }[] = [
-    { label: 'Easy', value: 1 },
-    { label: 'Medium', value: 5 },
-    { label: 'Hard', value: 10 },
-    { label: 'Expert', value: 15 },
-    { label: 'Master', value: 20 },
+  const difficulties: { labelKey: string; value: Difficulty }[] = [
+    { labelKey: 'settings.levels.easy', value: 1 },
+    { labelKey: 'settings.levels.medium', value: 5 },
+    { labelKey: 'settings.levels.hard', value: 10 },
+    { labelKey: 'settings.levels.expert', value: 15 },
+    { labelKey: 'settings.levels.master', value: 20 },
   ];
 
   return (
     <div className="flex flex-col items-center mt-8 px-4 py-8 bg-soft">
 
-      <h1 className="text-3xl font-bold text-dark mb-8 text-center">Play vs Computer</h1>
+      <h1 className="text-3xl font-bold text-dark mb-8 text-center">{t('title')}</h1>
 
       {showSettings ? (
         /* ── Settings card ── */
         <div className="bg-light border-2 border-dark rounded-2xl shadow-md p-10 flex flex-col items-center w-full max-w-lg">
-          <h2 className="text-2xl font-bold text-dark mb-8 text-center">Game Settings</h2>
+          <h2 className="text-2xl font-bold text-dark mb-8 text-center">{t('settings.title')}</h2>
 
           {/* Play as */}
           <div className="w-full">
-            <label className="block mb-3 font-semibold text-lg text-muted">Play as</label>
+            <label className="block mb-3 font-semibold text-lg text-muted">{t('settings.playAs')}</label>
             <div className="grid grid-cols-2 gap-4">
               <button
                 className={`py-5 font-semibold text-lg rounded-xl border-solid bg-white text-dark
@@ -252,7 +255,7 @@ const PlayComputer: React.FC = () => {
                   ${playerColor === 'white' ? 'border-primary shadow-md scale-[1.02]' : 'border-borderLight'}`}
                 onClick={() => setPlayerColor('white')}
               >
-                White
+                {t('settings.white')}
               </button>
               <button
                 className={`py-5 font-semibold text-lg rounded-xl border-solid bg-dark text-light
@@ -260,16 +263,16 @@ const PlayComputer: React.FC = () => {
                   ${playerColor === 'black' ? 'border-primary shadow-md scale-[1.02]' : 'border-borderLight'}`}
                 onClick={() => setPlayerColor('black')}
               >
-                Black
+                {t('settings.black')}
               </button>
             </div>
           </div>
 
           {/* Difficulty */}
           <div className="w-full mt-6">
-            <label className="block mb-3 font-semibold text-lg text-muted">Difficulty</label>
+            <label className="block mb-3 font-semibold text-lg text-muted">{t('settings.difficulty')}</label>
             <div className="grid grid-cols-3 gap-3 w-full">
-              {difficulties.slice(0, 3).map(({ label, value }) => (
+              {difficulties.slice(0, 3).map(({ labelKey, value }) => (
                 <button
                   key={value}
                   className={`py-3 rounded-xl border-solid font-semibold
@@ -279,12 +282,12 @@ const PlayComputer: React.FC = () => {
                       : 'bg-white text-dark border-borderLight hover:border-primary'}`}
                   onClick={() => setDifficulty(value)}
                 >
-                  {label}
+                  {t(labelKey)}
                 </button>
               ))}
             </div>
             <div className="grid grid-cols-2 gap-3 w-full mt-3">
-              {difficulties.slice(3).map(({ label, value }) => (
+              {difficulties.slice(3).map(({ labelKey, value }) => (
                 <button
                   key={value}
                   className={`py-3 rounded-xl border-solid font-semibold
@@ -294,7 +297,7 @@ const PlayComputer: React.FC = () => {
                       : 'bg-white text-dark border-borderLight hover:border-primary'}`}
                   onClick={() => setDifficulty(value)}
                 >
-                  {label}
+                  {t(labelKey)}
                 </button>
               ))}
             </div>
@@ -302,7 +305,7 @@ const PlayComputer: React.FC = () => {
 
 
           <button className="btn-green w-full mt-8 mb-4" onClick={startSession} disabled={!connected}>
-            {connected ? 'Start Game' : 'Connecting...'}
+            {connected ? t('settings.startGame') : t('settings.connecting')}
           </button>
         </div>
       ) : (
@@ -310,16 +313,16 @@ const PlayComputer: React.FC = () => {
           {/* ── Game controls ── */}
           <div className="flex gap-3 mb-8 flex-wrap justify-center">
             <button className={controlBtnClass} onClick={undoMove} disabled={moveHistory.length < 2 || isThinking}>
-              Undo
+              {t('controls.undo')}
             </button>
             <button className={controlBtnClass} onClick={resetGame} disabled={isThinking}>
-              Reset
+              {t('controls.reset')}
             </button>
             <button className={controlBtnClass} onClick={newGame}>
-              New Game
+              {t('controls.newGame')}
             </button>
             <button className={controlBtnClass} onClick={() => chessBoardRef.current?.flip()}>
-              Flip Board
+              {t('controls.flipBoard')}
             </button>
           </div>
 
@@ -339,7 +342,7 @@ const PlayComputer: React.FC = () => {
           {/* ── Move history ── */}
           <div className="bg-light border-2 border-dark rounded-2xl p-6 w-full max-w-xl my-3">
             <h3 className="font-bold text-dark text-lg mb-3">
-              Move History
+              {t('moveHistory')}
             </h3>
             <div
               ref={movesContainerRef}
@@ -388,13 +391,13 @@ const PlayComputer: React.FC = () => {
                 className="btn-green flex-1"
                 onClick={() => { setShowGameEndModal(false); newGame(); }}
               >
-                New Game
+                {t('modal.newGame')}
               </button>
               <button
                 className="flex-1 py-3 px-4 rounded-xl border-solid border-borderLight font-semibold text-gray hover:border-dark hover:text-dark transition-colors duration-200"
                 onClick={() => setShowGameEndModal(false)}
               >
-                Close
+                {t('modal.close')}
               </button>
             </div>
           </div>
