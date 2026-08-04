@@ -18,6 +18,8 @@ import { SetPermissionLevel } from "../../globals";
 //change all of this to talk to the server have the server do the retireval  saving and editing of information
 //if someones logged in call thesavestate function otherwise just talk to the server and the server wull delete the socketid game info on disconnect
 
+
+//TODO: Add a way to update the game fully when we recieve info from the chess server to keep gamemetadata up to date
 type Difficulty = 1 | 5 | 10 | 15 | 20;
 
 const controlBtnClass =

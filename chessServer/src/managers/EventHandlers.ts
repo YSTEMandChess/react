@@ -120,7 +120,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         fen: gameMetaData.fen,
         gameSocket: gameMetaData.uuid || socket.id,
       });
-      console.log(gameMetaData.uuid || socket.id);
+      console.log("Game Meta Data UUID", gameMetaData.uuid || socket.id);
     });
   };
   /**
@@ -557,6 +557,8 @@ const registerSocketHandlers = (socket, io, stockfish) => {
       game.student?.username,
       game.mentor?.username,
     );
+
+    stockfish.emit("end-session", socket.id);
 
     // reset game
     if (result.studentId) {
