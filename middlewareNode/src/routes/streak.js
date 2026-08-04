@@ -97,7 +97,10 @@ router.get('/calendar', async (req, res) => {
 
     const start = new Date(`${month}-01T00:00:00Z`);
     const end = new Date(start);
-    end.setMonth(end.getMonth() + 1);
+    // setMonth/getMonth operate in the server's local timezone even on a
+    // UTC-constructed Date — using the UTC variants here keeps the month
+    // window correct regardless of server deployment timezone.
+    end.setUTCMonth(end.getUTCMonth() + 1);
 
     const userEvents = await TimeTracking.find({
       username,
