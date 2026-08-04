@@ -156,15 +156,31 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     const uInfo = await SetPermissionLevel(cookies);
     if (uInfo.error) {
       navigate("/login");
+      return;
+    }
+    // A parent can open a specific child's profile via ?student=<username>
+    const params = new URLSearchParams(window.location.search);
+    const studentParam = params.get("student");
+    const targetUsername = studentParam || uInfo.username;
+
+    setUsername(targetUsername);
+    if (studentParam) {
+      setFirstName(params.get("name") || studentParam);
+      setLastName("");
     } else {
-      setUsername(uInfo.username);
       setFirstName(uInfo.firstName);
       setLastName(uInfo.lastName);
     }
-    fetchUsageTime(uInfo.username);
-    fetchGraphData(uInfo.username);
-    fetchActivity(uInfo.username);
-    fetchAvatarUrl();
+
+    fetchUsageTime(targetUsername);
+    fetchGraphData(targetUsername);
+    fetchActivity(targetUsername);
+    // GET /user/avatar is self-only (returns the authenticated user's own
+    // avatar) — there's no backend support yet for a parent fetching a
+    // child's avatar by username, so only call this when viewing your own
+    // profile. Showing the parent's own avatar while viewing a child's
+    // profile would be wrong, so skip it entirely rather than guess.
+    if (!studentParam) fetchAvatarUrl();
   }
 
   // Fetch the current user's uploaded avatar, if any

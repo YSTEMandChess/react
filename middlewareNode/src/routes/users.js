@@ -18,7 +18,6 @@ const passport = require("passport");
 const router = express.Router();
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const AWS = require("aws-sdk");
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
 const { check, validationResult } = require("express-validator");
@@ -30,7 +29,7 @@ const {
 } = require("../template/changePasswordTemplate");
 const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
-const { getAvatarUrl } = require("../utils/avatars");
+const { getAvatarUrl, getBlobServiceClient, AVATAR_CONTAINER } = require("../utils/avatars");
 const { MongoClient } = require("mongodb");
 const config = require("config");
 
@@ -68,7 +67,7 @@ router.get("/children", passport.authenticate("jwt"), async (req, res) => {
       //Find all children for the parent user and retrieve only the username and timePlayed field
       const childrenArray = await users
         .find({ parentUsername: username })
-        .select(["timePlayed", "username"]);
+        .select(["timePlayed", "username", "firstName", "lastName"]);
       res.status(200).json(childrenArray);
     }
   } catch (error) {
@@ -97,7 +96,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, password, first, last, email, role, students, zipcode, gender, gradeLevel } =
+    const { username, password, first, last, email, role, students, zipcode, gender, gradeLevel, occupation } =
       req.query;
 
     //Error catching when using mongoose functions like Users.findOne()
@@ -117,7 +116,7 @@ router.post(
 
       //Switch statement for functionality depending on role
       if (role === "parent") {
-        let studentsArray = JSON.parse(students);
+        let studentsArray = students ? JSON.parse(students) : [];
         //Check if students array is present and is populated
         if (studentsArray && studentsArray.length > 0) {
           //Ensure student usernames aren't already in the database
@@ -182,6 +181,7 @@ router.post(
         zipcode: zipcode || null,
         gender: gender || null,
         gradeLevel: gradeLevel || null,
+        occupation: occupation || null,
       });
       await mainUser.save();
 
@@ -227,7 +227,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, password, first, last, email } = req.query;
+    const { username, password, first, last, email, birthday, gender, gradeLevel } = req.query;
 
     try {
       const sha384 = crypto.createHash("sha384");
@@ -252,9 +252,26 @@ router.post(
         parentUsername: req.user.username,
         role: "student",
         accountCreatedAt: currDate.toLocaleString(),
+        birthday: birthday || null,
+        gender: gender || null,
+        gradeLevel: gradeLevel || null,
         recordingList: [],
       });
-      await newStudent.save();
+      const savedStudent = await newStudent.save();
+
+      //Seed default activities for the new student, best effort so it never blocks account creation
+      try {
+        const newActivities = await selectActivities();
+        const activitiesEntry = new Activities({
+          userId: savedStudent.id,
+          activities: newActivities,
+          completedDates: [],
+        });
+        await activitiesEntry.save();
+      } catch (activitiesError) {
+        console.error("Error creating activities for student: ", activitiesError.message);
+      }
+
       return res.status(200).json("Added student");
     } catch (error) {
       console.error(error.message);
@@ -572,8 +589,8 @@ router.put("/profile", passport.authenticate("jwt"), async (req, res) => {
   }
 });
 
-// Avatar uploads are held in memory (not on disk) then streamed straight to S3.
-const AVATAR_BUCKET = "ystemandchess-user-avatars";
+// Avatar uploads are held in memory (not on disk) then streamed straight to
+// Azure Blob Storage (avatars container — see utils/avatars.js).
 const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5MB
 
@@ -587,15 +604,6 @@ const avatarUpload = multer({
     cb(null, true);
   },
 });
-
-function getS3Client() {
-  return new AWS.S3({
-    apiVersion: "latest",
-    region: "us-east-2",
-    accessKeyId: config.get("awsAccessKey"),
-    secretAccessKey: config.get("awsSecretKey"),
-  });
-}
 
 /**
  * GET /user/avatar
@@ -619,10 +627,11 @@ router.get("/avatar", passport.authenticate("jwt"), async (req, res) => {
 /**
  * POST /user/avatar
  *
- * Uploads a profile avatar image for the authenticated user, storing it in S3
- * under a per-user key. Only ever operates on req.user's own record (same
- * pattern as PUT /profile) — there is no :username param, so a student can
- * never upload an avatar for another account.
+ * Uploads a profile avatar image for the authenticated user, storing it in
+ * Azure Blob Storage under a per-user blob name. Only ever operates on
+ * req.user's own record (same pattern as PUT /profile) — there is no
+ * :username param, so a student can never upload an avatar for another
+ * account.
  *
  * @access JWT authenticated users
  */
@@ -644,15 +653,13 @@ router.post(
       const extension = req.file.mimetype.split("/")[1];
       const avatarKey = `${req.user.username}/${uuidv4()}.${extension}`;
 
-      const s3 = getS3Client();
-      await s3
-        .putObject({
-          Bucket: AVATAR_BUCKET,
-          Key: avatarKey,
-          Body: req.file.buffer,
-          ContentType: req.file.mimetype,
-        })
-        .promise();
+      const { client } = getBlobServiceClient();
+      const blockBlobClient = client
+        .getContainerClient(AVATAR_CONTAINER)
+        .getBlockBlobClient(avatarKey);
+      await blockBlobClient.uploadData(req.file.buffer, {
+        blobHTTPHeaders: { blobContentType: req.file.mimetype },
+      });
 
       await users.updateOne(
         { username: req.user.username },
