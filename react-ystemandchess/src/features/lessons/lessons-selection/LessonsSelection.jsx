@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { environment } from "../../../environments/environment";
 import { getAllScenarios } from "../lessons-main/Scenarios";
 import { useCookies } from "react-cookie";
+import { useTranslation } from "react-i18next";
 
 const itemClass =
   "flex w-full min-h-[3rem] items-center justify-start px-6 py-3 bg-light font-bold text-dark " +
@@ -30,6 +31,7 @@ const dropdownClass =
 
 export default function LessonSelection({ onGo, styleType = "page" }) {
   const isProfile = styleType === "profile";
+  const { t } = useTranslation('lessons');
 
   const navigate = useNavigate();
   const [showScenarios, setShowScenarios] = useState(false);
@@ -77,12 +79,12 @@ export default function LessonSelection({ onGo, styleType = "page" }) {
 
   const handleSubmit = async () => {
     if (!selectedLesson || !selectedScenario) {
-      showError("Please select a scenario and a lesson.");
+      showError(t('errors.selectBoth'));
       return;
     }
     const lessonNum = getLessonIndex(selectedScenario, selectedLesson);
     if (lessonNum === -1) {
-      showError("Could not find the selected lesson's index.");
+      showError(t('errors.lessonNotFound'));
       return;
     }
     if (onGo) {
@@ -172,7 +174,7 @@ export default function LessonSelection({ onGo, styleType = "page" }) {
         className="text-3xl font-bold text-dark mb-8 text-center"
         data-testid="title"
       >
-        Lesson Selection
+        {t('title')}
       </h1>
 
       {/* Scenario dropdown */}
@@ -184,7 +186,7 @@ export default function LessonSelection({ onGo, styleType = "page" }) {
             data-testid="scenario-selector"
             onClick={() => setShowScenarios(!showScenarios)}
           >
-            <span>{selectedScenario || "Select a scenario"}</span>
+            <span>{selectedScenario || t('selectScenario')}</span>
             <span className="mr-2 select-none">{showScenarios ? "▼" : "▲"}</span>
           </div>
           {showScenarios && (
@@ -204,19 +206,19 @@ export default function LessonSelection({ onGo, styleType = "page" }) {
             data-testid="lesson-selector"
             onClick={() => {
               if (!selectedScenario) {
-                showError("Please select a scenario first.");
+                showError(t('errors.selectScenarioFirst'));
                 return;
               }
               setShowLessons(!showLessons);
             }}
           >
-            <span>{selectedLesson || "Select a lesson"}</span>
+            <span>{selectedLesson || t('selectLesson')}</span>
             <span className="mr-2 select-none">{showLessons ? "▼" : "▲"}</span>
           </div>
           {showLessons && (
             <div className={dropdownClass}>
               {isLessonsLoading
-                ? <div className={itemClass}>Loading...</div>
+                ? <div className={itemClass}>{t('loading')}</div>
                 : renderedLessons
               }
             </div>
@@ -234,7 +236,7 @@ export default function LessonSelection({ onGo, styleType = "page" }) {
       </div>
 
       <button className="btn-green mt-4 mb-12" data-testid="enterInfo" onClick={handleSubmit}>
-        Go!
+        {t('go')}
       </button>
     </div>
   );

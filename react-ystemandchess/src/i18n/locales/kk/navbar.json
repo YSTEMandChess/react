@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Бағдарламалар",
+    "mentor": "Тәлімгер",
+    "learn": "Үйрену",
+    "play": "Ойнау",
+    "lessons": "Сабақтар",
+    "puzzles": "Жұмбақтар",
+    "login": "Кіру"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Біз туралы",
+      "education": "Білім",
+      "benefitCS": "Информатиканың пайдасы",
+      "benefitChess": "Шахматтың пайдасы",
+      "benefitMath": "Математика тьюторлығының пайдасы",
+      "benefitMentoring": "Тәлімгерліктің пайдасы",
+      "whatWeDo": "Біз не істейміз",
+      "onlineExpansion": "Онлайн кеңею",
+      "aboutUs": "Біз туралы",
+      "mission": "Миссия",
+      "financial": "Қаржы",
+      "board": "Директорлар кеңесі",
+      "sponsorsPartners": "Демеушілер мен серіктестер"
+    },
+    "signUp": {
+      "label": "Тіркелу",
+      "parent": "Ата-ана тіркелуі",
+      "mentor": "Тәлімгер тіркелуі"
+    }
+  },
+  "profile": {
+    "profile": "Профиль",
+    "addStudent": "Оқушы қосу",
+    "logout": "Шығу"
+  },
+  "aria": {
+    "toggleMenu": "Мәзірді ауыстыру"
+  }
+}

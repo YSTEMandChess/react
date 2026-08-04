@@ -1,0 +1,12 @@
+{
+  "title": "Lesson Selection",
+  "selectScenario": "Select a scenario",
+  "selectLesson": "Select a lesson",
+  "loading": "Loading...",
+  "go": "Go!",
+  "errors": {
+    "selectBoth": "Please select a scenario and a lesson.",
+    "selectScenarioFirst": "Please select a scenario first.",
+    "lessonNotFound": "Could not find the selected lesson's index."
+  }
+}

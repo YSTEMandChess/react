@@ -1,0 +1,38 @@
+{
+  "hero": {
+    "heading1": "Aidez votre enfant à développer",
+    "heading2": "des compétences en pensée critique!",
+    "subtext": "Nous sommes une organisation à but non lucratif qui donne aux enfants les moyens de trouver leur propre succès dans les STEM grâce aux Échecs, aux Mathématiques et à l'Informatique.",
+    "donate": "Faire un don"
+  },
+  "inclusion": {
+    "heading": "Tout le monde est inclus. Tout le monde est bienvenu."
+  },
+  "cards": {
+    "free": {
+      "title": "Gratuit",
+      "description": "Pour les étudiants qui bénéficient du déjeuner gratuit ou à tarif réduit. Nos leçons sont gratuites.",
+      "joinNow": "Rejoindre maintenant!"
+    },
+    "premium": {
+      "title": "Premium",
+      "description": "Pour les étudiants ne bénéficiant pas du déjeuner gratuit ou à tarif réduit. 25$ / Semaine. La première leçon est GRATUITE. Annulez à tout moment.",
+      "joinNow": "Rejoindre maintenant!"
+    }
+  },
+  "cta": {
+    "heading": "Commencez maintenant et inscrivez-vous plus tard!",
+    "button": "Commencer!"
+  },
+  "books": {
+    "heading": "Livres de Devin Nakano",
+    "buyNow": "Acheter maintenant!",
+    "proceeds": "Tous les bénéfices seront reversés à l'organisation"
+  },
+  "sponsors": {
+    "heading": "Nos Sponsors"
+  },
+  "partners": {
+    "heading": "Nos Partenaires"
+  }
+}

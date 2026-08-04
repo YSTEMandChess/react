@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import Book1 from "../../assets/images/book-howtostart.png";
 import Book2 from "../../assets/images/book-thezerodollar.png";
 import TreesGroup from "../../assets/images/Trees-Group.png";
@@ -89,6 +90,7 @@ const books = [
 
 const Home = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('home');
 
   const handleDonateButton = () => {
     window.location.href =
@@ -118,17 +120,15 @@ const Home = () => {
         <div className="w-full md:w-1/2 flex justify-center items-center flex-col gap-6">
           <h1 className="text-3xl md:text-4xl text-left w-full text-dark font-bold pt-8">
             <span className="block leading-relaxed">
-              Helping your child develop
+              {t('hero.heading1')}
             </span>
             <span className="block leading-relaxed">
-              critical thinking skills!
+              {t('hero.heading2')}
             </span>
           </h1>
 
           <p className="text-xl md:text-2xl/10 pt-2 text-left w-full text-gray">
-            We are a nonprofit organization empowering children <br /> to find
-            their own success in STEM <br /> through Chess, Math and Computer
-            Science.
+            {t('hero.subtext')}
           </p>
 
           <button
@@ -136,7 +136,7 @@ const Home = () => {
             onClick={handleDonateButton}
             aria-label="Donate to Y STEM and Chess"
           >
-            Donate
+            {t('hero.donate')}
           </button>
         </div>
 
@@ -159,7 +159,7 @@ const Home = () => {
 
       {/* "EVERYONE IS INCLUDED" HEADING */}
       <h2 className="text-center text-3xl md:text-4xl md:my-12 font-bold text-dark">
-        Everyone is included. Everyone is welcome.
+        {t('inclusion.heading')}
       </h2>
 
       {/* FREE/PREMIUM CARDS */}
@@ -167,34 +167,32 @@ const Home = () => {
         {/* Free Card */}
         <div className="flex flex-col justify-center items-center w-full md:w-1/2 lg:w-1/4 bg-primary rounded-3xl shadow-card-yellow p-8 gap-4">
           <img src={Heart} alt="" className="w-16 h-16 md:w-20 md:h-20" />
-          <h3 className="text-3xl md:text-4xl font-bold text-dark mt-4 mb-4">Free</h3>
+          <h3 className="text-3xl md:text-4xl font-bold text-dark mt-4 mb-4">{t('cards.free.title')}</h3>
           <p className="text-lg md:text-xl/9 text-center text-dark leading-relaxed">
-            For students who qualify for <br />free and reduced lunch.<br />
-            Our lessons are free.
+            {t('cards.free.description')}
           </p>
           <button
             className="btn-primary mt-auto mb-4"
             aria-label="Join now for free"
             onClick={() => navigate("/signup/parent")}
           >
-            Join Now!
+            {t('cards.free.joinNow')}
           </button>
         </div>
 
         {/* Premium Card */}
         <div className="flex flex-col justify-center items-center w-full md:w-1/2 lg:w-1/4 bg-light rounded-3xl shadow-card-green p-8 gap-4">
           <img src={Gem} alt="" className="w-16 h-16 md:w-20 md:h-20" />
-          <h3 className="text-3xl md:text-4xl font-bold text-dark mt-4 mb-4">Premium</h3>
+          <h3 className="text-3xl md:text-4xl font-bold text-dark mt-4 mb-4">{t('cards.premium.title')}</h3>
           <p className="text-lg md:text-xl/9 text-center text-dark leading-relaxed mb-20">
-            For students who don't qualify <br />for free and reduced lunch.
-            <br />$25 / Week <br />First lesson is FREE. <br />Cancel anytime.
+            {t('cards.premium.description')}
           </p>
           <button
             className="btn-primary mt-auto mb-4"
             aria-label="Join now premium"
             onClick={() => navigate("/signup/parent")}
           >
-            Join Now!
+            {t('cards.premium.joinNow')}
           </button>
         </div>
       </div>
@@ -227,14 +225,14 @@ const Home = () => {
             className="w-full max-w-md h-auto"
           />
           <div className="text-xl md:text-4xl font-bold text-dark text-center mt-4 mb-4">
-            Start now and sign up later!
+            {t('cta.heading')}
           </div>
           <button
             className="btn-primary"
             onClick={() => navigate("./play")}
             aria-label="Get started"
           >
-            Get Started!
+            {t('cta.button')}
           </button>
         </div>
       </div>
@@ -250,7 +248,7 @@ const Home = () => {
       {/* BOOKS SECTION */}
       <div role="region" className="w-full h-auto my-12 px-6 md:px-12">
         <h2 className="text-center text-3xl md:text-4xl md:my-12 font-bold text-dark">
-          Books by Devin Nakano
+          {t('books.heading')}
         </h2>
 
         {books.map((book, index) => (
@@ -265,7 +263,7 @@ const Home = () => {
                 className="btn-primary"
                 aria-label={`Buy now ${book.title}`}
                 onClick={() => handleBuyNow(book.title)}
-              >Buy Now!
+              >{t('books.buyNow')}
               </button>
             </div>
 
@@ -284,7 +282,7 @@ const Home = () => {
         ))}
 
         <footer role="contentinfo" className="bg-secondary text-center mt-8">
-          <p className="text-lg text-dark font-bold leading-relaxed">All proceeds will be donated to the organization</p>
+          <p className="text-lg text-dark font-bold leading-relaxed">{t('books.proceeds')}</p>
         </footer>
       </div>
 
@@ -299,7 +297,7 @@ const Home = () => {
       {/* SPONSORS */}
       <div className="ml-5 mr-5 mb-12">
         <h3 className="text-center text-2xl md:text-3xl md:my-8 font-bold text-dark">
-          Our Sponsors
+          {t('sponsors.heading')}
         </h3>
         <div className="flex flex-wrap justify-center items-center gap-12">
           {sponsors.map((sponsor) => (
@@ -324,7 +322,7 @@ const Home = () => {
       {/* PARTNERS  */}
       <div className="ml-5 mr-5 mb-36">
         <h3 className="text-center text-2xl md:text-3xl md:my-8 font-bold text-dark">
-          Our Partners
+          {t('partners.heading')}
         </h3>
         <div className="flex flex-wrap justify-center items-center gap-8">
           {partners.map((partner) => (

@@ -1,0 +1,38 @@
+{
+  "hero": {
+    "heading1": "Ayudando a su hijo a desarrollar",
+    "heading2": "¡habilidades de pensamiento crítico!",
+    "subtext": "Somos una organización sin fines de lucro que empodera a los niños para encontrar su propio éxito en STEM a través del Ajedrez, las Matemáticas y la Ciencias de la Computación.",
+    "donate": "Donar"
+  },
+  "inclusion": {
+    "heading": "Todos están incluidos. Todos son bienvenidos."
+  },
+  "cards": {
+    "free": {
+      "title": "Gratis",
+      "description": "Para estudiantes que califican para almuerzo gratuito o reducido. Nuestras lecciones son gratuitas.",
+      "joinNow": "¡Únase ahora!"
+    },
+    "premium": {
+      "title": "Premium",
+      "description": "Para estudiantes que no califican para almuerzo gratuito o reducido. $25 / Semana. La primera lección es GRATIS. Cancele en cualquier momento.",
+      "joinNow": "¡Únase ahora!"
+    }
+  },
+  "cta": {
+    "heading": "¡Empieza ahora y regístrate después!",
+    "button": "¡Comenzar!"
+  },
+  "books": {
+    "heading": "Libros de Devin Nakano",
+    "buyNow": "¡Comprar ahora!",
+    "proceeds": "Todas las ganancias serán donadas a la organización"
+  },
+  "sponsors": {
+    "heading": "Nuestros Patrocinadores"
+  },
+  "partners": {
+    "heading": "Nuestros Socios"
+  }
+}

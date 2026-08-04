@@ -1,0 +1,12 @@
+{
+  "title": "Selección de Lecciones",
+  "selectScenario": "Seleccione un escenario",
+  "selectLesson": "Seleccione una lección",
+  "loading": "Cargando...",
+  "go": "¡Ir!",
+  "errors": {
+    "selectBoth": "Por favor seleccione un escenario y una lección.",
+    "selectScenarioFirst": "Por favor seleccione un escenario primero.",
+    "lessonNotFound": "No se pudo encontrar el índice de la lección seleccionada."
+  }
+}

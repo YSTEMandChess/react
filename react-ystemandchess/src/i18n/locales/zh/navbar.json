@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "课程",
+    "mentor": "导师",
+    "learn": "学习",
+    "play": "玩",
+    "lessons": "课程",
+    "puzzles": "谜题",
+    "login": "登录"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "关于我们",
+      "education": "教育",
+      "benefitCS": "计算机科学的益处",
+      "benefitChess": "国际象棋的益处",
+      "benefitMath": "数学辅导的益处",
+      "benefitMentoring": "辅导的益处",
+      "whatWeDo": "我们的工作",
+      "onlineExpansion": "线上扩展",
+      "aboutUs": "关于我们",
+      "mission": "使命",
+      "financial": "财务",
+      "board": "董事会",
+      "sponsorsPartners": "赞助商和合作伙伴"
+    },
+    "signUp": {
+      "label": "注册",
+      "parent": "家长注册",
+      "mentor": "导师注册"
+    }
+  },
+  "profile": {
+    "profile": "个人资料",
+    "addStudent": "添加学生",
+    "logout": "退出登录"
+  },
+  "aria": {
+    "toggleMenu": "切换菜单"
+  }
+}

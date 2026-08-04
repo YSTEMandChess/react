@@ -1,5 +1,6 @@
 import React from "react";
 import { useState } from 'react';
+import { useTranslation } from "react-i18next";
 import { environment } from "../../../environments/environment";
 import { useCookies } from 'react-cookie';
 import stemmy from "../../../assets/images/StreakProgressAssets/stemmy.svg";
@@ -7,6 +8,7 @@ import stemette from "../../../assets/images/StreakProgressAssets/stemette.svg";
 import treesGroup from "../../../assets/images/Trees-Group.png";
 
 const Login = () => {
+  const { t } = useTranslation('auth');
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [cookies, setCookie] = useCookies(["login"]);
@@ -47,7 +49,7 @@ const Login = () => {
     if (password.length < 8 || username.length <= 2) {
       setUsernameFlag(true);
       setPasswordFlag(true);
-      setLoginError('Invalid username or password');
+      setLoginError(t('login.errors.invalidCredentials'));
       setIsLoading(false);
       return;
     } else {
@@ -75,7 +77,7 @@ const Login = () => {
 
     httpGetAsync(url, (response: any) => {
       if (response === 'The username or password is incorrect.') {
-        setLoginError('The username or password is incorrect.');
+        setLoginError(t('login.errors.incorrectCredentials'));
         setIsLoading(false);
       } else {
         const expires = new Date();
@@ -105,7 +107,7 @@ const Login = () => {
         setIsLoading(false);
       }
     }, () => {
-      setLoginError('The username or password is incorrect.');
+      setLoginError(t('login.errors.incorrectCredentials'));
       setIsLoading(false);
     });
   };
@@ -132,7 +134,7 @@ const Login = () => {
         className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-72 xl:w-80 h-auto pointer-events-none translate-x-[10%]"
       />
 
-      <h1 className="text-3xl font-bold text-dark mb-6 text-center">Login</h1>
+      <h1 className="text-3xl font-bold text-dark mb-6 text-center">{t('login.title')}</h1>
 
       {loginError && (
         <p className="text-red font-semibold mb-4 text-center" role="alert">
@@ -142,7 +144,7 @@ const Login = () => {
 
       <form
         className="relative w-full max-w-sm bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-6"
-        aria-label="Login Form"
+        aria-label={t('login.aria.formLabel')}
         aria-busy={isLoading}
         onSubmit={submitLogin}
       >
@@ -160,13 +162,13 @@ const Login = () => {
         />
         <div className="flex flex-col gap-1.5">
           <label htmlFor="username" id="username-label" className="text-sm font-bold text-dark">
-            Username
+            {t('login.username')}
           </label>
           <input
             type="text"
             name="username"
             id="username"
-            placeholder="Username"
+            placeholder={t('login.usernamePlaceholder')}
             value={username}
             onChange={(e) => {
               setUsername(e.target.value);
@@ -181,13 +183,13 @@ const Login = () => {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="password" id="password-label" className="text-sm font-bold text-dark">
-            Password
+            {t('login.password')}
           </label>
           <input
             type="password"
             name="password"
             id="password"
-            placeholder="Password"
+            placeholder={t('login.passwordPlaceholder')}
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
@@ -203,11 +205,11 @@ const Login = () => {
         <div className="flex justify-center pt-2">
           <button
             type="submit"
-            aria-label="Login Button"
+            aria-label={t('login.aria.loginButton')}
             disabled={isLoading}
             className="btn-green px-10"
           >
-            Enter
+            {t('login.submit')}
           </button>
         </div>
       </form>
@@ -220,7 +222,7 @@ const Login = () => {
           href="/reset-password"
           className="text-dark border-b-2 border-transparent hover:border-dark transition-colors"
         >
-          Forgot password?
+          {t('login.forgotPassword')}
         </a>
       </nav>
     </div>

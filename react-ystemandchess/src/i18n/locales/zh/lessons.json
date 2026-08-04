@@ -1,0 +1,12 @@
+{
+  "title": "课程选择",
+  "selectScenario": "选择场景",
+  "selectLesson": "选择课程",
+  "loading": "加载中...",
+  "go": "开始！",
+  "errors": {
+    "selectBoth": "请选择场景和课程。",
+    "selectScenarioFirst": "请先选择一个场景。",
+    "lessonNotFound": "无法找到所选课程的索引。"
+  }
+}

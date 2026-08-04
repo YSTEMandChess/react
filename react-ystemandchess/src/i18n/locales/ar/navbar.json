@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "البرامج",
+    "mentor": "المرشد",
+    "learn": "تعلّم",
+    "play": "العب",
+    "lessons": "الدروس",
+    "puzzles": "الألغاز",
+    "login": "تسجيل الدخول"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "معلومات عنا",
+      "education": "التعليم",
+      "benefitCS": "فوائد علوم الحاسوب",
+      "benefitChess": "فوائد الشطرنج",
+      "benefitMath": "فوائد تدريس الرياضيات",
+      "benefitMentoring": "فوائد الإرشاد",
+      "whatWeDo": "ما نقوم به",
+      "onlineExpansion": "التوسع الإلكتروني",
+      "aboutUs": "معلومات عنا",
+      "mission": "الرسالة",
+      "financial": "المالية",
+      "board": "مجلس الإدارة",
+      "sponsorsPartners": "الرعاة والشركاء"
+    },
+    "signUp": {
+      "label": "التسجيل",
+      "parent": "تسجيل ولي الأمر",
+      "mentor": "تسجيل المرشد"
+    }
+  },
+  "profile": {
+    "profile": "الملف الشخصي",
+    "addStudent": "إضافة طالب",
+    "logout": "تسجيل الخروج"
+  },
+  "aria": {
+    "toggleMenu": "تبديل القائمة"
+  }
+}

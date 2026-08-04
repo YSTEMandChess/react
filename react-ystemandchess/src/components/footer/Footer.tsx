@@ -1,6 +1,8 @@
 import { FaLinkedin, FaSquareInstagram, FaFacebook, FaSquareXTwitter } from "react-icons/fa6";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
+  const { t } = useTranslation('footer');
   return (
     <footer className="w-full bg-light border-t-2 border-dark pt-10 pb-8">
       <div className="mx-auto px-6 md:px-12 lg:px-24">
@@ -12,7 +14,7 @@ const Footer = () => {
               YSTEM<span className="text-primary">&CHESS</span>
             </h2>
             <p className="text-gray text-sm font-bold leading-relaxed text-center lg:text-left">
-              Empowering Tomorrow's STEM Leaders
+              {t('tagline')}
             </p>
           </div>
 
@@ -23,7 +25,7 @@ const Footer = () => {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold uppercase text-muted">Call Us</span>
+                <span className="text-sm font-bold uppercase text-muted">{t('contact.callUs')}</span>
                 <span className="text-sm font-bold text-dark group-hover:text-primary transition-colors whitespace-nowrap"> +1 (208) 996-5071 </span>
               </div>
             </a>
@@ -33,7 +35,7 @@ const Footer = () => {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold uppercase text-muted">Email Us</span>
+                <span className="text-sm font-bold uppercase text-muted">{t('contact.emailUs')}</span>
                 <span className="text-sm font-bold text-dark group-hover:text-primary transition-colors whitespace-nowrap">info@ystemandchess.com</span>
               </div>
             </a>
@@ -42,7 +44,7 @@ const Footer = () => {
           {/* Socials */}
           <div className="flex flex-col items-center lg:items-end">
             <h3 className="text-sm font-bold uppercase text-gray mr-2.5">
-              Stay Connected
+              {t('social.stayConnected')}
             </h3>
 
             <div className="flex gap-1">
@@ -81,14 +83,14 @@ const Footer = () => {
 
         <div className="mt-12 pt-6 border-t border-borderLight flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs font-bold text-muted tracking-widest uppercase text-center md:text-left">
-            © {new Date().getFullYear()} Y STEM AND CHESS INC. | Boise, Idaho
+            © {new Date().getFullYear()} {t('copyright')}
           </p>
           <div className="flex items-center gap-4">
-            <span className="text-xs font-bold text-primary uppercase">Play</span>
+            <span className="text-xs font-bold text-primary uppercase">{t('pillars.play')}</span>
             <div className="w-1 h-1 rounded-full bg-borderLight" />
-            <span className="text-xs font-bold text-primary uppercase">Learn</span>
+            <span className="text-xs font-bold text-primary uppercase">{t('pillars.learn')}</span>
             <div className="w-1 h-1 rounded-full bg-borderLight" />
-            <span className="text-xs font-bold text-primary uppercase">Empower</span>
+            <span className="text-xs font-bold text-primary uppercase">{t('pillars.empower')}</span>
           </div>
         </div>
       </div>

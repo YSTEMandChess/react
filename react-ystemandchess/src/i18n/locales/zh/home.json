@@ -1,0 +1,38 @@
+{
+  "hero": {
+    "heading1": "帮助您的孩子培养",
+    "heading2": "批判性思维能力！",
+    "subtext": "我们是一个非营利组织，通过国际象棋、数学和计算机科学，帮助儿童在STEM领域找到属于自己的成功。",
+    "donate": "捐款"
+  },
+  "inclusion": {
+    "heading": "每个人都被包含。每个人都受欢迎。"
+  },
+  "cards": {
+    "free": {
+      "title": "免费",
+      "description": "面向有资格享受免费或减价午餐的学生。我们的课程是免费的。",
+      "joinNow": "立即加入！"
+    },
+    "premium": {
+      "title": "高级",
+      "description": "面向没有资格享受免费或减价午餐的学生。每周 $25。第一节课免费。随时取消。",
+      "joinNow": "立即加入！"
+    }
+  },
+  "cta": {
+    "heading": "现在开始，稍后注册！",
+    "button": "开始！"
+  },
+  "books": {
+    "heading": "Devin Nakano 的著作",
+    "buyNow": "立即购买！",
+    "proceeds": "所有收益将捐赠给本组织"
+  },
+  "sponsors": {
+    "heading": "我们的赞助商"
+  },
+  "partners": {
+    "heading": "我们的合作伙伴"
+  }
+}

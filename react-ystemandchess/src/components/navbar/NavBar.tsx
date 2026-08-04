@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "react-i18next";
 import { SetPermissionLevel } from "../../globals";
 import FullLogo from "../../assets/images/full_logo.png";
 
@@ -40,6 +41,7 @@ const navbarVariants = {
 };
 
 const NavBar = () => {
+  const { t, i18n } = useTranslation('navbar');
   // Cookie management hooks for handling user authentication tokens
   const [cookies, setCookie, removeCookie] = useCookies([
     "login",      // Authentication JWT token
@@ -165,7 +167,7 @@ const NavBar = () => {
         to="/programs"
         className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
-        Programs
+        {t('links.programs')}
       </Link>
 
       {/* About Us dropdown menu container */}
@@ -178,7 +180,7 @@ const NavBar = () => {
           aria-expanded={aboutUsDropDown}
           aria-controls="aboutus-menu"
         >
-          About Us
+          {t('dropdowns.aboutUs.label')}
           {/* Dropdown indicator icon that changes based on menu state */}
           <FontAwesomeIcon
             icon={aboutUsDropDown ? faCaretUp : faCaretDown}
@@ -196,82 +198,82 @@ const NavBar = () => {
             variants={navbarVariants}
           >
             {/* Education section */}
-            <h3 className="mb-2 text-base font-bold uppercase tracking-wide text-dark">Education</h3>
+            <h3 className="mb-2 text-base font-bold uppercase tracking-wide text-dark">{t('dropdowns.aboutUs.education')}</h3>
             <div className="flex flex-col gap-3">
               <Link
                 to="/benefit-of-computer-science"
                 onClick={toggleAboutUs}
                 className="text-base text-gray transition-colors hover:text-primary"
               >
-                Benefit of Computer Science
+                {t('dropdowns.aboutUs.benefitCS')}
               </Link>
               <Link
                 to="/benefit-of-chess"
                 onClick={toggleAboutUs}
                 className="text-base text-gray transition-colors hover:text-primary"
               >
-                Benefit of Chess
+                {t('dropdowns.aboutUs.benefitChess')}
               </Link>
               <Link
                 to="/benefit-of-math-tutoring"
                 onClick={toggleAboutUs}
                 className="text-base text-gray transition-colors hover:text-primary"
               >
-                Benefit of Math Tutoring
+                {t('dropdowns.aboutUs.benefitMath')}
               </Link>
               <Link
                 to="/benefit-of-mentoring"
                 onClick={toggleAboutUs}
                 className="text-base text-gray transition-colors hover:text-primary"
               >
-                Benefit of Mentoring
+                {t('dropdowns.aboutUs.benefitMentoring')}
               </Link>
             </div>
 
             {/* What We Do section */}
-            <h3 className="mt-4 mb-2 text-base font-bold uppercase tracking-wide text-dark">What We Do</h3>
+            <h3 className="mt-4 mb-2 text-base font-bold uppercase tracking-wide text-dark">{t('dropdowns.aboutUs.whatWeDo')}</h3>
             <div className="flex flex-col gap-2">
               <Link
                 to="/online-expansion"
                 onClick={toggleAboutUs}
                 className="text-base text-gray transition-colors hover:text-primary"
               >
-                Online Expansion
+                {t('dropdowns.aboutUs.onlineExpansion')}
               </Link>
               <Link
                 to="/about-us"
                 onClick={toggleAboutUs}
                 className="text-base text-gray transition-colors hover:text-primary"
               >
-                About Us
+                {t('dropdowns.aboutUs.aboutUs')}
               </Link>
               <Link
                 to="/mission"
                 onClick={toggleAboutUs}
                 className="text-base text-gray transition-colors hover:text-primary"
               >
-                Mission
+                {t('dropdowns.aboutUs.mission')}
               </Link>
               <Link
                 to="/financial"
                 onClick={toggleAboutUs}
                 className="text-base text-gray transition-colors hover:text-primary"
               >
-                Financial
+                {t('dropdowns.aboutUs.financial')}
               </Link>
               <Link
                 to="/board"
                 onClick={toggleAboutUs}
                 className="text-base text-gray transition-colors hover:text-primary"
               >
-                Board
+                {t('dropdowns.aboutUs.board')}
               </Link>
               <Link
                 to="/sponsors&partners"
                 onClick={toggleAboutUs}
                 className="text-base text-gray transition-colors hover:text-primary"
               >
-                Sponsors & Partners
+                {t('dropdowns.aboutUs.sponsorsPartners')}
               </Link>
             </div>
           </motion.div>
@@ -283,31 +285,31 @@ const NavBar = () => {
         to="/mentor"
         className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
-        Mentor
+        {t('links.mentor')}
       </Link>
       <Link
         to="/learnings"
         className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
-        Learn
+        {t('links.learn')}
       </Link>
       <Link
         to="/play"
         className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
-        Play
+        {t('links.play')}
       </Link>
       <Link
         to="/lessons-selection"
         className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
-        Lessons
+        {t('links.lessons')}
       </Link>
       <Link
         to="/puzzles"
         className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
-        Puzzles
+        {t('links.puzzles')}
       </Link>
 
       {/* Conditional rendering: Show login link only when user is not authenticated */}
@@ -316,7 +318,7 @@ const NavBar = () => {
           to="/login"
           className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
         >
-          Login
+          {t('links.login')}
         </Link>
       )}
 
@@ -332,7 +334,7 @@ const NavBar = () => {
             aria-expanded={signupDropDown}
             aria-controls="signup-menu"
           >
-            Sign Up
+            {t('dropdowns.signUp.label')}
             {/* Dropdown indicator icon that changes based on menu state */}
             <FontAwesomeIcon
               icon={signupDropDown ? faCaretUp : faCaretDown}
@@ -355,14 +357,14 @@ const NavBar = () => {
                   onClick={toggleSignup}
                   className="text-base text-gray transition-colors hover:text-primary"
                 >
-                  Parent Signup
+                  {t('dropdowns.signUp.parent')}
                 </Link>
                 <Link
                   to="/signup/mentor"
                   onClick={toggleSignup}
                   className="text-base text-gray transition-colors hover:text-primary"
                 >
-                  Mentor Signup
+                  {t('dropdowns.signUp.mentor')}
                 </Link>
               </div>
             </motion.div>
@@ -406,7 +408,7 @@ const NavBar = () => {
                     onClick={profileToggleDropdown}
                     className="text-base text-gray transition-colors hover:text-primary"
                   >
-                    Profile
+                    {t('profile.profile')}
                   </Link>
                   
                   {/* Conditional link for parent users only */}
@@ -416,7 +418,7 @@ const NavBar = () => {
                       onClick={profileToggleDropdown}
                       className="text-base text-gray transition-colors hover:text-primary"
                     >
-                      Add Student
+                      {t('profile.addStudent')}
                     </Link>
                   )}
                   
@@ -425,7 +427,7 @@ const NavBar = () => {
                     onClick={logout}
                     className="text-base text-gray transition-colors hover:text-primary"
                   >
-                    Log Out
+                    {t('profile.logout')}
                   </button>
                 </div>
               </motion.div>
@@ -433,6 +435,23 @@ const NavBar = () => {
           </div>
         </div>
       )}
+
+      {/* Language Switcher Selector */}
+      <div className="flex items-center px-2">
+        <select
+          value={i18n.language ? i18n.language.split('-')[0] : 'en'}
+          onChange={(e) => i18n.changeLanguage(e.target.value)}
+          aria-label="Select Language"
+          className="bg-light border-2 border-dark font-bold text-dark rounded-lg px-2 py-1 text-sm focus:outline-none cursor-pointer hover:border-primary transition-colors"
+        >
+          <option value="en">🌐 English</option>
+          <option value="es">🌐 Español</option>
+          <option value="fr">🌐 Français</option>
+          <option value="ar">🌐 العربية</option>
+          <option value="zh">🌐 中文</option>
+          <option value="kk">🌐 Қазақша</option>
+        </select>
+      </div>
     </>
   );
 
@@ -453,7 +472,7 @@ const NavBar = () => {
               type="button"
               className="text-dark hover:text-primary focus:outline-none"
               onClick={toggleMobileMenu}
-              aria-label="Toggle menu"
+              aria-label={t('aria.toggleMenu')}
             >
               {/* SVG icon that changes between hamburger and X based on menu state */}
               <svg
