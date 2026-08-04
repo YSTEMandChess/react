@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import "./Mentor.scss";
 import LogoLineBr from "../../../assets/images/LogoLineBreak.png";
 import cabbageImg from "../../../assets/images/mission-image.png";
@@ -9,15 +10,16 @@ import makeADifference from "../../../assets/images/difference.png";
 
 const Mentor = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation("mentor");
   return (
     <main className="board-container" role="main">
       <section className="flex-container" role="region" aria-label="Application Section" tabIndex={0}>
         <div className="text-content">
-          <h1>Become a Mentor</h1>
+          <h1>{t("title")}</h1>
           <p>
-            Your time and talent can make a real difference in people's lives.
+            {t("subtext")}
           </p>
-          <button className="apply-button" aria-label="Apply Button" tabIndex={0} onClick={() => navigate("/signup/mentor")}>Apply Now</button>
+          <button className="apply-button" aria-label="Apply Button" tabIndex={0} onClick={() => navigate("/signup/mentor")}>{t("applyNow")}</button>
         </div>
         <div className="image-content">
           <img src={cabbageImg} alt="Cabbage" />
@@ -37,7 +39,7 @@ const Mentor = () => {
         <img src={teacher} alt="Teaching and Learning" />
       </section>
 
-      <button className="apply-button" aria-label="Apply Button" onClick={() => navigate("/signup/mentor")}>Apply Now</button>
+      <button className="apply-button" aria-label="Apply Button" onClick={() => navigate("/signup/mentor")}>{t("applyNow")}</button>
     </main>
   );
 };

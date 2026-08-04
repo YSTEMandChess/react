@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import img2096 from "../../assets/images/student/1000002096.png";
 import img2094 from "../../assets/images/student/1000002094.png";
 import img2097 from "../../assets/images/student/1000002097.png";
@@ -9,22 +10,23 @@ import "./Programs.scss";
 
 export const Programs = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation("programs");
   return (
     <main className="programs-page">
       {/* 2. Two-Column Hero Section */}
       <section className="programs-hero" aria-labelledby="programs-title">
         <div className="hero-content">
           <h1 id="programs-title" className="hero-title" data-testid="programs-title">
-            Helping your child develop<br/>critical thinking skills
+            {t("title")}
           </h1>
           <p className="hero-text">
-            We are a nonprofit organization empowering children to find their own success in STEM through Chess, Math and Computer Science.
+            {t("heroText1")}
           </p>
           <p className="hero-text">
-            Our mission is to Empower children with an opportunity to pursue STEM careers and change their life trajectories.
+            {t("heroText2")}
           </p>
           <p className="hero-text">
-            We teach underserved children chess, math, and computer science to empower them to pursue STEM majors/professions with the support of professionals
+            {t("heroText3")}
           </p>
         </div>
         
@@ -42,7 +44,7 @@ export const Programs = () => {
 
       {/* 4. Inclusion Statement */}
       <div className="inclusion-statement">
-        <h2>Everyone is included. Everyone is welcomed.</h2>
+        <h2>{t("inclusion")}</h2>
       </div>
 
       {/* 5. Membership Cards */}
@@ -62,13 +64,11 @@ export const Programs = () => {
             >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
             </svg>
-            <h3>Free</h3>
+            <h3>{t("cards.free.title")}</h3>
             <p>
-              For students who qualify for<br/>
-              free and reduced lunch.<br/>
-              Our lessons are free.
+              {t("cards.free.text")}
             </p>
-            <button className="join-now-btn" onClick={() => navigate("/signup/parent")}>Join Now!</button>
+            <button className="join-now-btn" onClick={() => navigate("/signup/parent")}>{t("cards.free.button")}</button>
           </div>
         </div>
 
@@ -87,15 +87,11 @@ export const Programs = () => {
             >
               <polygon points="12 2 2 7 12 22 22 7 12 2"></polygon>
             </svg>
-            <h3>Premium</h3>
+            <h3>{t("cards.premium.title")}</h3>
             <p>
-              For students who don't qualify<br/>
-              for free and reduced lunch.<br/>
-              $25 / week<br/>
-              First lesson is FREE.<br/>
-              Cancel anytime.
+              {t("cards.premium.text")}
             </p>
-            <button className="apply-now-btn" onClick={() => navigate("/signup/parent")}>Apply Now!</button>
+            <button className="apply-now-btn" onClick={() => navigate("/signup/parent")}>{t("cards.premium.button")}</button>
           </div>
         </div>
       </section>
@@ -132,31 +128,31 @@ export const Programs = () => {
                src="/static/media/chessGroup.5ae031cd3e8a7b2854c6.png" 
                alt="Chess pieces lined up next to each other" />
           
-          <h2 className="offer-heading">We Offer</h2>
+          <h2 className="offer-heading">{t("weOffer.title")}</h2>
           
           <div className="offer-columns">
-            <div className="offer-item">Math Tutoring</div>
-            <div className="offer-item">Chess</div>
-            <div className="offer-item">Python</div>
+            <div className="offer-item">{t("weOffer.math")}</div>
+            <div className="offer-item">{t("weOffer.chess")}</div>
+            <div className="offer-item">{t("weOffer.python")}</div>
 
-            <div className="offer-item">Mentoring</div>
-            <div className="offer-item">Personal<br/>Development</div>
-            <div className="offer-item">Linux</div>
+            <div className="offer-item">{t("weOffer.mentoring")}</div>
+            <div className="offer-item">{t("weOffer.personalDev")}</div>
+            <div className="offer-item">{t("weOffer.linux")}</div>
 
-            <div className="offer-item">Study Habits</div>
-            <div className="offer-item">Careers in Computer<br/>Science and STEM</div>
-            <div className="offer-item">Java</div>
+            <div className="offer-item">{t("weOffer.studyHabits")}</div>
+            <div className="offer-item">{t("weOffer.careers")}</div>
+            <div className="offer-item">{t("weOffer.java")}</div>
           </div>
           
           <button className="offer-btn" onClick={() => navigate("/signup/parent")}>
-            Apply Now!
+            {t("weOffer.button")}
           </button>
         </div>
       </section>
 
       {/* 8. Current Status Section */}
       <section className="current-status-heading">
-        <h2>Current Status</h2>
+        <h2>{t("currentStatus.title")}</h2>
       </section>
 
       {/* 9. Status Stats Section */}
@@ -170,7 +166,7 @@ export const Programs = () => {
               <div className="stat-left">
                 <span className="stat-number">40</span>
                 <div className="vertical-divider red"></div>
-                <span className="stat-label">State Qualifiers</span>
+                <span className="stat-label">{t("currentStatus.stateQualifiers")}</span>
               </div>
               <div className="stat-right">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -189,7 +185,7 @@ export const Programs = () => {
               <div className="stat-left">
                 <span className="stat-number">9</span>
                 <div className="vertical-divider yellow"></div>
-                <span className="stat-label">State Champions</span>
+                <span className="stat-label">{t("currentStatus.stateChampions")}</span>
               </div>
               <div className="stat-right">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -206,7 +202,7 @@ export const Programs = () => {
               <div className="stat-left">
                 <span className="stat-number">2</span>
                 <div className="vertical-divider orange"></div>
-                <span className="stat-label">National Qualifiers</span>
+                <span className="stat-label">{t("currentStatus.nationalQualifiers")}</span>
               </div>
               <div className="stat-right">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -221,7 +217,7 @@ export const Programs = () => {
 
       {/* 9. Books / Donate Section */}
       <div className="flex justify-center -mb-4 mt-8">
-        <button className="donate-btn">Donate Now!</button>
+        <button className="donate-btn">{t("donate")}</button>
       </div>
 
       <div className="section-divider">
@@ -229,12 +225,12 @@ export const Programs = () => {
       </div>
       
       <section className="books-donate-section">
-        <h2 className="books-heading">Books by Devin Nakano</h2>
+        <h2 className="books-heading">{t("books.title")}</h2>
 
         <div className="book-item">
           <div className="book-cover flex flex-col items-center mx-auto md:mx-8 mb-6 md:mb-0">
             <img src="/static/media/book-howtostart.dd37637ae8e3d5b7d1d9.png" alt="How to Start a Tech-Based Nonprofit cover" className="w-[160px] h-auto mb-4" />
-            <button className="w-[160px] text-center book-buy-btn btn-primary px-0 font-bold" aria-label="Buy now How to Start a Tech-Based Nonprofit">Buy Now!</button>
+            <button className="w-[160px] text-center book-buy-btn btn-primary px-0 font-bold" aria-label="Buy now How to Start a Tech-Based Nonprofit">{t("books.buyNow")}</button>
           </div>
           <div className="book-details">
             <h3>How to Start a Tech-Based Nonprofit</h3>
@@ -255,7 +251,7 @@ export const Programs = () => {
         <div className="book-item">
           <div className="book-cover flex flex-col items-center mx-auto md:mx-8 mb-6 md:mb-0">
             <img className="w-[160px] h-auto mb-4" src="/static/media/book-thezerodollar.55de1a26d71d983cfbf9.png" alt="The Zero Dollar Workforce cover" />
-            <button className="w-[160px] text-center book-buy-btn btn-primary px-0 font-bold" aria-label="Buy now The Zero Dollar Workforce">Buy Now!</button>
+            <button className="w-[160px] text-center book-buy-btn btn-primary px-0 font-bold" aria-label="Buy now The Zero Dollar Workforce">{t("books.buyNow")}</button>
           </div>
           <div className="book-details">
             <h3>The Zero Dollar Workforce:<br/>Hire a Team, Run Your Company, and Don't Spend Any Money</h3>
@@ -276,7 +272,7 @@ export const Programs = () => {
           </div>
         </div>
         
-        <p className="donate-disclaimer">All proceeds will be donated to the organization</p>
+        <p className="donate-disclaimer">{t("books.proceeds")}</p>
       </section>
     </main>
   );

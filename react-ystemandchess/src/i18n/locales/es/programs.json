@@ -1,0 +1,44 @@
+{
+  "title": "Ayudando a su hijo a desarrollar habilidades de pensamiento crítico",
+  "heroText1": "Somos una organización sin fines de lucro que empodera a los niños para encontrar su propio éxito en STEM a través del Ajedrez, las Matemáticas y las Ciencias de la Computación.",
+  "heroText2": "Nuestra misión es empoderar a los niños con la oportunidad de seguir carreras en STEM y cambiar la trayectoria de sus vidas.",
+  "heroText3": "Enseñamos ajedrez, matemáticas y ciencias de la computación a niños vulnerables para capacitarlos para seguir carreras en STEM con el apoyo de profesionales.",
+  "inclusion": "Todos están incluidos. Todos son bienvenidos.",
+  "cards": {
+    "free": {
+      "title": "Gratis",
+      "text": "Para estudiantes que califican para almuerzo gratuito o reducido. Nuestras lecciones son gratuitas.",
+      "button": "¡Únase ahora!"
+    },
+    "premium": {
+      "title": "Premium",
+      "text": "Para estudiantes que no califican para almuerzo gratuito o reducido. $25 / semana. La primera lección es GRATIS. Cancele en cualquier momento.",
+      "button": "¡Solicite ahora!"
+    }
+  },
+  "weOffer": {
+    "title": "Ofrecemos",
+    "math": "Tutoría de Matemáticas",
+    "chess": "Ajedrez",
+    "python": "Python",
+    "mentoring": "Mentoría",
+    "personalDev": "Desarrollo Personal",
+    "linux": "Linux",
+    "studyHabits": "Hábitos de Estudio",
+    "careers": "Carreras en Informática y STEM",
+    "java": "Java",
+    "button": "¡Solicite ahora!"
+  },
+  "currentStatus": {
+    "title": "Estado Actual",
+    "stateQualifiers": "Clasificados Estatales",
+    "stateChampions": "Campeones Estatales",
+    "nationalQualifiers": "Clasificados Nacionales"
+  },
+  "donate": "¡Donar Ahora!",
+  "books": {
+    "title": "Libros de Devin Nakano",
+    "buyNow": "¡Comprar ahora!",
+    "proceeds": "Todas las ganancias serán donadas a la organización"
+  }
+}

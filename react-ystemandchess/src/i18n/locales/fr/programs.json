@@ -1,0 +1,44 @@
+{
+  "title": "Aidez votre enfant à développer des compétences en pensée critique",
+  "heroText1": "Nous sommes une organisation à but non lucratif qui donne aux enfants les moyens de réussir dans les STEM grâce aux Échecs, aux Mathématiques et à l'Informatique.",
+  "heroText2": "Notre mission est d'offrir aux enfants l'opportunité de poursuivre des carrières STEM et de changer la trajectoire de leur vie.",
+  "heroText3": "Nous enseignons les échecs, les maths et l'informatique aux enfants défavorisés pour les soutenir vers des professions STEM avec des professionnels.",
+  "inclusion": "Tout le monde est inclus. Tout le monde est bienvenu.",
+  "cards": {
+    "free": {
+      "title": "Gratuit",
+      "text": "Pour les étudiants qui bénéficient du déjeuner gratuit ou à tarif réduit. Nos leçons sont gratuites.",
+      "button": "Rejoindre maintenant!"
+    },
+    "premium": {
+      "title": "Premium",
+      "text": "Pour les étudiants ne bénéficiant pas du déjeuner gratuit ou à tarif réduit. 25$ / semaine. La première leçon est GRATUITE. Annulez à tout moment.",
+      "button": "Postuler maintenant!"
+    }
+  },
+  "weOffer": {
+    "title": "Nous Offrons",
+    "math": "Tutorat en Maths",
+    "chess": "Échecs",
+    "python": "Python",
+    "mentoring": "Mentorat",
+    "personalDev": "Développement Personnel",
+    "linux": "Linux",
+    "studyHabits": "Habitudes d'Étude",
+    "careers": "Carrières en Informatique & STEM",
+    "java": "Java",
+    "button": "Postuler maintenant!"
+  },
+  "currentStatus": {
+    "title": "Statut Actuel",
+    "stateQualifiers": "Qualifiés d'État",
+    "stateChampions": "Champions d'État",
+    "nationalQualifiers": "Qualifiés Nationaux"
+  },
+  "donate": "Faire un don!",
+  "books": {
+    "title": "Livres de Devin Nakano",
+    "buyNow": "Acheter maintenant!",
+    "proceeds": "Tous les bénéfices seront reversés à l'organisation"
+  }
+}
