@@ -62,7 +62,7 @@ class GameManager {
             // so mutating game.student also updates game.players[0]). Lets shared
             // logic — outcome detection, resignation — work for both
             // mentor-vs-student and student-vs-student games without caring which
-            // slot is which. See student-vs-student-weavels-design.md §5a.
+            // slot is which. See student-vs-student-design.md §5a.
             players: [studentPlayer, mentorPlayer],
             gameId: null,
             isPvp: false,
@@ -88,16 +88,21 @@ class GameManager {
      * existing machinery (makeMove, broadcastBoardState, relayToOpponent, …)
      * keeps working unchanged; `game.players` is the role-neutral accessor and
      * `game.isPvp` marks that the slot NAMES carry no meaning in this game.
-     * See student-vs-student-weavels-design.md §5a.
+     * See student-vs-student-design.md §5a.
      *
      * The challenger takes white. Whichever client connects first creates the
      * game; the second joins it by gameId. Reconnecting with the same username
      * reclaims the original seat and color rather than creating a new game.
      *
-     * @param {Object} param0 - Contains gameId, challenger, opponent, username, socketId
+     * Each seat also carries the joining client's `credentials` (bearer token).
+     * The result report at game end is sent to the middleware as one of the two
+     * players, and resign/disconnect endings are triggered by a socket event
+     * that carries no body — so the token has to be captured at join time.
+     *
+     * @param {Object} param0 - Contains gameId, challenger, opponent, username, socketId, credentials
      * @returns {Object} Game object, assigned color, and new game status
      */
-    createOrJoinPvpGame({ gameId, challenger, opponent, username, socketId }) {
+    createOrJoinPvpGame({ gameId, challenger, opponent, username, socketId, credentials }) {
         if (!gameId) {
             throw new Error("A gameId is required to join a student-vs-student game!");
         }
@@ -120,6 +125,7 @@ class GameManager {
                 throw new Error("You are not a player in this game!");
             }
             seat.id = socketId;
+            if (credentials) seat.credentials = credentials;
             return { game, color: seat.color, newGame: false };
         }
 
@@ -129,11 +135,13 @@ class GameManager {
         const challengerPlayer = {
             username: challenger,
             id: username === challenger ? socketId : null,
+            credentials: username === challenger ? credentials : null,
             color: "white"
         };
         const opponentPlayer = {
             username: opponent,
             id: username === opponent ? socketId : null,
+            credentials: username === opponent ? credentials : null,
             color: "black"
         };
 
@@ -310,11 +318,11 @@ class GameManager {
         //console.log(activityEvents);
         //console.log('student info',game.student);
 
-        // Detect game-over so the winner can be rewarded (weavels).
-        // See documentation/student-vs-student-weavels-design.md §6.
+        // Detect game-over so the result can be recorded for the leaderboard.
+        // See documentation/student-vs-student-design.md §6.
         const outcome = this.detectOutcome(game);
         // Latch the game as finished so a later disconnect/resign on the same
-        // game can't emit a second "gameover" and double-award the winner.
+        // game can't emit a second "gameover" and report the result twice.
         if (outcome.over) {
             game.isOver = true;
         }
@@ -562,7 +570,7 @@ class GameManager {
     /**
      * Records a resignation (or a disconnect treated as a forfeit): the resigning
      * player loses, the other wins. Returns the same outcome shape as a checkmate
-     * so callers can emit "gameover" and award weavels identically.
+     * so callers can emit "gameover" and report the result identically.
      * @param {*} socketId - the resigning player's socket
      * @param {string} [reason] - "resign" (default) or "disconnect"
      * @returns {Object|null} { game, outcome } or null if no game / no opponent

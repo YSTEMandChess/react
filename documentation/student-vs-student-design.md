@@ -1,7 +1,7 @@
-# Design: Student-vs-Student Play + Weavels Reward
+# Design: Student-vs-Student Play + Chess Score
 
 **Author:** Sarita Himthani
-**Status:** Draft for review (align with Karthik before implementation)
+**Status:** Implemented — reward model settled with Karthik (see §7)
 **Related:** gamification (Karthik), chess board integration PR `merge-chessclient-refactor`
 
 ---
@@ -9,11 +9,31 @@
 ## 1. Goal
 
 Let two **students** play a chess game against each other from their profile
-pages. When the game ends, the **winner is awarded weavels** (the in-game
-currency owned by the gamification work).
+pages. When the game ends, the result is recorded and shown as a **separate
+chess score** on the leaderboard.
 
 Chosen v1 matchmaking model: **direct challenge by username** (a student
 challenges a named student; the other accepts). No queue, no auto-pairing.
+
+### Reward model — decided
+
+The original draft proposed **weavels**, a spendable coin balance. That was
+**dropped**: nothing is planned for students to buy, so a currency would be a
+dead end — a second unit measuring the same thing as score.
+
+Instead a win contributes to a **chess score**, and that score is a **column of
+its own**, not added into the existing leaderboard score:
+
+- The existing leaderboard score is a blended **engagement** number (time,
+  streak, activities, badges) — and its weighting is itself still an
+  unconfirmed placeholder.
+- A chess result is a different signal: **competitive skill**, not engagement.
+- Merging them would make one number mean two things, and would compound one
+  open weighting question into two.
+
+Placeholder weights, deliberately smaller than the engagement weights because
+this is an unvalidated signal: **+3 win / +1 draw / 0 loss**
+(`PVP_WEIGHT_WIN` / `PVP_WEIGHT_DRAW` / `PVP_WEIGHT_LOSS`).
 
 ---
 
@@ -26,12 +46,14 @@ challenges a named student; the other accepts). No queue, no auto-pairing.
 | Move sync between players | ✅ `move` socket event | `chessServer/src/managers/EventHandlers.js` |
 | **Winner / game-over detection** | ❌ **Missing** — `makeMove` never checks `isCheckmate`/`isGameOver` | GameManager `makeMove` |
 | Activity events → gamification | ✅ Server already emits e.g. `completeActivity`, capture/castle events | EventHandlers `move` handler |
-| **Weavels currency (store + award)** | ❌ **Does not exist** — no field on user model, string absent from repo | `middlewareNode/src/models/users.js` |
+| Game-result storage + scoring | ✅ Added here — `GameResults` model, `POST /gameResults`, `getChessRecord` | `middlewareNode/src/routes/gameResults.js` |
 | Student-vs-student entry / matchmaking | ❌ Does not exist — profile has only Lessons / Games / Play Computer | `NewStudentProfile.tsx` |
 
-**Two gaps are mine** (winner detection, PvP play), **one is Karthik's**
-(weavels store + award API). The board being embedded in the profile depends on
-the separate `merge-chessclient-refactor` PR landing first.
+**Two gaps were mine** (winner detection, PvP play). The third — how a result
+turns into a reward — was resolved with Karthik as a scoring question rather
+than a currency one, so it is implemented here too (§7). The board being
+embedded in the profile depends on the separate `merge-chessclient-refactor`
+PR landing first.
 
 ---
 
@@ -41,8 +63,8 @@ the separate `merge-chessclient-refactor` PR landing first.
 |---|---|---|
 | 1 | Student-vs-student play (challenge UI + wire to `createOrJoinGame`) | **Sarita** |
 | 2 | Game-result detection in `chessServer` (emit winner on game over) | **Sarita** |
-| 3 | Weavels balance storage + credit API | **Karthik** |
-| 4 | The award call that connects #2 → #3 | **Sarita**, against Karthik's contract |
+| 3 | Game-result storage + chess score (`/gameResults`, leaderboard column) | **Sarita** |
+| 4 | Existing engagement-score weighting (unchanged by this work) | **Karthik** |
 
 ---
 
@@ -63,9 +85,9 @@ Student A profile ──"Challenge princel04"──▶ middleware ──▶ noti
                                      │
                    emit  "gameover" { winnerUsername, reason }
                                      │
-        award step (§7): credit weavels to winner via Karthik's API
+          report step (§7): POST /gameResults  (idempotent on gameId)
                                      │
-              both clients show result + weavels awarded
+   both clients show the result; the leaderboard's Chess column reflects it
 ```
 
 ---
@@ -144,54 +166,101 @@ This mirrors the server's existing pattern of emitting activity events
 
 ---
 
-## 7. Part 3/4 — Awarding weavels (Karthik's API, Sarita's call)
+## 7. Part 3 — Recording the result and scoring it
 
-The award is a single side-effect on the `gameover` event. **The exact shape
-below is the contract to confirm with Karthik** — do not implement against it
-until confirmed.
+The `gameover` event triggers one side-effect: the chessServer reports the
+finished game to the middleware. No balance is credited — the result is stored
+and the score is derived from it.
 
-**Open questions for Karthik:**
-1. Where does a weavels balance live — a field on the `users` document, or a
-   separate wallet/ledger collection?
-2. What is the credit API? Draft assumption:
-   `POST /weavels/credit { username, amount, reason: "pvp_win", gameId }`
-   → returns new balance.
-3. Should the chess server call this **directly**, or **emit an event** the
-   middleware/gamification consumes (matching the existing `completeActivity`
-   pattern)? Preference: emit an event, keep chessServer free of currency logic.
-4. How many weavels for a win? Draw handling (split / none)? Idempotency so a
-   game can't be credited twice (use `gameId` as the idempotency key)?
-5. Does gamification already model a "match" / "game result" I should write to,
-   or is that mine to define?
+### Route naming
 
-**Idempotency note:** whichever path, key the award on `gameId` so a
-reconnect/replay can't double-award.
+`POST /gameResults` — plural, resource-first, matching the existing
+`/leaderboard`, `/badges`, `/activities` convention.
+
+### Contract
+
+```
+POST /gameResults          (requireAuth; caller must be one of the two players)
+
+  win:   { gameId, result: "win",  reason: "checkmate"|"resign"|"disconnect",
+           winnerUsername, loserUsername, playedAt? }
+  draw:  { gameId, result: "draw", reason: "draw", players: [a, b], playedAt? }
+
+  -> 201 { success, duplicate: false, gameResult }
+  -> 200 { success, duplicate: true,  gameResult }   // already recorded
+
+GET /gameResults/:username
+  -> { success, data: { wins, draws, losses, gamesPlayed, chessScore } }
+```
+
+### Why a record, not a counter
+
+`GameResults` stores one **immutable record per finished game**. Wins, draws,
+losses and the chess score are **computed on read** from those records — the
+same approach the leaderboard already uses for time, streak, activities and
+badges (`utils/studentStats`).
+
+That matters because the weights are still placeholders: retuning them
+re-scores all history immediately, with nothing to backfill and no mutable
+counter that can drift away from the games that produced it.
+
+The scoring formula lives in exactly one place — `chessScoreFrom` in
+`utils/studentStats` — so the leaderboard, the admin analytics dashboard and
+`GET /gameResults/:username` cannot disagree about a student's numbers.
+
+### Where it surfaces
+
+- `GET /leaderboard` → `chess_score` + `chess_record {wins, draws, losses,
+  gamesPlayed}` per row, and `sortBy=chess`. **Not** added into `score`.
+- `GET /analytics/student/:username` → a sibling `chess` block, next to (not
+  inside) `stats`.
+- `LeaderboardModal.tsx` → a sortable **Chess** column showing the score with
+  the W–D–L record beneath it.
+
+### Idempotency
+
+`gameId` is a unique index, which is also the idempotency key. A reconnect, a
+retry, or both clients reporting the same game is a no-op. The unique-index
+race (both clients report simultaneously) is caught and resolved as a
+duplicate, not a 500.
 
 ---
 
 ## 8. Dependencies & sequencing
 
-1. **Blocked on Karthik:** §7 (weavels store + credit contract). Everything else
-   can proceed with a stubbed `awardWeavels(winnerUsername, gameId)`.
+1. **Settled:** §7 — the reward model is decided and implemented; there is no
+   longer a stub or an external contract to wait on.
 2. **Blocked on chess board PR:** embedding the board in the student profile
    depends on `merge-chessclient-refactor` (or its cleaned-up successor) merging.
    Until then, PvP can be developed against the standalone chess client.
-3. Suggested order: §6 winner detection (self-contained, testable) → §5 PvP
-   handshake + entry UI → §7 swap the stub for Karthik's real API.
+3. Order followed: §6 winner detection → §5 PvP handshake + entry UI → §7
+   result recording and scoring.
 
 ---
 
 ## 9. Testing
 
-- Unit: extend `chessServer/src/tests/GameManager.test.js` with a
-  checkmate/draw sequence asserting the `gameover` outcome and winner.
+- Unit: `chessServer/src/tests/GameManager.test.js` — checkmate/draw/resign
+  outcomes, winner resolution by color, PvP pairing, per-seat credentials.
 - Integration: two socket clients play a scholar's-mate line; assert both
   receive `gameover` with the correct `winnerUsername`.
-- Award: assert `awardWeavels` is called exactly once per `gameId` (idempotency).
+- Result API: `middlewareNode/tests/gameResults.test.js` — idempotency on
+  `gameId` (including the unique-index race), the participant-only guard, and
+  win/draw body validation.
+- Separation: `middlewareNode/tests/leaderboard.test.js` asserts chess results
+  never move the engagement `score`, and that `sortBy=chess` ranks
+  independently of it.
 
 ---
 
 ## 10. Out of scope for v1
 
-Matchmaking queue / ELO, spectators, rematch, weavels spending/economy balancing,
-anti-cheat. Direct-challenge only.
+Matchmaking queue / ELO, spectators, rematch, anti-cheat, and any spendable
+currency. Direct-challenge only.
+
+Known limitation carried into v1: the reporting client is trusted to report
+honestly. `POST /gameResults` requires the caller to be one of the two players,
+which stops a third party fabricating results, but a player could still report
+a game they lost as a win. Closing that means the chessServer holding its own
+service credential rather than relaying a player's token — worth doing before
+the chess score is used for anything that matters.

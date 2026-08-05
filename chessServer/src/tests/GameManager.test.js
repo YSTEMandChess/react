@@ -155,6 +155,37 @@ describe('GameManager', () => {
     expect(gameManager.getGameByGameId('g1')).toBe(res.game);
   });
 
+  test('each PvP seat keeps its own credentials for the end-of-game report', () => {
+    // Resign and disconnect carry no payload, so the token has to be captured
+    // at join time or the result can never be reported to the middleware.
+    gameManager.createOrJoinPvpGame({
+      gameId: 'g1', challenger: 'Alice', opponent: 'Cara',
+      username: 'Alice', socketId: 'sA', credentials: 'token-alice'
+    });
+    const res = gameManager.createOrJoinPvpGame({
+      gameId: 'g1', challenger: 'Alice', opponent: 'Cara',
+      username: 'Cara', socketId: 'sC', credentials: 'token-cara'
+    });
+
+    const seats = Object.fromEntries(res.game.players.map((p) => [p.username, p.credentials]));
+    expect(seats).toEqual({ Alice: 'token-alice', Cara: 'token-cara' });
+  });
+
+  test('reconnecting refreshes the seat credentials rather than blanking them', () => {
+    gameManager.createOrJoinPvpGame({
+      gameId: 'g1', challenger: 'Alice', opponent: 'Cara',
+      username: 'Alice', socketId: 'sA', credentials: 'token-alice'
+    });
+    // Reconnect with no token supplied — keep the one we already had.
+    const res = gameManager.createOrJoinPvpGame({
+      gameId: 'g1', challenger: 'Alice', opponent: 'Cara',
+      username: 'Alice', socketId: 'sA2'
+    });
+    const alice = res.game.players.find((p) => p.username === 'Alice');
+    expect(alice.id).toBe('sA2');
+    expect(alice.credentials).toBe('token-alice');
+  });
+
   test('second PvP player joins the same game by gameId as black', () => {
     gameManager.createOrJoinPvpGame({
       gameId: 'g1', challenger: 'Alice', opponent: 'Cara',

@@ -3,53 +3,96 @@ const GameManager = require("./GameManager");
 const gameManager = new GameManager();
 
 /**
- * STUB — awards weavels to the winner of a student-vs-student game.
+ * Reports a finished student-vs-student game to the middleware.
  *
- * This is intentionally a no-op placeholder until Karthik confirms the
- * gamification currency contract (see the open questions in
- * documentation/student-vs-student-weavels-design.md §7):
- *   - where the weavels balance lives,
- *   - the credit API shape / whether to call it vs emit an event,
- *   - the award amount and idempotency key (should be the gameId).
+ * The middleware stores it as one immutable record; wins/draws/losses and the
+ * derived chess score are computed on read from those records (there is no
+ * balance to credit — the coin idea was dropped in favour of a separate
+ * leaderboard stat). See documentation/student-vs-student-design.md §7.
+ *
+ * Idempotency is the middleware's job, keyed on `gameId`: a reconnect, a retry,
+ * or both clients reporting the same game is a no-op there. This side just
+ * reports once per decided game and tolerates failure — a lost report costs one
+ * game's stats, it must never break the players' "game over" experience.
  *
  * Mirrors the existing activity pattern in the "move" handler, which PUTs to
  * `${MIDDLEWARE_URL}/activities/:username/activity` with a Bearer credential.
  *
- * @param {string} winnerUsername
- * @param {string} credentials - Bearer token of the reporting client
+ * @param {Object} game - the finished game (supplies gameId and both players)
+ * @param {Object} outcome - { over, reason, winnerUsername?, loserUsername? }
+ * @param {string} [credentials] - Bearer token of a player in this game
  */
-const awardWeavels = async (winnerUsername, credentials) => {
-    console.log(`[weavels][stub] would award weavels to winner: ${winnerUsername}`);
-    // TODO(Karthik contract): replace with real credit call, e.g.
-    // await fetch(`${process.env.MIDDLEWARE_URL}/weavels/credit`, {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json", Authentication: `Bearer ${credentials}` },
-    //     body: JSON.stringify({ username: winnerUsername, amount: /* TBD */, reason: "pvp_win", gameId: /* TBD */ }),
-    // });
+const reportGameResult = async (game, outcome, credentials) => {
+    if (!process.env.MIDDLEWARE_URL) {
+        console.log("[gameResults] MIDDLEWARE_URL unset — skipping report");
+        return;
+    }
+    // The middleware only accepts a report from a player in the game, so fall
+    // back to a seated player's token when the ending event carried none
+    // (resign and disconnect have no payload).
+    const token = credentials || (game.players || []).map((p) => p.credentials).find(Boolean);
+    if (!token) {
+        console.log(`[gameResults] no credentials for game ${game.gameId} — skipping report`);
+        return;
+    }
+
+    const isDraw = !outcome.winnerUsername;
+    const body = isDraw
+        ? {
+              gameId: game.gameId,
+              result: "draw",
+              reason: "draw",
+              players: game.players.map((p) => p.username),
+          }
+        : {
+              gameId: game.gameId,
+              result: "win",
+              reason: outcome.reason,
+              winnerUsername: outcome.winnerUsername,
+              loserUsername: outcome.loserUsername,
+          };
+
+    try {
+        const response = await fetch(`${process.env.MIDDLEWARE_URL}/gameResults`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authentication: `Bearer ${token}`,
+            },
+            body: JSON.stringify(body),
+        });
+        if (!response.ok) {
+            console.log(`[gameResults] report for ${game.gameId} failed: ${response.status}`);
+        }
+    } catch (e) {
+        console.log(`[gameResults] report for ${game.gameId} errored:`, e.message);
+    }
 };
 
 /**
- * Notifies both players that the game is over and, for a decisive result,
- * awards weavels to the winner. Shared by the checkmate/draw path (a move that
- * ends the game), resignation, and disconnect-as-forfeit so all three behave
- * identically. A draw has no winnerUsername, so no award fires.
+ * Notifies both players that the game is over and, for a student-vs-student
+ * game, reports the result to the middleware. Shared by the checkmate/draw path
+ * (a move that ends the game), resignation, and disconnect-as-forfeit so all
+ * three behave identically.
  *
- * @param {string[]} playerIds - both players' socket ids (nulls tolerated)
+ * Mentor-vs-student games are practice and are never reported — only `isPvp`
+ * games count toward a student's competitive record.
+ *
+ * @param {Object} game - the finished game
  * @param {Object} outcome - { over, reason, winnerUsername?, loserUsername? }
  * @param {Server} io
  * @param {string} [credentials] - Bearer token of the reporting client
  */
-const emitGameOver = async (playerIds, outcome, io, credentials) => {
+const emitGameOver = async (game, outcome, io, credentials) => {
     const payload = JSON.stringify(outcome);
-    playerIds.forEach((id) => {
+    [game.student.id, game.mentor.id].forEach((id) => {
         if (id) io.to(id).emit("gameover", payload);
     });
 
-    // Award on any decisive result (checkmate / resign / disconnect forfeit),
-    // never on a draw. Keyed on the game so a reconnect/replay can't double-award.
-    // STUB until Karthik's real weavels credit API (§7) lands.
-    if (outcome.winnerUsername) {
-        await awardWeavels(outcome.winnerUsername, credentials);
+    // A draw still counts as a played game, so report it too — only the
+    // opponent-never-joined case (no usernames at all) is skipped.
+    if (game.isPvp && (outcome.winnerUsername || outcome.reason === "draw")) {
+        await reportGameResult(game, outcome, credentials);
     }
 };
 
@@ -92,7 +135,7 @@ const registerSocketHandlers = (socket, io) => {
     /**
      * Handles creating or joining a student-vs-student (PvP) game by gameId.
      * The gameId + both usernames come from an accepted challenge (middleware).
-     * Expected payload: { gameId, challenger, opponent, username }
+     * Expected payload: { gameId, challenger, opponent, username, credentials }
      */
     socket.on("newpvpgame", (msg) => {
         try {
@@ -103,7 +146,8 @@ const registerSocketHandlers = (socket, io) => {
                 challenger: parsed.challenger,
                 opponent: parsed.opponent,
                 username: parsed.username,
-                socketId: socket.id
+                socketId: socket.id,
+                credentials: parsed.credentials
             });
 
             socket.emit(
@@ -121,7 +165,7 @@ const registerSocketHandlers = (socket, io) => {
 
     /**
      * Handles a player resigning the current game.
-     * The resigning player loses; the opponent wins and is awarded weavels.
+     * The resigning player loses; the opponent wins.
      */
     socket.on("resign", async () => {
         try {
@@ -130,7 +174,7 @@ const registerSocketHandlers = (socket, io) => {
                 return; // no active game for this socket
             }
             const { game, outcome } = res;
-            await emitGameOver([game.student.id, game.mentor.id], outcome, io);
+            await emitGameOver(game, outcome, io);
         }
         catch (err) {
             socket.emit("error", err.message);
@@ -172,11 +216,14 @@ const registerSocketHandlers = (socket, io) => {
             gameManager.broadcastBoardState(res.result, io);
             console.log('Move: ', res);
 
-            // Game over? Notify both players and (once confirmed) award weavels
-            // to the winner. See documentation/student-vs-student-weavels-design.md.
+            // Game over? Notify both players and, for a student-vs-student game,
+            // record the result. See documentation/student-vs-student-design.md.
             const outcome = state.outcome;
             if (outcome && outcome.over) {
-                await emitGameOver([state.studentId, state.mentorId], outcome, io, credentials);
+                const game = gameManager.getGameBySocketId(socket.id);
+                if (game) {
+                    await emitGameOver(game, outcome, io, credentials);
+                }
             }
             if(!computerMove && credentials) {
                 const activityEvents = res.activityEvents;   
@@ -342,12 +389,12 @@ const registerSocketHandlers = (socket, io) => {
         }
 
         // In a student-vs-student game, leaving mid-game is a forfeit: the
-        // opponent wins (and is awarded weavels). Mentor-vs-student games are
-        // practice, so a disconnect just resets with no result. §6.
+        // opponent wins. Mentor-vs-student games are practice, so a disconnect
+        // just resets with no result. §6.
         if (game.isPvp) {
             const res = gameManager.resign(socket.id, "disconnect");
             if (res && res.outcome.winnerUsername) {
-                await emitGameOver([game.student.id, game.mentor.id], res.outcome, io);
+                await emitGameOver(game, res.outcome, io);
             }
         }
 

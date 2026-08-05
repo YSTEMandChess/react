@@ -17,13 +17,22 @@
  *   LEADERBOARD_WEIGHT_BADGE    (default 10)  — per badge earned
  *   LEADERBOARD_WEIGHT_ACTIVITY (default 3)   — per activity completed
  *
+ * `score` above measures ENGAGEMENT. Student-vs-student chess results are a
+ * different signal (competitive skill), so they are reported alongside it as a
+ * separate `chess_score` / `chess_record` and are deliberately NOT added into
+ * `score` — blending them would make one number mean two things, and would
+ * compound one open weighting question into two. Chess weights live in
+ * utils/studentStats (PVP_WEIGHT_WIN / _DRAW / _LOSS).
+ *
  * Response contract matches LeaderboardModal.tsx exactly:
  *   GET /leaderboard/schools    -> { success, schools: string[] }
  *   GET /leaderboard/countries  -> { success, countries: string[] }
  *   GET /leaderboard/states     -> { success, states: string[] }
- *   GET /leaderboard?country=&state=&school=&search=&sortBy=score|name&sortDir=asc|desc&page=1&limit=10
+ *   GET /leaderboard?country=&state=&school=&search=&sortBy=score|name|chess&sortDir=asc|desc&page=1&limit=10
  *     -> { success, data: { leaderboard: [{id, rank, username, school_name,
- *                            country, state, score, avatar_url}],
+ *                            country, state, score, chess_score,
+ *                            chess_record: {wins, draws, losses, gamesPlayed},
+ *                            avatar_url}],
  *                            pagination: { has_more } } }
  */
 
@@ -35,6 +44,7 @@ const {
   getUserStreak,
   getActivitiesCompleted,
   getBadgesEarned,
+  getChessRecords,
 } = require("../utils/studentStats");
 const { getAvatarUrl } = require("../utils/avatars");
 
@@ -70,8 +80,11 @@ function escapeRegex(value) {
 }
 
 /**
- * Computes a composite score for one student from existing stat helpers.
- * Placeholder weighting — confirm with product before treating as final.
+ * Computes the composite ENGAGEMENT score for one student from existing stat
+ * helpers. Placeholder weighting — confirm with product before treating as final.
+ *
+ * Chess results are intentionally absent here; they are surfaced as their own
+ * column (see the module header) rather than folded into this number.
  */
 async function computeScore(user) {
   const [timeStats, streak, activitiesCompleted, badgesEarned] = await Promise.all([
@@ -158,6 +171,10 @@ router.get("/", async (req, res) => {
       candidates = candidates.slice(0, MAX_UNFILTERED_CANDIDATES);
     }
 
+    // One batched query for every candidate's chess record, rather than a
+    // fifth per-student round trip inside the map below.
+    const chessRecords = await getChessRecords(candidates.map((u) => u.username));
+
     const scored = await Promise.all(
       candidates.map(async (user) => ({
         id: String(user._id),
@@ -167,12 +184,15 @@ router.get("/", async (req, res) => {
         state: user.state || null,
         avatarUrl: getAvatarUrl(user.avatarKey),
         score: await computeScore(user),
+        chess: chessRecords.get(user.username),
       }))
     );
 
     const direction = sortDir === "asc" ? 1 : -1;
     if (sortBy === "name") {
       scored.sort((a, b) => direction * a.username.localeCompare(b.username));
+    } else if (sortBy === "chess") {
+      scored.sort((a, b) => direction * (a.chess.chessScore - b.chess.chessScore));
     } else {
       scored.sort((a, b) => direction * (a.score - b.score));
     }
@@ -187,6 +207,15 @@ router.get("/", async (req, res) => {
       country: entry.country,
       state: entry.state,
       score: entry.score,
+      // Separate competitive stat — see the module header on why this is not
+      // merged into `score`.
+      chess_score: entry.chess.chessScore,
+      chess_record: {
+        wins: entry.chess.wins,
+        draws: entry.chess.draws,
+        losses: entry.chess.losses,
+        gamesPlayed: entry.chess.gamesPlayed,
+      },
       avatar_url: entry.avatarUrl,
     }));
 

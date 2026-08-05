@@ -34,6 +34,7 @@ const {
   getUserStreak,
   getActivitiesCompleted,
   getBadgesEarned,
+  getChessRecord,
 } = require("../utils/studentStats");
 
 // ─────────────────────────────────────────────────────────────
@@ -96,12 +97,14 @@ router.get("/student/:username", async (req, res) => {
     const user = await Users.findOne({ username }, { password: 0 });
     if (!user) return res.status(404).json({ error: "Student not found" });
 
-    const [timeStats, currentStreak, activitiesCompleted, badgesEarned] = await Promise.all([
-      getUserTimeStats(username, from, to),
-      getUserStreak(username),
-      getActivitiesCompleted(user._id, from, to),
-      getBadgesEarned(username),
-    ]);
+    const [timeStats, currentStreak, activitiesCompleted, badgesEarned, chess] =
+      await Promise.all([
+        getUserTimeStats(username, from, to),
+        getUserStreak(username),
+        getActivitiesCompleted(user._id, from, to),
+        getBadgesEarned(username),
+        getChessRecord(username, from, to),
+      ]);
 
     res.json({
       profile: {
@@ -114,7 +117,10 @@ router.get("/student/:username", async (req, res) => {
         gradeLevel:       user.gradeLevel || null,
         accountCreatedAt: user.accountCreatedAt,
       },
+      // `chess` is reported as its own block, not folded into the engagement
+      // stats above — same reasoning as the leaderboard's separate column.
       stats: { ...timeStats, currentStreak, activitiesCompleted, badgesEarned },
+      chess,
     });
   } catch (err) {
     console.error("analytics /student/:username:", err.message);

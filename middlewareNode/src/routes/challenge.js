@@ -4,7 +4,7 @@
  * A student challenges another student by username. The challenge is a short-
  * lived, in-memory record: when the opponent accepts, both sides receive a
  * shared `gameId` and open the chess board with it (the chessServer then pairs
- * them via `newpvpgame`). See documentation/student-vs-student-weavels-design.md §5b.
+ * them via `newpvpgame`). See documentation/student-vs-student-design.md §5b.
  *
  * v1 delivery is short-poll: the recipient polls GET /challenge/incoming/:username,
  * the challenger polls GET /challenge/:id for acceptance. No queue, no auto-pairing.

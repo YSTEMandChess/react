@@ -14,7 +14,7 @@ import { environment } from "../../../environments";
  * then opened with (gameId, challenger, opponent) so the chessServer can pair
  * the two clients via its `newpvpgame` event. The final board-embed step depends
  * on the merge-chessclient-refactor PR landing; until then `openBoard` targets
- * the standalone chess client. See documentation/student-vs-student-weavels-design.md §5c.
+ * the standalone chess client. See documentation/student-vs-student-design.md §5c.
  */
 
 const MIDDLEWARE = environment.urls.middlewareURL;
