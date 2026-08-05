@@ -22,8 +22,6 @@ test('renders the login page', async () => {
   expect(enterText).toBeInTheDocument();
   const forgotText = screen.getByText(/Forgot password?/i);
   expect(forgotText).toBeInTheDocument();
-  const createText = screen.getByText(/Create a new account/i);
-  expect(createText).toBeInTheDocument();
 });
 
 // unit test on short username

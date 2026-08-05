@@ -63,6 +63,18 @@ const usersSchema = new mongoose.Schema(
       ],
       default: () => require("./defaultLessons"),
     },
+    // Analytics demographic fields, optional, collected over time via profile updates
+    zipcode:    { type: String, default: null, index: true },
+    gender:     { type: String, enum: ["M", "F", "Other", null], default: null },
+    gradeLevel: { type: String, default: null },
+    // Leaderboard filter fields — optional, collected over time via profile updates
+    country:    { type: String, default: null, index: true },
+    state:      { type: String, default: null, index: true },
+    school:     { type: String, default: null, index: true },
+    // Profile avatar — Azure blob name (not a full URL) so the storage
+    // account/container can change without a data migration. SAS URLs are
+    // generated on read, matching the pattern used for meeting recordings.
+    avatarKey:  { type: String, default: null },
     // Tracks the user's highest ever Puzzle Streak
     highestStreak: {
       type: Number,
@@ -84,7 +96,11 @@ const usersSchema = new mongoose.Schema(
     savedGames: {
       type: [String],
       default: []
-    }
+    },
+    // Parent occupation, collected at parent signup
+    occupation: { type: String, default: null },
+    // Child date of birth, collected at add child
+    birthday:   { type: String, default: null },
   },
   { versionKey: false },
 );

@@ -8,9 +8,29 @@ const app = express();
 const cors = require("cors");
 const config = require("config");
 const streakRoutes = require("./routes/streak");
+const adminGuard   = require("./middleware/adminGuard");
+const requireAuth  = require("./middleware/requireAuth");
+const rateLimit    = require("express-rate-limit");
 
-// Enable scheduler
+const analyticsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: parseInt(process.env.ANALYTICS_RATE_LIMIT_MAX) || 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later" },
+});
+
+const leaderboardLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: parseInt(process.env.LEADERBOARD_RATE_LIMIT_MAX) || 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later" },
+});
+
+// Enable schedulers
 require("./scheduler/activitiesScheduler.js");
+require("./scheduler/analyticsSummaryScheduler.js");
 
 // Enable CORS for cross-origin requests
 app.use(cors(config.get("corsOptions")));
@@ -24,7 +44,7 @@ app.use(express.json({ extended: false }));
 // Configure session middleware
 app.use(
   session({
-    secret: "your_secret_key_here", // Use a long and random string for better security
+    secret: process.env.SESSION_SECRET || "dev-secret-change-in-prod",
     resave: false,
     saveUninitialized: false,
   })
@@ -47,6 +67,8 @@ app.use("/activities", require("./routes/activities"));
 app.use("/streak", streakRoutes);
 app.use("/badges", require("./routes/badges"));
 app.use("/savedGames", require("./routes/savedGames"));
+app.use("/analytics", analyticsLimiter, adminGuard, require("./routes/analytics"));
+app.use("/leaderboard", leaderboardLimiter, requireAuth, require("./routes/leaderboard"));
 
 // Start server on specified port
 const PORT = process.env.PORT || 8000;
