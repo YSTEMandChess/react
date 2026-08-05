@@ -62,7 +62,7 @@ interface UseChessSocketOptions {
   trackMouse?: boolean;
 
   // Event callbacks
-  onBoardStateChange?: (fen: string, color?: PlayerColor) => void;
+  onBoardStateChange?: (gameMetaData: GameMetaData) => void;
   onMove?: (data: {
     fen: string;
     move?: Move;
@@ -199,6 +199,7 @@ export const useChessSocket = ({
         backendConnected(true);
       }
     });
+
     socket.on("session-started", ({ success }) => {
       console.log("AI is connected");
     });
@@ -224,38 +225,15 @@ export const useChessSocket = ({
       if (onRoleAssigned) onRoleAssigned("guest");
     });
 
-    // boardstate - primary source of truth
-    socket.on("boardstate", (msg: string) => {
-      try {
-        console.log("just recieved a boardstate");
-        const parsed: BoardState = JSON.parse(msg);
-        const rawFen = (parsed as any).boardState || (parsed as any).fen;
-        const newFen = normalizeFen(rawFen);
-
-        // Update refs/state
-        setFen(newFen);
-        currentFenRef.current = newFen;
-
-        // Handle color assignment
-        if ((parsed as any).color) {
-          const color = (parsed as any).color as PlayerColor;
-          setPlayerColor(color);
-          if (onColorAssigned) onColorAssigned(color);
-        }
-
-        // Notify parent component
-        if (onBoardStateChange) {
-          onBoardStateChange(newFen, (parsed as any).color);
-        }
-      } catch (err) {
-        console.error("Invalid boardstate:", err);
+    // sync board on recieving new info from chess server
+    socket.on("boardstate", (gameMetaData) => {
+      if (onBoardStateChange) {
+        onBoardStateChange(gameMetaData);
       }
     });
 
     socket.on("evaluation-complete", ({ gameMetaData }) => {
-      console.log("got the new board");
-      console.log(gameMetaData);
-
+      //just update the fen
       if (
         gameMetaData.movesList == undefined ||
         gameMetaData.movesList.length == 0
@@ -269,7 +247,7 @@ export const useChessSocket = ({
         }
         return;
       }
-
+      //update the moves
       console.log(gameMetaData);
       const lastMove =
         gameMetaData.movesList[gameMetaData.movesList.length - 1];
@@ -589,14 +567,8 @@ export const useChessSocket = ({
     socketRef.current?.emit("removegrey", JSON.stringify(data));
   }, []);
 
-  const undo = useCallback(() => {
-    const data = {
-      mentor: mentorRef.current,
-      student: studentRef.current,
-      role: roleRef.current,
-    };
-    console.log("Sending undo");
-    socketRef.current?.emit("undo", JSON.stringify(data));
+  const undo = useCallback((gameMetaData: GameMetaData) => {
+    socketRef.current?.emit("undo", gameMetaData);
   }, []);
 
   const endGame = useCallback((gameMetaData: GameMetaData) => {

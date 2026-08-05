@@ -53,7 +53,7 @@ const PlayComputer: React.FC = () => {
   const gameMetaData = useRef<GameMetaData>(null);
   const [backendVersionIsCreated, setBackendVersionIsCreated] = useState<Boolean>(false);
  
-
+//write an onboardstate change to fully sync gamemetadata according to chess server 
 
 const onOpponentMove = (data:{fen:string; move?:Move, gameMetaData: GameMetaData}) => {
   try {
@@ -180,32 +180,20 @@ const chessSocket = useChessSocket({
   backendConnected: setBackendVersionIsCreated
 });
 
-
-
-
 useEffect(() => {
   if (!chessSocket.connected) {
-    console.log("Waiting for chess socket to connect...");
     return;
   }
-  
 
   chessSocketRef.current = chessSocket;
   console.log("Chess socket connected:", chessSocketRef.current);
 
   const initializeGame = async () => {
     resetGame();
-
     await loadGame();
-
-    console.log("Checking chess socket:", chessSocket);
-
     checkGameStatus();
   };
-
   initializeGame();
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [location.key, chessSocket.connected]);
 
 
@@ -216,17 +204,13 @@ const maybeTriggerComputerMove = useCallback(() => {
   if (meta.gameType !== "computer" && meta.gameType !== "guest") return;
   if (!chessSocketRef.current) return;
   if (gameRef.current.isGameOver()) return; // don't ask the engine to move into a finished game
-  console.log("checking fi this runs2")
 
   const currentTurn = gameRef.current.turn(); // 'w' | 'b'
   const isComputerTurn =
     (meta.playerColor === "white" && currentTurn === "b") ||
     (meta.playerColor === "black" && currentTurn === "w");
-  console.log("checking fi this runs3", isComputerTurn)
 
   if (!isComputerTurn) return;
-  console.log("checking fi this runs4")
-  console.log("uuid", gameMetaData.current.uuid)
 
   chessSocketRef.current.sendMove({
     from: null,
@@ -244,9 +228,7 @@ const maybeTriggerComputerMove = useCallback(() => {
 
 // Runs whenever a real move lands (player move or relayed opponent/engine move)
 useEffect(() => {
-  console.log(fen, "from computer move")
   maybeTriggerComputerMove();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [fen, backendVersionIsCreated]);
 
   useEffect(() => {
@@ -256,9 +238,6 @@ useEffect(() => {
     }
   }, [moveHistory]);
 
-  
-
-  
   const handleMove = useCallback((move: Move) => {
   const currentTurn = gameRef.current.turn();
 
@@ -267,7 +246,6 @@ useEffect(() => {
     (playerColor === "black" && currentTurn === "b");
 
   if (!isPlayerTurn) {
-    console.log("It's not your turn");
     return;
   }
 
@@ -318,11 +296,24 @@ const checkGameStatus = useCallback((): boolean => {
   const game = gameRef.current;
 
   if (game.isCheckmate()) {
-    const winner = game.turn() === "w" ? "Black" : "White";
+    const winner = game.turn() === "w" ? "black" : "white";
 
     setGameEndMessage(`Checkmate! ${winner} wins!`);
     setShowGameEndModal(true);
-    endGame("won");
+    if (gameMetaData.current.status !="ongoing"){
+      endGame(gameMetaData.current.status)
+      return true
+
+    }
+    let userColor: "white" | "black";
+    if ((user.current && gameMetaData.current) && ((user.current.id == gameMetaData.current.user.id)|| (!user.current) || (gameMetaData.current.opponentId=="stockfish"))) {
+      userColor = playerColor;
+      console.log("my color", userColor)
+      console.log("the winner", winner)
+    } else {
+      userColor = playerColor === "white" ? "black" : "white";
+    }
+    endGame(userColor == winner ? "won" : "lost");
 
     return true;
   }
@@ -331,7 +322,6 @@ const checkGameStatus = useCallback((): boolean => {
     setGameEndMessage("Stalemate! Draw!");
     setShowGameEndModal(true);
     endGame("draw");
-
     return true;
   }
 
@@ -339,7 +329,6 @@ const checkGameStatus = useCallback((): boolean => {
     setGameEndMessage("Draw by threefold repetition!");
     setShowGameEndModal(true);
     endGame("draw");
-
     return true;
   }
 
@@ -347,7 +336,6 @@ const checkGameStatus = useCallback((): boolean => {
     setGameEndMessage("Draw by insufficient material!");
     setShowGameEndModal(true);
     endGame("draw");
-
     return true;
   }
 
@@ -355,12 +343,11 @@ const checkGameStatus = useCallback((): boolean => {
     setGameEndMessage("Game over: Draw!");
     setShowGameEndModal(true);
     endGame("draw");
-
     return true;
   }
 
   return false;
-}, [endGame]);
+}, [endGame, playerColor]);
 
   const resetGame = useCallback(() => {
     gameRef.current.reset();
@@ -475,18 +462,10 @@ const isYourTurn = () => {
     //need to work on undo functionality
     if (moveHistory.length < 2) return;
     if (gameMetaData.current) {
-      if (gameMetaData.current.gameType != "computer") {
+      if (gameMetaData.current.gameType =="friend" || gameMetaData.current.gameName=="mentor") {
         return;
       }
-    } /*
-    gameRef.current.undo();
-    gameRef.current.undo();
-    const newFen = gameRef.current.fen();
-    setFen(newFen);
-    setMoveHistory(prev => prev.slice(0, -2));
-    setHighlightSquares([]);
-    if (chessBoardRef.current) chessBoardRef.current.setPosition(newFen);
-    if (socketRef.current) socketRef.current.emit('update-fen', { fen: newFen }); */
+    } 
   }, [moveHistory.length]);
 
 
@@ -507,10 +486,11 @@ const isYourTurn = () => {
             </button>
             <button
               className={controlBtnClass}
-              onClick={resetGame}
+              onClick={() => {
+                  navigate("/select-game");}}
               disabled={!isYourTurn}
             >
-              Reset
+              New Game
             </button>
             <button
               className={controlBtnClass}
