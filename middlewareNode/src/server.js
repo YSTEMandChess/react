@@ -66,6 +66,8 @@ app.use("/lessons", require("./routes/lessons"));
 app.use("/activities", require("./routes/activities"));
 app.use("/streak", streakRoutes);
 app.use("/badges", require("./routes/badges"));
+app.use("/challenge", require("./routes/challenge"));
+app.use("/gameResults", requireAuth, require("./routes/gameResults"));
 app.use("/analytics", analyticsLimiter, adminGuard, require("./routes/analytics"));
 app.use("/leaderboard", leaderboardLimiter, requireAuth, require("./routes/leaderboard"));
 

@@ -20,6 +20,7 @@ jest.mock("../src/models/users");
 jest.mock("../src/models/timeTracking");
 jest.mock("../src/models/activities");
 jest.mock("../src/models/UserBadges");
+jest.mock("../src/models/gameResults");
 
 const express      = require("express");
 const request      = require("supertest");
@@ -29,6 +30,7 @@ const Users        = require("../src/models/users");
 const TimeTracking = require("../src/models/timeTracking");
 const Activities   = require("../src/models/activities");
 const UserBadges   = require("../src/models/UserBadges");
+const GameResults  = require("../src/models/gameResults");
 
 const app = express();
 app.use(express.json());
@@ -53,6 +55,7 @@ function mockEmptyTracking() {
   TimeTracking.find.mockResolvedValue([]);
   Activities.findOne.mockResolvedValue({ completedDates: [] });
   UserBadges.findOne.mockResolvedValue({ earned: [] });
+  GameResults.find.mockResolvedValue([]);
 }
 
 function mockEmptyEventsFeed() {

@@ -22,6 +22,7 @@ jest.mock("../src/models/users");
 jest.mock("../src/models/timeTracking");
 jest.mock("../src/models/activities");
 jest.mock("../src/models/UserBadges");
+jest.mock("../src/models/gameResults");
 
 const express    = require("express");
 const request    = require("supertest");
@@ -33,6 +34,7 @@ const Users        = require("../src/models/users");
 const TimeTracking = require("../src/models/timeTracking");
 const Activities   = require("../src/models/activities");
 const UserBadges   = require("../src/models/UserBadges");
+const GameResults  = require("../src/models/gameResults");
 
 // Build test app once
 const app = express();
@@ -100,6 +102,7 @@ describe("GET /analytics/student/:username", () => {
     TimeTracking.find.mockResolvedValue(EVENTS);
     Activities.findOne.mockResolvedValue({ completedDates: [new Date("2026-04-01"), new Date("2026-04-02")] });
     UserBadges.findOne.mockResolvedValue({ earned: [{ badgeId: "first_lesson" }] });
+    GameResults.find.mockResolvedValue([]);
   });
 
   test("200 — returns profile and stats", async () => {
@@ -111,6 +114,26 @@ describe("GET /analytics/student/:username", () => {
     expect(res.body.stats).toHaveProperty("currentStreak");
     expect(res.body.stats.badgesEarned).toBe(1);
     expect(res.body.stats.activitiesCompleted).toBe(2);
+  });
+
+  test("chess record is reported separately, never folded into engagement stats", async () => {
+    GameResults.find.mockResolvedValue([
+      { players: ["alex_j", "cara"], result: "win", winnerUsername: "alex_j" },
+      { players: ["alex_j", "cara"], result: "win", winnerUsername: "cara" },
+      { players: ["alex_j", "dev"],  result: "draw", winnerUsername: null },
+    ]);
+
+    const res = await request(app).get("/analytics/student/alex_j");
+    expect(res.status).toBe(200);
+    expect(res.body.chess).toEqual({
+      wins: 1,
+      draws: 1,
+      losses: 1,
+      gamesPlayed: 3,
+      chessScore: 4, // 1 win (3) + 1 draw (1) + 1 loss (0)
+    });
+    // The engagement score block must not gain a chess field.
+    expect(res.body.stats).not.toHaveProperty("chessScore");
   });
 
   test("stats.gameTimeHours maps play events correctly", async () => {

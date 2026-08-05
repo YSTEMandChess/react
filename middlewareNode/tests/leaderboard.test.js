@@ -57,6 +57,22 @@ function mockStatsFor(scoreByUsername) {
   studentStats.getBadgesEarned.mockImplementation(
     async (username) => scoreByUsername[username]?.badges || 0
   );
+  // Chess record is a separate stat, batched for the whole page.
+  studentStats.getChessRecords.mockImplementation(
+    async (usernames) =>
+      new Map(
+        usernames.map((u) => [
+          u,
+          scoreByUsername[u]?.chess || {
+            wins: 0,
+            draws: 0,
+            losses: 0,
+            gamesPlayed: 0,
+            chessScore: 0,
+          },
+        ])
+      )
+  );
 }
 
 describe("GET /leaderboard", () => {
@@ -377,5 +393,69 @@ describe("GET /leaderboard — country/state now included in entry response", ()
       expect.objectContaining({ role: "student", country: "USA", state: "FL", school: "Jefferson Middle" }),
       expect.anything()
     );
+  });
+});
+
+// ─── Chess results are a SEPARATE stat ───────────────────────────
+//
+// The whole point of the agreed design: engagement score and competitive
+// score stay two numbers. These tests fail loudly if anyone folds one into
+// the other.
+
+describe("GET /leaderboard — chess record as its own column", () => {
+  const CHESS = { wins: 4, draws: 2, losses: 1, gamesPlayed: 7, chessScore: 14 };
+
+  test("entries carry chess_score and chess_record alongside score", async () => {
+    Users.find.mockResolvedValue([
+      { _id: "1", username: "alice", country: "USA", state: "FL", school: "Jefferson Middle" },
+    ]);
+    mockStatsFor({ alice: { streak: 1, chess: CHESS } });
+
+    const res = await request(app).get("/leaderboard");
+    const entry = res.body.data.leaderboard[0];
+    expect(entry.chess_score).toBe(14);
+    expect(entry.chess_record).toEqual({ wins: 4, draws: 2, losses: 1, gamesPlayed: 7 });
+  });
+
+  test("chess results do NOT change the engagement score", async () => {
+    Users.find.mockResolvedValue([
+      { _id: "1", username: "alice", country: "USA", state: "FL", school: "Jefferson Middle" },
+    ]);
+
+    mockStatsFor({ alice: { streak: 1 } }); // no games
+    const without = await request(app).get("/leaderboard");
+    const scoreWithoutGames = without.body.data.leaderboard[0].score;
+
+    mockStatsFor({ alice: { streak: 1, chess: CHESS } }); // same engagement, many wins
+    const with_ = await request(app).get("/leaderboard");
+    const entry = with_.body.data.leaderboard[0];
+
+    expect(entry.score).toBe(scoreWithoutGames);
+    expect(entry.chess_score).toBe(14);
+  });
+
+  test("a student with no games shows a zeroed record, not a missing column", async () => {
+    Users.find.mockResolvedValue([{ _id: "3", username: "carol", school: null }]);
+    mockStatsFor({ carol: {} });
+
+    const entry = (await request(app).get("/leaderboard")).body.data.leaderboard[0];
+    expect(entry.chess_score).toBe(0);
+    expect(entry.chess_record).toEqual({ wins: 0, draws: 0, losses: 0, gamesPlayed: 0 });
+  });
+
+  test("sortBy=chess ranks by chess score, independent of engagement score", async () => {
+    Users.find.mockResolvedValue(STUDENTS);
+    mockStatsFor({
+      // alice leads on engagement, bob leads on chess.
+      alice: { puzzleTimeHours: 100, streak: 10, badges: 5, chess: { wins: 0, draws: 0, losses: 3, gamesPlayed: 3, chessScore: 0 } },
+      bob: { puzzleTimeHours: 1, chess: { wins: 9, draws: 0, losses: 0, gamesPlayed: 9, chessScore: 27 } },
+      carol: { chess: { wins: 1, draws: 0, losses: 0, gamesPlayed: 1, chessScore: 3 } },
+    });
+
+    const byChess = await request(app).get("/leaderboard?sortBy=chess");
+    expect(byChess.body.data.leaderboard.map((e) => e.username)).toEqual(["bob", "carol", "alice"]);
+
+    const byScore = await request(app).get("/leaderboard");
+    expect(byScore.body.data.leaderboard[0].username).toBe("alice");
   });
 });
