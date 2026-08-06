@@ -10,6 +10,9 @@ echo "== Backing up current build =="
 mkdir -p /home/azureuser/deploy-backups
 cp -r "$BUILD_DIR" "$BACKUP_DIR"
 
+# Rotate old backups — keep only the 5 most recent
+ls -t /home/azureuser/deploy-backups/ | tail -n +6 | xargs -I {} rm -rf /home/azureuser/deploy-backups/{}
+
 echo "== Pulling latest =="
 cd "$REPO_DIR"
 git pull
