@@ -1,5 +1,4 @@
 // Main server configuration for the Node.js middleware API
-require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const connectDB = require("./config/db");
@@ -10,11 +9,20 @@ const cors = require("cors");
 const config = require("config");
 const streakRoutes = require("./routes/streak");
 const adminGuard   = require("./middleware/adminGuard");
+const requireAuth  = require("./middleware/requireAuth");
 const rateLimit    = require("express-rate-limit");
 
 const analyticsLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: parseInt(process.env.ANALYTICS_RATE_LIMIT_MAX) || 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later" },
+});
+
+const leaderboardLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: parseInt(process.env.LEADERBOARD_RATE_LIMIT_MAX) || 60,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later" },
@@ -59,7 +67,10 @@ app.use("/activities", require("./routes/activities"));
 app.use("/streak", streakRoutes);
 app.use("/badges", require("./routes/badges"));
 app.use("/chat", require("./routes/chat"));
+app.use("/challenge", require("./routes/challenge"));
+app.use("/gameResults", requireAuth, require("./routes/gameResults"));
 app.use("/analytics", analyticsLimiter, adminGuard, require("./routes/analytics"));
+app.use("/leaderboard", leaderboardLimiter, requireAuth, require("./routes/leaderboard"));
 
 // Start server on specified port
 const PORT = process.env.PORT || 8000;

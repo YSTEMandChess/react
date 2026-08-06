@@ -7,6 +7,7 @@
 
 const config = require("config");
 const { MongoClient } = require('mongodb');
+const { getActivityCatalogEntry } = require("../config/activityCatalog");
 require('dotenv').config();
 
 const mongoose = require("mongoose");
@@ -44,9 +45,10 @@ const selectActivities = async () => {
     const activityList = await (db.collection("activityTypes").find({})).toArray();
     const chosenActivites = [];
     const newActivities = [];
-    
-    // Select 4 unique random activities
-    while (newActivities.length < 4) {
+
+    // Select up to 4 unique random activities, capped by how many types exist
+    const target = Math.min(4, activityList.length);
+    while (newActivities.length < target) {
         const activity = {};
         
         // Randomly select an activity
@@ -55,9 +57,12 @@ const selectActivities = async () => {
         // Only add if not already selected (avoid duplicates)
         if(!chosenActivites.includes(selectedActivity._id)) {
           chosenActivites.push(selectedActivity._id);
+          const catalogEntry = getActivityCatalogEntry(selectedActivity._id);
           activity.name = selectedActivity._id;
           activity.type = selectedActivity.type;
           activity.completed = false;
+          activity.taskId = catalogEntry.taskId;
+          activity.route = catalogEntry.route;
           newActivities.push(activity);
         }
     }

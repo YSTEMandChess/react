@@ -4,7 +4,7 @@
   "description": "API for Y STEM And Chess Inc",
   "main": "src/server.js",
   "dependencies": {
-    "aws-sdk": "^2.889.0",
+    "@azure/storage-blob": "^12.24.0",
     "axios": "^0.21.1",
     "config": "^3.3.12",
     "cors": "^2.8.5",
@@ -15,14 +15,15 @@
     "express-validator": "^6.9.2",
     "googleapis": "^107.0.0",
     "mongoose": "^6.8.4",
+    "multer": "^2.2.0",
     "node-nlp": "^4.27.0",
+    "node-schedule": "^2.1.1",
     "nodemailer": "^6.7.8",
     "nodemon": "^3.1.10",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.0",
     "request-ip": "^3.3.0",
-    "uuid": "^8.3.2",
-    "node-schedule": "^2.1.1"
+    "uuid": "^8.3.2"
   },
   "scripts": {
     "start": "nodemon src/server.js",
@@ -36,7 +37,6 @@
   "devDependencies": {
     "jest": "^30.3.0",
     "mongodb-memory-server": "^11.2.0",
-    "node-schedule": "^2.1.1",
     "supertest": "^7.2.2"
   }
 }
