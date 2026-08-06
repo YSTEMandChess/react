@@ -82,7 +82,10 @@ const AppRoutes = () => {
       <Route path="/board" element={<Board />} />
       <Route path="/sponsors&partners" element={<SponsorsPartners />} />
 
-      <Route path="/play" element={<SelectGame />} />
+      <Route path="/select-game" element={<SelectGame />} />
+            <Route path="/play" element={<PlayComputer/>} />
+
+
       <Route path="/puzzles" element={<Puzzles />} />
       <Route path="/puzzle-streak" element={<PuzzleStreak />} />
       <Route path="/puzzle-dash" element={<PuzzleDash />} />

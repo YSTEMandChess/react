@@ -9,6 +9,7 @@ import {
   PlayerColor,
 } from "../../../../../core/types/chess";
 import type { GameMetaData } from "../../../../engine/SelectGame";
+import type { PuzzleMetaData } from "../../../../puzzles/Puzzles";
 
 /*
 
@@ -54,20 +55,18 @@ import type { GameMetaData } from "../../../../engine/SelectGame";
     */
 
 interface UseChessSocketOptions {
-  student: string;
-  mentor?: string;
-  role?: "mentor" | "student" | "host" | "guest";
   serverUrl: string;
   mode?: GameMode;
   trackMouse?: boolean;
-
   // Event callbacks
-  onBoardStateChange?: (gameMetaData: GameMetaData) => void;
+  onBoardStateChange?: (gameMetaData: GameMetaData | PuzzleMetaData) => void;
+  //change on move to not need data
   onMove?: (data: {
     fen: string;
     move?: Move;
     gameMetaData?: GameMetaData;
   }) => void;
+
   onHighlight?: (from: string, to: string) => void;
   onLastMove?: (from: string, to: string) => void;
   onMouseMove?: (position: MousePosition) => void;
@@ -92,39 +91,29 @@ const normalizeFen = (fen: string): string => {
     console.warn("Invalid FEN input:", fen);
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; // Default starting position
   }
-
   const trimmed = fen.trim().toLowerCase();
   if (trimmed === "start") {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   }
-
   const parts = fen.trim().split(" ");
-
   // Already a complete 6-field FEN
   if (parts.length === 6) {
     return fen.trim();
   }
-
   // Board-only FEN (just piece positions)
   if (parts.length === 1 && parts[0].split("/").length === 8) {
     return `${parts[0]} w KQkq - 0 1`;
   }
-
   // Partial FEN with 2-5 fields - pad to 6 fields
   const defaults = ["w", "KQkq", "-", "0", "1"];
   const paddedParts = [...parts];
-
   while (paddedParts.length < 6) {
     paddedParts.push(defaults[paddedParts.length - 1]);
   }
-
   return paddedParts.join(" ");
 };
 
 export const useChessSocket = ({
-  student,
-  mentor = "mentor",
-  role = "student",
   serverUrl,
   mode = "regular",
   trackMouse = false,
@@ -162,11 +151,6 @@ export const useChessSocket = ({
   const mouseTrackingRef = useRef<boolean>(false);
   const highlightFromRef = useRef<string>("");
   const highlightToRef = useRef<string>("");
-
-  // Store mentor/student/role in refs so they can be updated
-  const mentorRef = useRef<string>(mentor);
-  const studentRef = useRef<string>(student);
-  const roleRef = useRef<"mentor" | "student" | "host" | "guest">(role);
 
   // ======== connect / listeners ========
   useEffect(() => {
@@ -226,9 +210,9 @@ export const useChessSocket = ({
     });
 
     // sync board on recieving new info from chess server
-    socket.on("boardstate", (gameMetaData) => {
+    socket.on("boardstate", (MetaData) => {
       if (onBoardStateChange) {
-        onBoardStateChange(gameMetaData);
+        onBoardStateChange(MetaData);
       }
     });
 
@@ -276,13 +260,13 @@ export const useChessSocket = ({
     });
 
     // last move highlight
-    socket.on("lastmove", (msg: string) => {
+    socket.on("lastmove", (msg) => {
       try {
-        const parsed = JSON.parse(msg);
+        const { to, from } = msg;
 
-        if (parsed.from && parsed.to) {
-          console.log("Last move highlight:", parsed.from, "→", parsed.to);
-          if (onLastMove) onLastMove(parsed.from, parsed.to);
+        if (from && to) {
+          console.log("Last move highlight:", from, "→", to);
+          if (onLastMove) onLastMove(from, to);
         }
       } catch (err) {
         console.error("Invalid lastmove:", err);
@@ -407,14 +391,8 @@ export const useChessSocket = ({
     socketRef.current?.emit("newgame", gameMetaData);
   }, []);
 
-  const startNewPuzzle = useCallback(() => {
-    const data: GameConfig = {
-      mentor: mentorRef.current,
-      student: studentRef.current,
-      role: roleRef.current,
-    };
-    console.log("Starting new puzzle:", data);
-    socketRef.current?.emit("newPuzzle", JSON.stringify(data));
+  const startNewPuzzle = useCallback((puzzleMetaData: PuzzleMetaData) => {
+    socketRef.current?.emit("newPuzzle", puzzleMetaData);
   }, []);
 
   const setGameState = useCallback((fenToSet: string) => {
@@ -448,6 +426,9 @@ export const useChessSocket = ({
     );
   };
 
+  const getSocketId = () => {
+    return socketRef.current.id;
+  };
   const playMove = (gameMetaData: GameMetaData) => {
     socketRef.current?.emit("playMove", gameMetaData);
     console.log(
@@ -460,6 +441,7 @@ export const useChessSocket = ({
       `Calling a stockfish Move for Game between ${gameMetaData.user?.firstName} and ${gameMetaData.opponent?.firstName}`,
     );
   };
+
   const getMostRecentGameInfo = (
     gameMetaData: GameMetaData,
   ): Promise<GameMetaData> => {
@@ -485,9 +467,6 @@ export const useChessSocket = ({
 
   const sendMove = useCallback((move: Move) => {
     const data = {
-      mentor: mentorRef.current,
-      student: studentRef.current,
-      role: roleRef.current,
       from: move.from,
       to: move.to,
       promotion: move.promotion,
@@ -504,8 +483,6 @@ export const useChessSocket = ({
     const data = {
       from,
       to,
-      mentor: mentorRef.current,
-      student: studentRef.current,
     };
     // Store for puzzle validation
     highlightFromRef.current = from;
@@ -517,8 +494,6 @@ export const useChessSocket = ({
     const data = {
       from,
       to,
-      mentor: mentorRef.current,
-      student: studentRef.current,
     };
     socketRef.current?.emit("highlight", JSON.stringify(data));
   }, []);
@@ -527,21 +502,17 @@ export const useChessSocket = ({
     const data = {
       x,
       y,
-      mentor: mentorRef.current,
-      student: studentRef.current,
     };
     socketRef.current?.emit("mousexy", JSON.stringify(data));
   }, []);
 
   const sendPieceDrag = useCallback((piece: string) => {
     const data = {
-      mentor: mentorRef.current,
-      student: studentRef.current,
       piece,
     };
     socketRef.current?.emit("piecedrag", JSON.stringify(data));
   }, []);
-
+  /*
   const sendPieceDrop = useCallback(() => {
     const data = {
       mentor: mentorRef.current,
@@ -552,8 +523,6 @@ export const useChessSocket = ({
 
   const sendGreySquare = useCallback((square: string) => {
     const data = {
-      mentor: mentorRef.current,
-      student: studentRef.current,
       to: square,
     };
     socketRef.current?.emit("addgrey", JSON.stringify(data));
@@ -566,7 +535,7 @@ export const useChessSocket = ({
     };
     socketRef.current?.emit("removegrey", JSON.stringify(data));
   }, []);
-
+*/
   const undo = useCallback((gameMetaData: GameMetaData) => {
     socketRef.current?.emit("undo", gameMetaData);
   }, []);
@@ -615,27 +584,6 @@ export const useChessSocket = ({
     };
   }, [trackMouse, connected, startMouseTracking, stopMouseTracking]);
 
-  // Update refs when props change
-  useEffect(() => {
-    mentorRef.current = mentor;
-    studentRef.current = student;
-    roleRef.current = role;
-  }, [mentor, student, role]);
-
-  // allow runtime change of mentor/student/role
-  const setUserInfo = useCallback(
-    (info: {
-      mentor?: string;
-      student?: string;
-      role?: "mentor" | "student" | "host" | "guest";
-    }) => {
-      if (info.mentor) mentorRef.current = info.mentor;
-      if (info.student) studentRef.current = info.student;
-      if (info.role) roleRef.current = info.role;
-    },
-    [],
-  );
-
   // ======== Public API ========
   return {
     // State
@@ -666,12 +614,12 @@ export const useChessSocket = ({
     // Visual feedback
     sendHighlight,
     sendLastMove,
-    sendGreySquare,
-    sendRemoveGrey,
+    // sendGreySquare,
+    //  sendRemoveGrey,
 
     // Piece interaction
     sendPieceDrag,
-    sendPieceDrop,
+    //    sendPieceDrop,
 
     // Communication
     sendMousePosition,
@@ -682,13 +630,10 @@ export const useChessSocket = ({
     stopMouseTracking,
 
     // Registration / user info
-    setUserInfo,
+    getSocketId,
 
     // Refs for direct access
     socketRef,
     currentFenRef,
-    mentorRef,
-    studentRef,
-    roleRef,
   };
 };

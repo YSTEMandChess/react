@@ -173,8 +173,7 @@ const endGame = useCallback(
 }, [cookies.login]);
 
 const chessSocket = useChessSocket({
-  student: gameMetaData.current?.user?.firstName || "",
-  serverUrl: environment.urls.chessServer,
+  serverUrl: environment.urls.chessServerURL,
   onMove: onOpponentMove,
   onLastMove: endGame,
   backendConnected: setBackendVersionIsCreated
@@ -361,11 +360,6 @@ const checkGameStatus = useCallback((): boolean => {
     setFen(gameRef.current.fen())
     setShowGameEndModal(false);
     setPlayerColor("white")
-    if (chessSocketRef) {
-      chessSocketRef.current.mentorRef = "mentor"
-      chessSocketRef.current.studentRef = "student"
-      chessSocketRef.current.roleRef = "guest"
-    }
     setGameEndMessage("");
 
 
@@ -447,9 +441,6 @@ const checkGameStatus = useCallback((): boolean => {
   setShowGameEndModal(false);
   setGameEndMessage("");
   location.state = game;
-  chessSocketRef.current.mentorRef = "mentor";
-  chessSocketRef.current.studentRef = game.user?.username ?? "";
-  chessSocketRef.current.roleRef = "student";
   gameMetaData.current = game;
   return;
 };

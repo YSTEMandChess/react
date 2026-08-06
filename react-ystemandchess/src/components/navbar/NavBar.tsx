@@ -96,15 +96,12 @@ const NavBar = () => {
         setAboutUsDropDown(false);
       }
 
-<<<<<<< HEAD
       // Close "Puzzles" dropdown if click is outside
       if (puzzlesRef.current && !puzzlesRef.current.contains(event.target)) {
         setPuzzlesDropDown(false);
-=======
       // Close "Sign Up" dropdown if click is outside its container
       if (signupRef.current && !signupRef.current.contains(event.target)) {
         setSignupDropDown(false);
->>>>>>> main
       }
       
       // Close mobile menu if click is outside both the menu and hamburger button
@@ -123,6 +120,7 @@ const NavBar = () => {
         setMobileMenuDropDown(false);
       }
     };
+  }
 
   const closeProfileDropdown = (event: { target: any }) => {
     if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
@@ -310,7 +308,7 @@ const NavBar = () => {
         Learn
       </Link>
       <Link
-        to="/play"
+        to="/select-game"
         className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
       >
         Play
