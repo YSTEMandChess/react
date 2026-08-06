@@ -25,20 +25,24 @@ export type User = {
     }
 
 export type PuzzleMetaData = {
-  userId?: number,
-  user?: User,
-  socketId?: string,
-  puzzleId: string;
+  userId?: number;
+  user?: User;
+  socketId?: string;
+
+  PuzzleId: string;
   FEN: string;
-  moves: string;
-  rating?: number;
-  ratingDeviation?: number;
-  popularity?: number;
-  nbPlays?: number;
-  themes?: string;
-  gameUrl?: string;
-  openingTags?: string;
+  Moves: string;
+
+  Rating?: number;
+  RatingDeviation?: number;
+  Popularity?: number;
+  NbPlays?: number;
+
+  Themes?: string;
+  GameUrl?: string;
+  OpeningTags?: string;
 };
+
 
 type PuzzleThemeKey = keyof typeof themesName;
 
@@ -169,8 +173,9 @@ useEffect(() => {
 
 useEffect(()=>{
   if (!chessSocketRef.current){
-  connectToBackend()}
-  return
+      chessSocketRef.current=socket;
+
+    }  return
 
 }, [])
 
@@ -184,28 +189,6 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
   setCurrentFEN(puzzleMetaData.FEN);
 }
 
-const connectToBackend = ()=>{
-  chessSocketRef.current = useChessSocket({
-    serverUrl: environment.urls.chessServerURL,
-    mode: "puzzle",
-
-    onBoardStateChange: handleBoardStateChange,
-
-    onMessage: handleSocketMessage,
-    backendConnected: setBackendConnected,
-
-    onLastMove: (from, to) => {
-      setHighlightSquares([from, to]);
-      if (chessBoardRef.current) {
-        chessBoardRef.current.highlightMove(from, to);
-      }
-    },
-    onError: (msg) => {
-      console.error("Socket error:", msg);
-    },
-  })
-  return
-}
   // ============================================================================
   // PUZZLE LOADING
   // ============================================================================
@@ -318,19 +301,20 @@ const connectToBackend = ()=>{
 
     try {
       const puzzles = await initPuzzleArray();
+      console.log("my puzzles",puzzles)
       if (puzzles && puzzles.length > 0) {
         const firstPuzzle = puzzles[0] as PuzzleMetaData;
         currentPuzzleRef.current = firstPuzzle ;
-        moveListRef.current = firstPuzzle?.moves?.split(" ") || [];
+        moveListRef.current = firstPuzzle?.Moves?.split(" ") || [];
 
         if (moveListRef.current.length === 0) {
           console.warn("No valid moves in initial puzzle:", firstPuzzle);
           setIsInitialized(false);
           return;
         }
-        setThemeList(firstPuzzle.themes.split(" "));
+        setThemeList(firstPuzzle.Themes.split(" "));
         updatePuzzleEnvironment(firstPuzzle);
-        updateInfoBox(firstPuzzle.themes.split(" "));
+        updateInfoBox(firstPuzzle.Themes.split(" "));
       } else {
         setModal({
           type: "error",
@@ -347,7 +331,7 @@ const connectToBackend = ()=>{
   };
 
   const updatePuzzleEnvironment = (state: PuzzleMetaData) => {
-    if (!state?.FEN || !state?.moves || !state?.themes) {
+    if (!state?.FEN || !state?.Moves || !state?.Themes) {
       console.warn("Puzzle is missing required fields:", state);
       return;
     }
@@ -521,7 +505,7 @@ const connectToBackend = ()=>{
     const currentThemes = themes || themeList;
     if (!currentThemes || currentThemes.length === 0) return;
 
-    const rating = currentPuzzleRef.current?.rating || "N/A";
+    const rating = currentPuzzleRef.current?.Rating || "N/A";
 
     let hints = `<div style="margin-bottom: 14px;"><b>Puzzle Rating:</b> ${rating}</div>`;
 
@@ -622,22 +606,42 @@ const connectToBackend = ()=>{
     };
   }, []);
 
+  const socket = useChessSocket({
+    serverUrl: environment.urls.chessServerURL,
+    mode: "puzzle",
+
+    onBoardStateChange: handleBoardStateChange,
+
+    onMessage: handleSocketMessage,
+    backendConnected: setBackendConnected,
+
+    onLastMove: (from, to) => {
+      setHighlightSquares([from, to]);
+      if (chessBoardRef.current) {
+        chessBoardRef.current.highlightMove(from, to);
+      }
+    },
+    onError: (msg) => {
+      console.error("Socket error:", msg);
+    },
+  })
+
 useEffect(() => {
   if (
     selectedTheme &&
-    chessSocketRef.current.connected &&
+    socket.connected &&
     puzzleArray.length > 0 &&
     isInitialized &&
     !backendConnected
   ) {
     chessSocketRef.current.startNewPuzzle(puzzleArray[0]);
-    
   }
 }, [
   selectedTheme,
   puzzleArray,
   backendConnected,
-  isInitialized
+  isInitialized,
+  socket.connected
 ]);
 
 useEffect(() => {
@@ -653,6 +657,7 @@ useEffect(() => {
   backendConnected,
   isInitialized
 ]);
+
 
   // ============================================================================
   // RENDER

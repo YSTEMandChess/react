@@ -6,6 +6,25 @@ const GameManager = require("./GameManager");
 
 const gameManager = new GameManager();
 
+export type PuzzleMetaData = {
+  userId?: number;
+  user?: User;
+  socketId?: string;
+
+  PuzzleId: string;
+  FEN: string;
+  Moves: string;
+
+  Rating?: number;
+  RatingDeviation?: number;
+  Popularity?: number;
+  NbPlays?: number;
+
+  Themes?: string;
+  GameUrl?: string;
+  OpeningTags?: string;
+};
+
 export type GameMetaData = {
   userId?: number;
   user?: User;
@@ -129,21 +148,14 @@ const registerSocketHandlers = (socket, io, stockfish) => {
    * Handles creating a new puzzle or joining an existing one
    * Expected payload: { student, mentor, role }
    */
-  socket.on("newPuzzle", (msg) => {
+  socket.on("newPuzzle", (puzzle: PuzzleMetaData) => {
+    console.log(puzzle);
     try {
-      const parsed = JSON.parse(msg);
-      console.log("data", parsed, msg);
-      // create the new puzzle
-      gameManager.createOrJoinPuzzle(
-        {
-          student: parsed.student,
-          mentor: parsed.mentor,
-          role: parsed.role,
-          socketId: socket.id,
-          credentials: parsed.credentials,
-        },
-        io,
-      );
+      console.log("trying to start this shit");
+      gameManager.createOrJoinPuzzle({
+        socketId: socket.id,
+        puzzleMetaData: puzzle,
+      });
     } catch (err) {
       socket.emit("gameerror", err.message);
       console.log(err.message);
@@ -181,7 +193,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
       }
       if (from && to) {
         const res = (await gameManager.makeMove(
-          socket.id,
+          uuid || socket.id,
           from,
           to,
           promotion,

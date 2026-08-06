@@ -12,8 +12,6 @@ import type { GameMetaData } from "../../../../engine/SelectGame";
 import type { PuzzleMetaData } from "../../../../puzzles/Puzzles";
 
 /*
-
-    
     socket.on('disconnect', () => {
       setConnected(false);
       setSessionStarted(false);
@@ -52,6 +50,33 @@ import type { PuzzleMetaData } from "../../../../puzzles/Puzzles";
     });
 
     return () => { socket.disconnect(); };
+    */
+/*
+    // host / guest assignment
+    socket.on("host", () => {
+      console.log("Assigned as HOST");
+      setAssignedRole("host");
+      isPuzzleRef.current = true;
+      if (onRoleAssigned) onRoleAssigned("host");
+    });
+
+    socket.on("guest", () => {
+      console.log("Assigned as GUEST");
+      setAssignedRole("guest");
+      isPuzzleRef.current = true;
+      if (onRoleAssigned) onRoleAssigned("guest");
+    });
+    socket.on("color", (msg: string) => {
+      try {
+        const parsed = JSON.parse(msg);
+        const color = parsed.color as PlayerColor;
+        console.log("Color assigned:", color);
+        setPlayerColor(color);
+        if (onColorAssigned) onColorAssigned(color);
+      } catch (err) {
+        console.error("Invalid color message:", err);
+      }
+    });
     */
 
 interface UseChessSocketOptions {
@@ -194,21 +219,6 @@ export const useChessSocket = ({
       if (onError) onError("Connection failed");
     });
 
-    // host / guest assignment
-    socket.on("host", () => {
-      console.log("Assigned as HOST");
-      setAssignedRole("host");
-      isPuzzleRef.current = true;
-      if (onRoleAssigned) onRoleAssigned("host");
-    });
-
-    socket.on("guest", () => {
-      console.log("Assigned as GUEST");
-      setAssignedRole("guest");
-      isPuzzleRef.current = true;
-      if (onRoleAssigned) onRoleAssigned("guest");
-    });
-
     // sync board on recieving new info from chess server
     socket.on("boardstate", (MetaData) => {
       if (onBoardStateChange) {
@@ -246,19 +256,6 @@ export const useChessSocket = ({
       }
     });
 
-    // color (explicit)
-    socket.on("color", (msg: string) => {
-      try {
-        const parsed = JSON.parse(msg);
-        const color = parsed.color as PlayerColor;
-        console.log("Color assigned:", color);
-        setPlayerColor(color);
-        if (onColorAssigned) onColorAssigned(color);
-      } catch (err) {
-        console.error("Invalid color message:", err);
-      }
-    });
-
     // last move highlight
     socket.on("lastmove", (msg) => {
       try {
@@ -274,22 +271,22 @@ export const useChessSocket = ({
     });
 
     // highlight arrows
-    socket.on("highlight", (msg: string) => {
+    socket.on("highlight", (msg) => {
+      const { from, to } = msg;
       try {
-        const parsed = JSON.parse(msg);
-        console.log("Highlight:", parsed.from, "→", parsed.to);
-        if (onHighlight) onHighlight(parsed.from, parsed.to);
+        console.log("Highlight:", from, "→", to);
+        if (onHighlight) onHighlight(from, to);
       } catch (err) {
         console.error("Invalid highlight:", err);
       }
     });
 
     // piece drag/drop from remote
-    socket.on("piecedrag", (msg: string) => {
+    socket.on("piecedrag", (msg) => {
+      const { piece } = msg;
       try {
-        const parsed = JSON.parse(msg);
-        console.log("Piece drag:", parsed.piece);
-        if (onPieceDrag) onPieceDrag(parsed.piece);
+        console.log("Piece drag:", piece);
+        if (onPieceDrag) onPieceDrag(piece);
       } catch (err) {
         console.error("Invalid piecedrag:", err);
       }
@@ -301,10 +298,10 @@ export const useChessSocket = ({
     });
 
     // grey squares
-    socket.on("addgrey", (msg: string) => {
+    socket.on("addgrey", (msg) => {
+      const { to } = msg;
       try {
-        const parsed = JSON.parse(msg);
-        if (onGreySquare) onGreySquare(parsed.to);
+        if (onGreySquare) onGreySquare(to);
       } catch (err) {
         console.error("Invalid addgrey:", err);
       }
@@ -315,11 +312,11 @@ export const useChessSocket = ({
     });
 
     // mouse move with viewport calculations
-    socket.on("mousexy", (msg: string) => {
+    socket.on("mousexy", (msg) => {
       try {
-        const parsed: MousePosition = JSON.parse(msg);
+        const { x, y }: MousePosition = msg;
 
-        if (parsed.x && parsed.y) {
+        if (x && y) {
           const viewportWidth = window.innerWidth;
           const viewportHeight = window.innerHeight;
 
@@ -327,11 +324,11 @@ export const useChessSocket = ({
           let adjustedY: number;
 
           if (isPuzzleRef.current) {
-            adjustedX = parsed.x - 28;
-            adjustedY = parsed.y - 28;
+            adjustedX = x - 28;
+            adjustedY = y - 28;
           } else {
-            adjustedX = -1 * parsed.x + viewportWidth - 28;
-            adjustedY = -1 * parsed.y + viewportHeight - 28;
+            adjustedX = -1 * x + viewportWidth - 28;
+            adjustedY = -1 * y + viewportHeight - 28;
           }
 
           if (onMouseMove) onMouseMove({ x: adjustedX, y: adjustedY });
@@ -353,8 +350,7 @@ export const useChessSocket = ({
     // message
     socket.on("message", (msg: string) => {
       try {
-        const parsed = JSON.parse(msg);
-        if (onMessage) onMessage(parsed.message);
+        if (onMessage) onMessage(msg);
       } catch (err) {
         if (onMessage) onMessage(msg);
       }
@@ -392,6 +388,7 @@ export const useChessSocket = ({
   }, []);
 
   const startNewPuzzle = useCallback((puzzleMetaData: PuzzleMetaData) => {
+    console.log("puzzleee", puzzleMetaData);
     socketRef.current?.emit("newPuzzle", puzzleMetaData);
   }, []);
 

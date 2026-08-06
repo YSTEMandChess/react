@@ -1,4 +1,4 @@
-import { GameMetaData } from "./EventHandlers";
+import { GameMetaData, PuzzleMetaData } from "./EventHandlers";
 
 const { Chess } = require("chess.js");
 import { validateFen } from "chess.js";
@@ -24,6 +24,7 @@ export type GameInstance = {
   boardState?: any;
   puzzle?: any;
   pastStates?: any;
+  puzzleMetaData?: PuzzleMetaData;
 };
 
 interface GameManager {
@@ -124,92 +125,79 @@ class GameManager {
    * @param {Object} param0 - Contains student, mentor, role, socketId
    * @returns {Object} Game object, assigned color, and new game status
    */
-  createOrJoinPuzzle({ student, mentor, role, socketId, credentials }, io) {
-    let game = this.ongoingGames.find(
-      (g) => g.student.username === student || g.mentor.username === mentor,
-    );
-    const socket = io.sockets.sockets.get(socketId); // the socket id that initiated connection
+  createOrJoinPuzzle({
+    socketId,
+    puzzleMetaData,
+  }: {
+    socketId: string;
+    puzzleMetaData: PuzzleMetaData;
+  }): {
+    game: GameInstance;
+    newGame: boolean;
+  } {
+    const gameId = socketId;
+    console.log("starting this shit");
+    console.log("puzzleee", puzzleMetaData);
 
-    // must be a student or mentor to connect to server
-    if (role != "student" && role != "mentor") {
-      throw new Error("Invalid role!");
+    const existingGame = this.ongoingGames.find((g) => g.uuid === gameId);
+    console.log("starting this shit1");
+
+    if (existingGame) {
+      return {
+        game: existingGame,
+        newGame: false,
+      };
     }
+    console.log("starting this shit2");
 
-    // Player already in a puzzle, so serve as a guest
-    if (game) {
-      console.log("already in a game");
-      if (role == "student") {
-        game.student.id = socketId; // record guest socket id
-        socket.emit("guest"); // notify client that they join as guest
-        const socket2 = io.sockets.sockets.get(game.mentor.id);
-        socket2.emit("guest");
-        socket.emit(
-          "boardstate",
-          JSON.stringify({
-            boardState: game.boardState.fen(), // pass existing game state to guest client
-            color: game.student.color,
-          }),
-        );
-        socket.emit("message", JSON.stringify({ message: game.puzzle }));
-        console.log("emtting hints!!", game.puzzle);
-        return { game, color: game.student.color, newGame: false };
-      } else if (role == "mentor") {
-        game.mentor.id = socketId; // record guest socket id
-        socket.emit("guest"); // notify client that they join as guest
-        const socket2 = io.sockets.sockets.get(game.student.id);
-        socket2.emit("guest");
-        socket.emit(
-          "boardstate",
-          JSON.stringify({
-            boardState: game.boardState.fen(), // pass existing game state to guest client
-            color: game.student.color,
-          }),
-        );
-        socket.emit("message", JSON.stringify({ message: game.puzzle }));
-        console.log("emtting hints!!", game.puzzle);
-        return { game, color: game.mentor.color, newGame: false };
-      } else {
-        throw new Error("Invalid role!");
-      }
+    const board = new Chess();
+    console.log("starting this shit3");
+
+    const validation = validateFen(puzzleMetaData.FEN);
+
+    if (!validation.ok) {
+      throw new Error(`Invalid FEN: ${validation.error}`);
     }
+    console.log("starting this shi4");
 
-    // Game has not been created yet, so player will serve as host
-    socket.emit("host");
-    console.log("creating new game in game manager");
+    board.load(puzzleMetaData.FEN);
+    console.log("starting this shit5");
 
-    // Create a new game instance
-    const board = new Chess(); // default to a simple chess game
-    const studentColor = "white"; // default to white
-    const mentorColor = "white"; // in a puzzle, student and mentor are on the same side
+    const sideToMove = puzzleMetaData.FEN.split(" ")[1];
+    const playerColor: "white" | "black" =
+      sideToMove === "w" ? "black" : "white";
+    console.log("starting this shit6");
 
-    const newGame = {
+    const loadingGame: GameInstance = {
       student: {
-        username: student,
-        id: role === "student" ? socketId : null,
-        color: studentColor as "black" | "white",
-        credentials: credentials,
+        username: puzzleMetaData.user?.username ?? null,
+        id: socketId,
+        color: playerColor,
       },
+
       mentor: {
-        username: mentor,
-        id: role === "mentor" ? socketId : null,
-        color: mentorColor as "black" | "white",
+        username: null,
+        id: null,
+        color: null,
+      },
+
+      opponent: {
+        username: "stockfish",
+        id: null,
+        color: playerColor === "white" ? "black" : "white",
       },
       boardState: board,
       pastStates: [],
-      puzzle: "No hints available",
+      uuid: gameId,
+      puzzleMetaData,
     };
-    console.log("created puzzle:", newGame.puzzle);
-
-    // record the new game created
-    this.ongoingGames.push(newGame);
-
+    this.ongoingGames.push(loadingGame);
+    console.log("my game", this.ongoingGames);
     return {
-      game: newGame,
-      color: role === "student" ? studentColor : mentorColor,
+      game: loadingGame,
       newGame: true,
     };
   }
-
   /**
    * Handles a player making a move.
    * @param {*} socketId
@@ -217,8 +205,8 @@ class GameManager {
    * @param {*} moveTo
    * @returns {Object} Updated board state, move details, and socket IDs
    */
-  makeMove(socketId, moveFrom, moveTo, promotion) {
-    const game = this.getGameById(socketId);
+  makeMove(uuid, moveFrom, moveTo, promotion) {
+    const game = this.getGameById(uuid);
 
     if (!game) {
       throw new Error("Game not found for this socket!");
