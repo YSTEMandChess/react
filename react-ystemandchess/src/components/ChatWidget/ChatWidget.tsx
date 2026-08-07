@@ -478,8 +478,11 @@ const ChatWidget = () => {
       )}
       
       {!isOpen && (
-        <button className="chat-text-button" onClick={toggleWidget}>
-          Talk to AI Tutor 🧠
+        <button className="chat-text-button" onClick={toggleWidget} aria-label="Talk to AI Tutor">
+          <span className="button-pulse-beacon"></span>
+          <span className="button-sparkle">✨</span>
+          <span className="button-label-text">Talk to AI Tutor</span>
+          <span className="button-brain-icon">🧠</span>
         </button>
       )}
     </div>

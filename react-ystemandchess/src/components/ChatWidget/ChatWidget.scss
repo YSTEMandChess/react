@@ -3,37 +3,94 @@
   z-index: 9999;
 }
 
-// Sleek text-only button styled at bottom-right
+// Highly prominent floating AI Tutor button
 .chat-text-button {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  height: 48px;
-  padding: 0 24px;
-  background: linear-gradient(135deg, #8CC63F 0%, #75A630 100%);
-  color: white;
-  border: none;
-  border-radius: 24px;
+  bottom: 32px;
+  right: 32px;
+  height: 56px;
+  padding: 0 28px;
+  background: linear-gradient(135deg, #8CC63F 0%, #10B981 50%, #059669 100%);
+  color: #FFFFFF;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 9999px;
   font-family: inherit;
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.4px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(140, 198, 63, 0.2);
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 
+    0 8px 24px rgba(16, 185, 129, 0.4),
+    0 0 0 0 rgba(140, 198, 63, 0.6);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 9999;
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 10px;
+  animation: tutorGlowPulse 2.5s infinite cubic-bezier(0.4, 0, 0.6, 1);
+
+  .button-pulse-beacon {
+    width: 10px;
+    height: 10px;
+    background-color: #38BDF8;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #38BDF8, 0 0 16px #38BDF8;
+    animation: beaconPulse 1.5s infinite alternate;
+  }
+
+  .button-sparkle {
+    font-size: 17px;
+    animation: rotateSparkle 3s infinite ease-in-out;
+  }
+
+  .button-label-text {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .button-brain-icon {
+    font-size: 19px;
+    transition: transform 0.3s ease;
+  }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(140, 198, 63, 0.3);
-    background: linear-gradient(135deg, #9BD64E 0%, #8CC63F 100%);
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 
+      0 14px 32px rgba(16, 185, 129, 0.55),
+      0 0 20px rgba(140, 198, 63, 0.8);
+    background: linear-gradient(135deg, #9BD64E 0%, #34D399 50%, #10B981 100%);
+    border-color: rgba(255, 255, 255, 0.8);
+
+    .button-brain-icon {
+      transform: scale(1.25) rotate(10deg);
+    }
   }
 
   &:active {
-    transform: translateY(0);
+    transform: translateY(-1px) scale(0.98);
   }
+}
+
+@keyframes tutorGlowPulse {
+  0% {
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4), 0 0 0 0 rgba(140, 198, 63, 0.6);
+  }
+  50% {
+    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.6), 0 0 0 14px rgba(140, 198, 63, 0);
+  }
+  100% {
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4), 0 0 0 0 rgba(140, 198, 63, 0);
+  }
+}
+
+@keyframes beaconPulse {
+  0% { opacity: 0.6; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.3); }
+}
+
+@keyframes rotateSparkle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(15deg); }
 }
 
 .chat-notification-dot {
