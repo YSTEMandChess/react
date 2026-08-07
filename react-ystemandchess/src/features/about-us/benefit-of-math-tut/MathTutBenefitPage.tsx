@@ -6,7 +6,7 @@ import ImageTwo from "../../../assets/images/mathArticle/Junechamp 2.png";
 const MathTutBenefitPage = () => {
   return (
     <main id="main-content-math" role="main">
-      <section className="container-math" role="section" aria-label="Main math benefit section" tabIndex={0}>
+      <section className="container-math" role="region" aria-label="Main math benefit section" tabIndex={0}>
         <div className="text-title-md-math txt-p">
           <h1 style={{ fontWeight: "bold" }}>The Benefits of Math Tutoring</h1>
         </div>
@@ -34,7 +34,7 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
 
-        <div className="text-normal-math txt-p ">
+        <div className="text-normal-math txt-p">
           <p>
             Students frequently lack confidence in their abilities in math.
             Tutors can walk students through problems, breaking them down step
@@ -47,7 +47,7 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
 
-        <div className="text-normal-math txt-p ">
+        <div className="text-normal-math txt-p">
           <p>
             While math is a challenging subject, it provides the foundation for
             many potential careers and is essential for pursuing STEM related
@@ -60,7 +60,7 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container rectdiv2-math" role="region" aria-label="Quote section" tabIndex={0}>
+      <section className="rectdiv2-math" role="region" aria-label="Quote section" tabIndex={0}>
         <div className="rectdiv2-wrapper">
           <p className="recttext-math">
             "This help give students confidence in their own abilities, and it
@@ -68,7 +68,7 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
       </section>
-      <section className="container" role="region" aria-label="Math tutoring benefit details section" tabIndex={0}>
+      <section className="container-math" role="region" aria-label="Math tutoring benefit details section" tabIndex={0}>
         <div className="text-normal-math txt-p">
           <p>
             Math also builds up useful skills such as problem solving, logical
@@ -99,7 +99,7 @@ const MathTutBenefitPage = () => {
 
         <figure>
           <img
-            className="pictureMath"
+            className="picture-math"
             src={ImageTwo}
             alt="A student standing and holding a trophy alongside their mentor."
           />
