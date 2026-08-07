@@ -40,7 +40,6 @@ export function createMoveEvent(
         ? 'queenside'
         : undefined,
     fen: afterFen,
-    by: isPlayerMove ? 'player' : 'opponent'
   };
 }
 
@@ -57,6 +56,10 @@ export class EventLog {
 
   clear() {
     this.events = [];
+  }
+
+  popMove(): MoveEvent | undefined {
+    return this.events.pop();
   }
 
   getPromotions(): MoveEvent[] {

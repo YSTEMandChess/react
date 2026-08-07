@@ -140,6 +140,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         try {
           gameRef.current.load(newFen);
           setBoardPosition(newFen);
+          setGreySquares([]);
         } catch (err) {
           console.error("Failed to load FEN:", newFen, err);
         }
@@ -149,6 +150,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         try {
           gameRef.current.load(newFen);
           setBoardPosition(newFen);
+          setGreySquares([]);
         } catch (err) {
           console.error("Failed to set position:", newFen, err);
         }
@@ -162,6 +164,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
 
       clearHighlights: () => {
         setInternalHighlights([]);
+        setGreySquares([]);
         if (onHighlightChange) onHighlightChange([]);
       },
     }));
@@ -294,19 +297,21 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
         };
       });
 
-      // Add Grey Dots for move hints
+      // Move hints
       greySquares.forEach((sq) => {
-        const isLightSquare = ["a", "c", "e", "g"].includes(sq[0]) !== (Number(sq[1]) % 2 === 0);
-        const dotColor = isLightSquare ? "#a1a1a1" : "#b8b8b8";
-        
-        // Combine grey dot with highlight if square is highlighted
-        if (styles[sq]?.background) {
-          styles[sq].background = `radial-gradient(circle, ${dotColor} 12%, transparent 12%), ${styles[sq].background}`;
+        const hasHighlight = !!styles[sq]?.background;
+        const hasPiece = !!gameRef.current.get(sq as Square);
+
+        let hint: string;
+        if (hasPiece) {
+          hint = 'radial-gradient(circle, transparent 55%, rgba(0,0,0,0.18) 55%, rgba(0,0,0,0.18) 67%, transparent 67%)';
         } else {
-          styles[sq] = {
-            background: `radial-gradient(circle, ${dotColor} 12%, transparent 12%)`,
-          };
+          hint = 'radial-gradient(circle, rgba(0,0,0,0.18) 17%, transparent 17%)';
         }
+
+        styles[sq] = {
+          background: hasHighlight ? `${hint}, ${styles[sq].background}` : hint,
+        };
       });
 
       return styles;

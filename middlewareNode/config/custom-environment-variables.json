@@ -20,8 +20,10 @@
 
   "basepath": "BASEPATH",
 
-  "awsAccessKey": "AWS_ACCESS_KEY_ID",
-  "awsSecretKey": "AWS_SECRET_ACCESS_KEY",
+  "azureStorageAccount": "AZURE_STORAGE_ACCOUNT",
+  "azureStorageKey": "AZURE_STORAGE_KEY",
+  "azureContainer": "AZURE_STORAGE_CONTAINER",
+  "azureStorageRegion": "AZURE_STORAGE_REGION",
 
   "appID": "AGORA_APP_ID",
   "uid": "AGORA_UID",

@@ -1,25 +1,11 @@
-/**
- * Application Routes Configuration
- * 
- * This component defines all the routes and their corresponding page components
- * for the React application. It uses React Router to handle client-side routing
- * and maps URL paths to specific page components.
- * 
- * The routing structure includes:
- * - Public pages (Home, About Us sections, Programs)
- * - Authentication pages (Login, SignUp, Password management)
- * - User-specific pages (Student/Mentor profiles and dashboards)
- * - Educational content (Lessons, Puzzles, Learning materials)
- */
+import { useState, useEffect } from "react";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { useCookies } from "react-cookie";
+import { SetPermissionLevel } from "./globals";
 
-// React and routing imports
-import React from "react";
-import { Route, Router, Routes } from "react-router-dom";
-
-// Page component imports - organized by category
-// Home and main pages
+import AnalyticsLayout from "./Pages/Analytics/AnalyticsLayout";
 import Home from "./features/home/Home";
-import Programs from "./features/programs/Programs";
+import { Programs } from "./features/programs/Programs";
 
 // About Us section pages
 import CSBenefitPage from "./features/about-us/benefit-of-cs/CSBenefitPage";
@@ -36,89 +22,85 @@ import OnlineExpansion from "./features/about-us/online-expansion/OnlineExpansio
 // Educational content pages
 import PlayComputer from "./features/engine/PlayComputer";
 import Lessons from "./features/lessons/lessons-main/Lessons";
-import Puzzles from './features/puzzles/puzzles-page/Puzzles';
+import Puzzles from './features/puzzles/Puzzles';
 import LessonSelection from "./features/lessons/lessons-selection/LessonsSelection";
 import LessonOverlay from "./features/lessons/piece-lessons/lesson-overlay/Lesson-overlay";
-
-// Authentication and user management pages
 import Login from "./features/auth/login/Login";
-import SignUp from "./features/auth/signup/SignUp";
+import ParentSignUp from "./features/auth/signup/ParentSignUp";
+import MentorSignUp from "./features/auth/signup/MentorSignUp";
+import AddChild from "./features/auth/signup/AddChild";
+import ParentSection from "./features/auth/signup/ParentSection";
 import ResetPassword from "./features/auth/reset-password/Reset-Password/reset-password";
 import SetPassword from "./features/auth/set-password/Set-Password/set-password";
-
-// User profile and dashboard pages
 import Student from "./features/student/student-page/Student";
 import Mentor from "./features/mentor/mentor-page/Mentor";
 import StudentInventory from "./features/student/student-inventory/StudentInventory";
 import NewMentorProfile from "./features/mentor/mentor-profile/NewMentorProfile";
+  
 import NewStudentProfile from "./features/student/student-profile/NewStudentProfile";
-
-// Static assets and default data
 import userPortraitImg from "./assets/images/user-portrait-placeholder.svg";
 
-/**
- * Default username for components that require user data
- * TODO: This should be replaced with dynamic user data from authentication
- */
 const userName = "Nimesh Patel";
 
 /**
- * Main routing component that defines all application routes
- * 
- * This component uses React Router's Routes and Route components to define
- * the mapping between URL paths and their corresponding page components.
- * Each route represents a different page or section of the application.
- * 
- * Route Categories:
- * - "/" - Landing/Home page
- * - "/about-*" - Various About Us pages explaining benefits and mission
- * - "/auth-*" - Authentication-related pages (login, signup, password reset)
- * - "/profile-*" - User profile and dashboard pages
- * - "/learning-*" - Educational content and lesson pages
- * 
- * @returns JSX element containing all route definitions
+ * Route guard that validates admin role via server-side JWT check before
+ * rendering child routes. Renders null while loading, redirects to /login
+ * if the user is not an admin.
  */
+const AdminRoute = () => {
+  const [cookies, , removeCookie] = useCookies(["login"]);
+  const [status, setStatus] = useState<"loading" | "allowed" | "denied">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const info = await SetPermissionLevel(cookies, removeCookie);
+      if (cancelled) return;
+      setStatus(info && !info.error && info.role === "admin" ? "allowed" : "denied");
+    })();
+    return () => { cancelled = true; };
+  }, [cookies.login]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (status === "loading") return null;
+  if (status === "denied") return <Navigate to="/login" replace />;
+  return <Outlet />;
+};
+
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Home page - main landing page */}
       <Route path="/" element={<Home />} />
-      
-      {/* Program information page */}
       <Route path="/programs" element={<Programs />} />
-      
-      {/* About Us section - Educational benefit pages */}
+
       <Route path="/benefit-of-computer-science" element={<CSBenefitPage />} />
       <Route path="/benefit-of-chess" element={<ChessBenefitPage />} />
       <Route path="/benefit-of-math-tutoring" element={<MathTutBenefitPage />} />
       <Route path="/benefit-of-mentoring" element={<MentoringBenefitPage />} />
-      
-      {/* About Us section - Organizational pages */}
+
       <Route path="/about-us" element={<AboutUs />} />
       <Route path="/mission" element={<Mission />} />
       <Route path="/financial" element={<Financial />} />
       <Route path="/board" element={<Board />} />
       <Route path="/sponsors&partners" element={<SponsorsPartners />} />
       <Route path="/online-expansion" element={<OnlineExpansion />} />
-      
-      {/* Educational content and learning pages */}
-      <Route path="/play" element={<PlayComputer/>}/>
+
+      <Route path="/play" element={<PlayComputer />} />
       <Route path="/puzzles" element={<Puzzles />} />
       <Route path="/lessons-selection" element={<LessonSelection />} />
       <Route path="/lessons" element={<LessonOverlay />} />
       <Route path="/learnings" element={<Lessons />} />
-      
-      {/* User roles and mentoring */}
+
       <Route path="/mentor" element={<Mentor />} />
       <Route path="/student" element={<Student />} />
-      
-      {/* Authentication pages */}
+
       <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<SignUp />} />
+      <Route path="/signup/parent" element={<ParentSignUp />} />
+      <Route path="/signup/parent/add-child" element={<AddChild />} />
+      <Route path="/signup/parent/section" element={<ParentSection />} />
+      <Route path="/signup/mentor" element={<MentorSignUp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/set-password" element={<SetPassword />} />
-      
-      {/* User profile pages with props */}
+
       <Route
         path="/mentor-profile"
         element={<NewMentorProfile userPortraitSrc={userPortraitImg} />}
@@ -127,17 +109,15 @@ const AppRoutes = () => {
         path="/student-profile"
         element={<NewStudentProfile userPortraitSrc={userPortraitImg} />}
       />
-      
-      {/* Student inventory/dashboard page with user data */}
       <Route
         path="/student-inventory"
-        element={
-          <StudentInventory
-            userName={userName}
-            userPortraitSrc={userPortraitImg}
-          />
-        }
+        element={<StudentInventory userName={userName} userPortraitSrc={userPortraitImg} />}
       />
+
+      {/* Admin analytics — guarded by server-side role validation */}
+      <Route path="/analytics" element={<AdminRoute />}>
+        <Route index element={<AnalyticsLayout />} />
+      </Route>
     </Routes>
   );
 };

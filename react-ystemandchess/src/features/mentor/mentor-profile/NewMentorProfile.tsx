@@ -9,7 +9,7 @@ import StatsChart from "../../student/student-profile/StatsChart";
 import Lessons from "../../lessons/lessons-main/Lessons";
 import LessonSelection from "../../lessons/lessons-selection/LessonsSelection";
 import LessonOverlay from "../../lessons/piece-lessons/lesson-overlay/Lesson-overlay";
-import Puzzles from "../../puzzles/puzzles-page/Puzzles";
+import Puzzles from "../../puzzles/Puzzles";
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
