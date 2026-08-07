@@ -46,7 +46,7 @@ const resetPassword = async (req: any, res: any) => {
     );
 
     // Create password reset link with embedded token
-    const resetLink = `http://localhost:3001/reset-password?token=${token}`;
+    const resetLink = `${config.get('frontendURL')}/reset-password?token=${token}`;
 
     // TODO: In production, call sendResetPasswordEmail(user.email, resetLink)
     // Currently bypassing email for development/testing
