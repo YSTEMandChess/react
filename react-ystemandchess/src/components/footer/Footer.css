@@ -14,36 +14,55 @@
   height: 100%;
 }
 
+.footer-contact-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2f4f2f;
+}
+
+.footer-email,
+.footer-phone {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: #3a3a3a;
+}
+
+.footer-email strong,
+.footer-phone strong {
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.footer-label {
+  font-weight: 500;
+}
+
 .footer-info .footer-icons {
   width: 100%;
-  height: 50px;
+  height: auto;
   display: flex;
-  gap: 2em;
-  margin-top: 70px;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
 }
 
-.footer-email {
-  margin-bottom: -7vh;
-}
-
-.footer-phone {
-  margin-bottom: -4vh;
-}
-
-.footer-icons #twitter-icon {
-  width: 30%;
-}
-
-.footer-icons #instagram-icon {
-  width: 30%;
-}
-
-.footer-icons #facebook-icon {
-  width: 20%;
-}
-
+.footer-icons img,
+.footer-icons #twitter-icon,
+.footer-icons #instagram-icon,
+.footer-icons #facebook-icon,
 .footer-icons #google-icon {
-  width: 30%;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.footer-copyright {
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: #3a3a3a;
 }
 
 .footer-sponsors {

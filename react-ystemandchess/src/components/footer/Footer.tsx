@@ -36,8 +36,15 @@ const Footer = () => {
     <footer>
       <div className="footer-container">
         <div className="footer-info">
-          <h2 className="footer-email">Info@ystemandchess.com</h2>
-          <h2 className="footer-phone">+1 208.996.5071</h2>
+          <h2 className="footer-contact-title">Contact Us</h2>
+          <p className="footer-email">
+            <span className="footer-label">Email:</span>{" "}
+            <strong>Info@ystemandchess.com</strong>
+          </p>
+          <p className="footer-phone">
+            <span className="footer-label">Phone number:</span>{" "}
+            <strong>+1 208.996.5071</strong>
+          </p>
           <div className="footer-icons">
             <a href="/">
               <img src={TwitterIcon} alt="twitter-icon" id="twitter-icon" />

@@ -20,7 +20,7 @@ const MathTutBenefitPage = () => {
           <figcaption className="text-caption-math txt-p">
             Students practicing their chess skills in the classroom
           </figcaption>
-        </figure> 
+        </figure>
 
         <div className="text-normal-math txt-p">
           <p>
@@ -34,7 +34,7 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
 
-        <div className="text-normal-math txt-p ">
+        <div className="text-normal-math txt-p">
           <p>
             Students frequently lack confidence in their abilities in math.
             Tutors can walk students through problems, breaking them down step
@@ -47,7 +47,7 @@ const MathTutBenefitPage = () => {
           </p>
         </div>
 
-        <div className="text-normal-math txt-p ">
+        <div className="text-normal-math txt-p">
           <p>
             While math is a challenging subject, it provides the foundation for
             many potential careers and is essential for pursuing STEM related
@@ -99,7 +99,7 @@ const MathTutBenefitPage = () => {
 
         <figure>
           <img
-            className="pictureMath"
+            className="picture-math"
             src={ImageTwo}
             alt="A student standing and holding a trophy alongside their mentor."
           />
