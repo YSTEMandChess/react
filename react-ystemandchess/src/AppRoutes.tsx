@@ -24,7 +24,10 @@ import PuzzleStreak from "./features/puzzles/PuzzleStreak";
 import LessonSelection from "./features/lessons/lessons-selection/LessonsSelection";
 import LessonOverlay from "./features/lessons/piece-lessons/lesson-overlay/Lesson-overlay";
 import Login from "./features/auth/login/Login";
-import SignUp from "./features/auth/signup/SignUp";
+import ParentSignUp from "./features/auth/signup/ParentSignUp";
+import MentorSignUp from "./features/auth/signup/MentorSignUp";
+import AddChild from "./features/auth/signup/AddChild";
+import ParentSection from "./features/auth/signup/ParentSection";
 import ResetPassword from "./features/auth/reset-password/Reset-Password/reset-password";
 import SetPassword from "./features/auth/set-password/Set-Password/set-password";
 import Student from "./features/student/student-page/Student";
@@ -88,7 +91,10 @@ const AppRoutes = () => {
       <Route path="/student" element={<Student />} />
 
       <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<SignUp />} />
+      <Route path="/signup/parent" element={<ParentSignUp />} />
+      <Route path="/signup/parent/add-child" element={<AddChild />} />
+      <Route path="/signup/parent/section" element={<ParentSection />} />
+      <Route path="/signup/mentor" element={<MentorSignUp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/set-password" element={<SetPassword />} />
 

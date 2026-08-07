@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import StatsChart from "./StatsChart";
 import Puzzles from "../../puzzles/Puzzles";
 import PlayComputer from "../../engine/PlayComputer";
+import PlayStudent from "./PlayStudent";
 import StreakModal from "./Modals/StreakModal";
 import ActivitiesModal from "./Modals/ActivitiesModal";
 import BadgesModal from "./Modals/BadgesModal";
@@ -60,6 +61,10 @@ const TABS = {
     label: "Play with Computer",
     icon: playComputerIcon,
   },
+  playStudent: {
+    label: "Play a Student",
+    icon: gamesIcon,
+  },
   recordings: {
     label: "Recordings",
     icon: recordingsIcon,
@@ -104,6 +109,11 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Avatar upload state
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null);
 
   // Animation states
   const [showConfetti, setShowConfetti] = useState(false);
@@ -151,14 +161,44 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     const uInfo = await SetPermissionLevel(cookies);
     if (uInfo.error) {
       navigate("/login");
+      return;
+    }
+    // A parent can open a specific child's profile via ?student=<username>
+    const params = new URLSearchParams(window.location.search);
+    const studentParam = params.get("student");
+    const targetUsername = studentParam || uInfo.username;
+
+    setUsername(targetUsername);
+    if (studentParam) {
+      setFirstName(params.get("name") || studentParam);
+      setLastName("");
     } else {
-      setUsername(uInfo.username);
       setFirstName(uInfo.firstName);
       setLastName(uInfo.lastName);
     }
-    fetchUsageTime(uInfo.username);
-    fetchGraphData(uInfo.username);
-    fetchActivity(uInfo.username);
+
+    fetchUsageTime(targetUsername);
+    fetchGraphData(targetUsername);
+    fetchActivity(targetUsername);
+    // GET /user/avatar is self-only (returns the authenticated user's own
+    // avatar) — there's no backend support yet for a parent fetching a
+    // child's avatar by username, so only call this when viewing your own
+    // profile. Showing the parent's own avatar while viewing a child's
+    // profile would be wrong, so skip it entirely rather than guess.
+    if (!studentParam) fetchAvatarUrl();
+  }
+
+  // Fetch the current user's uploaded avatar, if any
+  const fetchAvatarUrl = async () => {
+    try {
+      const res = await fetch(`${environment.urls.middlewareURL}/user/avatar`, {
+        headers: { Authorization: `Bearer ${cookies.login}` },
+      });
+      const body = await res.json();
+      if (res.ok) setAvatarUrl(body.avatarUrl);
+    } catch (err) {
+      console.error("Failed to fetch avatar:", err);
+    }
   }
 
   // Fetch mentor data
@@ -268,10 +308,38 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     }
   }
 
-  // Fun click handler for portrait
+  // Opens the hidden file picker for changing the profile avatar
   const handlePortraitClick = () => {
-    setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 2000);
+    avatarFileInputRef.current?.click();
+  };
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file later
+    if (!file) return;
+
+    setAvatarUploadError(null);
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const res = await fetch(`${environment.urls.middlewareURL}/user/avatar`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${cookies.login}` },
+        body: formData,
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setAvatarUploadError(body.error || "Failed to upload avatar");
+        return;
+      }
+      setAvatarUrl(body.avatarUrl);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 2000);
+    } catch (err) {
+      console.error("Avatar upload failed:", err);
+      setAvatarUploadError("Failed to upload avatar");
+    }
   };
 
   // Render content based on active tab
@@ -430,6 +498,13 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
           <PlayComputer />
         </div>
       );
+
+    case "playStudent":
+      return (
+        <div className="w-full h-full">
+          <PlayStudent username={username} />
+        </div>
+      );
     
     case "recordings":
       return (
@@ -503,20 +578,33 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
         <h1 className="text-3xl font-bold text-dark">
           Hello {firstName}!
         </h1>
-        <div 
-          className="relative w-14 h-14 rounded-full bg-light border-2 border-primary flex items-center justify-center shadow-sm cursor-pointer transition-transform hover:scale-105 active:scale-95"
-          onClick={handlePortraitClick}
-        >
-          <img 
-            className="w-8 h-8 object-contain"
-            src={userPortraitSrc} 
-            alt="Profile" 
+        <div className="flex flex-col items-end gap-1">
+          <div
+            className="relative w-14 h-14 rounded-full bg-light border-2 border-primary flex items-center justify-center shadow-sm cursor-pointer transition-transform hover:scale-105 active:scale-95"
+            onClick={handlePortraitClick}
+            title="Change profile photo"
+          >
+            <img
+              className={avatarUrl ? "w-full h-full object-cover rounded-full" : "w-8 h-8 object-contain"}
+              src={avatarUrl || userPortraitSrc}
+              alt="Profile"
+            />
+            <img
+              className="absolute -bottom-1 -right-1 w-5 h-5 bg-light border-2 border-primary rounded-full p-0.5"
+              src={userPortraitCamera}
+              alt=""
+            />
+          </div>
+          <input
+            ref={avatarFileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleAvatarFileChange}
           />
-          <img 
-            className="absolute -bottom-1 -right-1 w-5 h-5 bg-light border-2 border-primary rounded-full p-0.5"
-            src={userPortraitCamera} 
-            alt="" 
-          />
+          {avatarUploadError && (
+            <span className="text-xs text-red-600">{avatarUploadError}</span>
+          )}
         </div>
       </div>
     </section>
@@ -603,7 +691,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     {/* Modals */}
     {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} />}
     {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username} />}
-    {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} />}
+    {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} username={username} />}
     {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
   </main>
 );

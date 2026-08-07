@@ -18,6 +18,8 @@ const passport = require("passport");
 const router = express.Router();
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const { v4: uuidv4 } = require("uuid");
 const { check, validationResult } = require("express-validator");
 const users = require("../models/users");
 const Activities = require("../models/activities");
@@ -27,6 +29,7 @@ const {
 } = require("../template/changePasswordTemplate");
 const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
+const { getAvatarUrl, getBlobServiceClient, AVATAR_CONTAINER } = require("../utils/avatars");
 const { MongoClient } = require("mongodb");
 const config = require("config");
 
@@ -64,7 +67,7 @@ router.get("/children", passport.authenticate("jwt"), async (req, res) => {
       //Find all children for the parent user and retrieve only the username and timePlayed field
       const childrenArray = await users
         .find({ parentUsername: username })
-        .select(["timePlayed", "username"]);
+        .select(["timePlayed", "username", "firstName", "lastName"]);
       res.status(200).json(childrenArray);
     }
   } catch (error) {
@@ -93,7 +96,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, password, first, last, email, role, students, zipcode, gender, gradeLevel } =
+    const { username, password, first, last, email, role, students, zipcode, gender, gradeLevel, occupation } =
       req.query;
 
     //Error catching when using mongoose functions like Users.findOne()
@@ -113,7 +116,7 @@ router.post(
 
       //Switch statement for functionality depending on role
       if (role === "parent") {
-        let studentsArray = JSON.parse(students);
+        let studentsArray = students ? JSON.parse(students) : [];
         //Check if students array is present and is populated
         if (studentsArray && studentsArray.length > 0) {
           //Ensure student usernames aren't already in the database
@@ -178,8 +181,23 @@ router.post(
         zipcode: zipcode || null,
         gender: gender || null,
         gradeLevel: gradeLevel || null,
+        occupation: occupation || null,
       });
       await mainUser.save();
+
+      // A student signing up directly (not via a parent's students[] list,
+      // which already seeds activities above) previously got no Activities
+      // document at all — the Activities modal would then receive
+      // activities: null from the API and silently fail to render (the
+      // fetch throws inside the modal's try/catch, loading never clears).
+      if (role === "student") {
+        const newActivities = await selectActivities();
+        await new Activities({
+          userId: mainUser._id,
+          activities: newActivities,
+          completedDates: [],
+        }).save();
+      }
 
       res.status(200).json("Added users");
     } catch (error) {
@@ -209,7 +227,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, password, first, last, email } = req.query;
+    const { username, password, first, last, email, birthday, gender, gradeLevel } = req.query;
 
     try {
       const sha384 = crypto.createHash("sha384");
@@ -234,9 +252,26 @@ router.post(
         parentUsername: req.user.username,
         role: "student",
         accountCreatedAt: currDate.toLocaleString(),
+        birthday: birthday || null,
+        gender: gender || null,
+        gradeLevel: gradeLevel || null,
         recordingList: [],
       });
-      await newStudent.save();
+      const savedStudent = await newStudent.save();
+
+      //Seed default activities for the new student, best effort so it never blocks account creation
+      try {
+        const newActivities = await selectActivities();
+        const activitiesEntry = new Activities({
+          userId: savedStudent.id,
+          activities: newActivities,
+          completedDates: [],
+        });
+        await activitiesEntry.save();
+      } catch (activitiesError) {
+        console.error("Error creating activities for student: ", activitiesError.message);
+      }
+
       return res.status(200).json("Added student");
     } catch (error) {
       console.error(error.message);
@@ -518,5 +553,129 @@ router.put("/updateHighScore", passport.authenticate("jwt", { session: false }),
     res.status(500).json("Server error");
   }
 });
+
+/**
+ * PUT /user/profile
+ * Allows the authenticated user to update their own demographic and
+ * leaderboard-filter fields (zipcode, gender, gradeLevel, country, state,
+ * school). country/state/school previously had no write path anywhere —
+ * they existed on the schema and were filterable on /leaderboard, but
+ * nothing let a student actually set them.
+ */
+router.put("/profile", passport.authenticate("jwt"), async (req, res) => {
+  try {
+    const { zipcode, gender, gradeLevel, country, state, school } = req.body;
+    const allowed = ["M", "F", "Other", null];
+
+    const updateFields = {};
+    
+    // Mongoose $max operator ensures it ONLY updates if the new score is higher than the old one!
+    if (streakScore !== undefined) updateFields.highestStreak = parseInt(streakScore);
+    if (dashScore !== undefined) updateFields.highestDashScore = parseInt(dashScore);
+
+    const updates = {};
+    if (zipcode    !== undefined) updates.zipcode    = zipcode    || null;
+    if (gender     !== undefined) updates.gender     = gender     || null;
+    if (gradeLevel !== undefined) updates.gradeLevel = gradeLevel || null;
+    if (country    !== undefined) updates.country    = country    || null;
+    if (state      !== undefined) updates.state      = state      || null;
+    if (school     !== undefined) updates.school     = school     || null;
+
+    const result = await usersCollection.updateOne(
+      { username: req.user.username },
+      { $max: updateFields } 
+    );
+
+    res.status(200).json({ message: "High scores checked and updated successfully" });
+  } catch (error) {
+    console.error("Error updating high score:", error);
+    res.status(500).json("Server error");
+  }
+});
+
+// Avatar uploads are held in memory (not on disk) then streamed straight to
+// Azure Blob Storage (avatars container — see utils/avatars.js).
+const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5MB
+
+const avatarUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_AVATAR_BYTES },
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_AVATAR_TYPES.includes(file.mimetype)) {
+      return cb(new Error("Only JPEG, PNG, or WEBP images are allowed"));
+    }
+    cb(null, true);
+  },
+});
+
+/**
+ * GET /user/avatar
+ *
+ * Returns a presigned URL for the authenticated user's own avatar, or
+ * avatarUrl: null if none has been uploaded yet. Self-only, same pattern
+ * as POST below — no :username param, always operates on req.user.
+ *
+ * @access JWT authenticated users
+ */
+router.get("/avatar", passport.authenticate("jwt"), async (req, res) => {
+  try {
+    const user = await users.findOne({ username: req.user.username }, { avatarKey: 1 });
+    res.json({ avatarUrl: getAvatarUrl(user?.avatarKey) });
+  } catch (err) {
+    console.error("GET /user/avatar:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/**
+ * POST /user/avatar
+ *
+ * Uploads a profile avatar image for the authenticated user, storing it in
+ * Azure Blob Storage under a per-user blob name. Only ever operates on
+ * req.user's own record (same pattern as PUT /profile) — there is no
+ * :username param, so a student can never upload an avatar for another
+ * account.
+ *
+ * @access JWT authenticated users
+ */
+router.post(
+  "/avatar",
+  passport.authenticate("jwt"),
+  (req, res, next) => {
+    avatarUpload.single("avatar")(req, res, (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      next();
+    });
+  },
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "avatar file is required" });
+      }
+
+      const extension = req.file.mimetype.split("/")[1];
+      const avatarKey = `${req.user.username}/${uuidv4()}.${extension}`;
+
+      const { client } = getBlobServiceClient();
+      const blockBlobClient = client
+        .getContainerClient(AVATAR_CONTAINER)
+        .getBlockBlobClient(avatarKey);
+      await blockBlobClient.uploadData(req.file.buffer, {
+        blobHTTPHeaders: { blobContentType: req.file.mimetype },
+      });
+
+      await users.updateOne(
+        { username: req.user.username },
+        { $set: { avatarKey } }
+      );
+
+      res.status(200).json({ message: "Avatar uploaded", avatarKey, avatarUrl: getAvatarUrl(avatarKey) });
+    } catch (err) {
+      console.error("POST /user/avatar:", err.message);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
 
 module.exports = router;
