@@ -284,6 +284,7 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
   }, [currentFEN, hidePieces]);
 
   // Prefetch when running low
+  //consider tchnaging db index ref into a tracked state 
   useEffect(() => {
     if (
       puzzleArray.length > 0 &&
@@ -340,12 +341,13 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
     const sideToMove = normalizedFen.split(" ")[1];
     const newPlayerColor = sideToMove === "w" ? "black" : "white";
     setPlayerColor(newPlayerColor);
-    currentPuzzleRef.current = {...state, userId: user.current._id, user: user.current, socketId: chessSocketRef.current.getSocketId()};
-    startLesson(state);
+    console.log("me", user)
+    currentPuzzleRef.current = {...state, userId: user.current.id, user: user.current, socketId: chessSocketRef.current.getSocketId()};
+    
   };
 
   const startLesson = (puzzle: PuzzleMetaData) => {
-    console.log("StartLesson called... ");
+    console.log("StartLesson called... ", puzzle);
     setCurrentFEN(puzzle.FEN);
     isPuzzleEndRef.current = false;
     setHighlightSquares([]);
@@ -386,6 +388,7 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
     updatePuzzleEnvironment(nextPuzzle);
     updateInfoBox(nextPuzzle.Themes.split(" "));
     chessSocketRef.current.startNewPuzzle(nextPuzzle)
+    startLesson(puzzleArray[dbIndexRef.current]);
 
     
   };
@@ -625,6 +628,12 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
       console.error("Socket error:", msg);
     },
   })
+useEffect(()=>{
+  if (!backendConnected ){return }
+  startLesson(puzzleArray[0])
+
+
+},[backendConnected])
 
 useEffect(() => {
   if (
@@ -635,6 +644,7 @@ useEffect(() => {
     !backendConnected
   ) {
     chessSocketRef.current.startNewPuzzle(puzzleArray[0]);
+  
   }
 }, [
   selectedTheme,
@@ -761,7 +771,7 @@ useEffect(() => {
           orientation={playerColor}
           highlightSquares={highlightSquares}
           onMove={handlePlayerMove}
-          disabled={isPuzzleEndRef.current || !chessSocketRef.current.connected || hidePieces }
+          disabled={isPuzzleEndRef.current || !backendConnected|| hidePieces }
         />
       </div>
 
@@ -780,7 +790,7 @@ useEffect(() => {
               isPuzzleEndRef.current = false;
               getNextPuzzleRef.current();
             }}
-            disabled={!chessSocketRef.current.connected}
+            disabled={!socket.connected}
           >
             Get New Puzzle
           </button>
@@ -789,7 +799,7 @@ useEffect(() => {
             className={puzzleButtonClass}
             data-testid="hint-button"
             onClick={openDialog}
-            disabled={!chessSocketRef.current.connected}
+            disabled={!socket.connected}
           >
             Show Hint
           </button>

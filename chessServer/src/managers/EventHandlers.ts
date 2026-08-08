@@ -119,6 +119,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
       console.log("created Game");
 
       gameManager.broadcastBoardState(result.game, io);
+
       socket.emit("game-added-to-backend");
     } catch (err: any) {
       socket.emit("Error Creating a New Game", err.message);
@@ -156,6 +157,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         socketId: socket.id,
         puzzleMetaData: puzzle,
       });
+      socket.emit("game-added-to-backend");
     } catch (err) {
       socket.emit("gameerror", err.message);
       console.log(err.message);
@@ -192,78 +194,73 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         return;
       }
       if (from && to) {
+        console.log("the move im making", msg);
         const res = (await gameManager.makeMove(
           uuid || socket.id,
           from,
           to,
           promotion,
         )) as { game: GameInstance; activityEvents: [any] };
-        const gameMetaData = res.game.gameMetaData as GameMetaData;
-        if (!computerMove && credentials) {
+        if (!computerMove) {
           const activityEvents = res.activityEvents;
           if (activityEvents && activityEvents.length > 0) {
-            const boardColor =
-              res.game.boardState.turn() == "w" ? "white" : "black";
-
-            const studentId =
-              gameMetaData.playerColor == boardColor
-                ? gameMetaData.opponentId
-                : gameMetaData.userId;
-            const studentSocket = io.sockets.sockets.get(studentId);
-            if (studentSocket) {
-              try {
-                console.log(
-                  "route:",
-                  `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`,
-                );
-                const response = await fetch(
-                  `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`,
-                  {
-                    method: "PUT",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      activityName: res.activityEvents[0].name,
-                    }),
+            try {
+              console.log(
+                "route:",
+                `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`,
+              );
+              const response = await fetch(
+                `${process.env.MIDDLEWARE_URL}/activities/${username}/activity`,
+                {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
                   },
-                );
-                socket.emit("completeActivity");
-              } catch (e) {
-                console.log("Error: ", e);
-              }
-            }
-          }
-        }
-        //update game in backend
-        if (gameMetaData.gameType !== "guest") {
-          const { movesList, fen, uuid } = gameMetaData;
-          const updatedAt = new Date().toISOString();
-
-          const newGameSettings = {
-            movesList,
-            fen,
-            updatedAt,
-          };
-
-          try {
-            const res = await fetch(
-              `${process.env.MIDDLEWARE_URL}/savedGames/game/${uuid}`,
-              {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json",
+                  body: JSON.stringify({
+                    activityName: res.activityEvents[0].name,
+                  }),
                 },
-                body: JSON.stringify(newGameSettings),
-              },
-            );
-            if (!res.ok) {
-              throw new Error("Failed to save game.");
+              );
+              socket.emit("completeActivity");
+            } catch (e) {
+              console.log("Error: ", e);
             }
-          } catch (error) {
-            console.error("Error saving game:", error);
           }
         }
+        if (game.gameMetaData) {
+          const gameMetaData = res.game.gameMetaData as GameMetaData;
+
+          //update game in backend
+          if (gameMetaData.gameType !== "guest") {
+            const { movesList, fen, uuid } = gameMetaData;
+            const updatedAt = new Date().toISOString();
+
+            const newGameSettings = {
+              movesList,
+              fen,
+              updatedAt,
+            };
+
+            try {
+              const res = await fetch(
+                `${process.env.MIDDLEWARE_URL}/savedGames/game/${uuid}`,
+                {
+                  method: "PATCH",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(newGameSettings),
+                },
+              );
+              if (!res.ok) {
+                throw new Error("Failed to save game.");
+              }
+            } catch (error) {
+              console.error("Error saving game:", error);
+            }
+          }
+        }
+        console.log("sending this game", res.game);
         gameManager.broadcastBoardState(res.game, io);
       }
     } catch (err) {

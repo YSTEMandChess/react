@@ -207,13 +207,11 @@ class GameManager {
    */
   makeMove(uuid, moveFrom, moveTo, promotion) {
     const game = this.getGameById(uuid);
-
+    console.log("trying this", uuid, moveFrom, moveTo, promotion);
     if (!game) {
       throw new Error("Game not found for this socket!");
     }
-
     const board = game.boardState;
-
     const move = {
       from: moveFrom,
       to: moveTo,
@@ -232,12 +230,16 @@ class GameManager {
       ? `${move.from} -> ${move.to} (${promotion})`
       : `${move.from} -> ${move.to}`;
 
-    if (game.gameMetaData?.movesList) {
-      game.gameMetaData.movesList.push(moveStr);
+    if (game.gameMetaData) {
+      if (game.gameMetaData?.movesList) {
+        game.gameMetaData.movesList.push(moveStr);
+        game.gameMetaData.fen = board.fen();
+      }
       game.gameMetaData.fen = board.fen();
     }
-    game.gameMetaData.fen = board.fen();
-
+    if (game.puzzleMetaData) {
+      game.puzzleMetaData.FEN = board.fen();
+    }
     game.pastStates.push(board.fen());
 
     const flags = moveResult.flags || "";
@@ -371,18 +373,21 @@ class GameManager {
     if (studentSocket) {
       studentSocket.emit("evaluation-complete", {
         gameMetaData: game.gameMetaData,
+        puzzleMetaData: game.puzzleMetaData,
       });
     }
 
     if (mentorSocket) {
       mentorSocket.emit("evaluation-complete", {
         gameMetaData: game.gameMetaData,
+        puzzleMetaData: game.puzzleMetaData,
       });
     }
 
     if (opponentSocket) {
       opponentSocket.emit("evaluation-complete", {
         gameMetaData: game.gameMetaData,
+        puzzleMetaData: game.puzzleMetaData,
       });
     }
   }

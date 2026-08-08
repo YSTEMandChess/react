@@ -226,33 +226,43 @@ export const useChessSocket = ({
       }
     });
 
-    socket.on("evaluation-complete", ({ gameMetaData }) => {
+    socket.on("evaluation-complete", ({ gameMetaData, puzzleMetaData }) => {
+      console.log(":just got this");
+      console.log(gameMetaData, puzzleMetaData);
       //just update the fen
-      if (
-        gameMetaData.movesList == undefined ||
-        gameMetaData.movesList.length == 0
-      ) {
-        if (onMove) {
-          onMove({
-            fen: gameMetaData.fen,
-            move: { from: null, to: null, promotion: null },
-            gameMetaData,
-          });
+      if (gameMetaData) {
+        if (
+          gameMetaData.movesList == undefined ||
+          gameMetaData.movesList.length == 0
+        ) {
+          if (onMove) {
+            onMove({
+              fen: gameMetaData.fen,
+              move: { from: null, to: null, promotion: null },
+              gameMetaData,
+            });
+          }
+          return;
         }
-        return;
-      }
-      //update the moves
-      console.log(gameMetaData);
-      const lastMove =
-        gameMetaData.movesList[gameMetaData.movesList.length - 1];
-      const [from, rest] = lastMove.split(" -> ");
-      const [to, promotionPart] = rest.split(" (");
-      const promotion = promotionPart
-        ? promotionPart.replace(")", "")
-        : undefined;
+        //update the moves
+        console.log(gameMetaData);
+        const lastMove =
+          gameMetaData.movesList[gameMetaData.movesList.length - 1];
+        const [from, rest] = lastMove.split(" -> ");
+        const [to, promotionPart] = rest.split(" (");
+        const promotion = promotionPart
+          ? promotionPart.replace(")", "")
+          : undefined;
 
-      if (onMove) {
-        onMove({ fen: gameMetaData.fen, move: { from, to, promotion } });
+        if (onMove) {
+          onMove({ fen: gameMetaData.fen, move: { from, to, promotion } });
+        }
+      }
+
+      if (puzzleMetaData) {
+        if (onBoardStateChange) {
+          onBoardStateChange(puzzleMetaData);
+        }
       }
     });
 
