@@ -1,10 +1,10 @@
 /**
- * Integration tests — POST /user/avatar
+ * Integration tests — POST /user/avatar/:username?
  *
  * Passport and Azure Blob Storage are mocked so no real JWT, DB, or blob
  * container is needed. Verifies: auth enforcement, file-type/size
  * validation, upload call, and that avatarKey is persisted against the
- * authenticated user only (never a caller-supplied username).
+ * authenticated user or their own child only.
  */
 
 // users.js calls passport.authenticate("jwt") once at require-time and wires
@@ -57,6 +57,13 @@ describe("POST /user/avatar", () => {
     getAvatarUrl.mockImplementation((key) => (key ? `https://test.blob.core.windows.net/avatars/${key}` : null));
   });
 
+  const setFindOneByUsername = (lookup) => {
+    Users.findOne.mockImplementation(async (query) => {
+      const username = query.username;
+      return lookup[username] || null;
+    });
+  };
+
   test("401 — no authenticated user", async () => {
     mockCurrentAuthUser = null;
 
@@ -72,6 +79,9 @@ describe("POST /user/avatar", () => {
 
   test("200 — uploads a valid PNG and persists avatarKey for the authenticated user", async () => {
     mockCurrentAuthUser = { username: "alice", role: "student" };
+    setFindOneByUsername({
+      alice: { username: "alice", avatarKey: null, parentUsername: "parent1" },
+    });
 
     const res = await request(app)
       .post("/user/avatar")
@@ -91,8 +101,66 @@ describe("POST /user/avatar", () => {
     );
   });
 
+  test("200 — parent can upload an avatar for their own child", async () => {
+    mockCurrentAuthUser = { username: "parent1", role: "parent" };
+    setFindOneByUsername({
+      child1: { username: "child1", parentUsername: "parent1" },
+    });
+
+    const res = await request(app)
+      .post("/user/avatar/child1")
+      .attach("avatar", Buffer.from("fake-image-bytes"), {
+        filename: "photo.png",
+        contentType: "image/png",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.avatarKey).toMatch(/^child1\//);
+    expect(Users.updateOne).toHaveBeenCalledWith(
+      { username: "child1" },
+      { $set: { avatarKey: expect.stringMatching(/^child1\//) } }
+    );
+  });
+
+  test("403 — parent cannot upload an avatar for another parent's child", async () => {
+    mockCurrentAuthUser = { username: "parent1", role: "parent" };
+    setFindOneByUsername({
+      child2: { username: "child2", parentUsername: "parent2" },
+    });
+
+    const res = await request(app)
+      .post("/user/avatar/child2")
+      .attach("avatar", Buffer.from("fake-image-bytes"), {
+        filename: "photo.png",
+        contentType: "image/png",
+      });
+
+    expect(res.status).toBe(403);
+    expect(mockUploadData).not.toHaveBeenCalled();
+  });
+
+  test("403 — unrelated user cannot upload another user's avatar", async () => {
+    mockCurrentAuthUser = { username: "eve", role: "student" };
+    setFindOneByUsername({
+      alice: { username: "alice", parentUsername: "parent1" },
+    });
+
+    const res = await request(app)
+      .post("/user/avatar/alice")
+      .attach("avatar", Buffer.from("fake-image-bytes"), {
+        filename: "photo.png",
+        contentType: "image/png",
+      });
+
+    expect(res.status).toBe(403);
+    expect(mockUploadData).not.toHaveBeenCalled();
+  });
+
   test("400 — rejects a disallowed file type", async () => {
     mockCurrentAuthUser = { username: "bob", role: "student" };
+    setFindOneByUsername({
+      bob: { username: "bob", parentUsername: "parent1" },
+    });
 
     const res = await request(app)
       .post("/user/avatar")
@@ -107,6 +175,9 @@ describe("POST /user/avatar", () => {
 
   test("400 — missing file", async () => {
     mockCurrentAuthUser = { username: "carol", role: "student" };
+    setFindOneByUsername({
+      carol: { username: "carol", parentUsername: "parent1" },
+    });
 
     const res = await request(app).post("/user/avatar");
 
@@ -116,6 +187,9 @@ describe("POST /user/avatar", () => {
 
   test("400 — rejects a file over the size limit", async () => {
     mockCurrentAuthUser = { username: "dave", role: "student" };
+    setFindOneByUsername({
+      dave: { username: "dave", parentUsername: "parent1" },
+    });
 
     const oversized = Buffer.alloc(6 * 1024 * 1024); // 6MB > 5MB limit
     const res = await request(app)
@@ -130,6 +204,9 @@ describe("POST /user/avatar", () => {
 
   test("upload always targets req.user.username, never a request body/param username", async () => {
     mockCurrentAuthUser = { username: "eve", role: "student" };
+    setFindOneByUsername({
+      eve: { username: "eve", parentUsername: "parent1" },
+    });
 
     await request(app)
       .post("/user/avatar")
@@ -147,6 +224,9 @@ describe("POST /user/avatar", () => {
 
   test("500 — returns server error when the blob upload fails", async () => {
     mockCurrentAuthUser = { username: "frank", role: "student" };
+    setFindOneByUsername({
+      frank: { username: "frank", parentUsername: "parent1" },
+    });
     mockUploadData.mockRejectedValue(new Error("Azure Blob Storage unavailable"));
 
     const res = await request(app)
@@ -163,6 +243,14 @@ describe("POST /user/avatar", () => {
 describe("GET /user/avatar", () => {
   beforeEach(() => {
     getAvatarUrl.mockImplementation((key) => (key ? `https://test.blob.core.windows.net/avatars/${key}` : null));
+    Users.findOne.mockImplementation(async (query) => {
+      const username = query.username;
+      if (username === "alice") return { avatarKey: "alice/photo123.png" };
+      if (username === "bob") return { avatarKey: null };
+      if (username === "carol") return { avatarKey: null };
+      if (username === "dave") throw new Error("DB down");
+      return null;
+    });
   });
 
   test("401 — no authenticated user", async () => {

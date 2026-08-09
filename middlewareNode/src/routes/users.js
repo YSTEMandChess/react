@@ -32,6 +32,7 @@ const { validator } = require("../utils/middleware");
 const { getAvatarUrl, getBlobServiceClient, AVATAR_CONTAINER } = require("../utils/avatars");
 const { MongoClient } = require("mongodb");
 const config = require("config");
+const requireAvatarOwnership = require("../middleware/requireAvatarOwnership");
 
 // Cache database client to prevent repeated connections
 let cachedClient = null;
@@ -625,19 +626,18 @@ router.get("/avatar", passport.authenticate("jwt"), async (req, res) => {
 });
 
 /**
- * POST /user/avatar
+ * POST /user/avatar/:username?
  *
- * Uploads a profile avatar image for the authenticated user, storing it in
- * Azure Blob Storage under a per-user blob name. Only ever operates on
- * req.user's own record (same pattern as PUT /profile) — there is no
- * :username param, so a student can never upload an avatar for another
- * account.
+ * Uploads a profile avatar image for the authenticated user, or for a child
+ * of an authenticated parent. The ownership check is shared middleware so the
+ * route stays focused on upload/storage only.
  *
  * @access JWT authenticated users
  */
 router.post(
-  "/avatar",
+  "/avatar/:username?",
   passport.authenticate("jwt"),
+  requireAvatarOwnership,
   (req, res, next) => {
     avatarUpload.single("avatar")(req, res, (err) => {
       if (err) return res.status(400).json({ error: err.message });
@@ -650,8 +650,9 @@ router.post(
         return res.status(400).json({ error: "avatar file is required" });
       }
 
+      const avatarUsername = req.avatarTargetUsername || req.user.username;
       const extension = req.file.mimetype.split("/")[1];
-      const avatarKey = `${req.user.username}/${uuidv4()}.${extension}`;
+      const avatarKey = `${avatarUsername}/${uuidv4()}.${extension}`;
 
       const { client } = getBlobServiceClient();
       const blockBlobClient = client
@@ -662,7 +663,7 @@ router.post(
       });
 
       await users.updateOne(
-        { username: req.user.username },
+        { username: avatarUsername },
         { $set: { avatarKey } }
       );
 
