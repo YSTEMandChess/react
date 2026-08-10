@@ -136,33 +136,29 @@ class GameManager {
     newGame: boolean;
   } {
     const gameId = socketId;
-    console.log("starting this shit");
-    console.log("puzzleee", puzzleMetaData);
+
 
     const existingGame = this.ongoingGames.find((g) => g.uuid === gameId);
-    console.log("starting this shit1");
-
     if (existingGame) {
+      existingGame.pastStates=[]
+      existingGame.puzzleMetaData=puzzleMetaData
+      existingGame.puzzle=true
+      
       return {
         game: existingGame,
         newGame: false,
       };
     }
-    console.log("starting this shit2");
 
     const board = new Chess();
-    console.log("starting this shit3");
 
     const validation = validateFen(puzzleMetaData.FEN);
 
     if (!validation.ok) {
       throw new Error(`Invalid FEN: ${validation.error}`);
     }
-    console.log("starting this shi4");
 
     board.load(puzzleMetaData.FEN);
-    console.log("starting this shit5");
-
     const sideToMove = puzzleMetaData.FEN.split(" ")[1];
     const playerColor: "white" | "black" =
       sideToMove === "w" ? "black" : "white";
@@ -190,6 +186,7 @@ class GameManager {
       pastStates: [],
       uuid: gameId,
       puzzleMetaData,
+      puzzle:true,
     };
     this.ongoingGames.push(loadingGame);
     console.log("my game", this.ongoingGames);

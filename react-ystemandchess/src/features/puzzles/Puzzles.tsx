@@ -107,6 +107,7 @@ const Puzzles: React.FC = () => {
   const dbIndexRef = useRef(0);
   const getNextPuzzleRef = useRef<(() => void) | undefined>(undefined);
   const initializeComponentRef = useRef<(() => Promise<void>) | undefined>(undefined);
+  const currentMove = useRef<string>(null)
 
   // State
   const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false);
@@ -118,7 +119,6 @@ const Puzzles: React.FC = () => {
   const [hidePieces, setHidePieces] = useState(true);
   const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
   const [themeList, setThemeList] = useState<string[]>([]);
-  const [status, setStatus] = useState<string>("");
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<PuzzleThemeKey | null>(null);
@@ -128,7 +128,6 @@ const Puzzles: React.FC = () => {
   // Time tracking
   const [eventID, setEventID] = useState(null);
   const [startTime, setStartTime] = useState(null);
-  const [username, setUsername] = useState(null);
 
   // User identification
 useEffect(() => {
@@ -171,13 +170,7 @@ useEffect(() => {
   verifyAndLoad();
 }, [cookies.login]);
 
-useEffect(()=>{
-  if (!chessSocketRef.current){
-      chessSocketRef.current=socket;
 
-    }  return
-
-}, [])
 
 //load chesssocket
 
@@ -278,10 +271,10 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
 
   // Reveal pieces once the first puzzle FEN arrives
   useEffect(() => {
-    if (currentFEN != "" && hidePieces) {
+    if (currentFEN != "" ) {
       setHidePieces(false);
     }
-  }, [currentFEN, hidePieces]);
+  }, [currentFEN]);
 
   // Prefetch when running low
   //consider tchnaging db index ref into a tracked state 
@@ -336,13 +329,14 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
       console.warn("Puzzle is missing required fields:", state);
       return;
     }
+    moveListRef.current=puzzleArray[dbIndexRef.current].Moves.split(" ")
+    console.log("moves list", moveListRef)
     const normalizedFen = normalizeFen(state.FEN);
     state.FEN= normalizedFen;
     const sideToMove = normalizedFen.split(" ")[1];
     const newPlayerColor = sideToMove === "w" ? "black" : "white";
     setPlayerColor(newPlayerColor);
-    console.log("me", user)
-    currentPuzzleRef.current = {...state, userId: user.current.id, user: user.current, socketId: chessSocketRef.current.getSocketId()};
+    currentPuzzleRef.current = {...state, userId: user.current.id??null, user: user.current??null, socketId: chessSocketRef.current.getSocketId()};
     
   };
 
@@ -360,6 +354,7 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
   };
 
   getNextPuzzleRef.current = () => {
+
     if (!puzzleArray || puzzleArray.length === 0) {
       console.error("Puzzle array is empty - reinitializing");
       initPuzzleArray().then((puzzles) => {
@@ -375,6 +370,8 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
 
     dbIndexRef.current = (dbIndexRef.current + 1) % puzzleArray.length;
     const nextPuzzle = puzzleArray[dbIndexRef.current];
+        console.log("next Puzzle", nextPuzzle)
+
 
     if (!nextPuzzle?.moves) {
       console.error("Selected puzzle has no moves");
@@ -410,7 +407,7 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
           ? (computerMoveStr[4] as "q" | "r" | "b" | "n")
           : undefined,
           uuid: currentPuzzleRef.current.socketId,
-          username: currentPuzzleRef.current.user.username,
+          username: user.current.username ??null,
           credentials: null,
           computerMove: false,
     };
@@ -434,7 +431,9 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
       playerAttemptedMove === expectedPlayerMove.substring(0, 4);
 
     if (isCorrect) {
+      currentMove.current= moveListRef.current[0]
       moveListRef.current.shift();
+
       setHighlightSquares([move.from, move.to]);
 
       // Get new FEN from ChessBoard (it already made the move)
@@ -474,9 +473,16 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
         type: "error",
         title: "Incorrect move",
         message: "Try again!",
+        confirmText:"New Game",
         onConfirm: () => {
+          console.log("checking",currentPuzzleRef.current, dbIndexRef.current)
           if (currentPuzzleRef.current) {
-            startLesson(currentPuzzleRef.current);
+            const puzzle= puzzleArray[dbIndexRef.current] as PuzzleMetaData
+            moveListRef.current=[currentMove.current, ...moveListRef.current]
+            console.log("moves list", moveListRef.current)
+            chessSocketRef.current.startNewPuzzle(puzzleArray[dbIndexRef.current])
+            console.log("puzzle array check", puzzleArray[dbIndexRef.current])
+            startLesson(puzzleArray[dbIndexRef.current]);
           }
         },
       });
@@ -542,14 +548,11 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
   // ============================================================================
 
   async function startRecording() {
-    const uInfo = await SetPermissionLevel(cookies);
-    if (uInfo?.error) return;
-
-    setUsername(uInfo?.username);
+    if (user.current){
 
     try {
       const response = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/start?username=${uInfo.username}&eventType=puzzle`,
+        `${environment.urls.middlewareURL}/timeTracking/start?username=${user.current.username}&eventType=puzzle`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${cookies.login}` },
@@ -564,13 +567,16 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
       const data = await response.json();
       setEventID(data.eventId);
       setStartTime(data.startTime);
+      
+    
     } catch (err) {
       console.error("Failed to start time tracking:", err);
     }
   }
+}
 
   handleUnloadRef.current = async () => {
-    if (!startTime || !username || !eventID) return;
+    if (!startTime || user.current.username || !eventID) return;
 
     try {
       const startDate = new Date(startTime);
@@ -580,7 +586,7 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
       );
 
       const response = await fetch(
-        `${environment.urls.middlewareURL}/timeTracking/update?username=${username}&eventType=puzzle&eventId=${eventID}&totalTime=${diffInSeconds}`,
+        `${environment.urls.middlewareURL}/timeTracking/update?username=${user.current.username}&eventType=puzzle&eventId=${eventID}&totalTime=${diffInSeconds}`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${cookies.login}` },
@@ -628,12 +634,23 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
       console.error("Socket error:", msg);
     },
   })
+
 useEffect(()=>{
   if (!backendConnected ){return }
   startLesson(puzzleArray[0])
 
 
 },[backendConnected])
+
+ useEffect(()=>{
+  if (!chessSocketRef.current){
+
+      chessSocketRef.current=socket;
+
+    } 
+ return
+
+}, [socket])
 
 useEffect(() => {
   if (
