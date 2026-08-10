@@ -298,7 +298,7 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
       if (puzzles && puzzles.length > 0) {
         const firstPuzzle = puzzles[dbIndexRef.current] as PuzzleMetaData;
         currentPuzzleRef.current =firstPuzzle ;
-        setThemeList(currentPuzzleRef.current.Moves.split(" "));
+        setThemeList(currentPuzzleRef.current.Themes.split(" "));
         updatePuzzleEnvironment();
         updateInfoBox();
         setIsInitialized(true)
@@ -357,7 +357,7 @@ const updatePuzzleEnvironment = () => {
     dbIndexRef.current = (dbIndexRef.current + 1) % puzzleArray.length;
     const nextPuzzle = puzzleArray[dbIndexRef.current];
 
-    if (!nextPuzzle?.moves) {
+    if (!nextPuzzle?.Moves) {
       console.error("Selected puzzle has no moves");
       return;
     }
@@ -365,6 +365,7 @@ const updatePuzzleEnvironment = () => {
     currentPuzzleRef.current = {...nextPuzzle, userId: user.current?.id ?? null,
     user: user.current ?? null,
     socketId: chessSocketRef.current.getSocketId() } ;
+    currentMove.current=[]
     isPuzzleEndRef.current = false;
     setHighlightSquares([]);
     setThemeList(currentPuzzleRef.current.Themes.split(" "));
@@ -499,7 +500,7 @@ const updatePuzzleEnvironment = () => {
   // ============================================================================
 
   const updateInfoBox = () => {
-    const currentThemes = currentPuzzleRef.current.Themes || themeList;
+    const currentThemes = currentPuzzleRef.current.Themes.split(" ") || themeList;
     if (!currentThemes || currentThemes.length === 0) return;
 
     const rating = currentPuzzleRef.current?.Rating || "N/A";
@@ -564,7 +565,7 @@ const updatePuzzleEnvironment = () => {
 }
 
   handleUnloadRef.current = async () => {
-    if (!startTime || user.current.username || !eventID) return;
+    if (!startTime || !user.current.username || !eventID) return;
 
     try {
       const startDate = new Date(startTime);
@@ -601,7 +602,7 @@ const updatePuzzleEnvironment = () => {
       window.removeEventListener("beforeunload", handleUnloadRef.current);
       handleUnloadRef.current();
     };
-  }, []);
+  }, [isLoggedIn]);
 
   const socket = useChessSocket({
     serverUrl: environment.urls.chessServerURL,
