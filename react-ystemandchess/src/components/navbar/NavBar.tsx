@@ -99,6 +99,8 @@ const NavBar = () => {
       // Close "Puzzles" dropdown if click is outside
       if (puzzlesRef.current && !puzzlesRef.current.contains(event.target)) {
         setPuzzlesDropDown(false);
+      }
+
       // Close "Sign Up" dropdown if click is outside its container
       if (signupRef.current && !signupRef.current.contains(event.target)) {
         setSignupDropDown(false);
