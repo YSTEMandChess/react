@@ -178,6 +178,7 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
   if (!currentPuzzleRef.current){
     return
   }
+  console.log("just got a new fen")
   currentPuzzleRef.current= puzzleMetaData;
   setCurrentFEN(puzzleMetaData.FEN);
 }
@@ -312,7 +313,6 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
         });
       }
     } catch(err){
-      console.log("ayo")
       setIsInitialized(false)
     }
   };
@@ -353,26 +353,32 @@ const updatePuzzleEnvironment = () => {
   };
 
   getNextPuzzleRef.current = () => {
+    dbIndexRef.current = (dbIndexRef.current + 1) % puzzleArray.length; 
 
-    dbIndexRef.current = (dbIndexRef.current + 1) % puzzleArray.length;
-    const nextPuzzle = puzzleArray[dbIndexRef.current];
+const sourcePuzzle = puzzleArray[dbIndexRef.current];
 
-    if (!nextPuzzle?.Moves) {
-      console.error("Selected puzzle has no moves");
-      return;
-    }
+  if (!sourcePuzzle?.Moves) {
+    console.error("Selected puzzle has no moves");
+    return;
+  }
 
-    currentPuzzleRef.current = {...nextPuzzle, userId: user.current?.id ?? null,
+  const puzzle = {
+    ...sourcePuzzle,
+    userId: user.current?.id ?? null,
     user: user.current ?? null,
-    socketId: chessSocketRef.current.getSocketId() } ;
-    currentMove.current=[]
-    isPuzzleEndRef.current = false;
-    setHighlightSquares([]);
-    setThemeList(currentPuzzleRef.current.Themes.split(" "));
-    updatePuzzleEnvironment();
-    updateInfoBox();
-    startLesson();  
-    chessSocketRef.current.startNewPuzzle(nextPuzzle)
+    socketId: chessSocketRef.current.getSocketId(),
+  } as PuzzleMetaData;
+
+  currentPuzzleRef.current = puzzle;
+  currentMove.current = [];
+  isPuzzleEndRef.current = false;
+
+  setHighlightSquares([]);
+  setThemeList(puzzle.Themes.split(" "));
+
+  updatePuzzleEnvironment();
+  updateInfoBox();
+setBackendConnected(false)
 
   };
 
@@ -434,7 +440,7 @@ const updatePuzzleEnvironment = () => {
       const backendMove: Move = {
         ...move ,
          uuid: currentPuzzleRef.current.socketId,
-          username: currentPuzzleRef.current.user.username,
+          username: user.current.username?? null,
           credentials: null,
           computerMove: false,
       }
@@ -468,10 +474,10 @@ const updatePuzzleEnvironment = () => {
           if (currentPuzzleRef.current) {
             const puzzle=currentPuzzleRef.current as PuzzleMetaData
             puzzle.FEN=puzzleArray[dbIndexRef.current].FEN
+            console.log("puzzle fen", puzzle.FEN)
             moveListRef.current=[...currentMove.current, ...moveListRef.current]
             currentMove.current=[]
             setBackendConnected(false)
-            chessSocketRef.current.startNewPuzzle(puzzle)
           }
         },
       });
@@ -649,7 +655,7 @@ useEffect(() => {
     isInitialized &&
     !backendConnected
   ) {
-    chessSocketRef.current.startNewPuzzle(puzzleArray[0]);
+    chessSocketRef.current.startNewPuzzle(puzzleArray[dbIndexRef.current]);
   
   }
 }, [

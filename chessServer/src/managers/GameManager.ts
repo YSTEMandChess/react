@@ -137,13 +137,23 @@ class GameManager {
   } {
     const gameId = socketId;
 
-
     const existingGame = this.ongoingGames.find((g) => g.uuid === gameId);
     if (existingGame) {
-      existingGame.pastStates=[]
-      existingGame.puzzleMetaData=puzzleMetaData
-      existingGame.puzzle=true
-      
+      existingGame.pastStates = [];
+      existingGame.puzzleMetaData = puzzleMetaData;
+      existingGame.puzzle = true;
+      const board = new Chess();
+
+      const validation = validateFen(puzzleMetaData.FEN);
+
+      if (!validation.ok) {
+        throw new Error(`Invalid FEN: ${validation.error}`);
+      }
+
+      board.load(puzzleMetaData.FEN);
+      existingGame.boardState = board;
+      console.log("starting existinggame", puzzleMetaData);
+
       return {
         game: existingGame,
         newGame: false,
@@ -186,7 +196,7 @@ class GameManager {
       pastStates: [],
       uuid: gameId,
       puzzleMetaData,
-      puzzle:true,
+      puzzle: true,
     };
     this.ongoingGames.push(loadingGame);
     console.log("my game", this.ongoingGames);
@@ -214,6 +224,9 @@ class GameManager {
       to: moveTo,
       ...(promotion ? { promotion } : {}),
     };
+    console.log("got this far 3");
+    console.log(game.boardState);
+    console.log(game ?? "yes");
 
     let moveResult;
 
@@ -222,6 +235,7 @@ class GameManager {
     } catch (err) {
       throw err;
     }
+    console.log("got this far 4");
 
     const moveStr = promotion
       ? `${move.from} -> ${move.to} (${promotion})`
@@ -238,6 +252,7 @@ class GameManager {
       game.puzzleMetaData.FEN = board.fen();
     }
     game.pastStates.push(board.fen());
+    console.log("got this far 5");
 
     const flags = moveResult.flags || "";
 
@@ -280,6 +295,7 @@ class GameManager {
         at: Date.now(),
       });
     }
+    console.log("got this far 6");
 
     return {
       game,
