@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useCookies } from "react-cookie";
 import { environment } from "../../../environments";
+import { VideoCall } from "../../../components/VideoCall";
 
 /**
  * PlayStudent — student-vs-student challenge flow (design §5b).
@@ -210,6 +211,11 @@ const PlayStudent = ({ username }: { username: string }) => {
             Open Board
           </button>
           {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        </div>
+
+        {/* Two-way video — both players share the gameId as the Agora channel. */}
+        <div className="mt-4 rounded-md bg-white p-4 shadow">
+          <VideoCall channel={resolved.gameId} />
         </div>
       </div>
     );
