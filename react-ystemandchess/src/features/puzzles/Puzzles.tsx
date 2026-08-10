@@ -107,7 +107,7 @@ const Puzzles: React.FC = () => {
   const dbIndexRef = useRef(0);
   const getNextPuzzleRef = useRef<(() => void) | undefined>(undefined);
   const initializeComponentRef = useRef<(() => Promise<void>) | undefined>(undefined);
-  const currentMove = useRef<string>(null)
+  const currentMove = useRef<string[]>(null)
 
   // State
   const [isLoggedIn, setIsLoggedIn] = useState<Boolean>(false);
@@ -209,6 +209,8 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
     setIsInitialized(false);
     closeModal();
     setBackendConnected(false)
+    currentMove.current=[]
+
 
     const hintText = document.getElementById("hint-text");
     if (hintText) {
@@ -235,6 +237,7 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
       if (response.ok) {
         const jsonData = await response.json();
         setPuzzleArray(jsonData);
+        console.log('json Data', jsonData)
         return jsonData;
       } else {
         throw new Error("Failed to fetch puzzles from backend");
@@ -290,25 +293,15 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
   initializeComponentRef.current = async () => {
     if (!selectedTheme) return;
     if (isInitialized ) return;
-
-    setIsInitialized(true);
-
     try {
       const puzzles = await initPuzzleArray();
-      console.log("my puzzles",puzzles)
       if (puzzles && puzzles.length > 0) {
-        const firstPuzzle = puzzles[0] as PuzzleMetaData;
-        currentPuzzleRef.current = firstPuzzle ;
-        moveListRef.current = firstPuzzle?.Moves?.split(" ") || [];
-
-        if (moveListRef.current.length === 0) {
-          console.warn("No valid moves in initial puzzle:", firstPuzzle);
-          setIsInitialized(false);
-          return;
-        }
-        setThemeList(firstPuzzle.Themes.split(" "));
-        updatePuzzleEnvironment(firstPuzzle);
-        updateInfoBox(firstPuzzle.Themes.split(" "));
+        const firstPuzzle = puzzles[dbIndexRef.current] as PuzzleMetaData;
+        currentPuzzleRef.current =firstPuzzle ;
+        setThemeList(currentPuzzleRef.current.Moves.split(" "));
+        updatePuzzleEnvironment();
+        updateInfoBox();
+        setIsInitialized(true)
       } else {
         setModal({
           type: "error",
@@ -319,30 +312,36 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
         });
       }
     } catch(err){
-      console.log(err)
+      console.log("ayo")
       setIsInitialized(false)
     }
   };
 
-  const updatePuzzleEnvironment = (state: PuzzleMetaData) => {
-    if (!state?.FEN || !state?.Moves || !state?.Themes) {
-      console.warn("Puzzle is missing required fields:", state);
-      return;
-    }
-    moveListRef.current=puzzleArray[dbIndexRef.current].Moves.split(" ")
-    console.log("moves list", moveListRef)
-    const normalizedFen = normalizeFen(state.FEN);
-    state.FEN= normalizedFen;
-    const sideToMove = normalizedFen.split(" ")[1];
-    const newPlayerColor = sideToMove === "w" ? "black" : "white";
-    setPlayerColor(newPlayerColor);
-    currentPuzzleRef.current = {...state, userId: user.current.id??null, user: user.current??null, socketId: chessSocketRef.current.getSocketId()};
-    
-  };
+const updatePuzzleEnvironment = () => {
+  const puzzle = currentPuzzleRef.current;
+  if (!puzzle) {
+    return;
+  }
+  moveListRef.current = puzzle.Moves.split(" ");
+  const normalizedFen = normalizeFen(puzzle.FEN);
+  puzzle.FEN = normalizedFen;
 
-  const startLesson = (puzzle: PuzzleMetaData) => {
-    console.log("StartLesson called... ", puzzle);
-    setCurrentFEN(puzzle.FEN);
+  const sideToMove = normalizedFen.split(" ")[1];
+  const newPlayerColor = sideToMove === "w" ? "black" : "white";
+
+  setPlayerColor(newPlayerColor);
+
+  currentPuzzleRef.current = {
+    ...puzzle,
+    userId: user.current?.id ?? null,
+    user: user.current ?? null,
+    socketId: chessSocketRef.current.getSocketId(),
+  };
+};
+  const startLesson = () => {
+    if (!currentPuzzleRef.current){return }
+
+    setCurrentFEN(currentPuzzleRef.current.FEN);
     isPuzzleEndRef.current = false;
     setHighlightSquares([]);
     if (chessBoardRef.current) {
@@ -355,39 +354,25 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
 
   getNextPuzzleRef.current = () => {
 
-    if (!puzzleArray || puzzleArray.length === 0) {
-      console.error("Puzzle array is empty - reinitializing");
-      initPuzzleArray().then((puzzles) => {
-        if (puzzles && puzzles.length > 0) {
-          dbIndexRef.current = 0;
-          updatePuzzleEnvironment(puzzles[0]);
-          updateInfoBox(puzzles[0].Themes.split(" "));
-          
-        }
-      });
-      return;
-    }
-
     dbIndexRef.current = (dbIndexRef.current + 1) % puzzleArray.length;
     const nextPuzzle = puzzleArray[dbIndexRef.current];
-        console.log("next Puzzle", nextPuzzle)
-
 
     if (!nextPuzzle?.moves) {
       console.error("Selected puzzle has no moves");
       return;
     }
 
-    currentPuzzleRef.current = nextPuzzle;
+    currentPuzzleRef.current = {...nextPuzzle, userId: user.current?.id ?? null,
+    user: user.current ?? null,
+    socketId: chessSocketRef.current.getSocketId() } ;
     isPuzzleEndRef.current = false;
     setHighlightSquares([]);
-    setThemeList(nextPuzzle.Themes.split(" "));
-    updatePuzzleEnvironment(nextPuzzle);
-    updateInfoBox(nextPuzzle.Themes.split(" "));
+    setThemeList(currentPuzzleRef.current.Themes.split(" "));
+    updatePuzzleEnvironment();
+    updateInfoBox();
+    startLesson();  
     chessSocketRef.current.startNewPuzzle(nextPuzzle)
-    startLesson(puzzleArray[dbIndexRef.current]);
 
-    
   };
 
   // ============================================================================
@@ -396,6 +381,8 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
 //hereee
   const playComputerMove = () => {
     if (moveListRef.current.length === 0) return;
+    currentMove.current= [ ...currentMove.current, moveListRef.current[0]]
+
     const computerMoveStr = moveListRef.current.shift();
     if (!computerMoveStr) return;
 
@@ -431,7 +418,8 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
       playerAttemptedMove === expectedPlayerMove.substring(0, 4);
 
     if (isCorrect) {
-      currentMove.current= moveListRef.current[0]
+      currentMove.current= [ ...currentMove.current, moveListRef.current[0]]
+
       moveListRef.current.shift();
 
       setHighlightSquares([move.from, move.to]);
@@ -477,12 +465,12 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
         onConfirm: () => {
           console.log("checking",currentPuzzleRef.current, dbIndexRef.current)
           if (currentPuzzleRef.current) {
-            const puzzle= puzzleArray[dbIndexRef.current] as PuzzleMetaData
-            moveListRef.current=[currentMove.current, ...moveListRef.current]
-            console.log("moves list", moveListRef.current)
-            chessSocketRef.current.startNewPuzzle(puzzleArray[dbIndexRef.current])
-            console.log("puzzle array check", puzzleArray[dbIndexRef.current])
-            startLesson(puzzleArray[dbIndexRef.current]);
+            const puzzle=currentPuzzleRef.current as PuzzleMetaData
+            puzzle.FEN=puzzleArray[dbIndexRef.current].FEN
+            moveListRef.current=[...currentMove.current, ...moveListRef.current]
+            currentMove.current=[]
+            setBackendConnected(false)
+            chessSocketRef.current.startNewPuzzle(puzzle)
           }
         },
       });
@@ -510,8 +498,8 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
   // HINT SYSTEM
   // ============================================================================
 
-  const updateInfoBox = (themes?: string[]) => {
-    const currentThemes = themes || themeList;
+  const updateInfoBox = () => {
+    const currentThemes = currentPuzzleRef.current.Themes || themeList;
     if (!currentThemes || currentThemes.length === 0) return;
 
     const rating = currentPuzzleRef.current?.Rating || "N/A";
@@ -637,7 +625,7 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
 
 useEffect(()=>{
   if (!backendConnected ){return }
-  startLesson(puzzleArray[0])
+  startLesson()
 
 
 },[backendConnected])
@@ -677,7 +665,7 @@ useEffect(() => {
     !backendConnected &&
     !isInitialized
   ) {
-    initializeComponentRef.current?.();
+    initializeComponentRef.current();
   }
 }, [
   selectedTheme,
