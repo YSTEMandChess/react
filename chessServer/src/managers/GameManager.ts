@@ -172,7 +172,6 @@ class GameManager {
     const sideToMove = puzzleMetaData.FEN.split(" ")[1];
     const playerColor: "white" | "black" =
       sideToMove === "w" ? "black" : "white";
-    console.log("starting this shit6");
 
     const loadingGame: GameInstance = {
       student: {

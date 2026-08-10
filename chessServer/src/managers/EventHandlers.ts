@@ -152,7 +152,6 @@ const registerSocketHandlers = (socket, io, stockfish) => {
   socket.on("newPuzzle", (puzzle: PuzzleMetaData) => {
     console.log(puzzle);
     try {
-      console.log("trying to start this shit");
       gameManager.createOrJoinPuzzle({
         socketId: socket.id,
         puzzleMetaData: puzzle,
