@@ -178,7 +178,6 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
   if (!currentPuzzleRef.current){
     return
   }
-  console.log("just got a new fen")
   currentPuzzleRef.current= puzzleMetaData;
   setCurrentFEN(puzzleMetaData.FEN);
 }
@@ -192,7 +191,6 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
     if (selectedTheme) {
       params.set("theme", selectedTheme);
     }
-
     return `${environment.urls.middlewareURL}/puzzles/random?${params.toString()}`;
   };
 
@@ -211,8 +209,6 @@ const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) =>{
     closeModal();
     setBackendConnected(false)
     currentMove.current=[]
-
-
     const hintText = document.getElementById("hint-text");
     if (hintText) {
       hintText.innerHTML = "";
@@ -498,9 +494,6 @@ setBackendConnected(false)
           }
         }
       },[]);
-
-  
-
   // ============================================================================
   // HINT SYSTEM
   // ============================================================================
@@ -679,7 +672,6 @@ useEffect(() => {
   backendConnected,
   isInitialized
 ]);
-
 
   // ============================================================================
   // RENDER

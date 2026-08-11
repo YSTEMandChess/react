@@ -1,184 +1,338 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Modal, { ModalProps } from "../../components/modal/Modal";
 import { environment } from "../../environments/environment";
-import { v4 as uuidv4 } from "uuid";
 import { useCookies } from "react-cookie";
 import ChessBoard, { ChessBoardRef } from "../../components/ChessBoard/ChessBoard";
 import { useChessSocket } from "../lessons/piece-lessons/lesson-overlay/hooks/useChessSocket";
 import { Move } from "../../core/types/chess";
 import { SetPermissionLevel } from "../../globals";
 
+// Mirrors the types exported from Puzzles.tsx. If that file lives in the same
+// folder, drop these two and use: import { User, PuzzleMetaData } from "./Puzzles";
+export type User = {
+  username: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  email: string;
+  id: number;
+  _id?: number;
+};
+
+export type PuzzleMetaData = {
+  userId?: number;
+  user?: User;
+  socketId?: string;
+
+  PuzzleId: string;
+  FEN: string;
+  Moves: string;
+
+  Rating?: number;
+  RatingDeviation?: number;
+  Popularity?: number;
+  NbPlays?: number;
+
+  Themes?: string;
+  GameUrl?: string;
+  OpeningTags?: string;
+};
+
 const normalizeFen = (fen: string): string => {
-  if (!fen || typeof fen !== "string") 
+  if (!fen || typeof fen !== "string") {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  }
   const trimmed = fen.trim().toLowerCase();
-  if (trimmed === "start") 
+  if (trimmed === "start") {
     return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-  
+  }
   const parts = fen.trim().split(/[\s,]+/);
   if (parts.length === 6) return parts.join(" ");
-  if (parts.length === 1 && parts[0].split("/").length === 8) return `${parts[0]} w KQkq - 0 1`;
-  
+  if (parts.length === 1 && parts[0].split("/").length === 8) {
+    return `${parts[0]} w KQkq - 0 1`;
+  }
   const defaults = ["w", "KQkq", "-", "0", "1"];
   const paddedParts = [...parts];
-  while (paddedParts.length < 6) paddedParts.push(defaults[paddedParts.length - 1]);
+  while (paddedParts.length < 6) {
+    paddedParts.push(defaults[paddedParts.length - 1]);
+  }
   return paddedParts.join(" ");
 };
 
-// Formats seconds into M:SS
 const formatTime = (seconds: number) => {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 };
 
-const PuzzleDash = () => {
+type DashState = "selection" | "playing" | "results";
+
+const PuzzleDash: React.FC = () => {
+  // Refs
+  const user = useRef<User | null>(null);
+  const chessSocketRef = useRef<any>(null);
   const chessBoardRef = useRef<ChessBoardRef>(null);
   const moveListRef = useRef<string[]>([]);
   const isPuzzleEndRef = useRef(false);
-  const currentPuzzleRef = useRef<any>(null);
+  const currentPuzzleRef = useRef<PuzzleMetaData | null>(null);
+  const initializeDashRef = useRef<(() => Promise<void>) | undefined>(undefined);
+
+  // State
+  const [cookies, , removeCookie] = useCookies(["login"]);
+  const [backendConnected, setBackendConnected] = useState(false);
 
   const [currentFEN, setCurrentFEN] = useState<string>("");
+  const [hidePieces, setHidePieces] = useState(true);
   const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
-  const [status, setStatus] = useState<string>("");
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
-  const [cookies] = useCookies(["login"]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [modal, setModal] = useState<Omit<ModalProps, "onClose"> | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
+  const closeModal = () => setModal(null);
 
-  // --- DASH SPECIFIC STATE ---
-  type DashState = "selection" | "playing" | "results";
+  // Dash flow
   const [dashState, setDashState] = useState<DashState>("selection");
-  const [isInitialized, setIsInitialized] = useState(false); 
 
-  // Timer State
-  const [timeLimit, setTimeLimit] = useState(60); // Starting selected time
+  // Timer
+  const [timeLimit, setTimeLimit] = useState(60);
   const [timeLeft, setTimeLeft] = useState(60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-  // Stats State
+  // Stats
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
   const [highestCombo, setHighestCombo] = useState(0);
   const [blunders, setBlunders] = useState(0);
   const [highestElo, setHighestElo] = useState(0);
-  
-  // UI Animations
+
+  // UI animation
   const [showPenalty, setShowPenalty] = useState(false);
 
-  const studentId = cookies.login?.studentId || uuidv4();
-  const mentorId = "puzzle_mentor_" + studentId;
-
-  const closeModal = () => setModal(null);
-
-  // SOCKET INITIALIZATION
-  const socket = useChessSocket({
-    student: studentId,
-    mentor: mentorId,
-    role: "student",
-    serverUrl: environment.urls.chessServerURL,
-    mode: "puzzle",
-    onBoardStateChange: (newFEN) => setCurrentFEN(newFEN),
-    onRoleAssigned: (r) => setStatus(r),
-    onLastMove: (from, to) => {
-      setHighlightSquares([from, to]);
-      chessBoardRef.current?.highlightMove(from, to);
-    },
-  });
-
+  // User identification (also pulls the user's saved high combo)
   useEffect(() => {
-    SetPermissionLevel(cookies).then((uInfo) => {
-      if (!uInfo?.error) setUsername(uInfo.username);
-    });
-  }, [cookies]);
+    if (!cookies.login) return;
 
-  // Fetch the user's permanent high combo from the database
-  useEffect(() => {
-    if (username) {
-      fetch(`${environment.urls.middlewareURL}/user/getUser?username=${username}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.highestDashCombo) {
+    const verifyAndLoad = async () => {
+      try {
+        const userInfo = await SetPermissionLevel(cookies, removeCookie);
+        if (!userInfo || userInfo.error) return;
+
+        const { username, firstName, lastName, role, email, id } = userInfo;
+        user.current = { username, firstName, lastName, role, email, id };
+
+        const res = await fetch(
+          `${environment.urls.middlewareURL}/user/getUser?username=${username}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.highestDashCombo) {
             setHighestCombo(data.highestDashCombo);
           }
-        })
-        .catch((err) => console.error("Failed to fetch user data", err));
-    }
-  }, [username]);
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err);
+      }
+    };
 
-  // --- TIMER LOGIC ---
+    verifyAndLoad();
+  }, [cookies.login]);
+
+  // Reveal pieces once the FEN for this round actually arrives
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isTimerRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
+    if (currentFEN !== "") {
+      setHidePieces(false);
     }
-    return () => clearInterval(interval);
-  }, [isTimerRunning, timeLeft]);
+  }, [currentFEN]);
 
-  // Trigger end of game when time hits 0
-  useEffect(() => {
-    if (timeLeft <= 0 && dashState === "playing") {
-      endDash();
-    }
-  }, [timeLeft, dashState]);
+  const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) => {
+    if (!currentPuzzleRef.current) return;
+    currentPuzzleRef.current = puzzleMetaData;
+    setCurrentFEN(puzzleMetaData.FEN);
+  };
 
+  // ============================================================================
+  // PUZZLE LOADING
+  // ============================================================================
 
-  // --- PUZZLE LOADING LOGIC ---
   const fetchSinglePuzzle = async (currentScore: number) => {
-    // Scales up much faster than Streak to challenge them as they go fast!
-    const minRating = 600 + (currentScore * 40);
-    const maxRating = minRating + 250; 
+    // Scales faster than a themed set so the dash keeps getting harder
+    const minRating = 600 + currentScore * 40;
+    const maxRating = minRating + 250;
 
     try {
-      const res = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=1&minRating=${minRating}&maxRating=${maxRating}`);
+      const res = await fetch(
+        `${environment.urls.middlewareURL}/puzzles/random?limit=1&minRating=${minRating}&maxRating=${maxRating}`
+      );
       if (res.ok) {
         const data = await res.json();
-        return data[0];
+        return data[0] as PuzzleMetaData;
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching puzzle:", err);
     }
     return null;
   };
 
-  const loadNextPuzzle = async (currentScore: number) => {
-    const puzzle = await fetchSinglePuzzle(currentScore);
-    if (puzzle) {
-      currentPuzzleRef.current = puzzle;
-      moveListRef.current = puzzle.Moves.split(" ");
-      
-      const normalizedFen = normalizeFen(puzzle.FEN);
-      const sideToMove = normalizedFen.split(" ")[1]; 
-      const newPlayerColor = sideToMove === "w" ? "black" : "white";
+  const updatePuzzleEnvironment = (puzzle: PuzzleMetaData) => {
+    moveListRef.current = puzzle.Moves.split(" ");
+    const normalizedFen = normalizeFen(puzzle.FEN);
+    puzzle.FEN = normalizedFen;
 
-      setPlayerColor(newPlayerColor);
-      setCurrentFEN(normalizedFen);
+    const sideToMove = normalizedFen.split(" ")[1];
+    const newPlayerColor = sideToMove === "w" ? "black" : "white";
+    setPlayerColor(newPlayerColor);
 
-      isPuzzleEndRef.current = false;
-      setHighlightSquares([]);
-      
-      socket.setGameStateWithColor(normalizedFen, newPlayerColor, puzzle.Themes);
-      chessBoardRef.current?.clearHighlights();
-      
-      setTimeout(playComputerMove, 300);
-    } else {
-      setModal({ type: "error", title: "Error", message: "Failed to load puzzle." });
+    currentPuzzleRef.current = {
+      ...puzzle,
+      userId: user.current?.id ?? null,
+      user: user.current ?? null,
+      socketId: chessSocketRef.current?.getSocketId(),
+    };
+  };
+
+  const resetDashSession = () => {
+    chessBoardRef.current?.clearHighlights();
+    moveListRef.current = [];
+    currentPuzzleRef.current = null;
+    isPuzzleEndRef.current = false;
+    setCurrentFEN("");
+    setHidePieces(true);
+    setHighlightSquares([]);
+    setIsInitialized(false);
+    setBackendConnected(false);
+    closeModal();
+  };
+
+  initializeDashRef.current = async () => {
+    if (dashState !== "playing") return;
+    if (isInitialized) return;
+    try {
+      const puzzle = await fetchSinglePuzzle(score);
+      if (puzzle) {
+        updatePuzzleEnvironment(puzzle);
+        setIsInitialized(true);
+      } else {
+        setModal({
+          type: "error",
+          title: "Puzzle unavailable",
+          message: "Could not reach the puzzle server. Make sure the middleware is running.",
+        });
+      }
+    } catch (err) {
+      console.error("Error loading puzzle:", err);
     }
   };
 
-  // Wait for the backend socket to be completely ready before loading the puzzle
-  useEffect(() => {
-    if (dashState === "playing" && socket.connected && status === "host" && !isInitialized) {
-      setIsInitialized(true);
-      loadNextPuzzle(score);
+  const startRound = () => {
+    if (!currentPuzzleRef.current) return;
+    setCurrentFEN(currentPuzzleRef.current.FEN);
+    isPuzzleEndRef.current = false;
+    setHighlightSquares([]);
+    chessBoardRef.current?.clearHighlights();
+    setTimeout(() => {
+      playComputerMove();
+    }, 500);
+  };
+
+  // ============================================================================
+  // MOVE HANDLING
+  // ============================================================================
+
+  const playComputerMove = () => {
+    if (moveListRef.current.length === 0) return;
+    const computerMoveStr = moveListRef.current.shift();
+    if (!computerMoveStr) return;
+
+    const computerMove: Move = {
+      from: computerMoveStr.substring(0, 2),
+      to: computerMoveStr.substring(2, 4),
+      promotion:
+        computerMoveStr.length > 4
+          ? (computerMoveStr[4] as "q" | "r" | "b" | "n")
+          : undefined,
+      uuid: currentPuzzleRef.current?.socketId,
+      username: user.current?.username ?? null,
+      credentials: null,
+      computerMove: false,
+    };
+    chessSocketRef.current.sendMove(computerMove);
+  };
+
+  const handlePlayerMove = (move: Move) => {
+    if (
+      isPuzzleEndRef.current ||
+      !moveListRef.current ||
+      moveListRef.current.length === 0 ||
+      dashState !== "playing"
+    ) {
+      return;
     }
-  }, [dashState, socket.connected, status, isInitialized, score, socket]);
 
+    if (!isTimerRunning) setIsTimerRunning(true);
 
-  // --- GAME FLOW CONTROLS ---
+    const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ""}`;
+    const expectedPlayerMove = moveListRef.current[0];
+
+    const isCorrect =
+      playerAttemptedMove === expectedPlayerMove ||
+      playerAttemptedMove === expectedPlayerMove.substring(0, 4);
+
+    if (isCorrect) {
+      moveListRef.current.shift();
+      setHighlightSquares([move.from, move.to]);
+
+      const newFen = chessBoardRef.current?.getFen();
+      if (newFen) {
+        setCurrentFEN(newFen);
+      }
+
+      const backendMove: Move = {
+        ...move,
+        uuid: currentPuzzleRef.current?.socketId,
+        username: user.current?.username ?? null,
+        credentials: cookies.login,
+        computerMove: false,
+      };
+      chessSocketRef.current.sendMove(backendMove);
+
+      if (moveListRef.current.length === 0) {
+        isPuzzleEndRef.current = true;
+
+        setScore((s) => s + 1);
+        setCombo((c) => {
+          const newCombo = c + 1;
+          setHighestCombo((hc) => Math.max(hc, newCombo));
+          return newCombo;
+        });
+        if (currentPuzzleRef.current?.Rating) {
+          const rating = currentPuzzleRef.current.Rating;
+          setHighestElo((e) => Math.max(e, rating));
+        }
+
+        setTimeout(() => {
+          setIsInitialized(false);
+          setBackendConnected(false);
+        }, 400);
+      } else {
+        setTimeout(() => {
+          playComputerMove();
+        }, 300);
+      }
+    } else {
+      chessBoardRef.current?.undo();
+      setBlunders((b) => b + 1);
+      setCombo(0);
+      setTimeLeft((t) => Math.max(0, t - 5));
+      setShowPenalty(true);
+      setTimeout(() => setShowPenalty(false), 500);
+    }
+  };
+
+  // ============================================================================
+  // GAME FLOW
+  // ============================================================================
+
   const handleStartDash = (minutes: number) => {
+    resetDashSession();
     const seconds = minutes * 60;
     setTimeLimit(seconds);
     setTimeLeft(seconds);
@@ -186,16 +340,12 @@ const PuzzleDash = () => {
     setCombo(0);
     setBlunders(0);
     setHighestElo(0);
-    
+    setIsTimerRunning(false);
     setDashState("playing");
-    setIsInitialized(false);
-    setIsTimerRunning(false); // Timer waits for their first move!
-    
-    if (socket.connected) socket.startNewPuzzle(); 
   };
 
   const saveHighScore = async (finalScore: number, finalCombo: number) => {
-    if (!username) return;
+    if (!user.current?.username) return;
     try {
       await fetch(`${environment.urls.middlewareURL}/user/updateHighScore`, {
         method: "PUT",
@@ -213,88 +363,79 @@ const PuzzleDash = () => {
   const endDash = () => {
     setIsTimerRunning(false);
     setDashState("results");
-    
     saveHighScore(score, highestCombo);
   };
 
-  const playComputerMove = () => {
-    if (moveListRef.current.length === 0) return;
-    const computerMoveStr = moveListRef.current.shift();
-    if (!computerMoveStr) return;
+  // ============================================================================
+  // TIMER
+  // ============================================================================
 
-    const computerMove: Move = {
-      from: computerMoveStr.substring(0, 2),
-      to: computerMoveStr.substring(2, 4),
-      promotion: computerMoveStr.length > 4 ? (computerMoveStr[4] as any) : undefined,
-    };
-
-    socket.sendMove(computerMove);
-    socket.sendLastMove(computerMove.from, computerMove.to);
-    setHighlightSquares([computerMove.from, computerMove.to]);
-    chessBoardRef.current?.highlightMove(computerMove.from, computerMove.to);
-  };
-
-  const handlePlayerMove = (move: Move) => {
-    if (isPuzzleEndRef.current || moveListRef.current.length === 0 || dashState !== "playing") return;
-
-    // START TIMER!
-    if (!isTimerRunning) setIsTimerRunning(true);
-
-    const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ""}`;
-    const expectedPlayerMove = moveListRef.current[0];
-
-    const isCorrect =
-      playerAttemptedMove === expectedPlayerMove ||
-      playerAttemptedMove === expectedPlayerMove.substring(0, 4);
-
-    if (isCorrect) {
-      moveListRef.current.shift();
-      setHighlightSquares([move.from, move.to]);
-      const newFen = chessBoardRef.current?.getFen();
-      if (newFen) setCurrentFEN(newFen);
-      
-      move.username = username;
-      move.credentials = cookies.login;
-      socket.sendMove(move);
-      socket.sendLastMove(move.from, move.to);
-
-      if (moveListRef.current.length === 0) {
-        // Update stats!
-        isPuzzleEndRef.current = true;
-        
-        setScore((s) => s + 1);
-        setCombo((c) => {
-          const newCombo = c + 1;
-          setHighestCombo((hc) => Math.max(hc, newCombo));
-          return newCombo;
-        });
-        
-        if (currentPuzzleRef.current?.Rating) {
-          setHighestElo((e) => Math.max(e, currentPuzzleRef.current.Rating));
-        }
-        
-        setTimeout(() => {
-          setIsInitialized(false); 
-          socket.startNewPuzzle(); 
-        }, 400); // Shorter delay than streak so they can play faster
-      } else {
-        setTimeout(playComputerMove, 200);
-      }
-    } else {
-      // Penalty applies!
-      chessBoardRef.current?.undo(); // Snap piece back
-      
-      setBlunders((b) => b + 1);
-      setCombo(0); // Break the combo
-      setTimeLeft((t) => Math.max(0, t - 5)); // Subtract 5 seconds
-      
-      // Flash red animation
-      setShowPenalty(true);
-      setTimeout(() => setShowPenalty(false), 500);
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerRunning && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
     }
-  };
+    return () => clearInterval(interval);
+  }, [isTimerRunning, timeLeft]);
 
-  // --- RENDER SCREENS ---
+  useEffect(() => {
+    if (timeLeft <= 0 && dashState === "playing") {
+      endDash();
+    }
+  }, [timeLeft, dashState]);
+
+  // ============================================================================
+  // SOCKET
+  // ============================================================================
+
+  const socket = useChessSocket({
+    serverUrl: environment.urls.chessServerURL,
+    mode: "puzzle",
+    onBoardStateChange: handleBoardStateChange,
+    backendConnected: setBackendConnected,
+    onLastMove: (from, to) => {
+      setHighlightSquares([from, to]);
+      chessBoardRef.current?.highlightMove(from, to);
+    },
+    onError: (msg) => {
+      console.error("Socket error:", msg);
+    },
+  });
+
+  useEffect(() => {
+    if (!chessSocketRef.current) {
+      chessSocketRef.current = socket;
+    }
+  }, [socket]);
+
+  useEffect(() => {
+    if (dashState === "playing" && !isInitialized) {
+      initializeDashRef.current?.();
+    }
+  }, [dashState, isInitialized]);
+
+  useEffect(() => {
+    if (
+      dashState === "playing" &&
+      socket.connected &&
+      isInitialized &&
+      !backendConnected &&
+      currentPuzzleRef.current
+    ) {
+      chessSocketRef.current.startNewPuzzle(currentPuzzleRef.current);
+    }
+  }, [dashState, socket.connected, isInitialized, backendConnected]);
+
+  useEffect(() => {
+    if (!backendConnected) return;
+    startRound();
+  }, [backendConnected]);
+
+  // ============================================================================
+  // RENDER
+  // ============================================================================
 
   if (dashState === "selection") {
     return (
@@ -309,8 +450,10 @@ const PuzzleDash = () => {
           {[1, 3, 5].map((mins) => (
             <button
               key={mins}
+              type="button"
               onClick={() => handleStartDash(mins)}
               className="flex flex-col items-center p-8 bg-light border-2 border-dark rounded-2xl shadow-lg hover:-translate-y-2 hover:bg-soft transition-all group"
+              data-testid={`dash-start-${mins}min`}
             >
               <span className="text-4xl mb-2">⏱️</span>
               <h2 className="text-3xl font-extrabold text-dark">{mins} Min</h2>
@@ -320,6 +463,8 @@ const PuzzleDash = () => {
             </button>
           ))}
         </div>
+
+        {modal && <Modal {...modal} onClose={closeModal} />}
       </div>
     );
   }
@@ -328,7 +473,7 @@ const PuzzleDash = () => {
     return (
       <div className="flex flex-col items-center mt-12 w-full max-w-2xl mx-auto px-4">
         <h1 className="text-5xl font-extrabold text-dark uppercase tracking-widest mb-8">Time's Up!</h1>
-        
+
         <div className="w-full bg-light border-2 border-dark rounded-2xl p-8 shadow-xl mb-8">
           <div className="grid grid-cols-2 gap-8 text-center">
             <div className="p-4 bg-soft rounded-lg">
@@ -350,9 +495,10 @@ const PuzzleDash = () => {
           </div>
         </div>
 
-        <button 
+        <button
           onClick={() => setDashState("selection")}
           className="btn-green text-xl px-12 py-4 shadow-lg hover:scale-105 transition-transform"
+          data-testid="dash-play-again-button"
         >
           Play Again
         </button>
@@ -362,20 +508,23 @@ const PuzzleDash = () => {
 
   return (
     <div className="flex flex-col items-center mt-8 w-full max-w-4xl mx-auto px-4">
-      
-      {/* TOP DASHBOARD BAR */}
       <div className="w-full max-w-[600px] flex justify-between items-center mb-6 px-4 py-3 bg-light rounded-xl shadow-md border-b-4 border-dark">
         <div className="flex flex-col">
           <span className="text-xs font-bold text-gray uppercase">Score</span>
           <span className="text-3xl font-extrabold text-primary">{score}</span>
         </div>
-        
-        {/* TIMER DISPLAY */}
-        <div className={`flex flex-col items-center transition-all ${showPenalty ? "scale-110 text-red-500" : "text-dark"} ${timeLeft <= 10 && isTimerRunning ? "animate-pulse text-red-500" : ""}`}>
+
+        <div
+          className={`flex flex-col items-center transition-all ${
+            showPenalty ? "scale-110 text-red-500" : "text-dark"
+          } ${timeLeft <= 10 && isTimerRunning ? "animate-pulse text-red-500" : ""}`}
+        >
           <span className="text-xs font-bold text-gray uppercase">Time Left</span>
           <div className="flex items-center gap-2">
             <span className="text-4xl font-extrabold">{formatTime(timeLeft)}</span>
-            {showPenalty && <span className="absolute ml-24 text-red-500 font-bold animate-bounce">-5s</span>}
+            {showPenalty && (
+              <span className="absolute ml-24 text-red-500 font-bold animate-bounce">-5s</span>
+            )}
           </div>
         </div>
 
@@ -385,20 +534,24 @@ const PuzzleDash = () => {
         </div>
       </div>
 
-      {/* THE CHESS BOARD */}
-      <div className={`w-full max-w-[600px] aspect-square transition-transform duration-200 ${showPenalty ? "rotate-1" : ""}`}>
+      <div
+        className={`w-full max-w-[600px] aspect-square transition-transform duration-200 [&_svg_*]:transition-opacity [&_svg_*]:duration-700 ${
+          hidePieces ? "[&_svg_*]:opacity-0" : "[&_svg_*]:opacity-100"
+        } ${showPenalty ? "rotate-1" : ""}`}
+        data-testid="puzzle-dash-board-container"
+      >
         <ChessBoard
           mode="puzzle"
           ref={chessBoardRef}
-          fen={currentFEN}
+          fen={currentFEN || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"}
           orientation={playerColor}
           highlightSquares={highlightSquares}
           onMove={handlePlayerMove}
-          disabled={isPuzzleEndRef.current || !socket.connected || dashState !== "playing"}
+          disabled={isPuzzleEndRef.current || !backendConnected || hidePieces || dashState !== "playing"}
         />
       </div>
 
-      {!isTimerRunning && timeLeft === timeLimit && (
+      {!isTimerRunning && timeLeft === timeLimit && !hidePieces && (
         <p className="mt-6 text-xl font-bold text-primary animate-pulse">Make your first move to start the timer!</p>
       )}
 

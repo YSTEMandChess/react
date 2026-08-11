@@ -1,168 +1,227 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Modal, { ModalProps } from "../../components/modal/Modal";
 import { environment } from "../../environments/environment";
-import { v4 as uuidv4 } from "uuid";
 import { useCookies } from "react-cookie";
 import ChessBoard, { ChessBoardRef } from "../../components/ChessBoard/ChessBoard";
 import { useChessSocket } from "../lessons/piece-lessons/lesson-overlay/hooks/useChessSocket";
 import { Move } from "../../core/types/chess";
 import { SetPermissionLevel } from "../../globals";
 
-const normalizeFen = (fen: string): string => {
-  if (!fen || typeof fen !== "string") 
-    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-  
-  const trimmed = fen.trim().toLowerCase();
-  if (trimmed === "start") 
-    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-  
-  const parts = fen.trim().split(/[\s,]+/);
+// Mirrors the types exported from Puzzles.tsx / PuzzleDash.tsx. If they live in
+// the same folder, drop these two and import them instead.
+export type User = {
+  username: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  email: string;
+  id: number;
+  _id?: number;
+};
 
-  if (parts.length === 6) 
-    return parts.join(" ");
-  if (parts.length === 1 && parts[0].split("/").length === 8) 
+export type PuzzleMetaData = {
+  userId?: number;
+  user?: User;
+  socketId?: string;
+
+  PuzzleId: string;
+  FEN: string;
+  Moves: string;
+
+  Rating?: number;
+  RatingDeviation?: number;
+  Popularity?: number;
+  NbPlays?: number;
+
+  Themes?: string;
+  GameUrl?: string;
+  OpeningTags?: string;
+};
+
+const normalizeFen = (fen: string): string => {
+  if (!fen || typeof fen !== "string") {
+    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  }
+  const trimmed = fen.trim().toLowerCase();
+  if (trimmed === "start") {
+    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  }
+  const parts = fen.trim().split(/[\s,]+/);
+  if (parts.length === 6) return parts.join(" ");
+  if (parts.length === 1 && parts[0].split("/").length === 8) {
     return `${parts[0]} w KQkq - 0 1`;
-  
+  }
   const defaults = ["w", "KQkq", "-", "0", "1"];
   const paddedParts = [...parts];
-  
-  while (paddedParts.length < 6) 
+  while (paddedParts.length < 6) {
     paddedParts.push(defaults[paddedParts.length - 1]);
-
+  }
   return paddedParts.join(" ");
 };
 
-const PuzzleStreak = () => {
+const PuzzleStreak: React.FC = () => {
+  // Refs
+  const user = useRef<User | null>(null);
+  const chessSocketRef = useRef<any>(null);
   const chessBoardRef = useRef<ChessBoardRef>(null);
   const moveListRef = useRef<string[]>([]);
   const isPuzzleEndRef = useRef(false);
-  const currentPuzzleRef = useRef<any>(null);
+  const currentPuzzleRef = useRef<PuzzleMetaData | null>(null);
+  const initializeStreakRef = useRef<(() => Promise<void>) | undefined>(undefined);
+
+  // State
+  const [cookies, , removeCookie] = useCookies(["login"]);
+  const [backendConnected, setBackendConnected] = useState(false);
 
   const [currentFEN, setCurrentFEN] = useState<string>("");
+  const [hidePieces, setHidePieces] = useState(true);
   const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
-  const [status, setStatus] = useState<string>("");
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
-  const [cookies] = useCookies(["login"]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [modal, setModal] = useState<Omit<ModalProps, "onClose"> | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
+  const closeModal = () => setModal(null);
 
-  // STREAK LOGIC STATE
+  // Streak-specific state
   const [currentStreak, setCurrentStreak] = useState(0);
-  const [isInitialized, setIsInitialized] = useState(false); 
+  const [highestStreak, setHighestStreak] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
 
-  const studentId = cookies.login?.studentId || uuidv4();
-  const mentorId = "puzzle_mentor_" + studentId;
-
-  const closeModal = () => setModal(null);
-
-  const socket = useChessSocket({
-    student: studentId,
-    mentor: mentorId,
-    role: "student",
-    serverUrl: environment.urls.chessServerURL,
-    mode: "puzzle",
-    onBoardStateChange: (newFEN) => setCurrentFEN(newFEN),
-    onRoleAssigned: (r) => setStatus(r),
-    onLastMove: (from, to) => {
-      setHighlightSquares([from, to]);
-      chessBoardRef.current?.highlightMove(from, to);
-    },
-  });
-
+  // ============================================================================
+  // USER IDENTIFICATION (pulls saved high streak, same pattern as PuzzleDash)
+  // ============================================================================
   useEffect(() => {
-    SetPermissionLevel(cookies).then((uInfo) => {
-      if (!uInfo?.error) setUsername(uInfo.username);
-    });
-  }, [cookies]);
+    if (!cookies.login) return;
 
-  // Escalating difficulty based on streak
+    const verifyAndLoad = async () => {
+      try {
+        const userInfo = await SetPermissionLevel(cookies, removeCookie);
+        if (!userInfo || userInfo.error) return;
+
+        const { username, firstName, lastName, role, email, id } = userInfo;
+        user.current = { username, firstName, lastName, role, email, id };
+
+        const res = await fetch(
+          `${environment.urls.middlewareURL}/user/getUser?username=${username}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          // NOTE: adjust this field name to whatever your backend actually
+          // stores the saved streak high score under.
+          if (data?.highestPuzzleStreak) {
+            setHighestStreak(data.highestPuzzleStreak);
+          }
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err);
+      }
+    };
+
+    verifyAndLoad();
+  }, [cookies.login]);
+
+  // Reveal pieces once the FEN for this round actually arrives
+  useEffect(() => {
+    if (currentFEN !== "") {
+      setHidePieces(false);
+    }
+  }, [currentFEN]);
+
+  const handleBoardStateChange = (puzzleMetaData: PuzzleMetaData) => {
+    if (!currentPuzzleRef.current) return;
+    currentPuzzleRef.current = puzzleMetaData;
+    setCurrentFEN(puzzleMetaData.FEN);
+  };
+
+  // ============================================================================
+  // PUZZLE LOADING
+  // ============================================================================
+
+  // Escalating difficulty based on streak length
   const fetchSinglePuzzle = async (streakNumber: number) => {
-    const minRating = 600 + (streakNumber * 50);
-    const maxRating = minRating + 200; 
+    const minRating = 600 + streakNumber * 50;
+    const maxRating = minRating + 200;
 
     try {
-      const res = await fetch(`${environment.urls.middlewareURL}/puzzles/random?limit=1&minRating=${minRating}&maxRating=${maxRating}`);
+      const res = await fetch(
+        `${environment.urls.middlewareURL}/puzzles/random?limit=1&minRating=${minRating}&maxRating=${maxRating}`
+      );
       if (res.ok) {
         const data = await res.json();
-        return data[0];
+        return data[0] as PuzzleMetaData;
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching puzzle:", err);
     }
     return null;
   };
 
-  const loadNextPuzzleInStreak = async (streakNumber: number) => {
-    setShowHint(false); 
-    setIsFailed(false); 
-    
-    const puzzle = await fetchSinglePuzzle(streakNumber);
-    if (puzzle) {
-      currentPuzzleRef.current = puzzle;
-      moveListRef.current = puzzle.Moves.split(" ");
-      
-      const normalizedFen = normalizeFen(puzzle.FEN);
-      const sideToMove = normalizedFen.split(" ")[1]; 
-      const newPlayerColor = sideToMove === "w" ? "black" : "white";
+  const updatePuzzleEnvironment = (puzzle: PuzzleMetaData) => {
+    moveListRef.current = puzzle.Moves.split(" ");
+    const normalizedFen = normalizeFen(puzzle.FEN);
+    puzzle.FEN = normalizedFen;
 
-      setPlayerColor(newPlayerColor);
-      setCurrentFEN(normalizedFen);
+    const sideToMove = normalizedFen.split(" ")[1];
+    const newPlayerColor = sideToMove === "w" ? "black" : "white";
+    setPlayerColor(newPlayerColor);
 
-      isPuzzleEndRef.current = false;
-      setHighlightSquares([]);
-      
-      socket.setGameStateWithColor(normalizedFen, newPlayerColor, puzzle.Themes);
-      chessBoardRef.current?.clearHighlights();
-      
-      setTimeout(playComputerMove, 500);
-    } else {
-      setModal({ type: "error", title: "Error", message: "Failed to load puzzle." });
-    }
+    currentPuzzleRef.current = {
+      ...puzzle,
+      userId: user.current?.id ?? null,
+      user: user.current ?? null,
+      socketId: chessSocketRef.current?.getSocketId(),
+    };
   };
 
-  // Automatically start the first puzzle room when the socket connects!
-  useEffect(() => {
-    if (socket.connected && status === "" && !isInitialized && !isFailed) {
-      socket.startNewPuzzle();
-    }
-  }, [socket.connected, status, isInitialized, isFailed, socket]);
-
-  // Wait for the backend socket to be completely ready before loading the puzzle
-  useEffect(() => {
-    if (socket.connected && status === "host" && !isInitialized) {
-      setIsInitialized(true);
-      loadNextPuzzleInStreak(currentStreak);
-    }
-  }, [socket.connected, status, isInitialized, currentStreak, socket]);
-
-  const handleStartStreak = () => {
-    setCurrentStreak(0);
+  const resetStreakSession = () => {
+    chessBoardRef.current?.clearHighlights();
+    moveListRef.current = [];
+    currentPuzzleRef.current = null;
+    isPuzzleEndRef.current = false;
+    setCurrentFEN("");
+    setHidePieces(true);
+    setHighlightSquares([]);
     setIsInitialized(false);
-    setIsFailed(false);
-    
-    // Tell the backend we are starting a fresh room!
-    if (socket.connected) {
-      socket.startNewPuzzle(); 
+    setBackendConnected(false);
+    setShowHint(false);
+    closeModal();
+  };
+
+  initializeStreakRef.current = async () => {
+    if (isFailed) return;
+    if (isInitialized) return;
+    try {
+      const puzzle = await fetchSinglePuzzle(currentStreak);
+      if (puzzle) {
+        updatePuzzleEnvironment(puzzle);
+        setIsInitialized(true);
+      } else {
+        setModal({
+          type: "error",
+          title: "Puzzle unavailable",
+          message: "Could not reach the puzzle server. Make sure the middleware is running.",
+        });
+      }
+    } catch (err) {
+      console.error("Error loading puzzle:", err);
     }
   };
 
-  const saveHighScore = async (score: number) => {
-    if (!username || score === 0) return;
-    try {
-      await fetch(`${environment.urls.middlewareURL}/user/updateHighScore`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${cookies.login}`,
-        },
-        body: JSON.stringify({ streakScore: score }),
-      });
-    } catch (err) {
-      console.error("Failed to save high score", err);
-    }
+  const startRound = () => {
+    if (!currentPuzzleRef.current) return;
+    setShowHint(false);
+    setCurrentFEN(currentPuzzleRef.current.FEN);
+    isPuzzleEndRef.current = false;
+    setHighlightSquares([]);
+    chessBoardRef.current?.clearHighlights();
+    setTimeout(() => {
+      playComputerMove();
+    }, 500);
   };
+
+  // ============================================================================
+  // MOVE HANDLING
+  // ============================================================================
 
   const playComputerMove = () => {
     if (moveListRef.current.length === 0) return;
@@ -172,13 +231,18 @@ const PuzzleStreak = () => {
     const computerMove: Move = {
       from: computerMoveStr.substring(0, 2),
       to: computerMoveStr.substring(2, 4),
-      promotion: computerMoveStr.length > 4 ? (computerMoveStr[4] as any) : undefined,
+      promotion:
+        computerMoveStr.length > 4
+          ? (computerMoveStr[4] as "q" | "r" | "b" | "n")
+          : undefined,
+      uuid: currentPuzzleRef.current?.socketId,
+      username: user.current?.username ?? null,
+      credentials: null,
+      computerMove: false,
     };
-
-    socket.sendMove(computerMove);
-    socket.sendLastMove(computerMove.from, computerMove.to);
-    setHighlightSquares([computerMove.from, computerMove.to]);
-    chessBoardRef.current?.highlightMove(computerMove.from, computerMove.to);
+    // Don't highlight locally here — the server echoes the move back through
+    // onLastMove, same as PuzzleDash does.
+    chessSocketRef.current.sendMove(computerMove);
   };
 
   const handlePlayerMove = (move: Move) => {
@@ -194,35 +258,45 @@ const PuzzleStreak = () => {
     if (isCorrect) {
       moveListRef.current.shift();
       setHighlightSquares([move.from, move.to]);
+
       const newFen = chessBoardRef.current?.getFen();
       if (newFen) setCurrentFEN(newFen);
-      
-      move.username = username;
-      move.credentials = cookies.login;
-      socket.sendMove(move);
-      socket.sendLastMove(move.from, move.to);
+
+      const backendMove: Move = {
+        ...move,
+        uuid: currentPuzzleRef.current?.socketId,
+        username: user.current?.username ?? null,
+        credentials: cookies.login,
+        computerMove: false,
+      };
+      chessSocketRef.current.sendMove(backendMove);
 
       if (moveListRef.current.length === 0) {
-        // Increases Streak
+        // Puzzle solved — bump the streak and load the next one
         isPuzzleEndRef.current = true;
-        const newStreak = currentStreak + 1;
-        setCurrentStreak(newStreak);
-        
+        setCurrentStreak((s) => {
+          const next = s + 1;
+          setHighestStreak((hs) => Math.max(hs, next));
+          return next;
+        });
+
         setTimeout(() => {
-          setIsInitialized(false); 
-          socket.startNewPuzzle(); 
-        }, 800); 
+          setIsInitialized(false);
+          setBackendConnected(false);
+        }, 400);
       } else {
-        setTimeout(playComputerMove, 300);
+        setTimeout(() => {
+          playComputerMove();
+        }, 300);
       }
     } else {
       // STREAK ENDS!
       isPuzzleEndRef.current = true; // Lock the board
-      setIsFailed(true);             // Trigger the UI Restart Button
-      setShowHint(true);             // Auto-show the hint text
+      setIsFailed(true); // Trigger the UI restart button
+      setShowHint(true); // Auto-show the hint text
       saveHighScore(currentStreak);
 
-      // Snap the incorrectly placed piece back to where it was so they can study the board!
+      // Snap the incorrectly placed piece back so they can study the board
       chessBoardRef.current?.undo();
 
       setModal({
@@ -234,35 +308,121 @@ const PuzzleStreak = () => {
     }
   };
 
+  // ============================================================================
+  // GAME FLOW
+  // ============================================================================
+
+  const handleStartStreak = () => {
+    resetStreakSession();
+    setCurrentStreak(0);
+    setIsFailed(false);
+  };
+
+  const saveHighScore = async (finalStreak: number) => {
+    if (!user.current?.username || finalStreak === 0) return;
+    try {
+      await fetch(`${environment.urls.middlewareURL}/user/updateHighScore`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${cookies.login}`,
+        },
+        body: JSON.stringify({ streakScore: finalStreak }),
+      });
+    } catch (err) {
+      console.error("Failed to save high score", err);
+    }
+  };
+
+  // ============================================================================
+  // SOCKET
+  // ============================================================================
+
+  const socket = useChessSocket({
+    serverUrl: environment.urls.chessServerURL,
+    mode: "puzzle",
+    onBoardStateChange: handleBoardStateChange,
+    backendConnected: setBackendConnected,
+    onLastMove: (from, to) => {
+      setHighlightSquares([from, to]);
+      chessBoardRef.current?.highlightMove(from, to);
+    },
+    onError: (msg) => {
+      console.error("Socket error:", msg);
+    },
+  });
+
+  useEffect(() => {
+    if (!chessSocketRef.current) {
+      chessSocketRef.current = socket;
+    }
+  }, [socket]);
+
+  // Fetch the next puzzle whenever we're not initialized and not showing the
+  // "streak broken" screen
+  useEffect(() => {
+    if (!isInitialized && !isFailed) {
+      initializeStreakRef.current?.();
+    }
+  }, [isInitialized, isFailed]);
+
+  // Once we have a puzzle queued up and the socket is connected, tell the
+  // backend to start a room for it
+  useEffect(() => {
+    if (
+      socket.connected &&
+      isInitialized &&
+      !backendConnected &&
+      currentPuzzleRef.current
+    ) {
+      chessSocketRef.current.startNewPuzzle(currentPuzzleRef.current);
+    }
+  }, [socket.connected, isInitialized, backendConnected]);
+
+  // Once the backend confirms the room is live, actually start the round
+  useEffect(() => {
+    if (!backendConnected) return;
+    startRound();
+  }, [backendConnected]);
+
+  // ============================================================================
+  // RENDER
+  // ============================================================================
+
   return (
     <div className="flex flex-col items-center mt-12 w-full max-w-4xl mx-auto px-4">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-extrabold text-dark uppercase tracking-widest">Puzzle Streak</h1>
         <p className="text-gray mt-2 text-lg">Solve as many puzzles in a row as you can without making a mistake.</p>
-        
+
         <div className="mt-4 text-3xl font-bold text-primary transition-all">
           🔥 Streak: {currentStreak}
         </div>
+        {highestStreak > 0 && (
+          <div className="mt-1 text-sm font-bold text-gray uppercase tracking-wide">
+            Best: {highestStreak}
+          </div>
+        )}
       </div>
 
-      {/* The board renders immediately without a starting button block! */}
       <div className="flex flex-col items-center w-full max-w-[600px]">
-        {/* THE CHESS BOARD */}
-        <div className="w-full aspect-square">
+        <div
+          className={`w-full aspect-square transition-transform duration-200 [&_svg_*]:transition-opacity [&_svg_*]:duration-700 ${
+            hidePieces ? "[&_svg_*]:opacity-0" : "[&_svg_*]:opacity-100"
+          }`}
+        >
           <ChessBoard
             mode="puzzle"
             ref={chessBoardRef}
-            fen={currentFEN}
+            fen={currentFEN || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"}
             orientation={playerColor}
             highlightSquares={highlightSquares}
             onMove={handlePlayerMove}
-            disabled={isPuzzleEndRef.current || !socket.connected}
+            disabled={isPuzzleEndRef.current || !backendConnected || hidePieces}
           />
         </div>
 
-        {/* THE POST-PUZZLE ACTIONS / HINT SYSTEM */}
         <div className="mt-6 flex flex-col items-center gap-4 w-full">
-          
           {isFailed ? (
             <button
               className="btn-green text-xl px-12 py-3 shadow-lg hover:scale-105 transition-transform animate-fade-in"
@@ -274,7 +434,7 @@ const PuzzleStreak = () => {
             <button
               className="btn-green w-full md:w-auto px-8 py-3"
               onClick={() => setShowHint(!showHint)}
-              disabled={!socket.connected}
+              disabled={!backendConnected}
             >
               {showHint ? "Hide Hint" : "Show Hint"}
             </button>
@@ -283,10 +443,14 @@ const PuzzleStreak = () => {
           {showHint && currentPuzzleRef.current && (
             <div className="w-full p-6 bg-light rounded-lg shadow border-2 border-primary text-base leading-relaxed text-dark text-center animate-fade-in">
               <div className="mb-2">
-                <span className="font-bold text-primary">Puzzle Rating:</span> {currentPuzzleRef.current.Rating || "N/A"}
+                <span className="font-bold text-primary">Puzzle Rating:</span>{" "}
+                {currentPuzzleRef.current.Rating || "N/A"}
               </div>
               <div>
-                <span className="font-bold text-primary">Themes:</span> {currentPuzzleRef.current.Themes ? currentPuzzleRef.current.Themes.split(" ").join(", ") : "Mixed"}
+                <span className="font-bold text-primary">Themes:</span>{" "}
+                {currentPuzzleRef.current.Themes
+                  ? currentPuzzleRef.current.Themes.split(" ").join(", ")
+                  : "Mixed"}
               </div>
             </div>
           )}
