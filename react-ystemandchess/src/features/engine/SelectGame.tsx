@@ -16,32 +16,10 @@ import { useCookies } from "react-cookie"
 import { SetPermissionLevel } from "../../globals"
 import { environment } from "../../environments/environment";
 import { useNavigate } from "react-router";
+import { User } from "../../core/types/gamemetadata";
+import { GameMetaData } from "../../core/types/gamemetadata";
 
-export type GameMetaData = {
-        userId?: number,
-        user?: User,
-        opponent?: User,
-        uuid?: string,
-        opponentId?: string,
-        gameName: string,
-        gameType: "computer" | "friend" | "mentor" | "guest",
-        computerLevel: number | null,
-        fen: string,
-        movesList: string[],
-        playerColor: "white" | "black",
-        status: "won" | "lost" | "ongoing" | "draw",
-        createdAt: string,
-        updatedAt: string
-    }
-   export type User = {
-        username: string,
-        firstName: string,
-        lastName: string,
-        role: string,
-        email: string,
-        id: number,
-        _id?:number,
-    }
+
 
 // tracks which step of the "start a game" flow the user is on
 type FlowStep = "start" | "mode" | "friendSelect" | "settings"

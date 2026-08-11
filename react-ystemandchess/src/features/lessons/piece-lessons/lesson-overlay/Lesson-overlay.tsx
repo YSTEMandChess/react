@@ -13,6 +13,8 @@ import { EvaluationContext, Goal } from '../../../../core/types/goals';
 import { evaluateGoal } from '../../../../core/utils/goalEvaluator';
 import { EventLog, createMoveEvent } from '../../../../core/utils/eventLogger';
 import { getConstrainedMove } from '../../../../core/utils/opponentConstraints';
+import { GameMetaData } from '../../../../core/types/gamemetadata';
+import { PuzzleMetaData } from '../../../../core/types/puzzlemetadata';
 
 import { useChessGameLogic } from './hooks/useChessGameLogic';
 import { useLessonManager } from './hooks/useLessonManager';
@@ -41,6 +43,15 @@ type LessonOverlayProps = {
 interface SolutionMove {
   san: string;
   isPlayerMove: boolean;
+}
+
+// Confirmed at runtime: lesson mode's "boardstate" event does NOT send
+// GameMetaData or PuzzleMetaData — it sends this shape instead. Neither of
+// the other two types has a `boardState` field, so this is a safe third
+// branch to check for.
+interface LessonBoardState {
+  boardState: string;
+  color?: 'white' | 'black';
 }
 
 function parsePGNSolution(pgn: string, fenTurn: 'white' | 'black', playerColor: 'white' | 'black'): SolutionMove[] {
@@ -146,22 +157,80 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
   const xPopupShouldResetRef = useRef(true);
   const [isNavigating, setIsNavigating] = useState(false);
 
-  // Initialize socket
+  // Applies an incoming board sync (fen + optional color) to local state.
+  // Pulled out so both onBoardStateChange and (if the backend ever routes
+  // lesson updates through the move/evaluation pathway instead) onMove can
+  // share the same logic without duplicating it.
+  const syncIncomingBoardState = useCallback((newFEN?: string, color?: 'white' | 'black') => {
+    if (!newFEN) return;
+    try {
+      gameRef.current.load(newFEN, { skipValidation: true });
+      setCurrentFEN(newFEN);
+      if (color) setBoardOrientation(color);
+      if (onChessMove) onChessMove(newFEN);
+    } catch (e) {
+      console.error("Invalid FEN received", e);
+    }
+  }, [onChessMove]);
+
+  // Initialize socket.
+  //
+  // NOTE on this hook call vs. the old one: the simplified useChessSocket no
+  // longer takes `student` / `mentor` / `role` — those aren't part of
+  // UseChessSocketOptions anymore, so passing them would fail to compile.
+  // Student/mentor identification is gone from the lesson flow entirely now:
+  // lessons always register as gameType: 'guest' via startNewGame (see
+  // initializeLessonOnServer below), which is also what keeps them from
+  // being persisted to the backend.
   const socket = useChessSocket({
-    student: styleType === 'profile' ? cookies.login?.studentId : "guest_student",
-    mentor: "mentor_" + piece,
-    role: 'student',
     serverUrl: environment.urls.chessServerURL,
     mode: 'lesson',
 
-    onBoardStateChange: (newFEN, color) => {
-      try {
-        gameRef.current.load(newFEN, { skipValidation: true });
-        setCurrentFEN(newFEN);
-        if (color) setBoardOrientation(color);
-        if (onChessMove) onChessMove(newFEN);
-      } catch (e) {
-        console.error("Invalid FEN received", e);
+    onBoardStateChange: (metaData: GameMetaData | PuzzleMetaData | LessonBoardState | string) => {
+      // The hook's "boardstate" listener forwards the raw socket payload with
+      // no JSON.parse (unlike sendLastMove/sendHighlight/sendMousePosition,
+      // which all JSON.stringify on the way out — the server appears to mirror
+      // that on the way back). That's what actually crashed: `metaData` can
+      // arrive as a JSON string, and `in` throws on a non-object right-hand
+      // side. Parse first, then shape-check.
+      let data: any = metaData;
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch (e) {
+          console.error('[LessonOverlay] Could not parse boardstate payload:', metaData, e);
+          return;
+        }
+      }
+
+      if (!data || typeof data !== 'object') {
+        console.warn('[LessonOverlay] Unexpected boardstate payload, ignoring:', metaData);
+        return;
+      }
+
+      // Lesson mode's real payload is { boardState, color } — confirmed at
+      // runtime, not GameMetaData/PuzzleMetaData shaped like the hook's types
+      // suggest. Check for that first.
+      if ('boardState' in data) {
+        syncIncomingBoardState(data.boardState, data.color);
+      } else if ('fen' in data) {
+        // Kept as a fallback in case some other lesson flow (e.g. the
+        // startNewGame/broadcastBoardState path) ever sends real GameMetaData.
+        syncIncomingBoardState(data.fen, data.playerColor);
+      } else {
+        console.warn('[LessonOverlay] Unrecognized boardstate payload shape, ignoring:', data);
+      }
+    },
+
+    onMove: (data) => {
+      // The hook's "evaluation-complete" handler routes gameMetaData payloads
+      // through onMove (not onBoardStateChange) — see useChessSocket.ts. Lesson
+      // mode doesn't currently call socket.sendMove itself, but if the server
+      // ever pushes a mentor-side move this way, this keeps it in sync.
+      syncIncomingBoardState(data.fen, data.gameMetaData?.playerColor);
+      if (data.move?.from && data.move?.to) {
+        setHighlightSquares([data.move.from, data.move.to]);
+        chessBoardRef.current?.highlightMove(data.move.from, data.move.to);
       }
     },
 
@@ -537,13 +606,37 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
 
     isInitializedRef.current = true;
 
+    const nowIso = new Date().toISOString();
+
+    // Lessons are always guest games. gameType: 'guest' is what tells the
+    // server's `newgame` handler to skip the "save to backend" branch
+    // (`if (gameMetaData.gameType !== "guest")`), so nothing here persists.
+    // Guest games also get an auto-started server-side Stockfish session per
+    // that handler — lesson mode doesn't consume it (free-play still drives
+    // its own separate stockfishServerURL connection below), so it just sits
+    // unused rather than conflicting with anything.
+    socket.startNewGame({
+      gameName: `Lesson - ${piece}`,
+      gameType: 'guest',
+      computerLevel: null,
+      fen: lessonData.startFen,
+      movesList: [],
+      playerColor: playerColorRef.current,
+      status: 'ongoing',
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    });
+
+    // `hints` (the lesson instruction text) has no field in GameMetaData, so
+    // this still runs alongside startNewGame to get that text to the server
+    // the same way it always did.
     socket.setGameStateWithColor(
       lessonData.startFen,
       playerColorRef.current,
       lessonData.info
     );
 
-  }, [lessonData, socket]);
+  }, [lessonData, socket, piece]);
 
   function getTurnFromFEN(fen: string): 'white' | 'black' {
     if (!fen || typeof fen !== 'string') {
