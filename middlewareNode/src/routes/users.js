@@ -630,6 +630,44 @@ router.get("/avatar", passport.authenticate("jwt"), async (req, res) => {
 });
 
 /**
+ * GET /user/avatar/child
+ *
+ * Returns a presigned URL for a child's avatar, for a parent viewing their
+ * child's profile. Ownership is the same relationship already used by
+ * GET /meetings/parents/recordings: the caller must be role "parent", and
+ * the requested childUsername must have parentUsername === caller's
+ * username — not just "any parent may view any child."
+ *
+ * @access JWT authenticated users with role "parent"
+ */
+router.get("/avatar/child", passport.authenticate("jwt"), async (req, res) => {
+  try {
+    const { role, username } = req.user;
+    const { childUsername } = req.query;
+
+    if (role !== "parent") {
+      return res.status(403).json({ error: "Only a parent account can view a child's avatar" });
+    }
+    if (!childUsername) {
+      return res.status(400).json({ error: "childUsername is required" });
+    }
+
+    const child = await users.findOne(
+      { parentUsername: username, username: childUsername },
+      { avatarKey: 1 }
+    );
+    if (!child) {
+      return res.status(403).json({ error: "You are not the parent of the requested child" });
+    }
+
+    res.json({ avatarUrl: getAvatarUrl(child.avatarKey) });
+  } catch (err) {
+    console.error("GET /user/avatar/child:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/**
  * POST /user/avatar
  *
  * Uploads a profile avatar image for the authenticated user, storing it in

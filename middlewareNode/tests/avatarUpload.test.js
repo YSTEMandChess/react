@@ -216,3 +216,74 @@ describe("GET /user/avatar", () => {
     expect(res.status).toBe(500);
   });
 });
+
+describe("GET /user/avatar/child", () => {
+  beforeEach(() => {
+    getAvatarUrl.mockImplementation((key) => (key ? `https://test.blob.core.windows.net/avatars/${key}` : null));
+  });
+
+  test("401 — no authenticated user", async () => {
+    mockCurrentAuthUser = null;
+    const res = await request(app).get("/user/avatar/child?childUsername=kiddo");
+    expect(res.status).toBe(401);
+  });
+
+  test("403 — caller is not a parent account", async () => {
+    mockCurrentAuthUser = { username: "alice", role: "student" };
+
+    const res = await request(app).get("/user/avatar/child?childUsername=kiddo");
+
+    expect(res.status).toBe(403);
+    expect(Users.findOne).not.toHaveBeenCalled();
+  });
+
+  test("400 — missing childUsername", async () => {
+    mockCurrentAuthUser = { username: "parentA", role: "parent" };
+
+    const res = await request(app).get("/user/avatar/child");
+
+    expect(res.status).toBe(400);
+  });
+
+  test("403 — childUsername exists but does not belong to this parent", async () => {
+    mockCurrentAuthUser = { username: "parentA", role: "parent" };
+    Users.findOne.mockResolvedValue(null); // no doc matches {parentUsername, username} together
+
+    const res = await request(app).get("/user/avatar/child?childUsername=someoneElsesKid");
+
+    expect(res.status).toBe(403);
+    expect(Users.findOne).toHaveBeenCalledWith(
+      { parentUsername: "parentA", username: "someoneElsesKid" },
+      expect.objectContaining({ avatarKey: 1 })
+    );
+  });
+
+  test("200 — returns the child's avatar SAS URL for the child's own parent", async () => {
+    mockCurrentAuthUser = { username: "parentA", role: "parent" };
+    Users.findOne.mockResolvedValue({ avatarKey: "kiddo/photo.png" });
+
+    const res = await request(app).get("/user/avatar/child?childUsername=kiddo");
+
+    expect(res.status).toBe(200);
+    expect(res.body.avatarUrl).toBe("https://test.blob.core.windows.net/avatars/kiddo/photo.png");
+  });
+
+  test("200 — returns avatarUrl: null when the child has no avatar uploaded", async () => {
+    mockCurrentAuthUser = { username: "parentA", role: "parent" };
+    Users.findOne.mockResolvedValue({ avatarKey: null });
+
+    const res = await request(app).get("/user/avatar/child?childUsername=kiddo");
+
+    expect(res.status).toBe(200);
+    expect(res.body.avatarUrl).toBeNull();
+  });
+
+  test("500 — returns server error on DB failure", async () => {
+    mockCurrentAuthUser = { username: "parentA", role: "parent" };
+    Users.findOne.mockRejectedValue(new Error("DB down"));
+
+    const res = await request(app).get("/user/avatar/child?childUsername=kiddo");
+
+    expect(res.status).toBe(500);
+  });
+});
