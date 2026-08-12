@@ -1,75 +1,90 @@
-import profileStyles from "./ProfileStyle.module.scss";
-import pageStyles from "./LessonsStyle.module.scss";
 import { useNavigate } from "react-router";
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { environment } from "../../../environments/environment";
 import { getAllScenarios } from "../lessons-main/Scenarios";
 import { useCookies } from "react-cookie";
-import ScenarioTemplate from "./ScenarioTemplate/ScenarioTemplate.jsx"; // Importing the ScenarioTemplate component
-import LessonTemplate from "./LessonTemplate/LessonTemplate.jsx"; // Importing the LessonTemplate component
 
-export default function LessonSelection({ onGo, styleType = "page" }) { // what to do when clicking go button, default to navigation
+const itemClass =
+  "flex w-full min-h-[3rem] items-center justify-start px-6 py-3 bg-light font-bold text-dark " +
+  "cursor-pointer hover:bg-soft border-b border-borderLight last:border-b-0 transition-colors duration-150";
 
-  const styles = useMemo(() => (styleType === 'profile' ? profileStyles : pageStyles), [styleType]);
+const ScenarioItem = memo(({ scenario, onClick }) => (
+  <div className={itemClass} onClick={onClick}>
+    {scenario.name}
+  </div>
+));
+
+const LessonItem = memo(({ lesson, onClick }) => (
+  <div className={itemClass} onClick={onClick}>
+    {lesson.name}
+  </div>
+));
+
+const selectorClass =
+  "flex items-center justify-between w-full min-h-[3.5rem] rounded-xl border-2 border-dark bg-light " +
+  "px-4 py-3 font-bold text-xl text-dark cursor-pointer hover:border-gray hover:shadow-sm transition-colors duration-150";
+
+const dropdownClass =
+  "absolute top-full left-0 mt-1 w-full z-[1000] flex flex-col max-h-[45vh] overflow-y-auto " +
+  "rounded-xl border border-borderLight bg-light shadow-md activity-scrollbar";
+
+export default function LessonSelection({ onGo, styleType = "page" }) {
+  const isProfile = styleType === "profile";
 
   const navigate = useNavigate();
   const [showScenarios, setShowScenarios] = useState(false);
   const [showLessons, setShowLessons] = useState(false);
-
   const [cookies] = useCookies(['piece', 'login']);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [isLessonsLoading, setLoadingLessons] = useState(false);
-  const [unlockedLessonCount, setUnlockedLessonCount] = useState(0); // Renamed for clarity
+  const [unlockedLessonCount, setUnlockedLessonCount] = useState(0);
   const [scenarios, setScenarios] = useState([]);
   const [lessons, setLessons] = useState([]);
   const scenarioRef = useRef(null);
   const lessonRef = useRef(null);
   const [error, setError] = useState("");
+  const [errorKey, setErrorKey] = useState(0);
 
-  // Effect to fetch the list of scenarios when the component mounts.
-  useEffect(() => {
-    const scenarioList = getAllScenarios()
-    setScenarios(scenarioList);
+  const showError = useCallback((msg) => {
+    setError(msg);
+    setErrorKey(k => k + 1);
   }, []);
 
-  // Function to determine the numerical index of a given lesson within a scenario.
+  useEffect(() => {
+    setScenarios(getAllScenarios());
+  }, []);
+
   const getLessonIndex = useCallback((scenarioName, lessonName) => {
     const scenario = scenarios.find(s => s.name === scenarioName);
     if (!scenario) return -1;
-
     return scenario.subSections.findIndex(sub => sub.name === lessonName);
   }, [scenarios]);
 
-  // Handles the click event on a scenario item.
   const handleScenarioClick = useCallback((scenarioName) => {
     setShowLessons(false);
     setShowScenarios(false);
-    setSelectedLesson(null); // Clear selected lesson when scenario changes
+    setSelectedLesson(null);
     setSelectedScenario(scenarioName);
     setLoadingLessons(true);
   }, []);
 
-  // Handles the click event on a lesson item.
   const handleLessonClick = useCallback((lessonName) => {
     setShowLessons(false);
     setShowScenarios(false);
     setSelectedLesson(lessonName);
   }, []);
 
-  // Handles the submission (click on the "Go!" button) to navigate to the selected lesson.
   const handleSubmit = async () => {
     if (!selectedLesson || !selectedScenario) {
-      setError("Please select a scenario and a lesson.");
+      showError("Please select a scenario and a lesson.");
       return;
     }
-
     const lessonNum = getLessonIndex(selectedScenario, selectedLesson);
     if (lessonNum === -1) {
-      setError("Could not find the selected lesson's index.");
+      showError("Could not find the selected lesson's index.");
       return;
     }
-
     if (onGo) {
       onGo(selectedScenario, lessonNum);
     } else {
@@ -77,7 +92,6 @@ export default function LessonSelection({ onGo, styleType = "page" }) { // what 
     }
   };
 
-  // Effect hook to update the list of lessons when the selected scenario or login cookie changes.
   useEffect(() => {
     async function fetchLessonsForScenario() {
       if (!selectedScenario) {
@@ -85,50 +99,34 @@ export default function LessonSelection({ onGo, styleType = "page" }) { // what 
         setLoadingLessons(false);
         return;
       }
-
       const currentScenario = scenarios.find(s => s.name === selectedScenario);
       if (!currentScenario) {
         setLessons([]);
         setLoadingLessons(false);
         return;
       }
-
       setLoadingLessons(true);
-
       let unlocked = 0;
       if (!cookies.login) {
-        // Non-logged users: expose all lessons
         unlocked = currentScenario.subSections.length;
       } else {
-        // Logged users: ask backend for how many lessons they have completed
         try {
           const response = await fetch(
             `${environment.urls.middlewareURL}/lessons/getCompletedLessonCount?piece=${selectedScenario}`,
-            {
-              method: 'GET',
-              headers: { 'Authorization': `Bearer ${cookies.login}` }
-            }
+            { method: 'GET', headers: { 'Authorization': `Bearer ${cookies.login}` } }
           );
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
           unlocked = await response.json();
-        } catch (error) {
-          console.error('Error fetching unlocked lesson count:', error);
-          unlocked = 0; // Default to 0 unlocked lessons on error
+        } catch (err) {
+          console.error('Error fetching unlocked lesson count:', err);
+          unlocked = 0;
         }
       }
-
-      // Determine available lessons
       const maxIndex = Math.min(unlocked, currentScenario.subSections.length - 1);
       const availableLessons = currentScenario.subSections.slice(0, maxIndex + 1);
-
-      // Always show at least the first lesson
       if (availableLessons.length === 0 && currentScenario.subSections[0]) {
         availableLessons.push(currentScenario.subSections[0]);
       }
-
       setLessons(availableLessons);
       setUnlockedLessonCount(unlocked);
       setLoadingLessons(false);
@@ -138,115 +136,104 @@ export default function LessonSelection({ onGo, styleType = "page" }) { // what 
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        scenarioRef.current &&
-        !scenarioRef.current.contains(event.target)
-      ) {
+      if (scenarioRef.current && !scenarioRef.current.contains(event.target)) {
         setShowScenarios(false);
       }
-
-      if (
-        lessonRef.current &&
-        !lessonRef.current.contains(event.target)
-      ) {
+      if (lessonRef.current && !lessonRef.current.contains(event.target)) {
         setShowLessons(false);
       }
     };
-
     document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const renderedScenarios = useMemo(() =>
+    scenarios.map((s) => (
+      <ScenarioItem key={s.name} scenario={s} onClick={() => handleScenarioClick(s.name)} />
+    )), [scenarios, handleScenarioClick]);
 
-  const renderedScenarios = useMemo(() => {
-    return scenarios.map((scenarioItem) => (
-      <ScenarioTemplate
-        key={scenarioItem.name}
-        scenario={scenarioItem}
-        onClick={() => handleScenarioClick(scenarioItem.name)}
-        styles={styles}
-      />
-    ));
-  }, [scenarios, styles, handleScenarioClick]);
+  const renderedLessons = useMemo(() =>
+    lessons.map((l) => (
+      <LessonItem key={l.name} lesson={l} onClick={() => handleLessonClick(l.name)} />
+    )), [lessons, handleLessonClick]);
 
-  const renderedLessons = useMemo(() => {
-    return lessons.map((lessonItem) => (
-      <LessonTemplate
-        key={lessonItem.name}
-        lesson={lessonItem}
-        onClick={() => handleLessonClick(lessonItem.name)}
-        styles={styles}
-      />
-    ));
-  }, [lessons, styles, handleLessonClick]);
+  // Profile mode: narrower selectors (80% of a 50vw container)
+  // Page mode: full-width selectors up to 70vw
+  const wrapperMaxWidth = isProfile ? "max-w-[50vw]" : "max-w-[70vw] sm:max-w-[90vw]";
+  const innerWidth = isProfile ? "w-4/5" : "w-full";
 
   return (
-    <div className={styles.wholePage}>
-      <div className={styles.title} data-testid="title">
+    <div className={
+      isProfile
+        ? "mt-[20%] flex flex-col items-center"
+        : "flex flex-col items-center pt-[15vh] px-4"
+    }>
+      <h1
+        className="text-3xl font-bold text-dark mb-8 text-center"
+        data-testid="title"
+      >
         Lesson Selection
-      </div>
-      {/* Dropdown-like selector for choosing a scenario. */}
-      <div className={styles.selectorWrapper}>
-        <div ref={scenarioRef} className={styles.selector} data-testid="scenario-selector" onClick={() => setShowScenarios(!showScenarios)}>
-          <div>
-            {selectedScenario || "Select a scenario"}
+      </h1>
+
+      {/* Scenario dropdown */}
+      <div className={`w-full mb-5 flex flex-col items-center ${wrapperMaxWidth}`}>
+        <div className={`relative ${innerWidth}`}>
+          <div
+            ref={scenarioRef}
+            className={selectorClass}
+            data-testid="scenario-selector"
+            onClick={() => setShowScenarios(!showScenarios)}
+          >
+            <span>{selectedScenario || "Select a scenario"}</span>
+            <span className="mr-2 select-none">{showScenarios ? "▼" : "▲"}</span>
           </div>
-          <div style={{ marginRight: "1rem" }}>
-            {showScenarios ? "▼" : "▲"}
-          </div>
+          {showScenarios && (
+            <div className={dropdownClass}>
+              {renderedScenarios}
+            </div>
+          )}
         </div>
-
-        {/* Conditional rendering of the scenarios list. */}
-        {showScenarios && (
-          <div className={styles.dropdownContainer}>
-            {renderedScenarios}
-          </div>
-        )}
       </div>
 
-      {/* Dropdown-like selector for choosing a lesson within the selected scenario. */}
-      <div className={styles.selectorWrapper}>
-        <div ref={lessonRef} className={styles.selector} data-testid="lesson-selector"
-          onClick={() => {
-            if (!selectedScenario) {
-              setError("Please select a scenario first.");
-              setTimeout(() => setError(""), 2500); // auto-clear after 2.5s
-              return;
-            }
-            setShowLessons(!showLessons);
-          }}>
-          <div>
-            {selectedLesson || "Select a lesson"}
+      {/* Lesson dropdown */}
+      <div className={`w-full mb-5 flex flex-col items-center ${wrapperMaxWidth}`}>
+        <div className={`relative ${innerWidth}`}>
+          <div
+            ref={lessonRef}
+            className={selectorClass}
+            data-testid="lesson-selector"
+            onClick={() => {
+              if (!selectedScenario) {
+                showError("Please select a scenario first.");
+                return;
+              }
+              setShowLessons(!showLessons);
+            }}
+          >
+            <span>{selectedLesson || "Select a lesson"}</span>
+            <span className="mr-2 select-none">{showLessons ? "▼" : "▲"}</span>
           </div>
-          <div style={{ marginRight: "1rem" }}>
-            {showLessons ? "▼" : "▲"}
-          </div>
+          {showLessons && (
+            <div className={dropdownClass}>
+              {isLessonsLoading
+                ? <div className={itemClass}>Loading...</div>
+                : renderedLessons
+              }
+            </div>
+          )}
         </div>
-
-        {/* Conditional rendering of the lessons list for the selected scenario. */}
-        {showLessons && (
-          <div className={styles.dropdownContainer}>
-            {isLessonsLoading ? (
-              <div className={styles.itemTemplate}>Loading...</div>
-            ) : (renderedLessons)
-            }
-          </div>
-        )}
       </div>
 
-      <div className={styles.inlineMessageWrapper}>
+      {/* Inline error message */}
+      <div className={`w-full min-h-[3rem] flex items-center ${isProfile ? "max-w-[40vw]" : "max-w-[70vw] sm:max-w-[90vw]"}`}>
         {error && (
-          <div className={styles.inlineMessage}>
+          <div key={errorKey} className="w-full text-md text-red bg-redLight border-l-4 border-red px-3 py-2 rounded animate-fade-out">
             {error}
           </div>
         )}
       </div>
 
-
-      {/* Button to submit the selection and navigate to the lesson. */}
-      <button className={styles.enterInfo} data-testid="enterInfo" onClick={handleSubmit}>
+      <button className="btn-green mt-4 mb-12" data-testid="enterInfo" onClick={handleSubmit}>
         Go!
       </button>
     </div>

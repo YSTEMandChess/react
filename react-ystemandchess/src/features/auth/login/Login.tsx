@@ -1,15 +1,16 @@
-import React from 'react';
-// import { Link } from 'react-router-dom';
-import './Login.scss';
+import React from "react";
 import { useState } from 'react';
 import { environment } from "../../../environments/environment";
 import { useCookies } from 'react-cookie';
+import stemmy from "../../../assets/images/StreakProgressAssets/stemmy.svg";
+import stemette from "../../../assets/images/StreakProgressAssets/stemette.svg";
+import treesGroup from "../../../assets/images/Trees-Group.png";
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [cookies, setCookie] = useCookies(['login']);
-  const [loginError, setLoginError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [cookies, setCookie] = useCookies(["login"]);
+  const [loginError, setLoginError] = useState("");
   const [usernameFlag, setUsernameFlag] = useState(false);
   const [passwordFlag, setPasswordFlag] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +36,7 @@ const Login = () => {
     if (passwordFlag === true || usernameFlag === true) {
       setLoginError('Invalid username or password');
     } else {
-      setLoginError('');
+      setLoginError("");
     }
   };
 
@@ -47,9 +48,10 @@ const Login = () => {
       setUsernameFlag(true);
       setPasswordFlag(true);
       setLoginError('Invalid username or password');
+      setIsLoading(false);
       return;
     } else {
-      setLoginError('');
+      setLoginError("");
     }
 
     let url = `${environment.urls.middlewareURL}/auth/login?username=${username}&password=${password}`;
@@ -67,7 +69,7 @@ const Login = () => {
           }
         }
       };
-      xmlHttp.open('POST', theUrl, true);
+      xmlHttp.open("POST", theUrl, true);
       xmlHttp.send(null);
     };
 
@@ -80,86 +82,144 @@ const Login = () => {
         expires.setDate(expires.getDate() + 1);
         setCookie('login', JSON.parse(response).token, { expires });
 
-        let payload = JSON.parse(atob(response.split('.')[1]));
-        console.log(payload)
+        let payload = JSON.parse(atob(response.split(".")[1]));
+        console.log(payload);
 
-        switch (payload['role']) {
-          case 'student':
-            window.location.pathname = '/student-profile';
-            console.log(payload['role'])
+        switch (payload["role"]) {
+          case "student":
+            window.location.pathname = "/student-profile";
+            console.log(payload["role"]);
             break;
-          case 'parent':
-            window.location.pathname = '/parent';
+          case "parent":
+            window.location.pathname = "/signup/parent/section";
             break;
-          case 'mentor':
-            window.location.pathname = '/mentor-profile';
+          case "mentor":
+            window.location.pathname = "/mentor-profile";
             break;
-          case 'admin':
-            window.location.pathname = '/admin';
+          case "admin":
+            window.location.pathname = "/admin";
             break;
           default:
-            window.location.pathname = '';
+            window.location.pathname = "";
         }
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }, () => {
       setLoginError('The username or password is incorrect.');
       setIsLoading(false);
     });
   };
 
-  return (
-    <div className='login-page'>
-      <h1 className='login-title'>Login</h1>
-      {loginError && <div className='login-error' role="alert">{loginError}</div>}
+  const inputClass = (invalid: boolean) =>
+    `w-full rounded-lg border-2 px-4 py-3 text-sm text-dark bg-white caret-dark
+     focus:outline-none focus:shadow-none transition-colors ${
+      invalid ? "border-red" : "border-borderLight focus:border-primary"
+    }`;
 
-      <form className='login-form' aria-label="Login Form" aria-busy={isLoading} onSubmit={submitLogin}>
-        <div className='input-wrapper'>
-          <label htmlFor='username' id="username-label">Username</label>
+  return (
+    <div className="relative min-h-[71vh] flex flex-col items-center justify-center px-4 py-12 overflow-x-hidden">
+      <img
+        src={treesGroup}
+        alt=""
+        aria-hidden="true"
+        className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 w-[36rem] xl:w-[40rem] h-auto pointer-events-none"
+      />
+
+      <img
+        src={stemmy}
+        alt=""
+        aria-hidden="true"
+        className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-72 xl:w-80 h-auto pointer-events-none translate-x-[10%]"
+      />
+
+      <h1 className="text-3xl font-bold text-dark mb-6 text-center">Login</h1>
+
+      {loginError && (
+        <p className="text-red font-semibold mb-4 text-center" role="alert">
+          {loginError}
+        </p>
+      )}
+
+      <form
+        className="relative w-full max-w-sm bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-6"
+        aria-label="Login Form"
+        aria-busy={isLoading}
+        onSubmit={submitLogin}
+      >
+        <img
+          src={stemette}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 translate-x-full w-60 h-auto"
+        />
+        <img
+          src={stemmy}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute top-14 -left-24 -translate-y-1/2 w-24 h-auto"
+        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="username" id="username-label" className="text-sm font-bold text-dark">
+            Username
+          </label>
           <input
-            type='text'
-            name='username'
-            id='username'
-            placeholder='Username'
+            type="text"
+            name="username"
+            id="username"
+            placeholder="Username"
             value={username}
             onChange={(e) => {
               setUsername(e.target.value);
               //usernameVerification();
             }}
-            aria-describedby='loginError-h3'
+            aria-describedby="loginError-h3"
             aria-invalid={usernameFlag}
             required
+            className={inputClass(usernameFlag)}
           />
         </div>
-        <div className='input-wrapper'>
-          <label htmlFor='password' id="password-label">Password</label>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="password" id="password-label" className="text-sm font-bold text-dark">
+            Password
+          </label>
           <input
-            type='password'
-            name='password'
-            placeholder='Password'
-            id='password'
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
               //passwordVerification();
             }}
-            aria-describedby='loginError-h3'
+            aria-describedby="loginError-h3"
             aria-invalid={passwordFlag}
             required
+            className={inputClass(passwordFlag)}
           />
         </div>
-        <div className='button-wrapper'>
-          <button type='submit' aria-label='Login Button' disabled={isLoading}>
-          Enter
-        </button>
+
+        <div className="flex justify-center pt-2">
+          <button
+            type="submit"
+            aria-label="Login Button"
+            disabled={isLoading}
+            className="btn-green px-10"
+          >
+            Enter
+          </button>
         </div>
       </form>
 
-      <nav className='login-links' aria-label="Account Options">
-        <a href='/signup'>
-          Create a new account
-        </a>
-        <a href='/reset-password'>
+      <nav
+        className="mt-6 flex flex-wrap justify-center gap-6 text-sm font-bold"
+        aria-label="Account Options"
+      >
+        <a
+          href="/reset-password"
+          className="text-dark border-b-2 border-transparent hover:border-dark transition-colors"
+        >
           Forgot password?
         </a>
       </nav>

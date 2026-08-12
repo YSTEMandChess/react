@@ -84,8 +84,10 @@ export const SetPermissionLevel: SetPermissionLevelType<any> = async (cookies: a
       rawData.includes("Unauthorized") ||
       rawData.includes("Error 405: User authentication is not valid or expired")
     ) {
-      // Remove the invalid cookie from the browser
-      removeCookie(cookieName);
+      // Remove the invalid cookie from the browser when a remover is provided
+      if (typeof removeCookie === "function") {
+        removeCookie(cookieName);
+      }
       
       // Return an error object indicating authentication failure
       return {
@@ -105,4 +107,3 @@ export const SetPermissionLevel: SetPermissionLevelType<any> = async (cookies: a
     return { error: "User is not logged in" };
   }
 };
-

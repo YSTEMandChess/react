@@ -1,3 +1,4 @@
+export type PieceSymbol = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
 export type PlayerColor = "white" | "black";
 export type GameMode = "regular" | "puzzle" | "lesson";
 export type UserRole = "mentor" | "student" | "host" | "guest";

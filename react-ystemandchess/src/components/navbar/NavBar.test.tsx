@@ -67,6 +67,40 @@ describe("NavBar", () => {
     expect(screen.queryByText(/Alice/i)).toBeNull();
   });
 
+  test("shows Analytics link for admin role, hides it for other roles", async () => {
+    mockedUseCookies.mockReturnValue([
+      { login: "mockToken" },
+      jest.fn(),
+      jest.fn(),
+    ]);
+    mockedSetPermissionLevel.mockResolvedValue({
+      username: "Admin",
+      role: "admin",
+    });
+
+    renderNavBar();
+
+    await screen.findByRole("button", { name: /Admin/i });
+    expect(screen.getByText("Analytics")).toBeInTheDocument();
+  });
+
+  test("hides Analytics link for non-admin role", async () => {
+    mockedUseCookies.mockReturnValue([
+      { login: "mockToken" },
+      jest.fn(),
+      jest.fn(),
+    ]);
+    mockedSetPermissionLevel.mockResolvedValue({
+      username: "Alice",
+      role: "student",
+    });
+
+    renderNavBar();
+
+    await screen.findByRole("button", { name: /Alice/i });
+    expect(screen.queryByText("Analytics")).toBeNull();
+  });
+
   test("renders username and hides Login when user is logged in", async () => {
     mockedUseCookies.mockReturnValue([
       { login: "mockToken" },
@@ -114,7 +148,7 @@ describe("NavBar", () => {
     const addStudentLink = await screen.findByText(/Add Student/i);
     expect(addStudentLink.closest("a")).toHaveAttribute(
       "href",
-      "/parent-add-student",
+      "/signup/parent/add-child",
     );
   });
 

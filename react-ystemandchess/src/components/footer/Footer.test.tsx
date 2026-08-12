@@ -1,44 +1,55 @@
 import { render, screen } from "@testing-library/react";
 import Footer from "./Footer";
 
+test("renders branding and mission statement", () => {
+  render(<Footer />);
+
+  expect(screen.getByText("YSTEM")).toBeInTheDocument();
+  expect(screen.getByText("&CHESS")).toBeInTheDocument();
+  expect(
+    screen.getByText("Empowering Tomorrow's STEM Leaders"),
+  ).toBeInTheDocument();
+});
+
+test("renders contact info with correct links", () => {
+  render(<Footer />);
+
+  const callLink = screen.getByText("Call Us").closest("a");
+  expect(callLink).toHaveAttribute("href", "tel:+12089965071");
+
+  const emailLink = screen.getByText("Email Us").closest("a");
+  expect(emailLink).toHaveAttribute("href", "mailto:info@ystemandchess.com");
+});
+
 test("renders social media links with correct hrefs", () => {
   render(<Footer />);
 
-  const twitter = screen.getByAltText("twitter-icon");
-  const instagram = screen.getByAltText("instagram-icon");
-  const facebook = screen.getByAltText("facebook-icon");
-  const google = screen.getByAltText("google-icon");
-
-  expect(twitter).toBeInTheDocument();
-  expect(instagram).toBeInTheDocument();
-  expect(facebook).toBeInTheDocument();
-  expect(google).toBeInTheDocument();
-
-  expect(twitter.closest("a")?.getAttribute("href")).toBe("/");
-  expect(instagram.closest("a")?.getAttribute("href")).toBe(
-    "https://www.instagram.com/stemwithstemy/",
+  expect(screen.getByLabelText("Facebook")).toHaveAttribute(
+    "href",
+    "https://web.facebook.com/YSTEMandChess",
   );
-  expect(facebook.closest("a")?.getAttribute("href")).toBe(
-    "https://www.facebook.com/YSTEMandChess/",
+  expect(screen.getByLabelText("Instagram")).toHaveAttribute(
+    "href",
+    "https://www.instagram.com/stemwithstemy",
   );
-  expect(google.closest("a")?.getAttribute("href")).toBe("/");
+  expect(screen.getByLabelText("Twitter")).toHaveAttribute(
+    "href",
+    "https://x.com/ystemandchess",
+  );
+  expect(screen.getByLabelText("LinkedIn")).toHaveAttribute(
+    "href",
+    "https://www.linkedin.com/company/ystemandchessinc",
+  );
 });
 
-test("renders sponsor logos", () => {
+test("renders copyright with current year and Play/Learn/Empower tags", () => {
   render(<Footer />);
 
-  expect(screen.getByAltText("ventive-logo")).toBeInTheDocument();
-  expect(screen.getByAltText("kount-logo")).toBeInTheDocument();
-  expect(screen.getByAltText("idahoCentral-logo")).toBeInTheDocument();
-  expect(screen.getByAltText("PH-logo")).toBeInTheDocument();
-});
-
-test("renders partner logos", () => {
-  render(<Footer />);
-
-  expect(screen.getByAltText("boiseRescue-logo")).toBeInTheDocument();
-  expect(screen.getByAltText("boysAndGirls-logo")).toBeInTheDocument();
-  expect(screen.getByAltText("possible-logo")).toBeInTheDocument();
-  expect(screen.getByAltText("boiseDistrict-logo")).toBeInTheDocument();
-  expect(screen.getByAltText("rotary-logo")).toBeInTheDocument();
+  const year = new Date().getFullYear();
+  expect(
+    screen.getByText(`© ${year} Y STEM AND CHESS INC. | Boise, Idaho`),
+  ).toBeInTheDocument();
+  expect(screen.getByText("Play")).toBeInTheDocument();
+  expect(screen.getByText("Learn")).toBeInTheDocument();
+  expect(screen.getByText("Empower")).toBeInTheDocument();
 });

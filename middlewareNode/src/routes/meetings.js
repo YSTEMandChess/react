@@ -9,14 +9,19 @@
  * - Video meeting room management with Agora
  * - Cloud recording start/stop via Agora API
  * - Chess move storage during meetings
- * - AWS S3 integration for recording retrieval
+ * - Azure Blob Storage integration for recording retrieval
  * - Undo permission management for chess moves
  */
 
 const express = require("express");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
-const AWS = require("aws-sdk");
+const {
+  BlobServiceClient,
+  StorageSharedKeyCredential,
+  generateBlobSASQueryParameters,
+  BlobSASPermissions,
+} = require("@azure/storage-blob");
 const config = require("config");
 const requestIp = require("request-ip");
 const { v4: uuidv4 } = require("uuid");
@@ -35,11 +40,11 @@ var isBusy = false;
 /**
  * GET /meetings/singleRecording
  * 
- * Generates a presigned URL for accessing a meeting recording from AWS S3.
+ * Generates a SAS URL for accessing a meeting recording from Azure Blob Storage.
  * URL expires after 7 days for security.
- * 
+ *
  * Query Parameters:
- * - filename: Name of the recording file in S3
+ * - filename: Name of the recording blob in the Azure container
  * 
  * @access JWT authentication required
  */
@@ -49,24 +54,31 @@ router.get(
   passport.authenticate("jwt"),
   async (req, res) => {
     try {
-      console.log(config.get("awsSecretKey"));
-      const s3Config = {
-        apiVersion: "latest",
-        region: "us-east-2",
-        accessKeyId: config.get("awsAccessKey"),
-        secretAccessKey: config.get("awsSecretKey"),
-      };
+      const account = config.get("azureStorageAccount");
+      const accountKey = config.get("azureStorageKey");
+      const container = config.get("azureContainer");
+      const filename = req.query.filename;
 
-      var s3 = new AWS.S3(s3Config);
+      const credential = new StorageSharedKeyCredential(account, accountKey);
+      const blobClient = new BlobServiceClient(
+        `https://${account}.blob.core.windows.net`,
+        credential
+      )
+        .getContainerClient(container)
+        .getBlobClient(filename);
 
-      const params = {
-        Bucket: "ystemandchess-meeting-recordings",
-        Key: req.query.filename,
-        Expires: 604800,
-      };
+      // Read-only SAS token, 7-day expiry (matches previous S3 Expires: 604800).
+      const sas = generateBlobSASQueryParameters(
+        {
+          containerName: container,
+          blobName: filename,
+          permissions: BlobSASPermissions.parse("r"),
+          expiresOn: new Date(Date.now() + 604800 * 1000),
+        },
+        credential
+      ).toString();
 
-      const url = s3.getSignedUrl("getObject", params);
-      console.log(url);
+      const url = `${blobClient.url}?${sas}`;
       res.status(200).json(url);
     } catch (error) {
       console.error(error.message);

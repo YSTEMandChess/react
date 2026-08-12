@@ -1,0 +1,10 @@
+{
+  "events": [
+    { "eventType": "lesson",  "eventName": "Bishop Basics",      "startTime": "2026-05-03T14:00:00Z", "totalTime": 1800 },
+    { "eventType": "puzzle",  "eventName": "Puzzle #142",         "startTime": "2026-05-03T10:30:00Z", "totalTime": 600  },
+    { "eventType": "play",    "eventName": "Game vs stockfish",   "startTime": "2026-05-02T18:00:00Z", "totalTime": 3600 },
+    { "eventType": "mentor",  "eventName": "Session with mentor", "startTime": "2026-05-01T16:00:00Z", "totalTime": 2700 },
+    { "eventType": "lesson",  "eventName": "Rook Endgames",       "startTime": "2026-04-30T13:00:00Z", "totalTime": 2100 }
+  ],
+  "hasMore": true
+}

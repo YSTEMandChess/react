@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
-import { Chess } from "chess.js";
 import { Move, BoardState, MousePosition, GameConfig, GameMode, PlayerColor } from "../../../../../core/types/chess";
 
 interface UseChessSocketOptions {
@@ -58,20 +57,6 @@ const normalizeFen = (fen: string): string => {
   }
 
   return paddedParts.join(" ");
-};
-
-// ======== SAFE CHESS INSTANCE CREATION ========
-const createSafeChessInstance = (fen?: string): Chess => {
-  try {
-    if (fen) {
-      const normalizedFen = normalizeFen(fen);
-      return new Chess(normalizedFen);
-    }
-    return new Chess();
-  } catch (err) {
-    console.error("Failed to create Chess instance with FEN:", fen, err);
-    return new Chess(); // Return default starting position
-  }
 };
 
 export const useChessSocket = ({
