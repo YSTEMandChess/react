@@ -9,8 +9,8 @@ import ChessBoard, {
 import { environment } from "../../environments/environment";
 import { useSocketChessEngine } from "../lessons/piece-lessons/lesson-overlay/hooks/useSocketChessEngine";
 import { useChessSocket } from "../lessons/piece-lessons/lesson-overlay/hooks/useChessSocket";
-import type { GameMetaData } from "./SelectGame";
-import type { User } from "./SelectGame";
+import type { GameMetaData } from "../../core/types/gamemetadata";
+import type { User } from "../../core/types/gamemetadata";
 import { useCookies } from "react-cookie";
 import { SetPermissionLevel } from "../../globals";
 //Ideas

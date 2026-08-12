@@ -499,7 +499,7 @@ const LessonOverlay: React.FC<LessonOverlayProps> = ({
     setShowInstruction(true);
 
     // Check if all lessons completed
-    if (!lessonData.lessonNum && lessonNum >= totalLessons - 1) {
+    if (!lessonData.lessonNum && lessonNum >= totalLessons-1) {
       setAllLessonsDone(true);
       return;
     }
