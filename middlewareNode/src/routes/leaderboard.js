@@ -10,12 +10,14 @@
  * the same helpers the admin analytics dashboard uses, so the two features
  * can never silently disagree about a student's numbers.
  *
- * Score weights are configurable via env vars so they can be tuned per
- * environment without a deploy:
- *   LEADERBOARD_WEIGHT_TIME     (default 1)   — per hour of puzzle+lesson time
+ * Score weights are finalized and configurable via env vars so they can be
+ * tuned per environment without a deploy:
+ *   LEADERBOARD_WEIGHT_TIME     (default 0.5) — per hour of puzzle+lesson time
  *   LEADERBOARD_WEIGHT_STREAK   (default 5)   — per consecutive-day streak
  *   LEADERBOARD_WEIGHT_BADGE    (default 10)  — per badge earned
  *   LEADERBOARD_WEIGHT_ACTIVITY (default 3)   — per activity completed
+ *
+ * Final influence order: badge > streak > activity > time.
  *
  * `score` above measures ENGAGEMENT. Student-vs-student chess results are a
  * different signal (competitive skill), so they are reported alongside it as a
@@ -47,9 +49,10 @@ const {
   getChessRecords,
 } = require("../utils/studentStats");
 const { getAvatarUrl } = require("../utils/avatars");
-
+// Final approved default weights. Environment variables may override them
+// where explicitly configured.
 const WEIGHTS = {
-  time: parseFloat(process.env.LEADERBOARD_WEIGHT_TIME) || 1,
+  time: parseFloat(process.env.LEADERBOARD_WEIGHT_TIME) || 0.5,
   streak: parseFloat(process.env.LEADERBOARD_WEIGHT_STREAK) || 5,
   badge: parseFloat(process.env.LEADERBOARD_WEIGHT_BADGE) || 10,
   activity: parseFloat(process.env.LEADERBOARD_WEIGHT_ACTIVITY) || 3,
@@ -81,7 +84,7 @@ function escapeRegex(value) {
 
 /**
  * Computes the composite ENGAGEMENT score for one student from existing stat
- * helpers. Placeholder weighting — confirm with product before treating as final.
+ * helpers using the finalized leaderboard weights.
  *
  * Chess results are intentionally absent here; they are surfaced as their own
  * column (see the module header) rather than folded into this number.

@@ -136,6 +136,29 @@ describe("GET /leaderboard", () => {
     expect(res.body.data.leaderboard[0].username).toBe("alice"); // highest score
   });
 
+  test("uses the finalized 0.5 time weight when time is the only scoring input", async () => {
+    Users.find.mockResolvedValue([
+      { _id: "1", username: "time-only", country: "USA", state: "FL", school: "Test School" },
+    ]);
+    studentStats.getUserTimeStats.mockImplementation(async () => ({
+      puzzleTimeHours: 2,
+      lessonTimeHours: 0,
+      totalTimeHours: 0,
+      gameTimeHours: 0,
+      mentorTimeHours: 0,
+    }));
+    studentStats.getUserStreak.mockImplementation(async () => 0);
+    studentStats.getActivitiesCompleted.mockImplementation(async () => 0);
+    studentStats.getBadgesEarned.mockImplementation(async () => 0);
+    studentStats.getChessRecords.mockImplementation(async (usernames) =>
+      new Map(usernames.map((u) => [u, { wins: 0, draws: 0, losses: 0, gamesPlayed: 0, chessScore: 0 }]))
+    );
+
+    const res = await request(app).get("/leaderboard");
+
+    expect(res.body.data.leaderboard[0].score).toBe(1);
+  });
+
   test("sortBy=name sorts alphabetically", async () => {
     const res = await request(app).get("/leaderboard?sortBy=name&sortDir=asc");
     const names = res.body.data.leaderboard.map((e) => e.username);
