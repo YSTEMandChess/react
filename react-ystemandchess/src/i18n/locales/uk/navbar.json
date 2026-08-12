@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Програми",
+    "mentor": "Ментор",
+    "learn": "Навчання",
+    "play": "Грати",
+    "lessons": "Уроки",
+    "puzzles": "Головоломки",
+    "login": "Увійти"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Про нас",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Про нас",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Реєстрація",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Профіль",
+    "addStudent": "Add Student",
+    "logout": "Вийти"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

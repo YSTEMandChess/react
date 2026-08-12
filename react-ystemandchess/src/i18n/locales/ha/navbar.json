@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Shirye-shirye",
+    "mentor": "Malami",
+    "learn": "Koya",
+    "play": "Yi wasa",
+    "lessons": "Darussa",
+    "puzzles": "Cakuda",
+    "login": "Shiga"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Game da mu",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Game da mu",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Yin rajista",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Fasali",
+    "addStudent": "Add Student",
+    "logout": "Fita"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Programos",
+    "mentor": "Mentorius",
+    "learn": "Mokytis",
+    "play": "Žaisti",
+    "lessons": "Pamokos",
+    "puzzles": "Galvosūkiai",
+    "login": "Prisijungti"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Apie mus",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Apie mus",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Registruotis",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profilis",
+    "addStudent": "Add Student",
+    "logout": "Atsijungti"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

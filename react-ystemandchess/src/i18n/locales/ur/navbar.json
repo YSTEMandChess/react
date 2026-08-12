@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "پروگرامز",
+    "mentor": "مینٹور",
+    "learn": "سیکھیں",
+    "play": "کھیلیں",
+    "lessons": "سبق",
+    "puzzles": "پہلیاں",
+    "login": "لاگ ان"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "ہمارے بارے میں",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "ہمارے بارے میں",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "سائن اپ",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "پروفائل",
+    "addStudent": "Add Student",
+    "logout": "لاگ آؤٹ"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

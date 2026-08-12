@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Izinhlelo",
+    "mentor": "Umeluleki",
+    "learn": "Funda",
+    "play": "Dlala",
+    "lessons": "Izifundo",
+    "puzzles": "Izimfihlo",
+    "login": "Ngena"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Mayelana Nathi",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Mayelana Nathi",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Bhalisa",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Iphrofayili",
+    "addStudent": "Add Student",
+    "logout": "Phuma"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "အစီအစဉ်များ",
+    "mentor": "လမ်းညွှန်",
+    "learn": "လေ့လာပါ",
+    "play": "ကစားပါ",
+    "lessons": "သင်ခန်းစာများ",
+    "puzzles": "ပဟေဠိများ",
+    "login": "ဝင်ရောက်ပါ"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "ကျွန်ုပ်တို့အကြောင်း",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "ကျွန်ုပ်တို့အကြောင်း",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "စာရင်းသွင်းပါ",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "ကိုယ်ရေးအကျဉ်း",
+    "addStudent": "Add Student",
+    "logout": "ထွက်ပါ"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

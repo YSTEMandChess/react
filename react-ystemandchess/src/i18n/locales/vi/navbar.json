@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Chương trình",
+    "mentor": "Cố vấn",
+    "learn": "Học",
+    "play": "Chơi",
+    "lessons": "Bài học",
+    "puzzles": "Puzzles",
+    "login": "Đăng nhập"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Về chúng tôi",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Về chúng tôi",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Đăng ký",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Hồ sơ",
+    "addStudent": "Add Student",
+    "logout": "Đăng xuất"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

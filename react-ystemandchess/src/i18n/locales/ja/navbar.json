@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "プログラム",
+    "mentor": "メンター",
+    "learn": "学ぶ",
+    "play": "プレイ",
+    "lessons": "レッスン",
+    "puzzles": "パズル",
+    "login": "ログイン"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "私たちについて",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "私たちについて",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "サインアップ",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "プロフィール",
+    "addStudent": "Add Student",
+    "logout": "ログアウト"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

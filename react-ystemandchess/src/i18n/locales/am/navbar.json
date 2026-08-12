@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "ፕሮግራሞች",
+    "mentor": "አማካሪ",
+    "learn": "ይማሩ",
+    "play": "ይጫወቱ",
+    "lessons": "ትምህርቶች",
+    "puzzles": "እንቆቅልሾች",
+    "login": "ይግቡ"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "ስለ እኛ",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "ስለ እኛ",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "ይምዝገቡ",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "መገለጫ",
+    "addStudent": "Add Student",
+    "logout": "ይውጡ"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

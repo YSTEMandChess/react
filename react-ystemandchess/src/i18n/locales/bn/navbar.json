@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "প্রোগ্রামসমূহ",
+    "mentor": "মেন্টর",
+    "learn": "শিখুন",
+    "play": "খেলুন",
+    "lessons": "পাঠসমূহ",
+    "puzzles": "ধাঁধা",
+    "login": "লগইন"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "আমাদের সম্পর্কে",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "আমাদের সম্পর্কে",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "সাইন আপ",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "প্রোফাইল",
+    "addStudent": "Add Student",
+    "logout": "লগ আউট"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

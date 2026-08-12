@@ -1,0 +1,44 @@
+{
+  "title": "Helping your child develop critical thinking skills",
+  "heroText1": "We are a nonprofit organization empowering children to find their own success in STEM through Chess, Math and Computer Science.",
+  "heroText2": "Our mission is to Empower children with an opportunity to pursue STEM careers and change their life trajectories.",
+  "heroText3": "We teach underserved children chess, math, and computer science to empower them to pursue STEM majors/professions with the support of professionals",
+  "inclusion": "Everyone is included. Everyone is welcomed.",
+  "cards": {
+    "free": {
+      "title": "အခမဲ့",
+      "text": "For students who qualify for free and reduced lunch. Our lessons are free.",
+      "button": "Join Now!"
+    },
+    "premium": {
+      "title": "ပရီမီယံ",
+      "text": "For students who don't qualify for free and reduced lunch. $25 / week. First lesson is FREE. Cancel anytime.",
+      "button": "Apply Now!"
+    }
+  },
+  "weOffer": {
+    "title": "We Offer",
+    "math": "Math Tutoring",
+    "chess": "Chess",
+    "python": "Python",
+    "mentoring": "Mentoring",
+    "personalDev": "Personal Development",
+    "linux": "Linux",
+    "studyHabits": "Study Habits",
+    "careers": "Careers in Computer Science and STEM",
+    "java": "Java",
+    "button": "Apply Now!"
+  },
+  "currentStatus": {
+    "title": "Current Status",
+    "stateQualifiers": "State Qualifiers",
+    "stateChampions": "State Champions",
+    "nationalQualifiers": "National Qualifiers"
+  },
+  "donate": "Donate Now!",
+  "books": {
+    "title": "Books by Devin Nakano",
+    "buyNow": "Buy Now!",
+    "proceeds": "All proceeds will be donated to the organization"
+  }
+}

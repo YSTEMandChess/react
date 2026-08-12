@@ -1,0 +1,38 @@
+{
+  "hero": {
+    "heading1": "Helping your child develop",
+    "heading2": "critical thinking skills!",
+    "subtext": "We are a nonprofit organization empowering children to find their own success in STEM through Chess, Math and Computer Science.",
+    "donate": "לתרום"
+  },
+  "inclusion": {
+    "heading": "Everyone is included. Everyone is welcome."
+  },
+  "cards": {
+    "free": {
+      "title": "חינם",
+      "description": "For students who qualify for free and reduced lunch. Our lessons are free.",
+      "joinNow": "Join Now!"
+    },
+    "premium": {
+      "title": "פרימיום",
+      "description": "For students who don't qualify for free and reduced lunch. $25 / Week. First lesson is FREE. Cancel anytime.",
+      "joinNow": "Join Now!"
+    }
+  },
+  "cta": {
+    "heading": "Start now and sign up later!",
+    "button": "Get Started!"
+  },
+  "books": {
+    "heading": "Books by Devin Nakano",
+    "buyNow": "Buy Now!",
+    "proceeds": "All proceeds will be donated to the organization"
+  },
+  "sponsors": {
+    "heading": "Our Sponsors"
+  },
+  "partners": {
+    "heading": "Our Partners"
+  }
+}

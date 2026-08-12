@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Programlar",
+    "mentor": "Mentör",
+    "learn": "Öğren",
+    "play": "Oyna",
+    "lessons": "Dersler",
+    "puzzles": "Bulmacalar",
+    "login": "Giriş Yap"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Hakkımızda",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Hakkımızda",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Kayıt Ol",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profil",
+    "addStudent": "Add Student",
+    "logout": "Çıkış Yap"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

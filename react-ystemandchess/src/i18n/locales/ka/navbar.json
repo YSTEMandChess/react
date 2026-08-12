@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "პროგრამები",
+    "mentor": "მენტორი",
+    "learn": "სწავლა",
+    "play": "თამაში",
+    "lessons": "გაკვეთილები",
+    "puzzles": "פאზლები",
+    "login": "შესვლა"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "ჩვენს შესახებ",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "ჩვენს შესახებ",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "რეგისტრაცია",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "პროფილი",
+    "addStudent": "Add Student",
+    "logout": "გამოსვლა"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Ohjelmat",
+    "mentor": "Mentori",
+    "learn": "Opi",
+    "play": "Pelaa",
+    "lessons": "Oppitunnit",
+    "puzzles": "Tehtävät",
+    "login": "Kirjaudu"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Meistä",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Meistä",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Rekisteröidy",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profiili",
+    "addStudent": "Add Student",
+    "logout": "Kirjaudu ulos"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

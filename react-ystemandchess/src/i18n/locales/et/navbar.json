@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Programmid",
+    "mentor": "Mentor",
+    "learn": "Õpi",
+    "play": "Mängi",
+    "lessons": "Tunnid",
+    "puzzles": "Mõistatused",
+    "login": "Logi sisse"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Meist",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Meist",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Registreeru",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profiil",
+    "addStudent": "Add Student",
+    "logout": "Logi välja"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Program",
+    "mentor": "Mentor",
+    "learn": "Belajar",
+    "play": "Main",
+    "lessons": "Pelajaran",
+    "puzzles": "Teka-teki",
+    "login": "Log Masuk"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Perihal Kami",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Perihal Kami",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Daftar",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profil",
+    "addStudent": "Add Student",
+    "logout": "Log Keluar"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

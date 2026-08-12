@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "โปรแกรม",
+    "mentor": "พี่เลี้ยง",
+    "learn": "เรียนรู้",
+    "play": "เล่น",
+    "lessons": "บทเรียน",
+    "puzzles": "พัซเซิล",
+    "login": "เข้าสู่ระบบ"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "เกี่ยวกับเรา",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "เกี่ยวกับเรา",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "สมัครสมาชิก",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "โปรไฟล์",
+    "addStudent": "Add Student",
+    "logout": "ออกจากระบบ"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

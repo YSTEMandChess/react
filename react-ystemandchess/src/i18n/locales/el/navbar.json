@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Προγράμματα",
+    "mentor": "Μέντορας",
+    "learn": "Μάθετε",
+    "play": "Παίξτε",
+    "lessons": "Μαθήματα",
+    "puzzles": "Γρίφοι",
+    "login": "Σύνδεση"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Σχετικά με εμάς",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Σχετικά με εμάς",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Εγγραφή",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Προφίλ",
+    "addStudent": "Add Student",
+    "logout": "Αποσύνδεση"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

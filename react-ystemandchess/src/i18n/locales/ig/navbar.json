@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Ebe mmemme",
+    "mentor": "Onye ndụmọdụ",
+    "learn": "Mụta",
+    "play": "Gwuo",
+    "lessons": "Ihe ọmụmụ",
+    "puzzles": "Puzzles",
+    "login": "Banye"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Banyere anyị",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Banyere anyị",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Kanye aha",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profaịlụ",
+    "addStudent": "Add Student",
+    "logout": "Pụọ"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

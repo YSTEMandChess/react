@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "ਪ੍ਰੋਗਰਾਮ",
+    "mentor": "ਮੈਂਟਰ",
+    "learn": "ਸਿੱਖੋ",
+    "play": "ਖੇਡੋ",
+    "lessons": "ਪਾਠ",
+    "puzzles": "ਪਹੇਲੀਆਂ",
+    "login": "ਲੌਗਇਨ"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "ਸਾਡੇ ਬਾਰੇ",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "ਸਾਡੇ ਬਾਰੇ",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "ਸਾਈਨ ਅੱਪ",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "ਪ੍ਰੋਫਾਈਲ",
+    "addStudent": "Add Student",
+    "logout": "ਲੌਗ ਆਊਟ"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

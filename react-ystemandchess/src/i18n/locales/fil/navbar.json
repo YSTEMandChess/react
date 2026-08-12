@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Mga Programa",
+    "mentor": "Tagapayo",
+    "learn": "Matuto",
+    "play": "Maglaro",
+    "lessons": "Mga Aralin",
+    "puzzles": "Mga Palaisipan",
+    "login": "Mag-login"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Tungkol sa Amin",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Tungkol sa Amin",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Mag-sign Up",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profilo",
+    "addStudent": "Add Student",
+    "logout": "Mag-log Out"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

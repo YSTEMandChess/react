@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "වැඩසටහන්",
+    "mentor": "උපදේශක",
+    "learn": "ඉගෙන ගන්න",
+    "play": "සල්ලම් කරන්න",
+    "lessons": "පාඩම්",
+    "puzzles": "ප්‍රහේලිකා",
+    "login": "ඇතුළු වන්න"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "අප ගැන",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "අප ගැන",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "ලියාපදිංචි වන්න",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "පැතිකඩ",
+    "addStudent": "Add Student",
+    "logout": "ඉවත් වන්න"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

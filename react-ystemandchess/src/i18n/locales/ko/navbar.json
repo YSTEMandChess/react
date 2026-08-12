@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "프로그램",
+    "mentor": "멘토",
+    "learn": "배우기",
+    "play": "플레이",
+    "lessons": "레슨",
+    "puzzles": "퍼즐",
+    "login": "로그인"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "소개",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "소개",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "회원가입",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "프로필",
+    "addStudent": "Add Student",
+    "logout": "로그아웃"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

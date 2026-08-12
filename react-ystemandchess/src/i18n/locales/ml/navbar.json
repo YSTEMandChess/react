@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "പ്രോഗ്രാമുകൾ",
+    "mentor": "മെന്റർ",
+    "learn": "പഠിക്കുക",
+    "play": "കളിക്കുക",
+    "lessons": "പാഠങ്ങൾ",
+    "puzzles": "പസിലുകൾ",
+    "login": "ലോഗിൻ"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "ഞങ്ങളെക്കുറിച്ച്",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "ഞങ്ങളെക്കുറിച്ച്",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "സൈൻ അപ്പ്",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "പ്രൊഫൈൽ",
+    "addStudent": "Add Student",
+    "logout": "ലോഗ് ഔട്ട്"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

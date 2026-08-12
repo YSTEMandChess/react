@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Програми",
+    "mentor": "Ментор",
+    "learn": "Учи",
+    "play": "Играј",
+    "lessons": "Лекције",
+    "puzzles": "Загонетке",
+    "login": "Пријава"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "О нама",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "О нама",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Регистрација",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Профил",
+    "addStudent": "Add Student",
+    "logout": "Одјава"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

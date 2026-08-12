@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "תוכניות",
+    "mentor": "מנטור",
+    "learn": "ללמוד",
+    "play": "לשחק",
+    "lessons": "שיעורים",
+    "puzzles": "חידות",
+    "login": "התחברות"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "עלינו",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "עלינו",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "הרשמה",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "פרופיל",
+    "addStudent": "Add Student",
+    "logout": "התנתקות"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

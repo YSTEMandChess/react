@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "برنامه‌ها",
+    "mentor": "منتور",
+    "learn": "یادگیری",
+    "play": "بازی",
+    "lessons": "درس‌ها",
+    "puzzles": "معماها",
+    "login": "ورود"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "درباره ما",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "درباره ما",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "ثبت‌نام",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "پروفایل",
+    "addStudent": "Add Student",
+    "logout": "خروج"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

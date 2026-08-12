@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Ծրագրեր",
+    "mentor": "Մենթոր",
+    "learn": "Սովորել",
+    "play": "Խաղալ",
+    "lessons": "Դասեր",
+    "puzzles": "Փազլներ",
+    "login": "Մուտք"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Մեր մասին",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Մեր մասին",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Գրանցվել",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Պրոֆիլ",
+    "addStudent": "Add Student",
+    "logout": "Ելք"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

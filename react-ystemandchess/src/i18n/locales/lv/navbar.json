@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Programmas",
+    "mentor": "Mentors",
+    "learn": "Mācīties",
+    "play": "Spēlēt",
+    "lessons": "Nodarbības",
+    "puzzles": "Mīklas",
+    "login": "Ienākt"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Par mums",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Par mums",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Reģistrēties",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profils",
+    "addStudent": "Add Student",
+    "logout": "Iziet"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

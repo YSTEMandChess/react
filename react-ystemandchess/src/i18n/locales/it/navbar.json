@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Programmi",
+    "mentor": "Mentore",
+    "learn": "Impara",
+    "play": "Gioca",
+    "lessons": "Lezioni",
+    "puzzles": "Puzzle",
+    "login": "Accedi"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Chi Siamo",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Chi Siamo",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Registrati",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profilo",
+    "addStudent": "Add Student",
+    "logout": "Esci"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

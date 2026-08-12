@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Mipango",
+    "mentor": "Mshauri",
+    "learn": "Jifunze",
+    "play": "Cheza",
+    "lessons": "Masomo",
+    "puzzles": "Mawazo",
+    "login": "Ingia"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Kuhusu Sisi",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Kuhusu Sisi",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Jiandikishe",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profile",
+    "addStudent": "Add Student",
+    "logout": "Toka"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

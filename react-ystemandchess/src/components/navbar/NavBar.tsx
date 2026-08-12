@@ -7,6 +7,7 @@ import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { SetPermissionLevel } from "../../globals";
 import FullLogo from "../../assets/images/full_logo.png";
+import { SUPPORTED_LANGUAGES } from "../../i18n/languages";
 
 /**
  * Animation variants configuration for Framer Motion
@@ -442,14 +443,13 @@ const NavBar = () => {
           value={i18n.language ? i18n.language.split('-')[0] : 'en'}
           onChange={(e) => i18n.changeLanguage(e.target.value)}
           aria-label="Select Language"
-          className="bg-light border-2 border-dark font-bold text-dark rounded-lg px-2 py-1 text-sm focus:outline-none cursor-pointer hover:border-primary transition-colors"
+          className="bg-light border-2 border-dark font-bold text-dark rounded-lg px-2 py-1 text-sm focus:outline-none cursor-pointer hover:border-primary transition-colors max-w-[150px] truncate"
         >
-          <option value="en">🌐 English</option>
-          <option value="es">🌐 Español</option>
-          <option value="fr">🌐 Français</option>
-          <option value="ar">🌐 العربية</option>
-          <option value="zh">🌐 中文</option>
-          <option value="kk">🌐 Қазақша</option>
+          {SUPPORTED_LANGUAGES.map((lang) => (
+            <option key={lang.code} value={lang.code}>
+              {lang.flag} {lang.nativeName} ({lang.name})
+            </option>
+          ))}
         </select>
       </div>
     </>

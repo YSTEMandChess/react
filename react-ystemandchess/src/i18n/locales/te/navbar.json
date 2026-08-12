@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "కార్యక్రమాలు",
+    "mentor": "మెంటార్",
+    "learn": "నేర్చుకోండి",
+    "play": "ఆడండి",
+    "lessons": "పాఠాలు",
+    "puzzles": "పజిల్స్",
+    "login": "లాగిన్"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "మా గురించి",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "మా గురించి",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "సైన్ అప్",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "ప్రొఫైల్",
+    "addStudent": "Add Student",
+    "logout": "లాగ్ అవుట్"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

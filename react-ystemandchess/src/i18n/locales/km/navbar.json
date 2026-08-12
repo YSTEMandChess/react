@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "កម្មវិធី",
+    "mentor": "អ្នកណែនាំ",
+    "learn": "រៀន",
+    "play": "លេង",
+    "lessons": "មេរៀន",
+    "puzzles": "បដិសន្ធិ",
+    "login": "ចូល"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "អំពីយើង",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "អំពីយើង",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "ចុះឈ្មោះ",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "ប្រវត្តិរូប",
+    "addStudent": "Add Student",
+    "logout": "ចាកចេញ"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

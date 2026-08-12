@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Programmer",
+    "mentor": "Mentor",
+    "learn": "Lær",
+    "play": "Spil",
+    "lessons": "Lektioner",
+    "puzzles": "Puslespil",
+    "login": "Log ind"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "Om os",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "Om os",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Tilmeld",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profil",
+    "addStudent": "Add Student",
+    "logout": "Log ud"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

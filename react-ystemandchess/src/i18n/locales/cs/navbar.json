@@ -1,0 +1,41 @@
+{
+  "links": {
+    "programs": "Programy",
+    "mentor": "Mentor",
+    "learn": "Učit se",
+    "play": "Hrát",
+    "lessons": "Lekce",
+    "puzzles": "Hádanky",
+    "login": "Přihlásit se"
+  },
+  "dropdowns": {
+    "aboutUs": {
+      "label": "O nás",
+      "education": "Education",
+      "benefitCS": "Benefit of Computer Science",
+      "benefitChess": "Benefit of Chess",
+      "benefitMath": "Benefit of Math Tutoring",
+      "benefitMentoring": "Benefit of Mentoring",
+      "whatWeDo": "What We Do",
+      "onlineExpansion": "Online Expansion",
+      "aboutUs": "O nás",
+      "mission": "Mission",
+      "financial": "Financial",
+      "board": "Board",
+      "sponsorsPartners": "Sponsors & Partners"
+    },
+    "signUp": {
+      "label": "Registrovat se",
+      "parent": "Parent Signup",
+      "mentor": "Mentor Signup"
+    }
+  },
+  "profile": {
+    "profile": "Profil",
+    "addStudent": "Add Student",
+    "logout": "Odhlásit se"
+  },
+  "aria": {
+    "toggleMenu": "Toggle menu"
+  }
+}

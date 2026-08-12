@@ -1,0 +1,37 @@
+{
+  "title": "Play vs Computer",
+  "settings": {
+    "title": "Game Settings",
+    "playAs": "Play as",
+    "white": "White",
+    "black": "Black",
+    "difficulty": "Difficulty",
+    "levels": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "expert": "Expert",
+      "master": "Master"
+    },
+    "startGame": "Qala Umdlalo",
+    "connecting": "Connecting..."
+  },
+  "controls": {
+    "undo": "Undo",
+    "reset": "Reset",
+    "newGame": "New Game",
+    "flipBoard": "Flip Board"
+  },
+  "moveHistory": "Move History",
+  "modal": {
+    "newGame": "New Game",
+    "close": "Close"
+  },
+  "status": {
+    "checkmate": "Checkmate! {{winner}} wins!",
+    "stalemate": "Stalemate! Draw!",
+    "draw": "Game over: Draw!",
+    "threefold": "Draw by threefold repetition!",
+    "insufficient": "Draw by insufficient material!"
+  }
+}
