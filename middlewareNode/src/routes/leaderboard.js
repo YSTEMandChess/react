@@ -21,13 +21,22 @@
  * to inflate without real progress (e.g. leaving a lesson open), so it's
  * weighted below streak/activity/badge rather than on equal footing.
  *
+ * `score` above measures ENGAGEMENT. Student-vs-student chess results are a
+ * different signal (competitive skill), so they are reported alongside it as a
+ * separate `chess_score` / `chess_record` and are deliberately NOT added into
+ * `score` — blending them would make one number mean two things, and would
+ * compound one open weighting question into two. Chess weights live in
+ * utils/studentStats (PVP_WEIGHT_WIN / _DRAW / _LOSS).
+ *
  * Response contract matches LeaderboardModal.tsx exactly:
  *   GET /leaderboard/schools    -> { success, schools: string[] }
  *   GET /leaderboard/countries  -> { success, countries: string[] }
  *   GET /leaderboard/states     -> { success, states: string[] }
- *   GET /leaderboard?country=&state=&school=&search=&sortBy=score|name&sortDir=asc|desc&page=1&limit=10
+ *   GET /leaderboard?country=&state=&school=&search=&sortBy=score|name|chess&sortDir=asc|desc&page=1&limit=10
  *     -> { success, data: { leaderboard: [{id, rank, username, school_name,
- *                            country, state, score, avatar_url}],
+ *                            country, state, score, chess_score,
+ *                            chess_record: {wins, draws, losses, gamesPlayed},
+ *                            avatar_url}],
  *                            pagination: { has_more } } }
  */
 
@@ -39,14 +48,29 @@ const {
   getUserStreak,
   getActivitiesCompleted,
   getBadgesEarned,
+  getChessRecords,
 } = require("../utils/studentStats");
 const { getAvatarUrl } = require("../utils/avatars");
 
+/**
+ * parseFloat with a default that survives a legitimate 0 (unlike `|| default`).
+ * Kept local rather than imported from studentStats: tests jest.mock() that
+ * module wholesale, which would silently turn this into a jest.fn() returning
+ * undefined and NaN out every weight below.
+ */
+function numOr(value, fallback) {
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+// numOr (not `||`) so an intentional LEADERBOARD_WEIGHT_*=0 override actually
+// disables that input instead of silently falling back to the default — `||`
+// treats 0 as falsy and would mask a real "zero this out" configuration.
 const WEIGHTS = {
-  time: parseFloat(process.env.LEADERBOARD_WEIGHT_TIME) || 0.5,
-  streak: parseFloat(process.env.LEADERBOARD_WEIGHT_STREAK) || 5,
-  badge: parseFloat(process.env.LEADERBOARD_WEIGHT_BADGE) || 10,
-  activity: parseFloat(process.env.LEADERBOARD_WEIGHT_ACTIVITY) || 3,
+  time: numOr(process.env.LEADERBOARD_WEIGHT_TIME, 0.5),
+  streak: numOr(process.env.LEADERBOARD_WEIGHT_STREAK, 5),
+  badge: numOr(process.env.LEADERBOARD_WEIGHT_BADGE, 10),
+  activity: numOr(process.env.LEADERBOARD_WEIGHT_ACTIVITY, 3),
 };
 
 const MAX_LIMIT = 100;
@@ -74,8 +98,11 @@ function escapeRegex(value) {
 }
 
 /**
- * Computes a composite score for one student from existing stat helpers.
- * Placeholder weighting — confirm with product before treating as final.
+ * Computes the composite ENGAGEMENT score for one student from existing stat
+ * helpers. Placeholder weighting — confirm with product before treating as final.
+ *
+ * Chess results are intentionally absent here; they are surfaced as their own
+ * column (see the module header) rather than folded into this number.
  */
 async function computeScore(user) {
   const [timeStats, streak, activitiesCompleted, badgesEarned] = await Promise.all([
@@ -162,6 +189,10 @@ router.get("/", async (req, res) => {
       candidates = candidates.slice(0, MAX_UNFILTERED_CANDIDATES);
     }
 
+    // One batched query for every candidate's chess record, rather than a
+    // fifth per-student round trip inside the map below.
+    const chessRecords = await getChessRecords(candidates.map((u) => u.username));
+
     const scored = await Promise.all(
       candidates.map(async (user) => ({
         id: String(user._id),
@@ -171,12 +202,15 @@ router.get("/", async (req, res) => {
         state: user.state || null,
         avatarUrl: getAvatarUrl(user.avatarKey),
         score: await computeScore(user),
+        chess: chessRecords.get(user.username),
       }))
     );
 
     const direction = sortDir === "asc" ? 1 : -1;
     if (sortBy === "name") {
       scored.sort((a, b) => direction * a.username.localeCompare(b.username));
+    } else if (sortBy === "chess") {
+      scored.sort((a, b) => direction * (a.chess.chessScore - b.chess.chessScore));
     } else {
       scored.sort((a, b) => direction * (a.score - b.score));
     }
@@ -191,6 +225,15 @@ router.get("/", async (req, res) => {
       country: entry.country,
       state: entry.state,
       score: entry.score,
+      // Separate competitive stat — see the module header on why this is not
+      // merged into `score`.
+      chess_score: entry.chess.chessScore,
+      chess_record: {
+        wins: entry.chess.wins,
+        draws: entry.chess.draws,
+        losses: entry.chess.losses,
+        gamesPlayed: entry.chess.gamesPlayed,
+      },
       avatar_url: entry.avatarUrl,
     }));
 

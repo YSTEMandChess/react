@@ -27,7 +27,12 @@ const mockCollection = jest.fn(() => ({ findOne: mockFindOne, updateOne: mockUpd
 const mockDb = jest.fn(() => ({ collection: mockCollection }));
 const mockConnect = jest.fn().mockResolvedValue(undefined);
 
+// Spread the real module first — mongoose's driver adapter does
+// `class NativeCollection extends mongodb.Collection` at require-time, so a
+// mock missing Collection/Connection/etc. breaks mongoose's own `require`,
+// not just this route's. We only need MongoClient/ObjectId overridden.
 jest.mock("mongodb", () => ({
+  ...jest.requireActual("mongodb"),
   MongoClient: jest.fn().mockImplementation(() => ({
     connect: mockConnect,
     db: mockDb,
@@ -36,6 +41,13 @@ jest.mock("mongodb", () => ({
 }));
 
 jest.mock("config", () => ({ get: jest.fn(() => "mongodb://fake") }));
+
+// activities.js's getDb() checks mongoose.connection.readyState first before
+// falling back to the raw MongoClient — force it into the fallback path so
+// these tests exercise the mocked MongoClient above, not a real connection.
+jest.mock("mongoose", () => ({
+  connection: { readyState: 0 },
+}));
 
 const express = require("express");
 const request = require("supertest");

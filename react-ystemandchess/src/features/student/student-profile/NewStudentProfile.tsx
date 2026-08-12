@@ -6,12 +6,13 @@ import { useNavigate } from "react-router";
 import StatsChart from "./StatsChart";
 import Puzzles from "../../puzzles/Puzzles";
 import PlayComputer from "../../engine/PlayComputer";
+import PlayStudent from "./PlayStudent";
 import StreakModal from "./Modals/StreakModal";
 import ActivitiesModal from "./Modals/ActivitiesModal";
 import BadgesModal from "./Modals/BadgesModal";
 import LeaderboardModal from "./Modals/LeaderboardModal";
 import Confetti from "../../../components/animations/Confetti/Confetti";
-
+import ChatWidget from '../../../components/ChatWidget/ChatWidget';
 import { ReactComponent as StreakIcon } from "../../../assets/images/student/streak_button.svg";
 import { ReactComponent as ActivitiesIcon } from "../../../assets/images/student/activities_button.svg";
 import { ReactComponent as BadgesIcon } from "../../../assets/images/student/badges_button.svg";
@@ -59,6 +60,10 @@ const TABS = {
   playComputer: {
     label: "Play with Computer",
     icon: playComputerIcon,
+  },
+  playStudent: {
+    label: "Play a Student",
+    icon: gamesIcon,
   },
   recordings: {
     label: "Recordings",
@@ -493,6 +498,13 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
           <PlayComputer />
         </div>
       );
+
+    case "playStudent":
+      return (
+        <div className="w-full h-full">
+          <PlayStudent username={username} />
+        </div>
+      );
     
     case "recordings":
       return (
@@ -681,6 +693,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username} />}
     {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} username={username} />}
     {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
+    <ChatWidget />
   </main>
 );
 };

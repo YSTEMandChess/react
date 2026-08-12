@@ -12,6 +12,30 @@
 const TimeTracking = require("../models/timeTracking");
 const Activities = require("../models/activities");
 const UserBadges = require("../models/UserBadges");
+const GameResults = require("../models/gameResults");
+
+/**
+ * Weights for the student-vs-student chess score.
+ *
+ * Deliberately smaller than the engagement weights in routes/leaderboard.js:
+ * competitive results are an unvalidated signal so far, and this score is
+ * reported as its own stat rather than blended into the engagement score —
+ * so these numbers can be retuned without disturbing anything else.
+ *
+ * Because the score is computed on read from GameResults records, changing a
+ * weight re-scores all history immediately; there is nothing to backfill.
+ */
+const CHESS_WEIGHTS = {
+  win: numOr(process.env.PVP_WEIGHT_WIN, 3),
+  draw: numOr(process.env.PVP_WEIGHT_DRAW, 1),
+  loss: numOr(process.env.PVP_WEIGHT_LOSS, 0),
+};
+
+/** parseFloat with a default that survives a legitimate 0 (unlike `|| default`). */
+function numOr(value, fallback) {
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : fallback;
+}
 
 /** Builds a MongoDB $gte/$lte filter for startTime, skipped when params missing. */
 function dateFilter(from, to) {
@@ -152,6 +176,88 @@ async function getBadgesEarned(username) {
   return doc ? (doc.earned || []).length : 0;
 }
 
+/**
+ * Turns a win/draw/loss tally into the chess score. The ONLY place the score
+ * formula lives, so the leaderboard, the analytics dashboard and
+ * GET /gameResults/:username can never disagree about it.
+ */
+function chessScoreFrom({ wins, draws, losses }) {
+  return Math.round(
+    wins * CHESS_WEIGHTS.win + draws * CHESS_WEIGHTS.draw + losses * CHESS_WEIGHTS.loss
+  );
+}
+
+/** Empty record — used for students with no games, so callers never see nulls. */
+function emptyChessRecord() {
+  return { wins: 0, draws: 0, losses: 0, gamesPlayed: 0, chessScore: 0 };
+}
+
+/** Builds a $gte/$lte filter on playedAt, skipped when both params are missing. */
+function playedAtFilter(from, to) {
+  if (!from && !to) return {};
+  const f = {};
+  if (from) f.$gte = new Date(from);
+  if (to) f.$lte = new Date(to);
+  return { playedAt: f };
+}
+
+/**
+ * One student's student-vs-student record, computed on read from GameResults.
+ * @returns {{wins, draws, losses, gamesPlayed, chessScore}}
+ */
+async function getChessRecord(username, from, to) {
+  const docs = await GameResults.find(
+    { players: username, ...playedAtFilter(from, to) },
+    { result: 1, winnerUsername: 1, _id: 0 }
+  );
+
+  const record = emptyChessRecord();
+  for (const d of docs) {
+    if (d.result === "draw") record.draws++;
+    else if (d.winnerUsername === username) record.wins++;
+    else record.losses++;
+  }
+  record.gamesPlayed = docs.length;
+  record.chessScore = chessScoreFrom(record);
+  return record;
+}
+
+/**
+ * Batched form of getChessRecord for the leaderboard, which needs records for a
+ * whole page of students at once. One aggregation instead of one query per
+ * student — the per-student stats are already 4 queries each, so this keeps the
+ * chess column from adding a fifth.
+ *
+ * @param {string[]} usernames
+ * @returns {Promise<Map<string, {wins, draws, losses, gamesPlayed, chessScore}>>}
+ *          Every requested username is present; those with no games get zeros.
+ */
+async function getChessRecords(usernames, from, to) {
+  const records = new Map(usernames.map((u) => [u, emptyChessRecord()]));
+  if (usernames.length === 0) return records;
+
+  const docs = await GameResults.find(
+    { players: { $in: usernames }, ...playedAtFilter(from, to) },
+    { players: 1, result: 1, winnerUsername: 1, _id: 0 }
+  );
+
+  for (const d of docs) {
+    for (const username of d.players) {
+      const record = records.get(username);
+      if (!record) continue; // the opponent isn't on this page
+      if (d.result === "draw") record.draws++;
+      else if (d.winnerUsername === username) record.wins++;
+      else record.losses++;
+      record.gamesPlayed++;
+    }
+  }
+
+  for (const record of records.values()) {
+    record.chessScore = chessScoreFrom(record);
+  }
+  return records;
+}
+
 module.exports = {
   dateFilter,
   getUserTimeStats,
@@ -160,4 +266,8 @@ module.exports = {
   getActivitiesCompleted,
   getBadgesEarned,
   isDayCompleted,
+  getChessRecord,
+  getChessRecords,
+  chessScoreFrom,
+  CHESS_WEIGHTS,
 };
