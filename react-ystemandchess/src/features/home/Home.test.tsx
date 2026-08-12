@@ -56,7 +56,7 @@ it("navigates to signup when Join Now is clicked", () => {
 
   fireEvent.click(screen.getByRole("button", { name: /join now for free/i }));
 
-  expect(mockedNavigate).toHaveBeenCalledWith("/signup");
+  expect(mockedNavigate).toHaveBeenCalledWith("/signup/parent");
 });
 
 // check if books are being rendered

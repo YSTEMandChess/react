@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router';
 import { Chess as ChessClass } from 'chess.js';
 import { io } from 'socket.io-client';
 import { Move } from '../../core/types/chess';
@@ -24,10 +25,14 @@ const PlayComputerWithTutor: React.FC = () => {
   const [fen, setFen] = useState<string>(gameRef.current.fen());
   const [playerColor, setPlayerColor] = useState<'white' | 'black'>('white');
   const [difficulty, setDifficulty] = useState<Difficulty>(10);
+  const location = useLocation();
   const [isThinking, setIsThinking] = useState(false);
   const [connected, setConnected] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
+  const [fenHistory, setFenHistory] = useState<string[]>([gameRef.current.fen()]);
+  const [uciHistoryArr, setUciHistoryArr] = useState<string[]>([]); // list of UCI strings per ply
+  const [navDebug, setNavDebug] = useState<string | null>(null);
   const [gameStatus, setGameStatus] = useState<string>('');
   const [highlightSquares, setHighlightSquares] = useState<string[]>([]);
   const [showSettings, setShowSettings] = useState(true);
@@ -42,6 +47,18 @@ const PlayComputerWithTutor: React.FC = () => {
   useEffect(() => { playerColorRef.current = playerColor; }, [playerColor]);
   useEffect(() => { sessionStartedRef.current = sessionStarted; }, [sessionStarted]);
   useEffect(() => { difficultyRef.current = difficulty; }, [difficulty]);
+  // When the user navigates while a game is active, end session and reset to settings
+  useEffect(() => {
+    if (!sessionStartedRef.current) return;
+    try { socketRef.current?.emit('end-session'); } catch (e) {}
+    try { gameRef.current.reset(); } catch (e) {}
+    try { setFen(gameRef.current.fen()); } catch (e) {}
+    try { setMoveHistory([]); setHighlightSquares([]); setIsThinking(false); } catch (e) {}
+    try { if (chessBoardRef.current) chessBoardRef.current.reset(); } catch (e) {}
+    setShowSettings(true);
+    setSessionStarted(false);
+    sessionStartedRef.current = false;
+  }, [location.key]);
 
   useEffect(() => {
     if (movesContainerRef.current) {
@@ -68,6 +85,11 @@ const PlayComputerWithTutor: React.FC = () => {
       if (success && playerColorRef.current === 'black') requestComputerMove(gameRef.current.fen());
     });
 
+    socket.on('session-error', ({ error }: any) => {
+      console.error('PlayComputerWithTutor: session-error', error);
+      alert('Failed to start session: ' + error);
+    });
+
     socket.on('evaluation-complete', ({ mode, move }: any) => {
       console.debug('PlayComputerWithTutor: evaluation-complete', { mode, move });
       if (mode === 'move' && move) {
@@ -78,10 +100,15 @@ const PlayComputerWithTutor: React.FC = () => {
             setFen(updatedFen);
             setHighlightSquares([moveResult.from, moveResult.to]);
             setMoveHistory(prev => [...prev, `${moveResult.from} -> ${moveResult.to}`]);
+            // record fen/uci history for navigation
+            setFenHistory(prev => [...prev, updatedFen]);
+            setUciHistoryArr(prev => [...prev, `${moveResult.from}${moveResult.to}${moveResult.promotion ?? ''}`]);
             if (chessBoardRef.current) {
               chessBoardRef.current.setPosition(updatedFen);
               chessBoardRef.current.highlightMove(moveResult.from, moveResult.to);
             }
+            // check for game end after applying the computer move
+            try { checkGameStatus(); } catch (e) { /* ignore */ }
           }
         } catch (err) { console.error('Failed to apply computer move:', err); }
         setIsThinking(false);
@@ -110,10 +137,15 @@ const PlayComputerWithTutor: React.FC = () => {
       setFen(newFen);
       setHighlightSquares([move.from, move.to]);
       setMoveHistory(prev => [...prev, `${move.from} -> ${move.to}`]);
-
-      // trigger tutor analysis with fen before/after and uci
+      // record fen/uci history for navigation
       const currentMoveUci = `${move.from}${move.to}${move.promotion ?? ''}`;
-      const uciHistory = moveHistory.join(' ');
+      // Build the new UCI history array and store it so we can pass a correct uciHistory string to the tutor
+      const newUciArr = [...uciHistoryArr, currentMoveUci];
+      setFenHistory(prev => [...prev, newFen]);
+      setUciHistoryArr(newUciArr);
+
+      // trigger tutor analysis with fen before/after and uci; pass a proper UCI-history string
+      const uciHistory = newUciArr.join(' ');
       setLastMoveData({ fenBefore, fenAfter: newFen, moveUci: currentMoveUci, uciHistory });
       setTutorTrigger(t => t + 1);
 
@@ -124,7 +156,7 @@ const PlayComputerWithTutor: React.FC = () => {
         requestComputerMove(newFen);
       }
     } catch (error) { console.error('Error handling move:', error); }
-  }, [moveHistory, requestComputerMove]);
+  }, [moveHistory, requestComputerMove, uciHistoryArr]);
 
   const checkGameStatus = useCallback((): boolean => {
     const game = gameRef.current;
@@ -142,6 +174,13 @@ const PlayComputerWithTutor: React.FC = () => {
     const startFen = gameRef.current.fen();
     setFen(startFen); setMoveHistory([]); setHighlightSquares([]); setGameStatus(''); setIsThinking(false);
     if (chessBoardRef.current) chessBoardRef.current.reset();
+    // Reset tutor feedback/state: clear last move context and nudge the tutor trigger
+    try {
+      setLastMoveData({});
+      setTutorTrigger(t => t + 1);
+    } catch (e) {}
+    setFenHistory([startFen]);
+    setUciHistoryArr([]);
     if (socketRef.current && sessionStartedRef.current) {
       socketRef.current.emit('update-fen', { fen: startFen });
       if (playerColorRef.current === 'black') setTimeout(() => requestComputerMove(startFen), 500);
@@ -156,7 +195,204 @@ const PlayComputerWithTutor: React.FC = () => {
     const newFen = gameRef.current.fen(); setFen(newFen); setMoveHistory(prev => prev.slice(0, -2)); setHighlightSquares([]); setGameStatus('');
     if (chessBoardRef.current) chessBoardRef.current.setPosition(newFen);
     if (socketRef.current) socketRef.current.emit('update-fen', { fen: newFen });
+    try {
+      setFenHistory(prev => prev.slice(0, -2));
+      setUciHistoryArr(prev => prev.slice(0, -2));
+      // nudge tutor to react to shorter history
+      setTutorTrigger(t => t + 1);
+      setLastMoveData({});
+    } catch (e) {}
   }, [moveHistory.length]);
+
+  // Navigate to a particular ply (0-based). plyIndex corresponds to the move index in uciHistoryArr/moveHistory
+  const gotoPly = useCallback((plyIndex: number) => {
+    try {
+      // Recompute the target FEN by replaying UCIs up to plyIndex inclusive.
+      let ucisToReplay: string[];
+      if (uciHistoryArr && uciHistoryArr.length > plyIndex) {
+        ucisToReplay = uciHistoryArr.slice(0, plyIndex + 1);
+      } else {
+        // fallback: try to parse from moveHistory entries like 'e2 -> e4'
+        const parsed: string[] = [];
+        for (let i = 0; i <= plyIndex && i < moveHistory.length; i++) {
+          const mv = moveHistory[i];
+          if (!mv) continue;
+          // mv format expected 'e2 -> e4' or similar
+          const parts = mv.split('->').map(s => s.trim());
+          if (parts.length >= 2 && parts[0].length >= 2 && parts[1].length >= 2) {
+            const from = parts[0].slice(0, 2);
+            const to = parts[1].slice(0, 2);
+            parsed.push(`${from}${to}`);
+          }
+        }
+        ucisToReplay = parsed;
+      }
+
+      const ch = new Chess();
+      let lastUci: string | undefined = undefined;
+      for (const m of ucisToReplay) {
+        if (!m) continue;
+        lastUci = m;
+        const from = m.slice(0, 2);
+        const to = m.slice(2, 4);
+        const prom = m.length === 5 ? m[4] : undefined;
+        try { ch.move({ from, to, promotion: prom } as any); } catch (e) { /* ignore invalid during replay */ }
+      }
+      const targetFen = ch.fen();
+      const uci = lastUci;
+      // Debug
+      // eslint-disable-next-line no-console
+      console.debug('PlayComputerWithTutor: gotoPly recomputed', { plyIndex, targetFen, uci, fenHistoryLength: fenHistory.length, uciHistoryLength: uciHistoryArr.length });
+
+      // Load the computed FEN into the engine so subsequent moves continue from here
+      try {
+        if (gameRef.current && typeof gameRef.current.load === 'function') {
+          gameRef.current.load(targetFen);
+        } else {
+          try { gameRef.current = new Chess(targetFen); } catch (e) {}
+        }
+      } catch (e) {}
+
+      // Force update board immediately via ref then set parent fen state
+      if (chessBoardRef.current) {
+        try { chessBoardRef.current.loadPosition(targetFen); } catch (e) {}
+        try { chessBoardRef.current.setPosition(targetFen); } catch (e) {}
+        try { chessBoardRef.current.clearHighlights(); } catch (e) {}
+      }
+      setFen(targetFen);
+
+      // Highlight the move if we have UCI
+      if (uci && uci.length >= 4) {
+        const from = uci.slice(0, 2);
+        const to = uci.slice(2, 4);
+        setHighlightSquares([from, to]);
+        if (chessBoardRef.current) {
+          try { chessBoardRef.current.highlightMove(from, to); } catch (e) {}
+        }
+      } else {
+        setHighlightSquares([]);
+      }
+
+      // As a robust fallback, also schedule an async update to the board in case immediate ref calls
+      // didn't take effect due to event ordering. This often fixes UI racy behavior.
+      try {
+        setTimeout(() => {
+          if (!chessBoardRef.current) return;
+          try { chessBoardRef.current.loadPosition(targetFen); } catch (e) {}
+          try { chessBoardRef.current.setPosition(targetFen); } catch (e) {}
+          if (uci && uci.length >= 4) {
+            const from = uci.slice(0, 2);
+            const to = uci.slice(2, 4);
+            try { chessBoardRef.current.highlightMove(from, to); } catch (e) {}
+          } else {
+            try { chessBoardRef.current.clearHighlights(); } catch (e) {}
+          }
+        }, 50);
+      } catch (e) {}
+
+      // Trim histories so the app reflects continuing from this ply
+      try {
+        setFenHistory(prev => prev.slice(0, plyIndex + 2));
+        setUciHistoryArr(prev => prev.slice(0, plyIndex + 1));
+        setMoveHistory(prev => prev.slice(0, plyIndex + 1));
+      } catch (e) {}
+
+      // Set tutor context and nudge analysis
+      const fenBefore = fenHistory[plyIndex] ?? undefined;
+      const uciHistoryStr = uciHistoryArr.slice(0, plyIndex + 1).join(' ');
+      setLastMoveData({ fenBefore, fenAfter: targetFen, moveUci: uci, uciHistory: uciHistoryStr });
+      setTutorTrigger(t => t + 1);
+
+      // Notify server of the updated FEN so remote engine state stays in sync
+      try { if (socketRef.current) socketRef.current.emit('update-fen', { fen: targetFen }); } catch (e) {}
+
+      try {
+        const boardFen = chessBoardRef.current ? (() => { try { return chessBoardRef.current.getFen(); } catch (e) { return 'n/a'; } })() : 'ref null';
+        setNavDebug(`gotoPly ${plyIndex} -> targetFen(${String(targetFen).slice(0,20)}) boardFen(${String(boardFen).slice(0,20)}) uci=${uci} fenHistory=${fenHistory.length} uciHistory=${uciHistoryArr.length}`);
+      } catch (e) {}
+    } catch (e) { console.error('gotoPly failed', e); }
+  }, [fenHistory, uciHistoryArr, moveHistory]);
+
+  // Fast path navigation: use stored fenHistory when available (fenHistory[0] is start, fenHistory[ply+1] is position after ply)
+  const gotoPlySimple = useCallback((plyIndex: number) => {
+    try {
+      const targetFen = fenHistory[plyIndex + 1];
+      if (!targetFen) {
+        // fallback to the more robust gotoPly if stored fen isn't available
+        gotoPly(plyIndex);
+        return;
+      }
+      if (chessBoardRef.current) {
+        try { chessBoardRef.current.loadPosition(targetFen); } catch (e) {}
+        try { chessBoardRef.current.setPosition(targetFen); } catch (e) {}
+        try { chessBoardRef.current.clearHighlights(); } catch (e) {}
+      }
+      setFen(targetFen);
+      // set highlight if available in uciHistoryArr
+      const uci = uciHistoryArr[plyIndex];
+      if (uci && uci.length >= 4) {
+        const from = uci.slice(0, 2);
+        const to = uci.slice(2, 4);
+        setHighlightSquares([from, to]);
+        if (chessBoardRef.current) try { chessBoardRef.current.highlightMove(from, to); } catch (e) {}
+      } else {
+        setHighlightSquares([]);
+      }
+      // set tutor context
+      const fenBefore = fenHistory[plyIndex] ?? undefined;
+      const uciHistoryStr = uciHistoryArr.slice(0, plyIndex + 1).join(' ');
+      setLastMoveData({ fenBefore, fenAfter: targetFen, moveUci: uciHistoryArr[plyIndex], uciHistory: uciHistoryStr });
+      setTutorTrigger(t => t + 1);
+      try { setNavDebug(`gotoPlySimple ${plyIndex} -> ${String(targetFen).slice(0,20)}`); } catch (e) {}
+    } catch (e) { console.error('gotoPlySimple failed', e); }
+  }, [fenHistory, uciHistoryArr, gotoPly]);
+
+  // shared handler to jump to a FEN and optionally highlight a move; used by the tutor and move-history UI
+  const handleGotoFen = useCallback((targetFen: string, highlights?: string[] | null) => {
+    try {
+      if (!targetFen) return;
+      // Update board immediately via ref
+      if (chessBoardRef.current) {
+        try { chessBoardRef.current.loadPosition(targetFen); } catch (e) {}
+        try { chessBoardRef.current.setPosition(targetFen); } catch (e) {}
+        try { chessBoardRef.current.clearHighlights(); } catch (e) {}
+        if (highlights && highlights.length === 2) {
+          try { chessBoardRef.current.highlightMove(highlights[0], highlights[1]); } catch (e) {}
+        }
+      }
+      // update local state
+      setFen(targetFen);
+      setHighlightSquares(highlights || []);
+      // set tutor context so the tutor can analyze this position if visible
+      try {
+        // attempt to find a corresponding ply index and set lastMoveData so tutor shows related info
+        const plyIndex = fenHistory.findIndex(f => f === targetFen);
+        const uci = plyIndex >= 0 ? uciHistoryArr[plyIndex - 1] : undefined; // fenHistory[0] is start
+        const fenBefore = plyIndex > 0 ? fenHistory[plyIndex - 1] : undefined;
+        const uciHistoryStr = uciHistoryArr.slice(0, Math.max(0, plyIndex)).join(' ');
+        setLastMoveData({ fenBefore, fenAfter: targetFen, moveUci: uci, uciHistory: uciHistoryStr });
+        // nudge tutor to react to the new context
+        setTutorTrigger(t => t + 1);
+      } catch (e) {}
+    } catch (e) { console.error('handleGotoFen failed', e); }
+  }, [fenHistory, uciHistoryArr]);
+
+  // Click handler used by move buttons: navigate and then capture resulting board FEN for debug/UI
+  const handleHistoryClick = useCallback((plyIndex: number) => {
+    try {
+      // Prefer jumping to after the opponent's reply so the user can continue from that branch.
+      const hasOpponent = moveHistory.length > plyIndex + 1;
+      const target = hasOpponent ? plyIndex + 1 : plyIndex;
+      gotoPlySimple(target);
+      // After a short delay allow the board to update then reflect internal fen in navDebug/UI
+      setTimeout(() => {
+        try {
+          const boardFen = chessBoardRef.current ? (() => { try { return chessBoardRef.current.getFen(); } catch (e) { return 'n/a'; } })() : 'ref null';
+          setNavDebug(`clicked ply ${plyIndex}; parentFen=${fen} boardFen=${boardFen}`);
+        } catch (e) {}
+      }, 120);
+    } catch (e) { console.error('handleHistoryClick failed', e); }
+  }, [gotoPlySimple, fen]);
 
   return (
     <div className={styles.playComputerContainer}>
@@ -170,6 +406,10 @@ const PlayComputerWithTutor: React.FC = () => {
             <div className={styles.colorButtons}>
               <button className={playerColor === 'white' ? styles.active : ''} onClick={() => setPlayerColor('white')}>White</button>
               <button className={playerColor === 'black' ? styles.active : ''} onClick={() => setPlayerColor('black')}>Black</button>
+            </div>
+            <div style={{ marginTop: 8, fontSize: 12, color: '#6b7280' }}>
+              <div>fenHistory: {fenHistory.length} entries; uciHistory: {uciHistoryArr.length} entries</div>
+              {navDebug && (<div style={{ marginTop: 6 }}>{navDebug}</div>)}
             </div>
           </div>
           <div className={styles.setting}>
@@ -218,8 +458,21 @@ const PlayComputerWithTutor: React.FC = () => {
               <div style={{ marginBottom: 8 }}>
                 <label><input type="checkbox" checked={tutorEnabled} onChange={(e) => setTutorEnabled(e.target.checked)} /> Show Tutor</label>
               </div>
-              <StockfishTutor enabled={tutorEnabled} trigger={tutorTrigger} fenBefore={lastMoveData.fenBefore} fenAfter={lastMoveData.fenAfter} moveUci={lastMoveData.moveUci} uciHistory={lastMoveData.uciHistory} />
+              <StockfishTutor
+                enabled={tutorEnabled}
+                trigger={tutorTrigger}
+                fenBefore={lastMoveData.fenBefore}
+                fenAfter={lastMoveData.fenAfter}
+                moveUci={lastMoveData.moveUci}
+                uciHistory={lastMoveData.uciHistory}
+                onRequestGotoFen={(fen: string, highlights?: string[] | null) => handleGotoFen(fen, highlights)}
+              />
             </div>
+          </div>
+
+          <div style={{ marginTop: 8, fontSize: 12, color: '#333' }}>
+            <div>Parent fen prop: {fen}</div>
+            <div>ChessBoard internal fen: {chessBoardRef.current ? (() => { try { return chessBoardRef.current.getFen(); } catch (e) { return 'n/a'; } })() : 'ref null'}</div>
           </div>
 
           <div className={styles.moveHistory}>
@@ -229,7 +482,28 @@ const PlayComputerWithTutor: React.FC = () => {
                 const moveNumber = Math.floor(idx / 2) + 1; const isWhiteMove = idx % 2 === 0;
                 if (isWhiteMove) {
                   acc.push(
-                    <div key={idx} className={styles.movePair}><span className={styles.moveNumber}>{moveNumber}.</span><span className={styles.whiteMove}>{move}</span>{moveHistory[idx + 1] && (<span className={styles.blackMove}>{moveHistory[idx + 1]}</span>)}</div>
+                    <div key={idx} className={styles.movePair}>
+                      <span className={styles.moveNumber}>{moveNumber}.</span>
+                      <button type="button" draggable={false} aria-label={`Jump to move ${moveNumber} white`} className={styles.whiteMove} onMouseDown={() => handleHistoryClick(idx)} onClick={() => handleHistoryClick(idx)}>{move}</button>
+                      {/* View: prefer the position after opponent's reply (fenHistory[idx+2]) if it exists, otherwise fenHistory[idx+1] */}
+                      <button type="button" draggable={false} className={styles.viewButton} onClick={() => {
+                        const fenAfterOpponent = fenHistory[idx + 2];
+                        const fenAfter = fenAfterOpponent || fenHistory[idx + 1];
+                        // If we have fenAfter, try to highlight the last UCI (opponent move if present)
+                        const uciIndex = fenAfterOpponent ? idx + 1 : idx;
+                        handleGotoFen(fenAfter, uciHistoryArr[uciIndex] && uciHistoryArr[uciIndex].length >= 4 ? [uciHistoryArr[uciIndex].slice(0,2), uciHistoryArr[uciIndex].slice(2,4)] : undefined);
+                      }}>View</button>
+                      {moveHistory[idx + 1] && (
+                        <>
+                          <button type="button" draggable={false} aria-label={`Jump to move ${moveNumber} black`} className={styles.blackMove} onMouseDown={() => handleHistoryClick(idx + 1)} onClick={() => handleHistoryClick(idx + 1)}>{moveHistory[idx + 1]}</button>
+                          <button type="button" draggable={false} className={styles.viewButton} onClick={() => {
+                            const fenAfterB = fenHistory[idx + 2] || fenHistory[idx + 1];
+                            const uciIdxB = fenHistory[idx + 2] ? idx + 1 : idx;
+                            handleGotoFen(fenAfterB, uciHistoryArr[uciIdxB] && uciHistoryArr[uciIdxB].length >= 4 ? [uciHistoryArr[uciIdxB].slice(0,2), uciHistoryArr[uciIdxB].slice(2,4)] : undefined);
+                          }}>View</button>
+                        </>
+                      )}
+                    </div>
                   );
                 }
                 return acc;

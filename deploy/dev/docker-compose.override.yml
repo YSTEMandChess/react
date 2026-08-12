@@ -1,0 +1,21 @@
+services:
+  mongo:
+    image: mongo:6
+    container_name: dev-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - dev-mongo-data:/data/db
+
+  middlewarenode:
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/ystem_dev
+    depends_on:
+      - mongo
+
+volumes:
+  dev-mongo-data:
+
+# This override adds a local MongoDB so `docker-compose up` does NOT
+# connect to the production Atlas cluster in config/default.json.
+# Compose automatically merges this file with docker-compose.yml.

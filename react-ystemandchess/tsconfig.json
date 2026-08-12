@@ -10,7 +10,7 @@
     "resolveJsonModule": true,
     "noEmit": false,
     "strict": false,
-    "ignoreDeprecations": "6.0",
+    "skipLibCheck": true,
     "typeRoots": [
       "node_modules/@types",
       "src/types"
