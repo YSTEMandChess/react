@@ -15,14 +15,31 @@ import avatarAll from "../../../../assets/images/student/Leaderboard_User_avatar
 
 type Props = { onClose: () => void };
 
+type ChessRecord = {
+  wins: number;
+  draws: number;
+  losses: number;
+  gamesPlayed: number;
+};
+
 type Row = {
   id: string;
   rank: number;
   name: string;
   school: string;
+  /** Engagement score — time, streak, activities, badges. */
   score: number;
+  /**
+   * Student-vs-student chess score, kept as its own column on purpose.
+   * Engagement and competitive skill are different signals, so they are never
+   * summed into one number. See middlewareNode/src/routes/gameResults.js.
+   */
+  chessScore: number;
+  chessRecord: ChessRecord;
   avatar_url: string | null;
 };
+
+const EMPTY_CHESS_RECORD: ChessRecord = { wins: 0, draws: 0, losses: 0, gamesPlayed: 0 };
 
 const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
   const [cookies] = useCookies(['login']);
@@ -107,6 +124,8 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
           name: item.username,
           school: item.school_name,
           score: item.score,
+          chessScore: item.chess_score ?? 0,
+          chessRecord: item.chess_record ?? EMPTY_CHESS_RECORD,
           avatar_url: item.avatar_url,
         }));
 
@@ -221,6 +240,7 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
               <col className="col-rank" />
               <col className="col-name" />
               <col className="col-school" />
+              <col className="col-chess" />
               <col className="col-score" />
             </colgroup>
 
@@ -236,6 +256,16 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
                   </button>
                 </th>
                 <th>School</th>
+                <th>
+                  {/* Separate from Score on purpose — competitive results are a
+                      different signal from engagement, so they rank separately. */}
+                  <button className="lb-sort-btn" type="button" onClick={() => handleSort("chess")}>
+                    <span>Chess</span>
+                    {sortBy === "chess" && (
+                      <span style={{ fontSize: '12px', marginLeft: '5px' }}>{sortDir === "desc" ? "▼" : "▲"}</span>
+                    )}
+                  </button>
+                </th>
                 <th>
                   <button className="lb-sort-btn" type="button" onClick={() => handleSort("score")}>
                     <span>Score</span>
@@ -262,6 +292,21 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
                       <span className="lb-name">{r.name}</span>
                     </td>
                     <td className="lb-school">{r.school}</td>
+                    <td className="lb-chess">
+                      {r.chessRecord.gamesPlayed === 0 ? (
+                        <span className="lb-chess-empty" title="No student-vs-student games yet">—</span>
+                      ) : (
+                        <>
+                          <span className="lb-chess-score">{r.chessScore}</span>
+                          <span
+                            className="lb-chess-record"
+                            title={`${r.chessRecord.wins} wins, ${r.chessRecord.draws} draws, ${r.chessRecord.losses} losses`}
+                          >
+                            {r.chessRecord.wins}–{r.chessRecord.draws}–{r.chessRecord.losses}
+                          </span>
+                        </>
+                      )}
+                    </td>
                     <td className="lb-score">{r.score}</td>
                   </tr>
                 );

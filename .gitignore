@@ -59,6 +59,10 @@ testem.log
 # System Files
 .DS_Store*
 Thumbs.db
+<<<<<<< HEAD
 
 .prettierrc
 mise.toml
+=======
+middlewareNode/config/production.json
+>>>>>>> origin/main
