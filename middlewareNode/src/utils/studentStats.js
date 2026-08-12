@@ -45,12 +45,15 @@ async function getUserTimeStats(username, from, to) {
   };
 }
 
+const STREAK_REQUIRED_EVENT_TYPES = ["lesson", "puzzle"];
+
 /**
- * Calculates current consecutive-day streak for a user.
- * A day counts when both 'lesson' and 'puzzle' events exist.
+ * Groups raw TimeTracking-shaped events into a { day: Set<eventType> } map,
+ * keyed by UTC date string. Skips records missing startTime/eventType.
+ * Shared by getUserStreak and getStreakSummary so both derive from the
+ * same day-bucketing logic.
  */
-async function getUserStreak(username) {
-  const events = await TimeTracking.find({ username }, { eventType: 1, startTime: 1, _id: 0 });
+function groupEventsByDay(events) {
   const daysMap = {};
   for (const e of events) {
     if (!e.startTime || !e.eventType) continue;
@@ -58,13 +61,67 @@ async function getUserStreak(username) {
     if (!daysMap[day]) daysMap[day] = new Set();
     daysMap[day].add(e.eventType);
   }
-  const required = ["lesson", "puzzle"];
+  return daysMap;
+}
+
+/** True when a day's event-type set includes both 'lesson' and 'puzzle'. */
+function isDayCompleted(daySet) {
+  return STREAK_REQUIRED_EVENT_TYPES.every((r) => daySet.has(r));
+}
+
+/**
+ * Calculates current consecutive-day streak for a user.
+ * A day counts when both 'lesson' and 'puzzle' events exist.
+ *
+ * Note: iterates only days present in the data — a calendar day with zero
+ * recorded events is invisible to this algorithm, not treated as a gap.
+ * This is documented, existing behavior (see tests), not a bug.
+ */
+async function getUserStreak(username) {
+  const events = await TimeTracking.find({ username }, { eventType: 1, startTime: 1, _id: 0 });
+  const daysMap = groupEventsByDay(events);
   let streak = 0;
   for (const day of Object.keys(daysMap).sort().reverse()) {
-    if (required.every((r) => daysMap[day].has(r))) streak++;
+    if (isDayCompleted(daysMap[day])) streak++;
     else break;
   }
   return streak;
+}
+
+/**
+ * Full streak summary for a user — current streak, longest streak ever,
+ * and the most recent completed date. This is the single source of truth
+ * behind GET /streak (routes/streak.js), which previously duplicated this
+ * day-bucketing logic independently and could silently disagree with
+ * getUserStreak (used by Leaderboard/Badges) for the same user.
+ *
+ * currentStreak here matches getUserStreak's result exactly (same
+ * reverse-chronological walk); this function additionally derives
+ * longestStreak/lastCompletedDate from the same day map in one pass.
+ */
+async function getStreakSummary(username) {
+  const events = await TimeTracking.find({ username }, { eventType: 1, startTime: 1, _id: 0 }).lean();
+  const daysMap = groupEventsByDay(events);
+  const allDates = Object.keys(daysMap).sort();
+
+  let longestStreak = 0;
+  let lastCompletedDate = null;
+  let running = 0;
+  for (const date of allDates) {
+    if (isDayCompleted(daysMap[date])) {
+      running++;
+      longestStreak = Math.max(longestStreak, running);
+      lastCompletedDate = date;
+    } else {
+      running = 0;
+    }
+  }
+  // running, after the forward walk above, equals the streak ending on the
+  // most recent recorded day — i.e. currentStreak — since allDates is
+  // sorted ascending and nothing after the last date can extend it further.
+  const currentStreak = running;
+
+  return { currentStreak, longestStreak, lastCompletedDate };
 }
 
 /**
@@ -99,6 +156,8 @@ module.exports = {
   dateFilter,
   getUserTimeStats,
   getUserStreak,
+  getStreakSummary,
   getActivitiesCompleted,
   getBadgesEarned,
+  isDayCompleted,
 };

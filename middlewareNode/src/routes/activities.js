@@ -1,20 +1,37 @@
 /**
  * Activities Routes
- * 
+ *
  * API endpoints for managing daily student activities.
  * Handles retrieval and completion status of activities.
- * 
+ *
  * Features:
  * - Get user's daily activities
  * - Mark activities as completed
  * - Track activity completion for streaks and badges
+ *
+ * All three routes below require a valid JWT and enforce self-only access
+ * — :username must equal the authenticated user, the same "operate only on
+ * your own record" pattern already used in routes/badges.js. Previously
+ * these endpoints had no auth at all: any caller could read or complete
+ * any student's activities by guessing a username in the URL.
  */
 
 const config = require("config");
 const express = require('express');
 const router = express.Router({mergeParams: true});
 const { MongoClient, ObjectId } = require('mongodb');
+const requireAuth = require('../middleware/requireAuth');
 require('dotenv').config();
+
+/**
+ * Rejects requests where the authenticated user doesn't match :username.
+ */
+function requireSelf(req, res, next) {
+  if (req.user.username !== req.params.username) {
+    return res.status(403).json({ error: "Forbidden: cannot access another user's activities" });
+  }
+  next();
+}
 
 // Cache database client to prevent repeated connections
 let cachedClient = null;
@@ -53,7 +70,7 @@ async function getUserId(db, username) {
  * GET /activities
  * Retrieves all daily activities for a user
  */
-router.get("/:username", async (req, res) => {
+router.get("/:username", requireAuth, requireSelf, async (req, res) => {
     try {
         const db = await getDb();
         const { username } = req.params;
@@ -73,7 +90,7 @@ router.get("/:username", async (req, res) => {
     }
 })
 
-router.get("/:username/dates", async (req, res) => {
+router.get("/:username/dates", requireAuth, requireSelf, async (req, res) => {
     try {
         const db = await getDb(); 
         const { username } = req.params;
@@ -93,7 +110,7 @@ router.get("/:username/dates", async (req, res) => {
 });
 
 
-router.put("/:username/activity", async (req, res) => {
+router.put("/:username/activity", requireAuth, requireSelf, async (req, res) => {
     try {
         const db = await getDb();
         const { username } = req.params;

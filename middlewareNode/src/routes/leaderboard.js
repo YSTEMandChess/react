@@ -12,10 +12,14 @@
  *
  * Score weights are configurable via env vars so they can be tuned per
  * environment without a deploy:
- *   LEADERBOARD_WEIGHT_TIME     (default 1)   — per hour of puzzle+lesson time
+ *   LEADERBOARD_WEIGHT_TIME     (default 0.5) — per hour of puzzle+lesson time
  *   LEADERBOARD_WEIGHT_STREAK   (default 5)   — per consecutive-day streak
  *   LEADERBOARD_WEIGHT_BADGE    (default 10)  — per badge earned
  *   LEADERBOARD_WEIGHT_ACTIVITY (default 3)   — per activity completed
+ *
+ * Time is deliberately the lightest-weighted input — it's the easiest stat
+ * to inflate without real progress (e.g. leaving a lesson open), so it's
+ * weighted below streak/activity/badge rather than on equal footing.
  *
  * Response contract matches LeaderboardModal.tsx exactly:
  *   GET /leaderboard/schools    -> { success, schools: string[] }
@@ -39,7 +43,7 @@ const {
 const { getAvatarUrl } = require("../utils/avatars");
 
 const WEIGHTS = {
-  time: parseFloat(process.env.LEADERBOARD_WEIGHT_TIME) || 1,
+  time: parseFloat(process.env.LEADERBOARD_WEIGHT_TIME) || 0.5,
   streak: parseFloat(process.env.LEADERBOARD_WEIGHT_STREAK) || 5,
   badge: parseFloat(process.env.LEADERBOARD_WEIGHT_BADGE) || 10,
   activity: parseFloat(process.env.LEADERBOARD_WEIGHT_ACTIVITY) || 3,

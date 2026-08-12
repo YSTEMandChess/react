@@ -85,7 +85,7 @@ describe("LB-02 — leaderboard and analytics agree on the same student's stats"
     const aliceEntry = leaderboardRes.body.data.leaderboard.find((e) => e.username === "alice");
     expect(aliceEntry).toBeDefined();
 
-    const WEIGHTS = { time: 1, streak: 5, badge: 10, activity: 3 }; // route defaults
+    const WEIGHTS = { time: 0.5, streak: 5, badge: 10, activity: 3 }; // route defaults
     const expectedScore = Math.round(
       (stats.puzzleTimeHours + stats.lessonTimeHours) * WEIGHTS.time +
       stats.currentStreak * WEIGHTS.streak +
