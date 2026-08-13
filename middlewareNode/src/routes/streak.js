@@ -16,12 +16,40 @@
  * the Leaderboard score and Badge eligibility). Both now derive from the
  * same shared day-completion rule, so a student's streak means the same
  * thing everywhere it's shown.
+ *
+ * Both endpoints are authenticated and self-only, matching the guard added
+ * to /activities. Previously either route would return any student's streak
+ * to an unauthenticated caller who guessed a username. Guarding them now is
+ * free: nothing consumed these endpoints yet, so the first consumer (the
+ * StreakModal UI) can be built to send its token from the outset rather than
+ * being retrofitted later.
  */
 
 const express = require('express');
 const router = express.Router();
 const TimeTracking = require('../models/timeTracking');
+const requireAuth = require('../middleware/requireAuth');
 const { getStreakSummary, isDayCompleted } = require('../utils/studentStats');
+
+/**
+ * Self-only guard for the streak routes.
+ *
+ * These endpoints identify their subject with ?username= rather than a path
+ * param, so routes/activities.js's requireSelf — which reads req.params —
+ * cannot be reused here. The presence check lives inside the guard so the
+ * original 400-before-anything-else behaviour is preserved: a caller who
+ * omits username still gets "username is required" rather than a confusing
+ * Forbidden.
+ */
+function requireSelfQuery(req, res, next) {
+  if (!req.query.username) {
+    return res.status(400).json({ error: 'username is required' });
+  }
+  if (req.user.username !== req.query.username) {
+    return res.status(403).json({ error: "Forbidden: cannot access another user's streak" });
+  }
+  next();
+}
 
 /**
  * GET /streak
@@ -36,12 +64,9 @@ const { getStreakSummary, isDayCompleted } = require('../utils/studentStats');
  * - longestStreak: Best streak ever achieved
  * - lastCompletedDate: Most recent day with completed activities
  */
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, requireSelfQuery, async (req, res) => {
   try {
     const username = req.query.username;
-    if (!username) {
-      return res.status(400).json({ error: 'username is required' });
-    }
 
     const { currentStreak, longestStreak, lastCompletedDate } = await getStreakSummary(username);
     res.json({ currentStreak, longestStreak, lastCompletedDate });
@@ -52,10 +77,10 @@ router.get('/', async (req, res) => {
 });
 
 // GET /streak/calendar
-router.get('/calendar', async (req, res) => {
+router.get('/calendar', requireAuth, requireSelfQuery, async (req, res) => {
   try {
     const { username, month } = req.query;
-    if (!username || !month) {
+    if (!month) {
       return res.status(400).json({ error: 'username and month are required' });
     }
 

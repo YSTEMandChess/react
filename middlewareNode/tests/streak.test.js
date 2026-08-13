@@ -4,6 +4,18 @@
  * general contract coverage for GET /streak and GET /streak/calendar.
  */
 
+// requireAuth binds passport.authenticate at require-time, and both routes are
+// now self-only. These cases exercise streak computation rather than the guard
+// (that lives in streak.auth.test.js), so the mock authenticates as whichever
+// user the request asks about — keeping each case focused on the contract
+// instead of on satisfying the self check.
+jest.mock("passport", () => ({
+  authenticate: jest.fn(() => (req, res, next) => {
+    req.user = { username: req.query.username, role: "student" };
+    next();
+  }),
+}));
+
 jest.mock("../src/models/timeTracking");
 
 const express = require("express");
