@@ -188,19 +188,96 @@
 }
 
 // ==========================
-// Calendar Image Section
+// Calendar Section
 // ==========================
-.calendar-image-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
+.streak-error {
+  text-align: center;
+  color: #b3261e;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+}
 
-  .calendar-image {
-    width: 55%;
-    max-width: 37.5rem;
-    height: auto;
-    border-radius: 0.75rem;
-    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.15);
+.streak-calendar {
+  width: 55%;
+  max-width: 37.5rem;
+  margin: 2rem auto 0 auto;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.15);
+  background: #fff;
+
+  .calendar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+
+    button {
+      border: none;
+      background: transparent;
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 0.5rem;
+      color: #333;
+
+      &:hover {
+        color: #000;
+      }
+    }
+
+    .calendar-month {
+      font-weight: bold;
+      font-size: 1rem;
+    }
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
+  }
+
+  .calendar-weekday {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #777;
+    padding-bottom: 0.25rem;
+  }
+
+  .calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    border-radius: 50%;
+    color: #333;
+
+    &.is-blank {
+      visibility: hidden;
+    }
+
+    // A completed day is the whole point of the calendar, so it reads as a
+    // filled token rather than relying on colour alone.
+    &.is-completed {
+      background: #f2b705;
+      color: #000;
+      font-weight: bold;
+    }
+
+    &.is-today {
+      outline: 2px solid #333;
+      outline-offset: -2px;
+    }
+  }
+
+  .calendar-footnote {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0.75rem 0 0 0;
   }
 }
 

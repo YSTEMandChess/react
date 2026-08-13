@@ -58,10 +58,6 @@ const BadgesModal = ({ onClose, username }: { onClose: () => void; username: str
     }));
   }, [catalog, earnedIds]);
 
-  console.log(" catalog:", catalog);
-  console.log(" earnedIds:", earnedIds);
-  console.log(" badgeList:", badgeList);
-
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal-content">
