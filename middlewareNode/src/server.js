@@ -1,4 +1,13 @@
 // Main server configuration for the Node.js middleware API
+
+// Load local environment variables before importing modules that read config.
+require("dotenv").config();
+
+// Validate production configuration before db.js, passport.js, or other
+// modules can call config.get().
+const validateEnvironment = require("./config/validateEnvironment");
+validateEnvironment();
+
 const express = require("express");
 const session = require("express-session");
 const connectDB = require("./config/db");
@@ -44,7 +53,11 @@ app.use(express.json({ extended: false }));
 // Configure session middleware
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "dev-secret-change-in-prod",
+    secret:
+      process.env.SESSION_SECRET ||
+      (process.env.NODE_ENV !== "production"
+        ? "dev-secret-change-in-prod"
+        : undefined),
     resave: false,
     saveUninitialized: false,
   })
