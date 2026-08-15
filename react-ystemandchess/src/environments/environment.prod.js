@@ -15,9 +15,12 @@ export const environment = {
 	},
 	urls: {
 		// TODO(developer): confirm these are the real production endpoints.
-		middlewareURL: process.env.REACT_APP_MIDDLEWARE_URL || 'http://localhost/middleware/',
-		stockfishServerURL: process.env.REACT_APP_STOCKFISH_SERVER_URL || 'http://localhost/stockfishserver/',
-		chessServerURL: process.env.REACT_APP_CHESS_SERVER_URL || 'http://localhost/chessserver/',
+		// No trailing slash: every consumer appends its own leading slash
+		// (e.g. `${middlewareURL}/auth/login`), so a trailing slash here
+		// would produce a double slash in every request.
+		middlewareURL: process.env.REACT_APP_MIDDLEWARE_URL || 'http://localhost/middleware',
+		stockfishServerURL: process.env.REACT_APP_STOCKFISH_SERVER_URL || 'http://localhost/stockfishserver',
+		chessServerURL: process.env.REACT_APP_CHESS_SERVER_URL || 'http://localhost/chessserver',
 	},
 	productionType: 'production',
 };
