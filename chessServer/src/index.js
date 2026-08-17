@@ -1,5 +1,8 @@
 require("dotenv").config();
 
+const validateEnvironment = require("./validateEnvironment");
+validateEnvironment();
+
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
@@ -13,16 +16,30 @@ const server = http.createServer(app);
 // Add logging functionaility to the server
 app.use(morgan("dev")); // dev -> preset format
 
-const allowedOriginsSetting = process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
+const isProduction = process.env.NODE_ENV === "production";
+
+const allowedOriginsSetting =
+  process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
+
 const allowedOrigins = allowedOriginsSetting
   ? allowedOriginsSetting.split(",").map((o) => o.trim())
   : [
       "https://ystemandchess.com",
       "https://www.ystemandchess.com",
-      "http://localhost:3000",
-      "http://localhost:3002",
-      "http://localhost:4200",
+      ...(isProduction
+        ? []
+        : [
+            "http://localhost:3000",
+            "http://localhost:3002",
+            "http://localhost:4200",
+          ]),
     ];
+
+if (isProduction && !allowedOriginsSetting) {
+  console.warn(
+    "[chessServer] CORS_ORIGIN is not set in production. Falling back to the production allowlist."
+  );
+}
 
 const corsOptions = {
   origin: function (origin, callback) {

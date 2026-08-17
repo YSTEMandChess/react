@@ -1,5 +1,8 @@
 require("dotenv").config();
 
+const validateEnvironment = require("./validateEnvironment");
+validateEnvironment();
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -9,14 +12,50 @@ const initializeSocket = require("./managers/socket");
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
+const isProduction = process.env.NODE_ENV === "production";
+
+const allowedOriginsSetting =
+  process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
+
+const allowedOrigins = allowedOriginsSetting
+  ? allowedOriginsSetting.split(",").map((o) => o.trim())
+  : [
+      "https://ystemandchess.com",
+      "https://www.ystemandchess.com",
+      ...(isProduction
+        ? []
+        : [
+            "http://localhost:3000",
+            "http://localhost:3002",
+            "http://localhost:4200",
+          ]),
+    ];
+
+if (isProduction && !allowedOriginsSetting) {
+  console.warn(
+    "[stockfishServer] CORS_ORIGIN is not set in production. Falling back to the production allowlist."
+  );
+}
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
   },
+  methods: ["GET", "POST"],
+  credentials: true,
+};
+
+const io = new Server(server, {
+  cors: corsOptions,
 });
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get("/health", (req, res) => {
