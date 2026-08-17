@@ -42,7 +42,24 @@ require("./scheduler/activitiesScheduler.js");
 require("./scheduler/analyticsSummaryScheduler.js");
 
 // Enable CORS for cross-origin requests
-app.use(cors(config.get("corsOptions")));
+const configuredCorsOrigin = config.get("corsOptions.origin");
+
+const allowedOrigins = String(configuredCorsOrigin || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
+  })
+);
 
 // Connect to MongoDB database
 connectDB();
