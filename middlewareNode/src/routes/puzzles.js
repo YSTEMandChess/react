@@ -44,31 +44,17 @@ router.get("/random", async (req, res) => {
     const theme = typeof req.query.theme === "string" ? req.query.theme.trim() : "";
     const minRating = parseInt(req.query.minRating) || 0;
     const maxRating = parseInt(req.query.maxRating) || 4000;
-    
-    const pipeline = [];
 
-    // Using $or to catch both 'Rating' and 'rating' just in case of casing issues
-    pipeline.push({
-      $match: {
-        $or: [
-          { Rating: { $gte: minRating, $lte: maxRating } },
-          { rating: { $gte: minRating, $lte: maxRating } }
-        ]
-      }
-    });
+    const pipeline = [
+      { $match: { Rating: { $gte: minRating, $lte: maxRating } } },
+    ];
 
     if (theme) {
+      // Themes is a space-separated token string; match on a whole token so
+      // "pin" doesn't also match "pinPossible", etc.
       const escapedTheme = theme.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const themeTokenRegex = new RegExp(`(^|\\s)${escapedTheme}(\\s|$)`, "i");
-
-      pipeline.push({
-        $match: {
-          $or: [
-            { Themes: themeTokenRegex },
-            { themes: themeTokenRegex },
-          ],
-        },
-      });
+      pipeline.push({ $match: { Themes: themeTokenRegex } });
     }
 
     pipeline.push({ $sample: { size: limit } });

@@ -55,6 +55,12 @@ jest.mock("../../components/ChessBoard/ChessBoard", () => {
       >
         Make Final Move
       </button>
+      <button
+        onClick={() => props.onInvalidMove?.()}
+        data-testid="mock-invalid-btn"
+      >
+        Illegal Move
+      </button>
       <div>
         <span>Promotion Options:</span>
         <button
@@ -136,6 +142,18 @@ const renderPuzzlesWithTheme = async (theme = "fork") => {
 
   fireEvent.click(screen.getByTestId(`puzzle-theme-${theme}`));
 
+  await waitFor(() => {
+    expect(screen.getByTestId("chess-board-container")).toBeInTheDocument();
+  });
+};
+
+const renderWithRoleAndTheme = async (role: string, theme = "fork") => {
+  render(
+    <MemoryRouter>
+      <Puzzles role={role} />
+    </MemoryRouter>
+  );
+  fireEvent.click(screen.getByTestId(`puzzle-theme-${theme}`));
   await waitFor(() => {
     expect(screen.getByTestId("chess-board-container")).toBeInTheDocument();
   });
@@ -342,19 +360,47 @@ describe("Puzzles Component", () => {
     expect(mockSocket.sendMessage).toHaveBeenCalledWith("next puzzle");
   });
 
-  test("handle 'Show Hint' button click", async () => {
+  test("shows the theme overview with the puzzle rating on load", async () => {
+    await renderPuzzlesWithTheme();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("puzzle-overview")).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId("puzzle-overview")).toHaveTextContent(
+      "Puzzle Rating:"
+    );
+    // The overview is context, so it is broadcast to anyone else in the room.
+    expect(mockSocket.sendMessage).toHaveBeenCalledWith(
+      expect.stringContaining("Puzzle Rating:")
+    );
+  });
+
+  test("locks the hint until the player attempts a move, then reveals it", async () => {
     await renderPuzzlesWithTheme();
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
     });
 
-    const showHintBtn = screen.getByText("Show Hint");
-    fireEvent.click(showHintBtn);
+    // Locked before any attempt.
+    expect(screen.getByTestId("hint-button")).toBeDisabled();
+    expect(screen.getByTestId("hint-locked-note")).toBeInTheDocument();
 
-    expect(mockSocket.sendMessage).toHaveBeenCalledWith(
-      expect.stringContaining("Puzzle Rating:")
-    );
+    // Any attempt — even an illegal drag — unlocks the hint.
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("mock-invalid-btn"));
+    });
+
+    expect(screen.getByTestId("hint-button")).not.toBeDisabled();
+    expect(screen.queryByTestId("hint-locked-note")).not.toBeInTheDocument();
+
+    // Clicking it reveals the solution (the piece to move).
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("hint-button"));
+    });
+
+    expect(screen.getByTestId("hint-solution")).toBeInTheDocument();
   });
 
   test("handles player move correctly", async () => {
@@ -778,6 +824,96 @@ describe("Puzzles Component", () => {
     });
 
     expect(screen.getByTestId("next-puzzle-button")).not.toBeDisabled();
-    expect(screen.getByTestId("hint-button")).not.toBeDisabled();
+    // The hint has its own gate: it stays locked until the player attempts a
+    // move, so it is still disabled here even though the socket reconnected.
+    expect(screen.getByTestId("hint-button")).toBeDisabled();
+  });
+
+  // ==========================================================================
+  // Mentor feedback (mentor -> student)
+  // ==========================================================================
+
+  test("student does not see the feedback control", async () => {
+    await renderPuzzlesWithTheme(); // default role = student
+    expect(screen.queryByTestId("give-feedback-button")).not.toBeInTheDocument();
+  });
+
+  test("mentor sees the feedback control", async () => {
+    await renderWithRoleAndTheme("mentor");
+    expect(screen.getByTestId("give-feedback-button")).toBeInTheDocument();
+  });
+
+  test("mentor's board is view-only with no solving controls", async () => {
+    await renderWithRoleAndTheme("mentor");
+
+    await waitFor(() => {
+      expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
+    });
+
+    // The mentor watches only — the board never becomes playable for them.
+    expect(screen.getByTestId("chess-board-mock")).toHaveAttribute(
+      "data-disabled",
+      "true"
+    );
+    // Student-only solving controls are hidden from the mentor.
+    expect(screen.queryByTestId("next-puzzle-button")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("hint-button")).not.toBeInTheDocument();
+    expect(screen.getByTestId("mentor-watch-note")).toBeInTheDocument();
+  });
+
+  test("mentor composes and sends feedback over the room channel", async () => {
+    await renderWithRoleAndTheme("mentor");
+
+    fireEvent.click(screen.getByTestId("give-feedback-button"));
+    fireEvent.change(screen.getByTestId("feedback-textarea"), {
+      target: { value: "Look for a fork!" },
+    });
+    fireEvent.click(screen.getByTestId("send-feedback-button"));
+
+    expect(mockSocket.sendMessage).toHaveBeenCalledWith(
+      "MENTOR_FEEDBACK::Look for a fork!"
+    );
+    expect(screen.getByTestId("feedback-sent-note")).toBeInTheDocument();
+  });
+
+  test("student gets a blocking popup that pauses the board until acknowledged", async () => {
+    let captured: ((msg: string) => void) | undefined;
+    (useChessSocket as jest.Mock).mockImplementation((props) => {
+      captured = props.onMessage;
+      React.useEffect(() => {
+        props.onRoleAssigned?.("host");
+      }, []);
+      return mockSocket;
+    });
+
+    await renderPuzzlesWithTheme(); // student
+    await waitFor(() => {
+      expect(screen.getByTestId("chess-board-mock")).toHaveAttribute(
+        "data-disabled",
+        "false"
+      );
+    });
+
+    await act(async () => {
+      captured?.("MENTOR_FEEDBACK::Try attacking the king");
+    });
+
+    const modal = screen.getByTestId("mock-modal");
+    expect(modal).toHaveAttribute("data-type", "info");
+    expect(screen.getByText("Try attacking the king")).toBeInTheDocument();
+    // Board is paused while the message is up.
+    expect(screen.getByTestId("chess-board-mock")).toHaveAttribute(
+      "data-disabled",
+      "true"
+    );
+
+    // Acknowledging unblocks the board.
+    fireEvent.click(screen.getByTestId("modal-confirm-btn"));
+    await waitFor(() => {
+      expect(screen.getByTestId("chess-board-mock")).toHaveAttribute(
+        "data-disabled",
+        "false"
+      );
+    });
   });
 });

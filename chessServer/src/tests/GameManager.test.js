@@ -228,4 +228,74 @@ describe('GameManager', () => {
     expect(res.outcome.winnerUsername).toBe('Alice');
     expect(res.outcome.reason).toBe('disconnect');
   });
+
+  // --- Puzzle rooms: student solves, mentor observes (Socratic) ----------
+
+  // Minimal io stub that records every event emitted to each socket.
+  const makeIo = () => {
+    const emitted = {};
+    const sockets = new Map();
+    const addSocket = (id) => {
+      emitted[id] = [];
+      sockets.set(id, { id, emit: (event, data) => emitted[id].push({ event, data }) });
+    };
+    const io = { sockets: { sockets }, to: () => ({ emit: () => {} }) };
+    return { io, emitted, addSocket };
+  };
+  const eventsFor = (emitted, id) => emitted[id].map((e) => e.event);
+
+  test('puzzle: the connecting student becomes the host (solver)', () => {
+    const { io, emitted, addSocket } = makeIo();
+    addSocket('sStudent');
+    gameManager.createOrJoinPuzzle(
+      { student: 'Alice', mentor: 'Bob', role: 'student', socketId: 'sStudent' }, io
+    );
+    expect(eventsFor(emitted, 'sStudent')).toContain('host');
+  });
+
+  test('puzzle: the connecting mentor becomes a guest (observer) and gets the board', () => {
+    const { io, emitted, addSocket } = makeIo();
+    addSocket('sMentor');
+    gameManager.createOrJoinPuzzle(
+      { student: 'Alice', mentor: 'Bob', role: 'mentor', socketId: 'sMentor' }, io
+    );
+    const events = eventsFor(emitted, 'sMentor');
+    expect(events).toContain('guest');
+    expect(events).toContain('boardstate'); // mentor sees the current position immediately
+    expect(events).not.toContain('host');
+  });
+
+  test('puzzle: the student solves even when the mentor connects first', () => {
+    const { io, emitted, addSocket } = makeIo();
+    addSocket('sMentor');
+    addSocket('sStudent');
+
+    // Mentor connects FIRST — must still end up as the observer.
+    gameManager.createOrJoinPuzzle(
+      { student: 'Alice', mentor: 'Bob', role: 'mentor', socketId: 'sMentor' }, io
+    );
+    // Student connects second.
+    gameManager.createOrJoinPuzzle(
+      { student: 'Alice', mentor: 'Bob', role: 'student', socketId: 'sStudent' }, io
+    );
+
+    expect(eventsFor(emitted, 'sMentor')).toContain('guest');
+    expect(eventsFor(emitted, 'sMentor')).not.toContain('host'); // mentor is never the driver
+    expect(eventsFor(emitted, 'sStudent')).toContain('host');    // student always drives
+    expect(gameManager.ongoingGames.length).toBe(1);             // one shared room
+
+    const room = gameManager.ongoingGames[0];
+    expect(room.student.id).toBe('sStudent');
+    expect(room.mentor.id).toBe('sMentor');
+  });
+
+  test('puzzle: rejects an invalid role', () => {
+    const { io, addSocket } = makeIo();
+    addSocket('sX');
+    expect(() =>
+      gameManager.createOrJoinPuzzle(
+        { student: 'Alice', mentor: 'Bob', role: 'parent', socketId: 'sX' }, io
+      )
+    ).toThrow(/Invalid role/);
+  });
 });

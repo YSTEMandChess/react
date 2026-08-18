@@ -40,6 +40,10 @@ const FEATURED_PUZZLE_THEMES: PuzzleThemeKey[] = [
   "advancedPawn",
 ];
 
+// Prefix that marks a room `message` as mentor-authored feedback (as opposed to
+// the automated "puzzle completed" / "next puzzle" / hint-overview signals).
+const FEEDBACK_PREFIX = "MENTOR_FEEDBACK::";
+
 const getThemeName = (theme: PuzzleThemeKey | string) =>
   themesName[theme as PuzzleThemeKey] || theme;
 
@@ -83,6 +87,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   styleType = "page",
 }) => {
   const isProfile = styleType === "profile";
+  const isMentor = role === "mentor";
 
   // Refs
   const chessBoardRef = useRef<ChessBoardRef>(null);
@@ -109,6 +114,22 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   const [cookies] = useCookies(["login"]);
   const [modal, setModal] = useState<Omit<ModalProps, "onClose"> | null>(null);
   const closeModal = () => setModal(null);
+
+  // Always-visible theme overview (educational context for the current puzzle)
+  const [overviewHtml, setOverviewHtml] = useState<string>("");
+  // Number of moves the player has attempted on the current puzzle.
+  // The solution hint stays locked until this is > 0.
+  const [attemptCount, setAttemptCount] = useState(0);
+  // Square of the piece the player should move, revealed by the hint button.
+  const [hintMove, setHintMove] = useState<string | null>(null);
+
+  // Mentor feedback (mentor -> student).
+  const [showFeedbackInput, setShowFeedbackInput] = useState(false); // mentor's compose panel
+  const [feedbackDraft, setFeedbackDraft] = useState("");            // mentor's textarea
+  const [feedbackSent, setFeedbackSent] = useState(false);           // mentor's "sent" confirmation
+  // When set on the student, the board is paused until they acknowledge the
+  // mentor's message — they HAVE to read it before continuing.
+  const [feedbackBlocking, setFeedbackBlocking] = useState(false);
 
   // Time tracking
   const [eventID, setEventID] = useState(null);
@@ -144,13 +165,10 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     setHighlightSquares([]);
     setThemeList([]);
     setIsInitialized(false);
+    setOverviewHtml("");
+    setHintMove(null);
+    setAttemptCount(0);
     closeModal();
-
-    const hintText = document.getElementById("hint-text");
-    if (hintText) {
-      hintText.innerHTML = "";
-      hintText.style.display = "none";
-    }
   };
 
   const handleThemeSelect = (theme: PuzzleThemeKey) => {
@@ -246,7 +264,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
         setThemeList(firstPuzzle.Themes.split(" "));
         setStateAsActive(firstPuzzle);
-        updateInfoBox(firstPuzzle.Themes.split(" "));
+        buildOverview(firstPuzzle.Themes.split(" "));
       } else {
         setModal({
           type: "error",
@@ -266,6 +284,12 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       console.warn("Puzzle is missing required fields:", state);
       return;
     }
+
+    // Fresh puzzle: relock the hint and clear any previous reveal.
+    // (Retrying the same puzzle goes through startLesson directly, so an
+    // attempt already made stays counted and the hint stays unlocked.)
+    setAttemptCount(0);
+    setHintMove(null);
     const normalizedFen = normalizeFen(state.FEN);
     const sideToMove = normalizedFen.split(" ")[1];
 
@@ -312,7 +336,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
         if (puzzles && puzzles.length > 0) {
           dbIndexRef.current = 0;
           setStateAsActive(puzzles[0]);
-          updateInfoBox(puzzles[0].Themes.split(" "));
+          buildOverview(puzzles[0].Themes.split(" "));
         }
       });
       return;
@@ -333,7 +357,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     setThemeList(nextPuzzle.Themes.split(" "));
 
     setStateAsActive(nextPuzzle);
-    updateInfoBox(nextPuzzle.Themes.split(" "));
+    buildOverview(nextPuzzle.Themes.split(" "));
   };
 
   // ============================================================================
@@ -375,6 +399,9 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       return;
     }
 
+    // Count the attempt so the solution hint unlocks after the first try.
+    setAttemptCount((c) => c + 1);
+
     const playerAttemptedMove = `${move.from}${move.to}${move.promotion || ""}`;
     const expectedPlayerMove = moveListRef.current[0];
 
@@ -384,6 +411,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
     if (isCorrect) {
       moveListRef.current.shift();
+      setHintMove(null);
       setHighlightSquares([move.from, move.to]);
 
       // Get new FEN from ChessBoard (it already made the move)
@@ -427,7 +455,10 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     }
   };
 
-  const handleInvalidMove = () => {};
+  const handleInvalidMove = () => {
+    // An illegal drag still counts as trying, so it unlocks the hint too.
+    setAttemptCount((c) => c + 1);
+  };
 
   // ============================================================================
   // SOCKET HANDLERS
@@ -435,6 +466,22 @@ const Puzzles: React.FC<PuzzlesProps> = ({
 
   const handleSocketMessage = useCallback(
     (msg: string) => {
+      if (msg.startsWith(FEEDBACK_PREFIX)) {
+        // Mentor feedback arrived. On the student, pause the board and force an
+        // acknowledgement before they can continue. The mentor's own client
+        // ignores the echo of the message it just sent.
+        if (!isMentor) {
+          setFeedbackBlocking(true);
+          setModal({
+            type: "info",
+            title: "Message from your mentor",
+            message: msg.slice(FEEDBACK_PREFIX.length),
+            confirmText: "Got it",
+            onConfirm: () => setFeedbackBlocking(false),
+          });
+        }
+        return;
+      }
       if (msg === "puzzle completed") {
         if (status === "guest") {
           setModal({
@@ -455,16 +502,11 @@ const Puzzles: React.FC<PuzzlesProps> = ({
       } else if (msg === "new game received") {
         closeModal();
       } else if (msg.startsWith("<div")) {
-        if (status === "guest") {
-          const hintText = document.getElementById("hint-text");
-          if (hintText) {
-            hintText.innerHTML = msg;
-            hintText.style.display = "none";
-          }
-        }
+        // Theme overview pushed from the host; show it for everyone in the room.
+        setOverviewHtml(msg);
       }
     },
-    [status]
+    [status, isMentor]
   );
 
   const socket = useChessSocket({
@@ -529,37 +571,66 @@ const Puzzles: React.FC<PuzzlesProps> = ({
   // HINT SYSTEM
   // ============================================================================
 
-  const updateInfoBox = (themes?: string[]) => {
+  // Builds the always-visible theme overview: what the selected theme is,
+  // the puzzle's rating, and any other tactics tagged on this position.
+  // This is context, not a solution — the actual solution comes from the
+  // Show Hint button below.
+  const buildOverview = (themes?: string[]) => {
     const currentThemes = themes || themeList;
     if (!currentThemes || currentThemes.length === 0) return;
 
     const rating = currentPuzzleRef.current?.Rating || "N/A";
+    const selectedName = selectedTheme ? getThemeName(selectedTheme) : "";
+    const selectedDesc = selectedTheme ? getThemeDescription(selectedTheme) : "";
 
-    let hints = `<div style="margin-bottom: 14px;"><b>Puzzle Rating:</b> ${rating}</div>`;
+    let html = "";
+    if (selectedName) {
+      html += `<div style="margin-bottom: 14px;"><b>What you're practicing — ${selectedName}:</b> ${selectedDesc}</div>`;
+    }
+    html += `<div style="margin-bottom: 14px;"><b>Puzzle Rating:</b> ${rating}</div>`;
 
-    for (const key of currentThemes) {
-      const name = themesName[key] || key;
-      const desc = themesDescription[key];
+    const extras = currentThemes.filter(
+      (key) =>
+        key !== selectedTheme &&
+        themesDescription[key as keyof typeof themesDescription]
+    );
 
-      if (!desc || desc === "No description available") continue;
-      hints += `<div style="margin-bottom: 14px;"><b>${name}:</b> ${desc}</div>`;
+    if (extras.length > 0) {
+      html += `<div style="margin-bottom: 8px;"><b>Also in this puzzle:</b></div>`;
+      for (const key of extras) {
+        const name = getThemeName(key);
+        const desc = themesDescription[key as keyof typeof themesDescription];
+        html += `<div style="margin-bottom: 10px;">&bull; <b>${name}:</b> ${desc}</div>`;
+      }
     }
 
-    socket.sendMessage(hints);
-
-    const hintText = document.getElementById("hint-text");
-    if (hintText) {
-      hintText.innerHTML = hints;
-      hintText.style.display = "none";
-    }
+    setOverviewHtml(html);
+    socket.sendMessage(html);
   };
 
-  const openDialog = () => {
-    const hintText = document.getElementById("hint-text");
-    if (hintText) {
-      hintText.style.display =
-        hintText.style.display === "block" ? "none" : "block";
-    }
+  // Reveals the solution by pointing at the piece the player should move.
+  // Only reachable after the player has attempted at least one move.
+  const showSolutionHint = () => {
+    const expected = moveListRef.current[0];
+    if (!expected) return;
+
+    const fromSquare = expected.substring(0, 2);
+    setHintMove(fromSquare);
+    chessBoardRef.current?.clearHighlights();
+    setHighlightSquares([fromSquare]);
+  };
+
+  // Mentor: send free-text feedback/hint to the student at any time — mid-puzzle
+  // or between puzzles. It is broadcast on the room message channel; the
+  // student's handler turns it into a blocking popup they must acknowledge.
+  const sendFeedback = () => {
+    const text = feedbackDraft.trim();
+    if (!text) return;
+    socket.sendMessage(`${FEEDBACK_PREFIX}${text}`);
+    setFeedbackDraft("");
+    setShowFeedbackInput(false);
+    setFeedbackSent(true);
+    setTimeout(() => setFeedbackSent(false), 4000);
   };
 
   // ============================================================================
@@ -727,9 +798,10 @@ const Puzzles: React.FC<PuzzlesProps> = ({
     <div className="mx-auto mt-8 flex w-full max-w-5xl flex-col gap-3 px-4 text-left">
       <button
         type="button"
-        className="w-fit text-sm font-bold text-primary hover:text-dark"
+        className="inline-flex w-fit items-center gap-2 self-start rounded-xl border-2 border-dark bg-light px-6 py-3 text-lg font-extrabold text-dark shadow-md transition-transform hover:-translate-y-0.5 hover:bg-soft focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/30"
         onClick={handleBackToThemes}
       >
+        <span aria-hidden="true" className="text-xl leading-none">&larr;</span>
         Back to puzzle themes
       </button>
       <div>
@@ -761,7 +833,7 @@ const Puzzles: React.FC<PuzzlesProps> = ({
           highlightSquares={highlightSquares}
           onMove={handlePlayerMove}
           onInvalidMove={handleInvalidMove}
-          disabled={isPuzzleEndRef.current || !socket.connected || hidePieces}
+          disabled={isMentor || isPuzzleEndRef.current || !socket.connected || hidePieces || feedbackBlocking}
         />
       </div>
 
@@ -772,34 +844,138 @@ const Puzzles: React.FC<PuzzlesProps> = ({
             : "flex flex-col items-center gap-4 flex-1 min-w-[250px]"
         }
       >
-        <div className="flex flex-col gap-4 w-full md:flex-row md:justify-center">
-          <button
-            className={puzzleButtonClass}
-            data-testid="next-puzzle-button"
-            onClick={() => {
-              isPuzzleEndRef.current = false;
-              socket.sendMessage("next puzzle");
-            }}
-            disabled={!socket.connected}
-          >
-            Get New Puzzle
-          </button>
+        {/* Solving controls belong to the student; the mentor only watches. */}
+        {!isMentor && (
+          <div className="flex flex-col gap-4 w-full md:flex-row md:justify-center">
+            <button
+              className={puzzleButtonClass}
+              data-testid="next-puzzle-button"
+              onClick={() => {
+                isPuzzleEndRef.current = false;
+                socket.sendMessage("next puzzle");
+              }}
+              disabled={!socket.connected}
+            >
+              Get New Puzzle
+            </button>
 
-          <button
-            className={puzzleButtonClass}
-            data-testid="hint-button"
-            onClick={openDialog}
-            disabled={!socket.connected}
-          >
-            Show Hint
-          </button>
-        </div>
+            <button
+              className={puzzleButtonClass}
+              data-testid="hint-button"
+              onClick={showSolutionHint}
+              disabled={
+                !socket.connected || attemptCount === 0 || isPuzzleEndRef.current
+              }
+              title={
+                attemptCount === 0
+                  ? "Try a move first to unlock a hint"
+                  : "Reveal which piece to move"
+              }
+            >
+              Show Hint
+            </button>
+          </div>
+        )}
 
-        <div
-          id="hint-text"
-          className="w-full max-w-[600px] p-6 bg-light rounded-lg shadow text-base leading-relaxed text-dark text-left"
-          style={{ display: "none" }}
-        ></div>
+        {isMentor && (
+          <p className="text-sm text-center text-gray" data-testid="mentor-watch-note">
+            You're watching your student solve. Use{" "}
+            <b>Give Feedback</b> to send them a hint or note.
+          </p>
+        )}
+
+        {isMentor && (
+          <div
+            className="w-full max-w-[600px] flex flex-col items-center gap-3"
+            data-testid="mentor-feedback"
+          >
+            {!showFeedbackInput ? (
+              <button
+                className={puzzleButtonClass}
+                data-testid="give-feedback-button"
+                onClick={() => {
+                  setShowFeedbackInput(true);
+                  setFeedbackSent(false);
+                }}
+                disabled={!socket.connected}
+              >
+                Give Feedback
+              </button>
+            ) : (
+              <div className="w-full rounded-lg border-2 border-primary bg-light p-4 flex flex-col gap-3">
+                <label
+                  htmlFor="mentor-feedback-input"
+                  className="text-sm font-bold text-dark text-left"
+                >
+                  Feedback for your student
+                </label>
+                <textarea
+                  id="mentor-feedback-input"
+                  data-testid="feedback-textarea"
+                  className="w-full min-h-[90px] rounded-md border border-gray p-3 text-base text-dark"
+                  placeholder="e.g. Look for a way to attack two pieces at once…"
+                  value={feedbackDraft}
+                  onChange={(e) => setFeedbackDraft(e.target.value)}
+                  autoFocus
+                />
+                <div className="flex gap-3 justify-end">
+                  <button
+                    className="text-sm font-bold text-gray hover:text-dark px-4 py-2"
+                    onClick={() => {
+                      setShowFeedbackInput(false);
+                      setFeedbackDraft("");
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className={puzzleButtonClass}
+                    data-testid="send-feedback-button"
+                    onClick={sendFeedback}
+                    disabled={!socket.connected || feedbackDraft.trim() === ""}
+                  >
+                    Send Feedback
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {feedbackSent && (
+              <p
+                className="text-sm font-bold text-primary"
+                data-testid="feedback-sent-note"
+              >
+                ✓ Feedback sent to your student.
+              </p>
+            )}
+          </div>
+        )}
+
+        {!isMentor && attemptCount === 0 && (
+          <p
+            className="text-sm text-center text-gray"
+            data-testid="hint-locked-note"
+          >
+            Make a move first &mdash; the hint will point you to the piece to play.
+          </p>
+        )}
+
+        {!isMentor && hintMove && (
+          <div
+            data-testid="hint-solution"
+            className="w-full max-w-[600px] rounded-lg border-2 border-primary bg-soft p-4 text-center text-base leading-relaxed text-dark"
+          >
+            <b>Hint:</b> Play the highlighted piece on <b>{hintMove}</b>.
+          </div>
+        )}
+
+        {overviewHtml && (
+          <div
+            data-testid="puzzle-overview"
+            className="w-full max-w-[600px] rounded-lg bg-light p-6 text-left text-base leading-relaxed text-dark shadow"
+            dangerouslySetInnerHTML={{ __html: overviewHtml }}
+          />
+        )}
       </div>
     </div>
 

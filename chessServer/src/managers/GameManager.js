@@ -170,84 +170,68 @@ class GameManager {
      * @returns {Object} Game object, assigned color, and new game status
      */
     createOrJoinPuzzle({ student, mentor, role, socketId, credentials }, io) {
-        let game = this.ongoingGames.find(
-            (g) => g.student.username === student || g.mentor.username === mentor
-        );
-        const socket = io.sockets.sockets.get(socketId); // the socket id that initiated connection
-
         // must be a student or mentor to connect to server
-        if (role != "student" && role != "mentor") {
+        if (role !== "student" && role !== "mentor") {
             throw new Error("Invalid role!");
         }
 
-        // Player already in a puzzle, so serve as a guest
-        if (game) {
-            console.log("already in a game")
-            if (role == "student") {
-                game.student.id = socketId; // record guest socket id
-                socket.emit("guest"); // notify client that they join as guest
-                const socket2 = io.sockets.sockets.get(game.mentor.id);
-                socket2.emit("guest"); 
-                socket.emit("boardstate", JSON.stringify({ 
-                    boardState: game.boardState.fen(), // pass existing game state to guest client
-                    color: game.student.color
-                }));
-                socket.emit("message", JSON.stringify({ message: game.puzzle }));
-                console.log("emtting hints!!", game.puzzle);
-                return { game, color: game.student.color, newGame: false };
-            }
-            else if (role == "mentor") {
-                game.mentor.id = socketId; // record guest socket id
-                socket.emit("guest"); // notify client that they join as guest
-                const socket2 = io.sockets.sockets.get(game.student.id);
-                socket2.emit("guest"); 
-                socket.emit("boardstate", JSON.stringify({ 
-                    boardState: game.boardState.fen(), // pass existing game state to guest client
-                    color: game.student.color 
-                }));
-                socket.emit("message", JSON.stringify({ message: game.puzzle }));
-                console.log("emtting hints!!", game.puzzle);
-                return { game, color: game.mentor.color, newGame: false };
-            }
-            else {
-                throw new Error("Invalid role!");
+        const socket = io.sockets.sockets.get(socketId);
+
+        // A puzzle room is keyed to the STUDENT (the solver). Both the student's
+        // client and the mentor's client send the same student username, so both
+        // resolve to the same room regardless of who connects first.
+        let game = this.ongoingGames.find((g) => g.student.username === student);
+
+        if (!game) {
+            // First contact for this student — create the room. The student seat
+            // is the host/solver; the mentor seat is a passive observer.
+            game = {
+                student: {
+                    username: student,
+                    id: role === "student" ? socketId : null,
+                    color: "white",
+                    credentials: credentials,
+                },
+                mentor: {
+                    username: mentor,
+                    id: role === "mentor" ? socketId : null,
+                    color: "white", // student & mentor are on the same side in a puzzle
+                },
+                boardState: new Chess(),
+                pastStates: [],
+                puzzle: "No hints available",
+            };
+            this.ongoingGames.push(game);
+        } else {
+            // Room exists — record/refresh this client's socket id on its seat.
+            if (role === "student") {
+                game.student.id = socketId;
+                if (credentials) game.student.credentials = credentials;
+            } else {
+                game.mentor.id = socketId;
             }
         }
 
-        // Game has not been created yet, so player will serve as host
-        socket.emit("host");
-        console.log("creating new game in game manager")
-
-        // Create a new game instance
-        const board = new Chess(); // default to a simple chess game
-        const studentColor = "white"; // default to white
-        const mentorColor = "white"; // in a puzzle, student and mentor are on the same side
-
-        const newGame = {
-            student: {
-                username: student,
-                id: role === "student" ? socketId : null,
-                color: studentColor,
-                credentials: credentials,
-            },
-            mentor: {
-                username: mentor,
-                id: role === "mentor" ? socketId : null,
-                color: mentorColor
-            },
-            boardState: board,
-            pastStates: [],
-            puzzle: "No hints available",
-        };
-        console.log("created puzzle:", newGame.puzzle);
-
-        // record the new game created
-        this.ongoingGames.push(newGame);
+        // Role — not connection order — decides who drives the puzzle:
+        //   student => host (solves), mentor => guest (watches only).
+        // This makes the Socratic flow deterministic: the student always solves
+        // and the mentor always observes, even if the mentor connects first.
+        if (role === "student") {
+            socket.emit("host");
+        } else {
+            socket.emit("guest");
+            // Show the observing mentor the current board + hints immediately.
+            socket.emit("boardstate", JSON.stringify({
+                boardState: game.boardState.fen(),
+                color: game.student.color,
+            }));
+            socket.emit("message", JSON.stringify({ message: game.puzzle }));
+        }
 
         return {
-            game: newGame,
-            color: role === "student" ? studentColor : mentorColor,
-            newGame: true
+            game,
+            color: role === "student" ? game.student.color : game.mentor.color,
+            newGame: role === "student",
         };
     }
 
