@@ -656,7 +656,7 @@ router.post(
   },
 );
 
-router.post("/storeMoves", async (req, res) => {
+router.post("/storeMoves", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { gameId, fen, pos, image } = req.query;
     if (gameId) {
@@ -699,7 +699,7 @@ router.post("/storeMoves", async (req, res) => {
   }
 });
 
-router.post("/newGameStoreMoves", async (req, res) => {
+router.post("/newGameStoreMoves", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { gameId } = req.query;
     let meeting = await getMovesByGameId(gameId);
@@ -715,7 +715,7 @@ router.post("/newGameStoreMoves", async (req, res) => {
   }
 });
 
-router.get("/getStoreMoves", async (req, res) => {
+router.get("/getStoreMoves", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { gameId, meetingId } = req.query;
     if (meetingId) {
@@ -731,7 +731,7 @@ router.get("/getStoreMoves", async (req, res) => {
   }
 });
 
-router.post("/checkUndoPermission", async (req, res) => {
+router.post("/checkUndoPermission", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { meetingId } = req.query;
     const checkPermission = await undoPermission.findOne({
@@ -744,7 +744,7 @@ router.post("/checkUndoPermission", async (req, res) => {
   }
 });
 
-router.post("/undoMeetingMoves", async (req, res) => {
+router.post("/undoMeetingMoves", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { meetingId } = req.query;
     const getBoardState = await getMoves(meetingId);
@@ -767,7 +767,7 @@ const deleteMovesByMeetingId = async (meetingId, deletedData) => {
   return deletedMove;
 };
 
-router.post("/undoMoves", async (req, res) => {
+router.post("/undoMoves", passport.authenticate("jwt"), async (req, res) => {
   try {
     const { gameId } = req.query;
     const getBoardState = await getMovesByGameId(gameId);

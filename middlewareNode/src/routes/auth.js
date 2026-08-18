@@ -57,7 +57,12 @@ router.post(
       }
 
       const sha384 = crypto.createHash("sha384");
-      const { username, password } = req.query;
+      const username = req.body?.username || req.query?.username;
+      const password = req.body?.password || req.query?.password;
+
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+      }
 
       //Find the user with the provided credentials
       let foundUser = await users.findOne({ username });

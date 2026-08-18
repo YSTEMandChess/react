@@ -6,17 +6,38 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const initializeSocket = require("./managers/socket");
 
+const allowedOriginsSetting = process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
+const allowedOrigins = allowedOriginsSetting
+  ? allowedOriginsSetting.split(",").map((o) => o.trim())
+  : [
+      "https://ystemandchess.com",
+      "https://www.ystemandchess.com",
+      "http://localhost:3000",
+      "http://localhost:3002",
+      "http://localhost:4200",
+    ];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
+  methods: ["GET", "POST"],
+  credentials: true,
+};
+
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
+  cors: corsOptions,
 });
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get("/health", (req, res) => {
