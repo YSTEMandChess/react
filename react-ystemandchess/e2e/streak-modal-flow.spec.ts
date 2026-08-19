@@ -55,7 +55,7 @@ test.beforeEach(async ({ context }) => {
 
 test('opens with the real streak figure from GET /streak, not the old hardcoded 9', async ({ page }) => {
   await page.goto('/student-profile');
-  await page.getByRole('button', { name: 'Streak' }).click();
+  await page.getByRole('button', { name: 'Streak', exact: true }).click();
 
   const streakModal = page.locator('.streak-modal-overlay');
   await expect(streakModal).toBeVisible();
@@ -68,7 +68,7 @@ test('opens with the real streak figure from GET /streak, not the old hardcoded 
 
 test('calendar marks today as completed, from real GET /streak/calendar data', async ({ page }) => {
   await page.goto('/student-profile');
-  await page.getByRole('button', { name: 'Streak' }).click();
+  await page.getByRole('button', { name: 'Streak', exact: true }).click();
 
   const streakModal = page.locator('.streak-modal-overlay');
   await expect(streakModal).toBeVisible();
@@ -83,7 +83,7 @@ test('calendar marks today as completed, from real GET /streak/calendar data', a
 
 test('month navigation refetches the calendar for the newly selected month', async ({ page }) => {
   await page.goto('/student-profile');
-  await page.getByRole('button', { name: 'Streak' }).click();
+  await page.getByRole('button', { name: 'Streak', exact: true }).click();
 
   const streakModal = page.locator('.streak-modal-overlay');
   await expect(streakModal).toBeVisible();
@@ -102,7 +102,7 @@ test('month navigation refetches the calendar for the newly selected month', asy
 
 test('closes when the overlay is clicked', async ({ page }) => {
   await page.goto('/student-profile');
-  await page.getByRole('button', { name: 'Streak' }).click();
+  await page.getByRole('button', { name: 'Streak', exact: true }).click();
 
   const streakModal = page.locator('.streak-modal-overlay');
   await expect(streakModal).toBeVisible();
