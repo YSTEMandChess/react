@@ -1,10 +1,11 @@
 /**
- * Integration tests — POST /user/avatar
+ * Integration tests — POST/GET /user/avatar, GET /user/avatar/child
  *
- * Passport and Azure Blob Storage are mocked so no real JWT, DB, or blob
- * container is needed. Verifies: auth enforcement, file-type/size
- * validation, upload call, and that avatarKey is persisted against the
- * authenticated user only (never a caller-supplied username).
+ * Passport, the Users model, and the avatar helpers (utils/avatars.js) are
+ * mocked so no real JWT or DB is needed. Verifies: auth enforcement,
+ * file-type/size validation, avatar bytes are saved via saveAvatar, and
+ * that avatarKey is persisted against the authenticated user only (never a
+ * caller-supplied username).
  */
 
 // users.js calls passport.authenticate("jwt") once at require-time and wires
@@ -29,7 +30,7 @@ const express = require("express");
 const request = require("supertest");
 const usersRoute = require("../src/routes/users");
 const Users = require("../src/models/users");
-const { getAvatarUrl, getBlobServiceClient } = require("../src/utils/avatars");
+const { getAvatarUrl, saveAvatar } = require("../src/utils/avatars");
 
 const app = express();
 app.use(express.json());
@@ -41,20 +42,12 @@ afterEach(() => {
 });
 
 describe("POST /user/avatar", () => {
-  let mockUploadData;
-
   beforeEach(() => {
-    mockUploadData = jest.fn().mockResolvedValue({});
-    getBlobServiceClient.mockReturnValue({
-      credential: {},
-      client: {
-        getContainerClient: jest.fn(() => ({
-          getBlockBlobClient: jest.fn(() => ({ uploadData: mockUploadData })),
-        })),
-      },
-    });
+    saveAvatar.mockResolvedValue(undefined);
     Users.updateOne.mockResolvedValue({ modifiedCount: 1 });
-    getAvatarUrl.mockImplementation((key) => (key ? `https://test.blob.core.windows.net/avatars/${key}` : null));
+    getAvatarUrl.mockImplementation((key) =>
+      Promise.resolve(key ? `data:image/png;base64,fake-${key}` : null)
+    );
   });
 
   test("401 — no authenticated user", async () => {
@@ -83,8 +76,12 @@ describe("POST /user/avatar", () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty("avatarKey");
     expect(res.body.avatarKey).toMatch(/^alice\//);
-    expect(res.body.avatarUrl).toBe(`https://test.blob.core.windows.net/avatars/${res.body.avatarKey}`);
-    expect(mockUploadData).toHaveBeenCalledTimes(1);
+    expect(res.body.avatarUrl).toBe(`data:image/png;base64,fake-${res.body.avatarKey}`);
+    expect(saveAvatar).toHaveBeenCalledWith(
+      expect.stringMatching(/^alice\//),
+      expect.any(Buffer),
+      "image/png"
+    );
     expect(Users.updateOne).toHaveBeenCalledWith(
       { username: "alice" },
       { $set: { avatarKey: expect.stringMatching(/^alice\//) } }
@@ -102,7 +99,7 @@ describe("POST /user/avatar", () => {
       });
 
     expect(res.status).toBe(400);
-    expect(mockUploadData).not.toHaveBeenCalled();
+    expect(saveAvatar).not.toHaveBeenCalled();
   });
 
   test("400 — missing file", async () => {
@@ -145,9 +142,9 @@ describe("POST /user/avatar", () => {
     );
   });
 
-  test("500 — returns server error when the blob upload fails", async () => {
+  test("500 — returns server error when saving the avatar fails", async () => {
     mockCurrentAuthUser = { username: "frank", role: "student" };
-    mockUploadData.mockRejectedValue(new Error("Azure Blob Storage unavailable"));
+    saveAvatar.mockRejectedValue(new Error("MongoDB unavailable"));
 
     const res = await request(app)
       .post("/user/avatar")
@@ -162,7 +159,9 @@ describe("POST /user/avatar", () => {
 
 describe("GET /user/avatar", () => {
   beforeEach(() => {
-    getAvatarUrl.mockImplementation((key) => (key ? `https://test.blob.core.windows.net/avatars/${key}` : null));
+    getAvatarUrl.mockImplementation((key) =>
+      Promise.resolve(key ? `data:image/png;base64,fake-${key}` : null)
+    );
   });
 
   test("401 — no authenticated user", async () => {
@@ -171,14 +170,14 @@ describe("GET /user/avatar", () => {
     expect(res.status).toBe(401);
   });
 
-  test("200 — returns a SAS URL when the user has an avatarKey", async () => {
+  test("200 — returns a data: URI when the user has an avatarKey", async () => {
     mockCurrentAuthUser = { username: "alice", role: "student" };
     Users.findOne.mockResolvedValue({ avatarKey: "alice/photo123.png" });
 
     const res = await request(app).get("/user/avatar");
 
     expect(res.status).toBe(200);
-    expect(res.body.avatarUrl).toBe("https://test.blob.core.windows.net/avatars/alice/photo123.png");
+    expect(res.body.avatarUrl).toBe("data:image/png;base64,fake-alice/photo123.png");
     expect(Users.findOne).toHaveBeenCalledWith(
       { username: "alice" },
       expect.objectContaining({ avatarKey: 1 })
@@ -219,7 +218,9 @@ describe("GET /user/avatar", () => {
 
 describe("GET /user/avatar/child", () => {
   beforeEach(() => {
-    getAvatarUrl.mockImplementation((key) => (key ? `https://test.blob.core.windows.net/avatars/${key}` : null));
+    getAvatarUrl.mockImplementation((key) =>
+      Promise.resolve(key ? `data:image/png;base64,fake-${key}` : null)
+    );
   });
 
   test("401 — no authenticated user", async () => {
@@ -258,14 +259,14 @@ describe("GET /user/avatar/child", () => {
     );
   });
 
-  test("200 — returns the child's avatar SAS URL for the child's own parent", async () => {
+  test("200 — returns the child's avatar data: URI for the child's own parent", async () => {
     mockCurrentAuthUser = { username: "parentA", role: "parent" };
     Users.findOne.mockResolvedValue({ avatarKey: "kiddo/photo.png" });
 
     const res = await request(app).get("/user/avatar/child?childUsername=kiddo");
 
     expect(res.status).toBe(200);
-    expect(res.body.avatarUrl).toBe("https://test.blob.core.windows.net/avatars/kiddo/photo.png");
+    expect(res.body.avatarUrl).toBe("data:image/png;base64,fake-kiddo/photo.png");
   });
 
   test("200 — returns avatarUrl: null when the child has no avatar uploaded", async () => {

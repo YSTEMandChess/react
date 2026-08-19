@@ -50,7 +50,7 @@ const {
   getBadgesEarned,
   getChessRecords,
 } = require("../utils/studentStats");
-const { getAvatarUrl } = require("../utils/avatars");
+const { getAvatarUrls } = require("../utils/avatars");
 
 /**
  * parseFloat with a default that survives a legitimate 0 (unlike `|| default`).
@@ -193,6 +193,12 @@ router.get("/", async (req, res) => {
     // fifth per-student round trip inside the map below.
     const chessRecords = await getChessRecords(candidates.map((u) => u.username));
 
+    // avatarKey carried through unresolved — resolving it is a real DB read
+    // now that avatars live in Mongo (Task 12), not free string-building
+    // like the old SAS URL was. Resolving it here for every candidate (up
+    // to MAX_UNFILTERED_CANDIDATES) would mean looking up avatars nobody
+    // ends up seeing, since only one page renders. Batched below, after
+    // sorting narrows this down to the page actually being returned.
     const scored = await Promise.all(
       candidates.map(async (user) => ({
         id: String(user._id),
@@ -200,7 +206,7 @@ router.get("/", async (req, res) => {
         school: user.school || null,
         country: user.country || null,
         state: user.state || null,
-        avatarUrl: getAvatarUrl(user.avatarKey),
+        avatarKey: user.avatarKey,
         score: await computeScore(user),
         chess: chessRecords.get(user.username),
       }))
@@ -217,6 +223,11 @@ router.get("/", async (req, res) => {
 
     const total = scored.length;
     const pageSlice = scored.slice(skip, skip + limit);
+
+    // One batched query for the page's avatars, same pattern as
+    // getChessRecords above — not one lookup per candidate.
+    const avatarUrls = await getAvatarUrls(pageSlice.map((entry) => entry.avatarKey));
+
     const leaderboard = pageSlice.map((entry, idx) => ({
       id: entry.id,
       rank: skip + idx + 1,
@@ -234,7 +245,7 @@ router.get("/", async (req, res) => {
         losses: entry.chess.losses,
         gamesPlayed: entry.chess.gamesPlayed,
       },
-      avatar_url: entry.avatarUrl,
+      avatar_url: entry.avatarKey ? avatarUrls.get(entry.avatarKey) ?? null : null,
     }));
 
     res.json({

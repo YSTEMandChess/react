@@ -1,56 +1,70 @@
 /**
  * Avatar URL Helper
  *
- * Converts a stored avatarKey (Azure blob name) into a SAS, time-limited
- * URL for display. Mirrors the SAS-URL pattern already used for meeting
- * recordings in routes/meetings.js. Generating the URL on read (rather than
- * storing a permanent one) means the storage account/container can change
- * without a data migration.
+ * Converts a stored avatarKey into a displayable `data:` URI, resolving the
+ * actual image bytes from the Avatars collection (see models/avatars.js).
+ *
+ * Previously this signed a time-limited Azure Blob SAS URL; that required no
+ * DB round trip. Storing avatars in MongoDB instead (Task 12) means every
+ * resolution is now a real query, so batch via getAvatarUrls wherever more
+ * than one avatar is needed in the same request — e.g. leaderboard.js
+ * resolves avatars only for the page actually being returned, not every
+ * scored candidate, using the batched form below.
+ *
+ * data: URI (not a dedicated binary-serving route) so every existing
+ * frontend consumer — a plain `<img src={avatarUrl}>` — keeps working with
+ * no changes: the JSON contract (`avatarUrl: string | null`) is unchanged.
  */
 
-const {
-  BlobServiceClient,
-  StorageSharedKeyCredential,
-  generateBlobSASQueryParameters,
-  BlobSASPermissions,
-} = require("@azure/storage-blob");
-const config = require("config");
+const Avatars = require("../models/avatars");
 
-// Dedicated container for avatars — separate from meeting recordings, since
-// avatars are user-facing profile images, not private session recordings.
-const AVATAR_CONTAINER = "avatars";
-const AVATAR_URL_EXPIRY_SECONDS = 3600; // 1 hour
-
-function getBlobServiceClient() {
-  const account = config.get("azureStorageAccount");
-  const accountKey = config.get("azureStorageKey");
-  const credential = new StorageSharedKeyCredential(account, accountKey);
-  return {
-    credential,
-    client: new BlobServiceClient(`https://${account}.blob.core.windows.net`, credential),
-  };
+/**
+ * Returns a data: URI for the given avatarKey, or null if no avatarKey is
+ * set or no matching avatar document exists (caller falls back to a
+ * placeholder image either way).
+ */
+async function getAvatarUrl(avatarKey) {
+  if (!avatarKey) return null;
+  const doc = await Avatars.findOne({ avatarKey }, { data: 1, contentType: 1, _id: 0 });
+  if (!doc) return null;
+  return `data:${doc.contentType};base64,${doc.data.toString("base64")}`;
 }
 
 /**
- * Returns a SAS URL for the given avatarKey, or null if no avatarKey is
- * set (caller should fall back to a placeholder image).
+ * Batched form of getAvatarUrl — one query for every key needed, rather than
+ * one round trip per user. Every requested avatarKey is present in the
+ * result; keys with no upload (or no matching document) map to null.
+ *
+ * @param {(string|null|undefined)[]} avatarKeys
+ * @returns {Promise<Map<string, string|null>>} keyed by avatarKey
  */
-function getAvatarUrl(avatarKey) {
-  if (!avatarKey) return null;
-  const { client, credential } = getBlobServiceClient();
-  const blobClient = client.getContainerClient(AVATAR_CONTAINER).getBlobClient(avatarKey);
+async function getAvatarUrls(avatarKeys) {
+  const keys = [...new Set(avatarKeys.filter(Boolean))];
+  const urls = new Map(avatarKeys.filter(Boolean).map((k) => [k, null]));
+  if (keys.length === 0) return urls;
 
-  const sas = generateBlobSASQueryParameters(
-    {
-      containerName: AVATAR_CONTAINER,
-      blobName: avatarKey,
-      permissions: BlobSASPermissions.parse("r"),
-      expiresOn: new Date(Date.now() + AVATAR_URL_EXPIRY_SECONDS * 1000),
-    },
-    credential
-  ).toString();
-
-  return `${blobClient.url}?${sas}`;
+  const docs = await Avatars.find(
+    { avatarKey: { $in: keys } },
+    { avatarKey: 1, data: 1, contentType: 1, _id: 0 }
+  );
+  for (const doc of docs) {
+    urls.set(doc.avatarKey, `data:${doc.contentType};base64,${doc.data.toString("base64")}`);
+  }
+  return urls;
 }
 
-module.exports = { getAvatarUrl, getBlobServiceClient, AVATAR_CONTAINER, AVATAR_URL_EXPIRY_SECONDS };
+/**
+ * Stores (or replaces) the image bytes for an avatarKey.
+ * Upsert so re-uploading under the same key (not expected today — POST
+ * /user/avatar always mints a fresh key — but kept safe) overwrites rather
+ * than erroring on the unique index.
+ */
+async function saveAvatar(avatarKey, data, contentType) {
+  await Avatars.updateOne(
+    { avatarKey },
+    { $set: { avatarKey, data, contentType } },
+    { upsert: true }
+  );
+}
+
+module.exports = { getAvatarUrl, getAvatarUrls, saveAvatar };

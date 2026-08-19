@@ -28,7 +28,7 @@ const requireAuth = require("../src/middleware/requireAuth");
 const leaderboard = require("../src/routes/leaderboard");
 const Users = require("../src/models/users");
 const studentStats = require("../src/utils/studentStats");
-const { getAvatarUrl } = require("../src/utils/avatars");
+const { getAvatarUrls } = require("../src/utils/avatars");
 
 const app = express();
 app.use(express.json());
@@ -78,9 +78,12 @@ function mockStatsFor(scoreByUsername) {
 describe("GET /leaderboard", () => {
   beforeEach(() => {
     Users.find.mockResolvedValue(STUDENTS);
-    getAvatarUrl.mockImplementation((avatarKey) =>
-      avatarKey ? `https://s3.example.com/${avatarKey}` : null
-    );
+    // Batched, page-scoped lookup — see routes/leaderboard.js's module
+    // header on why avatars aren't resolved for every scored candidate.
+    getAvatarUrls.mockImplementation(async (avatarKeys) => {
+      const keys = [...new Set(avatarKeys.filter(Boolean))];
+      return new Map(keys.map((k) => [k, `https://s3.example.com/${k}`]));
+    });
     mockStatsFor({
       alice: { puzzleTimeHours: 10, streak: 5, badges: 2 },
       bob: { puzzleTimeHours: 5, streak: 2, badges: 1 },
@@ -104,13 +107,13 @@ describe("GET /leaderboard", () => {
     expect(first).toHaveProperty("avatar_url", null);
   });
 
-  test("returns a presigned avatar_url when the student has an avatarKey", async () => {
+  test("returns a resolved avatar_url when the student has an avatarKey", async () => {
     Users.find.mockResolvedValue([
       { _id: "1", username: "dave", school: "Test School", avatarKey: "dave/abc123.png" },
     ]);
     const res = await request(app).get("/leaderboard");
     expect(res.body.data.leaderboard[0].avatar_url).toBe("https://s3.example.com/dave/abc123.png");
-    expect(getAvatarUrl).toHaveBeenCalledWith("dave/abc123.png");
+    expect(getAvatarUrls).toHaveBeenCalledWith(["dave/abc123.png"]);
   });
 
   test("returns null avatar_url when the student has no avatarKey", async () => {

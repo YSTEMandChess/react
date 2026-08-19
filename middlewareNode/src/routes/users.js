@@ -29,7 +29,7 @@ const {
 } = require("../template/changePasswordTemplate");
 const { sendMail } = require("../utils/nodemailer");
 const { validator } = require("../utils/middleware");
-const { getAvatarUrl, getBlobServiceClient, AVATAR_CONTAINER } = require("../utils/avatars");
+const { getAvatarUrl, saveAvatar } = require("../utils/avatars");
 const { MongoClient } = require("mongodb");
 const config = require("config");
 
@@ -594,8 +594,9 @@ router.put("/profile", passport.authenticate("jwt"), async (req, res) => {
   }
 });
 
-// Avatar uploads are held in memory (not on disk) then streamed straight to
-// Azure Blob Storage (avatars container — see utils/avatars.js).
+// Avatar uploads are held in memory (not on disk) then written straight to
+// the Avatars collection (see models/avatars.js, utils/avatars.js) — 5MB
+// keeps a stored document comfortably under MongoDB's 16MB document limit.
 const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5MB
 
@@ -613,7 +614,7 @@ const avatarUpload = multer({
 /**
  * GET /user/avatar
  *
- * Returns a presigned URL for the authenticated user's own avatar, or
+ * Returns a data: URI for the authenticated user's own avatar, or
  * avatarUrl: null if none has been uploaded yet. Self-only, same pattern
  * as POST below — no :username param, always operates on req.user.
  *
@@ -622,7 +623,7 @@ const avatarUpload = multer({
 router.get("/avatar", passport.authenticate("jwt"), async (req, res) => {
   try {
     const user = await users.findOne({ username: req.user.username }, { avatarKey: 1 });
-    res.json({ avatarUrl: getAvatarUrl(user?.avatarKey) });
+    res.json({ avatarUrl: await getAvatarUrl(user?.avatarKey) });
   } catch (err) {
     console.error("GET /user/avatar:", err.message);
     res.status(500).json({ error: "Server error" });
@@ -632,7 +633,7 @@ router.get("/avatar", passport.authenticate("jwt"), async (req, res) => {
 /**
  * GET /user/avatar/child
  *
- * Returns a presigned URL for a child's avatar, for a parent viewing their
+ * Returns a data: URI for a child's avatar, for a parent viewing their
  * child's profile. Ownership is the same relationship already used by
  * GET /meetings/parents/recordings: the caller must be role "parent", and
  * the requested childUsername must have parentUsername === caller's
@@ -660,7 +661,7 @@ router.get("/avatar/child", passport.authenticate("jwt"), async (req, res) => {
       return res.status(403).json({ error: "You are not the parent of the requested child" });
     }
 
-    res.json({ avatarUrl: getAvatarUrl(child.avatarKey) });
+    res.json({ avatarUrl: await getAvatarUrl(child.avatarKey) });
   } catch (err) {
     console.error("GET /user/avatar/child:", err.message);
     res.status(500).json({ error: "Server error" });
@@ -670,11 +671,11 @@ router.get("/avatar/child", passport.authenticate("jwt"), async (req, res) => {
 /**
  * POST /user/avatar
  *
- * Uploads a profile avatar image for the authenticated user, storing it in
- * Azure Blob Storage under a per-user blob name. Only ever operates on
- * req.user's own record (same pattern as PUT /profile) — there is no
- * :username param, so a student can never upload an avatar for another
- * account.
+ * Uploads a profile avatar image for the authenticated user, storing the
+ * bytes in the Avatars collection under a per-user avatarKey. Only ever
+ * operates on req.user's own record (same pattern as PUT /profile) — there
+ * is no :username param, so a student can never upload an avatar for
+ * another account.
  *
  * @access JWT authenticated users
  */
@@ -696,20 +697,14 @@ router.post(
       const extension = req.file.mimetype.split("/")[1];
       const avatarKey = `${req.user.username}/${uuidv4()}.${extension}`;
 
-      const { client } = getBlobServiceClient();
-      const blockBlobClient = client
-        .getContainerClient(AVATAR_CONTAINER)
-        .getBlockBlobClient(avatarKey);
-      await blockBlobClient.uploadData(req.file.buffer, {
-        blobHTTPHeaders: { blobContentType: req.file.mimetype },
-      });
+      await saveAvatar(avatarKey, req.file.buffer, req.file.mimetype);
 
       await users.updateOne(
         { username: req.user.username },
         { $set: { avatarKey } }
       );
 
-      res.status(200).json({ message: "Avatar uploaded", avatarKey, avatarUrl: getAvatarUrl(avatarKey) });
+      res.status(200).json({ message: "Avatar uploaded", avatarKey, avatarUrl: await getAvatarUrl(avatarKey) });
     } catch (err) {
       console.error("POST /user/avatar:", err.message);
       res.status(500).json({ error: "Server error" });
