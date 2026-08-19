@@ -61,8 +61,12 @@ test('opens with the real streak figure from GET /streak, not the old hardcoded 
   await expect(streakModal).toBeVisible();
 
   // The seeded student has exactly one completed day today — a real 1,
-  // never the old hardcoded 9-day placeholder this PR replaced.
-  await expect(streakModal.getByText('1', { exact: true })).toBeVisible();
+  // never the old hardcoded 9-day placeholder this PR replaced. Scoped to
+  // .streak-left .big specifically (not a bare getByText('1')) — a plain
+  // text match also catches the calendar's "1st of the month" day cell
+  // whenever a run happens to land on the 1st, the same scoping
+  // StreakModal's own unit test already uses for this exact reason.
+  await expect(streakModal.locator('.streak-left .big')).toHaveText('1');
   await expect(streakModal.getByText('Day Streak')).toBeVisible();
 });
 
