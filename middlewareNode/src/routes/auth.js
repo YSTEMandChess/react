@@ -15,7 +15,7 @@ const express = require("express");
 const crypto = require("crypto");
 const passport = require("passport");
 const router = express.Router();
-const { check, validationResult } = require("express-validator");
+const { check, body, validationResult } = require("express-validator");
 const users = require("../models/users");
 const jwt = require("jsonwebtoken");
 const config = require("config");
@@ -45,8 +45,8 @@ router.post("/validate", passport.authenticate("jwt", { session: false }), async
 router.post(
   "/login",
   [
-    check("username", "Username is required").not().isEmpty(),
-    check("password", "Password is required").not().isEmpty(),
+    body("username", "Username is required").not().isEmpty(),
+    body("password", "Password is required").not().isEmpty(),
   ],
   async (req, res) => {
     try {

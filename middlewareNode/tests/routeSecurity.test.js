@@ -59,6 +59,7 @@ const streakRouter = require("../src/routes/streak");
 const badgesRouter = require("../src/routes/badges");
 const puzzlesRouter = require("../src/routes/puzzles");
 const categorysRouter = require("../src/routes/categorys");
+const authRouter = require("../src/routes/auth");
 
 const ChatSession = require("../src/models/ChatSession");
 const ChatMessage = require("../src/models/ChatMessage");
@@ -83,6 +84,7 @@ app.use("/streak", streakRouter);
 app.use("/badges", badgesRouter);
 app.use("/puzzles", puzzlesRouter);
 app.use("/category", categorysRouter);
+app.use("/auth", authRouter);
 
 describe("Security Audit Regression: Unauthenticated Access Control (401 Unauthorized)", () => {
   beforeEach(() => {
@@ -358,6 +360,160 @@ describe("Security Audit Regression: Role & Ownership Authorization (403 Forbidd
     const res = await request(app).get("/streak?username=bob");
     expect(res.status).toBe(403);
     expect(res.body.error).toMatch(/cannot view another user's streak/i);
+  });
+
+  test("403 — Student cannot view another student's streak calendar", async () => {
+    mockAuthUser = { _id: "u1", username: "alice", role: "student" };
+    const res = await request(app).get("/streak/calendar?username=bob&month=2026-08");
+    expect(res.status).toBe(403);
+    expect(res.body.error).toMatch(/cannot view another user's streak/i);
+  });
+
+  test("403 — Non-owner cannot read another user's badges via shared requireSelf", async () => {
+    mockAuthUser = { _id: "u1", username: "alice", role: "student" };
+    const res = await request(app).get("/badges/bob");
+    expect(res.status).toBe(403);
+    expect(res.body.error).toMatch(/cannot access another user's resource/i);
+  });
+
+  test("403 — Non-owner cannot trigger badge awards for another user", async () => {
+    mockAuthUser = { _id: "u1", username: "alice", role: "student" };
+    const res = await request(app).post("/badges/bob/check-and-award");
+    expect(res.status).toBe(403);
+    expect(res.body.error).toMatch(/cannot access another user's resource/i);
+  });
+
+  describe("Meeting & Move Endpoints Ownership & IDOR Protection", () => {
+    const mockMeeting = {
+      meetingId: "m1",
+      studentUsername: "alice",
+      mentorUsername: "mentor1",
+      moves: [[{ fen: "start_fen", pos: "e4", image: "img" }]],
+    };
+
+    const mockGame = {
+      gameId: "g1",
+      userId: "alice",
+      moves: [[{ fen: "start_fen", pos: "e4", image: "img" }]],
+    };
+
+    beforeEach(() => {
+      meetings.findOne.mockResolvedValue(mockMeeting);
+      movesList.findOne.mockResolvedValue(mockGame);
+      undoPermission.findOne.mockResolvedValue({ meetingId: "m1", permission: true });
+    });
+
+    test("403 — Non-participant cannot post boardState to meeting", async () => {
+      mockAuthUser = { _id: "u_eve", username: "eve", role: "student" };
+      const res = await request(app).post("/meetings/boardState?meetingId=m1&fen=fen2&pos=e5&role=student");
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/not a participant/i);
+    });
+
+    test("403 — Non-participant cannot read getBoardState for meeting", async () => {
+      mockAuthUser = { _id: "u_eve", username: "eve", role: "student" };
+      const res = await request(app).get("/meetings/getBoardState?meetingId=m1");
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/not a participant/i);
+    });
+
+    test("403 — Non-participant cannot create newBoardState for meeting", async () => {
+      mockAuthUser = { _id: "u_eve", username: "eve", role: "student" };
+      const res = await request(app).post("/meetings/newBoardState?meetingId=m1");
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/not a participant/i);
+    });
+
+    test("403 — Non-owner cannot update moves in a game via storeMoves", async () => {
+      mockAuthUser = { _id: "u_eve", username: "eve", role: "student" };
+      const res = await request(app).post("/meetings/storeMoves?gameId=g1&fen=fen2&pos=e5");
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/cannot mutate another user's game moves/i);
+    });
+
+    test("403 — Non-owner cannot update newGameStoreMoves", async () => {
+      mockAuthUser = { _id: "u_eve", username: "eve", role: "student" };
+      const res = await request(app).post("/meetings/newGameStoreMoves?gameId=g1");
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/cannot mutate another user's game moves/i);
+    });
+
+    test("403 — Non-owner cannot read getStoreMoves for gameId", async () => {
+      mockAuthUser = { _id: "u_eve", username: "eve", role: "student" };
+      const res = await request(app).get("/meetings/getStoreMoves?gameId=g1");
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/cannot access another user's game moves/i);
+    });
+
+    test("403 — Non-participant cannot read getStoreMoves for meetingId", async () => {
+      mockAuthUser = { _id: "u_eve", username: "eve", role: "student" };
+      const res = await request(app).get("/meetings/getStoreMoves?meetingId=m1");
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/not a participant/i);
+    });
+
+    test("403 — Non-participant cannot check undo permission", async () => {
+      mockAuthUser = { _id: "u_eve", username: "eve", role: "student" };
+      const res = await request(app).post("/meetings/checkUndoPermission?meetingId=m1");
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/not a participant/i);
+    });
+
+    test("403 — Non-participant cannot undo meeting moves", async () => {
+      mockAuthUser = { _id: "u_eve", username: "eve", role: "student" };
+      const res = await request(app).post("/meetings/undoMeetingMoves?meetingId=m1");
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/not a participant/i);
+    });
+
+    test("403 — Non-owner cannot undo game moves", async () => {
+      mockAuthUser = { _id: "u_eve", username: "eve", role: "student" };
+      const res = await request(app).post("/meetings/undoMoves?gameId=g1");
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/cannot mutate another user's game moves/i);
+    });
+
+    test("200/202 — Legitimate participant (student/mentor/admin) can access meeting/game moves", async () => {
+      mockAuthUser = { _id: "u_alice", username: "alice", role: "student" };
+      const res1 = await request(app).get("/meetings/getBoardState?meetingId=m1");
+      expect(res1.status).toBe(200);
+
+      const res2 = await request(app).get("/meetings/getStoreMoves?gameId=g1");
+      expect(res2.status).toBe(200);
+    });
+  });
+});
+
+describe("Security Audit Regression: Auth Endpoint Body Credentials Hardening", () => {
+  beforeEach(() => {
+    mockAuthUser = null;
+    jest.clearAllMocks();
+  });
+
+  test("POST /auth/login -> 400 when credentials are provided ONLY in query string (not body)", async () => {
+    const res = await request(app).post("/auth/login?username=alice&password=secretpassword");
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("errors");
+  });
+
+  test("POST /auth/login -> 200 with JWT token when valid credentials provided in JSON body", async () => {
+    const crypto = require("crypto");
+    const sha384 = crypto.createHash("sha384").update("password123").digest("hex");
+    users.findOne.mockResolvedValue({
+      username: "alice",
+      password: sha384,
+      firstName: "Alice",
+      lastName: "Smith",
+      role: "student",
+      email: "alice@example.com",
+    });
+
+    const res = await request(app)
+      .post("/auth/login")
+      .send({ username: "alice", password: "password123" });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("token");
   });
 });
 
