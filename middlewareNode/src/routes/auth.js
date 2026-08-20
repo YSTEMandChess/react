@@ -29,7 +29,7 @@ const sha384 = crypto.createHash("sha384");
  * 
  * @access JWT authentication required
  */
-router.post("/validate", passport.authenticate("jwt"), async (req, res) => {
+router.post("/validate", passport.authenticate("jwt", { session: false }), async (req, res) => {
   if (req.user) {
     res.sendStatus(200);
   } else {
@@ -57,11 +57,10 @@ router.post(
       }
 
       const sha384 = crypto.createHash("sha384");
-      const username = req.body?.username || req.query?.username;
-      const password = req.body?.password || req.query?.password;
+      const { username, password } = req.body || {};
 
       if (!username || !password) {
-        return res.status(400).json({ error: "Username and password are required" });
+        return res.status(400).json({ error: "Username and password are required in request body" });
       }
 
       //Find the user with the provided credentials
