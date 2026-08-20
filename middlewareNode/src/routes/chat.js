@@ -288,7 +288,9 @@ router.get('/sessions', requireAuth, async (req, res) => {
     const { userId, skip = 0, limit = 10 } = req.query;
     if (!userId) return res.status(400).json({ error: 'userId is required' });
 
-    // Enforce ownership: callers can only fetch their own sessions unless admin/tutor
+    // Enforce ownership: callers can only fetch their own sessions.
+    // Note: Tutors and admins have read-only observation access to review student coaching sessions,
+    // whereas write/mutate operations (/message, /end) are restricted to session owners and admins.
     const callerId = (req.user._id || req.user.id || '').toString();
     const callerUsername = req.user.username || '';
     if (

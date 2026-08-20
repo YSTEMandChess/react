@@ -56,7 +56,9 @@ async function getUserId(db, username) {
 }
 
 /**
- * Middleware to check read access on activity routes (self, mentor, tutor, or admin)
+ * Middleware to check read access on activity routes (self, mentor, tutor, or admin).
+ * Note: Platform mentors, tutors, and admins have read access to monitor student activity
+ * progress across the platform.
  */
 function requireActivityReadAccess(req, res, next) {
     const targetUsername = req.params.username;

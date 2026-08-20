@@ -17,17 +17,23 @@ const allowedOrigins = allowedOriginsSetting
       "http://localhost:4200",
     ];
 
+const hasWildcard = allowedOrigins.includes("*");
+
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+    if (hasWildcard) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error(`Origin ${origin} not allowed by CORS`));
     }
   },
   methods: ["GET", "POST"],
-  credentials: true,
+  // When wildcard is configured, disallow credentials to prevent unsafe CORS configuration
+  credentials: !hasWildcard,
 };
 
 const app = express();
