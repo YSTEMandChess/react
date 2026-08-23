@@ -10,12 +10,16 @@ const mockCollection = jest.fn(() => ({ find: mockFind }));
 const mockDb = jest.fn(() => ({ collection: mockCollection }));
 const mockConnect = jest.fn();
 
-jest.mock("mongodb", () => ({
-  MongoClient: jest.fn().mockImplementation(() => ({
-    connect: mockConnect,
-    db: mockDb,
-  })),
-}));
+jest.mock("mongodb", () => {
+  const actual = jest.requireActual("mongodb");
+  return {
+    ...actual,
+    MongoClient: jest.fn().mockImplementation(() => ({
+      connect: mockConnect,
+      db: mockDb,
+    })),
+  };
+});
 
 jest.mock("config", () => ({ get: jest.fn(() => "mongodb://fake") }));
 
