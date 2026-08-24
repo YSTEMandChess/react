@@ -10,6 +10,7 @@ import Lessons from "../../lessons/lessons-main/Lessons";
 import LessonSelection from "../../lessons/lessons-selection/LessonsSelection";
 import LessonOverlay from "../../lessons/piece-lessons/lesson-overlay/Lesson-overlay";
 import Puzzles from "../../puzzles/Puzzles";
+import { MeetingRoom } from "../../meeting";
 
 interface NewMentorProfileProps {
   userPortraitSrc: string;
@@ -282,9 +283,8 @@ const NewMentorProfile: React.FC<NewMentorProfileProps> = ({ userPortraitSrc }) 
         );
       case "mentor":
         return (
-          <div id="inventory-content-mentor" className="inventoinventory-content active-contentry-content">
-            <h2>Mentor</h2>
-            <p>This is the content for the Mentor tab.</p>
+          <div id="inventory-content-mentor" className="inventory-content active-content">
+            <MeetingRoom role="mentor" />
           </div>
         );
       case "learning":

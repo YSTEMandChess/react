@@ -1,4 +1,10 @@
 // Main server configuration for the Node.js middleware API
+
+// Load .env before ANY require of `config` (or of ./config/* which pull it in).
+// node-config resolves custom-environment-variables.json against process.env at
+// first require, so dotenv must run first or those vars come back undefined.
+require("dotenv").config();
+
 const express = require("express");
 const session = require("express-session");
 const connectDB = require("./config/db");

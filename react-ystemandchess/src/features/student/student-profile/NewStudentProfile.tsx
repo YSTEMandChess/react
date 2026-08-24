@@ -7,6 +7,7 @@ import StatsChart from "./StatsChart";
 import Puzzles from "../../puzzles/Puzzles";
 import PlayComputer from "../../engine/PlayComputer";
 import PlayStudent from "./PlayStudent";
+import { MeetingRoom } from "../../meeting";
 import StreakModal from "./Modals/StreakModal";
 import ActivitiesModal from "./Modals/ActivitiesModal";
 import BadgesModal from "./Modals/BadgesModal";
@@ -428,8 +429,7 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     case "mentor":
       return (
         <div className="w-full h-full">
-          <h2 className="text-2xl font-bold text-dark mb-4">Mentor</h2>
-          <p className="text-gray">This is the content for the Mentor tab.</p>
+          <MeetingRoom role="student" />
         </div>
       );
     
