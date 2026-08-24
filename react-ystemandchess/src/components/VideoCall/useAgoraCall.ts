@@ -1,47 +1,49 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AgoraRTC, {
   IAgoraRTCClient,
   IAgoraRTCRemoteUser,
   ICameraVideoTrack,
+  ILocalVideoTrack,
   IMicrophoneAudioTrack,
 } from "agora-rtc-sdk-ng";
 
 /**
- * useAgoraCall — React port of the Agora video call that lives in the legacy
- * Angular app (angular-ystemandchess-old/src/app/pages/play/play.component.ts).
+ * useAgoraCall — two-way Agora video for the React app.
  *
- * Faithful to the Angular behavior:
- *   - App-ID-only auth (no token / no App Certificate) — Angular calls
- *     `client.join(null, channel, uid, ...)`, so we pass token = null.
- *   - The channel is the meeting/game id, shared by both peers.
- *   - codec "h264" matches the Angular client so a mentor still on Angular and a
- *     student on React interoperate inside the same channel during the migration.
+ *   - App-ID-only auth (no token), channel = the shared meeting/game id.
+ *   - codec "h264" so a peer on the old Angular client interoperates.
+ *   - Publishes local mic + camera and subscribes to remote peers.
  *
- * Simplified vs Angular (intentional): both peers publish mic + camera and
- * subscribe to whatever the other publishes, instead of the Angular code's
- * hard-coded uid checks (123/456/789) and video-only/audio-only branches.
- * Screen sharing (Angular's separate `screenClient`) is a follow-up — see
- * VideoCall.tsx.
+ * Controls (React-only; these never existed in the old app):
+ *   - toggleMic / toggleCam — mute audio / turn the camera off, in place.
+ *   - startScreenShare / stopScreenShare — share the screen WHILE keeping the
+ *     camera on, via a second Agora client that joins the same channel with its
+ *     own uid. That second publisher would otherwise echo back to us, so we
+ *     filter our own screen uid out of the remote list.
  */
 
 type Options = {
   appId: string;
   channel: string;
-  /** App-ID-only projects pass null (default), matching the Angular client. */
   token?: string | null;
-  /** Omit to let Agora assign the uid; avoids the Angular fixed-uid collisions. */
   uid?: string | number | null;
-  /** Gate joining until we actually have a channel (e.g. game not yet paired). */
   enabled?: boolean;
 };
 
 export type AgoraCall = {
-  /** Attach to the <div> that should show the local camera. */
   localVideoRef: React.RefObject<HTMLDivElement>;
-  /** Remote peers currently in the channel (render their video via RemoteVideo). */
+  localScreenRef: React.RefObject<HTMLDivElement>;
   remoteUsers: IAgoraRTCRemoteUser[];
   joined: boolean;
   error: string | null;
+  // controls
+  micOn: boolean;
+  camOn: boolean;
+  isScreenSharing: boolean;
+  toggleMic: () => Promise<void>;
+  toggleCam: () => Promise<void>;
+  startScreenShare: () => Promise<void>;
+  stopScreenShare: () => Promise<void>;
 };
 
 export function useAgoraCall({
@@ -56,9 +58,18 @@ export function useAgoraCall({
   const camTrackRef = useRef<ICameraVideoTrack | null>(null);
   const localVideoRef = useRef<HTMLDivElement>(null);
 
+  // Screen share runs on its own client so the camera can stay published.
+  const screenClientRef = useRef<IAgoraRTCClient | null>(null);
+  const screenTrackRef = useRef<ILocalVideoTrack | null>(null);
+  const screenUidRef = useRef<number | null>(null);
+  const localScreenRef = useRef<HTMLDivElement>(null);
+
   const [remoteUsers, setRemoteUsers] = useState<IAgoraRTCRemoteUser[]>([]);
   const [joined, setJoined] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [micOn, setMicOn] = useState(true);
+  const [camOn, setCamOn] = useState(true);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   useEffect(() => {
     if (!enabled || !appId || !channel) return;
@@ -67,17 +78,21 @@ export function useAgoraCall({
     const client = AgoraRTC.createClient({ mode: "rtc", codec: "h264" });
     clientRef.current = client;
 
-    // Keep our remote-user list in sync with the SDK's view of the channel.
-    const syncRemotes = () => setRemoteUsers([...client.remoteUsers]);
+    // Exclude our own screen-share publisher from the peers we render.
+    const syncRemotes = () =>
+      setRemoteUsers(
+        client.remoteUsers.filter((u) => u.uid !== screenUidRef.current),
+      );
 
     const handleUserPublished = async (
       user: IAgoraRTCRemoteUser,
       mediaType: "audio" | "video",
     ) => {
+      if (user.uid === screenUidRef.current) return; // our own screen
       try {
         await client.subscribe(user, mediaType);
       } catch {
-        return; // subscribe can race with a peer leaving; ignore
+        return;
       }
       if (mediaType === "audio") user.audioTrack?.play();
       syncRemotes();
@@ -93,7 +108,6 @@ export function useAgoraCall({
     (async () => {
       try {
         await client.join(appId, channel, token ?? null, uid ?? null);
-
         const [micTrack, camTrack] =
           await AgoraRTC.createMicrophoneAndCameraTracks();
         if (cancelled) {
@@ -103,7 +117,6 @@ export function useAgoraCall({
         }
         micTrackRef.current = micTrack;
         camTrackRef.current = camTrack;
-
         if (localVideoRef.current) camTrack.play(localVideoRef.current);
         await client.publish([micTrack, camTrack]);
         setJoined(true);
@@ -118,6 +131,14 @@ export function useAgoraCall({
       client.off("user-unpublished", handleUserUnpublished);
       client.off("user-left", handleUserLeft);
 
+      // Tear down screen share if it's running.
+      screenTrackRef.current?.stop();
+      screenTrackRef.current?.close();
+      screenClientRef.current?.leave().catch(() => {});
+      screenTrackRef.current = null;
+      screenClientRef.current = null;
+      screenUidRef.current = null;
+
       micTrackRef.current?.stop();
       micTrackRef.current?.close();
       camTrackRef.current?.stop();
@@ -130,8 +151,89 @@ export function useAgoraCall({
       clientRef.current = null;
       setJoined(false);
       setRemoteUsers([]);
+      setIsScreenSharing(false);
+      setMicOn(true);
+      setCamOn(true);
     };
   }, [appId, channel, token, uid, enabled]);
 
-  return { localVideoRef, remoteUsers, joined, error };
+  const toggleMic = useCallback(async () => {
+    const track = micTrackRef.current;
+    if (!track) return;
+    const next = !micOn;
+    await track.setMuted(!next); // next = on → not muted
+    setMicOn(next);
+  }, [micOn]);
+
+  const toggleCam = useCallback(async () => {
+    const track = camTrackRef.current;
+    if (!track) return;
+    const next = !camOn;
+    await track.setMuted(!next);
+    setCamOn(next);
+  }, [camOn]);
+
+  const stopScreenShare = useCallback(async () => {
+    const track = screenTrackRef.current;
+    const sClient = screenClientRef.current;
+    try {
+      if (track && sClient) await sClient.unpublish(track).catch(() => {});
+      track?.stop();
+      track?.close();
+      await sClient?.leave().catch(() => {});
+    } finally {
+      screenTrackRef.current = null;
+      screenClientRef.current = null;
+      screenUidRef.current = null;
+      setIsScreenSharing(false);
+    }
+  }, []);
+
+  const startScreenShare = useCallback(async () => {
+    if (isScreenSharing || !appId || !channel) return;
+    try {
+      const sClient = AgoraRTC.createClient({ mode: "rtc", codec: "h264" });
+      // A distinct uid so our main client can identify (and ignore) our screen.
+      const screenUid = Math.floor(Math.random() * 900000) + 100000;
+      screenUidRef.current = screenUid;
+      await sClient.join(appId, channel, token ?? null, screenUid);
+
+      const screenTrack = await AgoraRTC.createScreenVideoTrack({}, "disable");
+      screenClientRef.current = sClient;
+      screenTrackRef.current = screenTrack;
+
+      // Fires when the user clicks the browser's native "Stop sharing".
+      screenTrack.on("track-ended", () => {
+        stopScreenShare();
+      });
+
+      if (localScreenRef.current) screenTrack.play(localScreenRef.current);
+      await sClient.publish(screenTrack);
+      setIsScreenSharing(true);
+    } catch (err: any) {
+      // User cancelling the share picker throws here — treat as a no-op.
+      screenUidRef.current = null;
+      screenClientRef.current = null;
+      screenTrackRef.current = null;
+      setIsScreenSharing(false);
+      if (err?.code !== "PERMISSION_DENIED") {
+        setError(err?.message || "Could not start screen sharing.");
+      }
+    }
+  }, [appId, channel, token, isScreenSharing, stopScreenShare]);
+
+  return {
+    localVideoRef,
+    localScreenRef,
+    remoteUsers,
+    joined,
+    error,
+    micOn,
+    camOn,
+    isScreenSharing,
+    toggleMic,
+    toggleCam,
+    startScreenShare,
+    stopScreenShare,
+  };
 }
