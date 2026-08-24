@@ -35,19 +35,14 @@ const allowedOrigins = allowedOriginsSetting
           ]),
     ];
 
-if (isProduction && !allowedOriginsSetting) {
-  console.warn(
-    "[chessServer] CORS_ORIGIN is not set in production. Falling back to the production allowlist."
-  );
-}
-
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
       callback(null, true);
     } else {
-      callback(new Error(`Origin ${origin} not allowed by CORS`));
+      callback(null, false);
     }
   },
   methods: ["GET", "POST"],

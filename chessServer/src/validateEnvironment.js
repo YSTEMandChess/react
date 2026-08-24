@@ -1,7 +1,13 @@
 const REQUIRED_PRODUCTION_VARS = [
   "MIDDLEWARE_URL",
-  "CORS_ORIGIN",
 ];
+
+function hasCorsConfiguration() {
+  return Boolean(
+    process.env.CORS_ORIGIN?.trim() ||
+    process.env.ALLOWED_ORIGINS?.trim()
+  );
+}
 
 function validateEnvironment() {
   if (process.env.NODE_ENV !== "production") {
@@ -12,6 +18,10 @@ function validateEnvironment() {
     const value = process.env[name];
     return !value || !value.trim();
   });
+
+  if (!hasCorsConfiguration()) {
+    missing.push("CORS_ORIGIN or ALLOWED_ORIGINS");
+  }
 
   if (missing.length > 0) {
     console.error(

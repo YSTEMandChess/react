@@ -72,10 +72,10 @@ jobs:
           # The previous "Create environment file" step wrote to
           # src/core/environments/environment.ts, a path nothing in the app
           # imports, so these secrets never reached the built app.
-          REACT_APP_MIDDLEWARE_URL: ${{ secrets.MIDDLEWARE_URL }}
-          REACT_APP_STOCKFISH_SERVER_URL: ${{ secrets.STOCKFISH_URL }}
-          REACT_APP_CHESS_SERVER_URL: ${{ secrets.CHESS_SERVER }}
-          REACT_APP_AGORA_APP_ID: ${{ secrets.APP_ID }}
+          REACT_APP_MIDDLEWARE_URL: ${{ secrets.MIDDLEWARE_URL || 'https://ystemandchess.com/middleware' }}
+          REACT_APP_STOCKFISH_SERVER_URL: ${{ secrets.STOCKFISH_URL || 'https://ystemandchess.com/stockfishserver' }}
+          REACT_APP_CHESS_SERVER_URL: ${{ secrets.CHESS_SERVER || 'https://ystemandchess.com/chessserver' }}
+          REACT_APP_AGORA_APP_ID: ${{ secrets.APP_ID || '' }}
 
       - name: Test react-ystemandchess
         run: npm test
