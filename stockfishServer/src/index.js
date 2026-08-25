@@ -9,14 +9,9 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const initializeSocket = require("./managers/socket");
 
-const app = express();
-const server = http.createServer(app);
-
 const isProduction = process.env.NODE_ENV === "production";
 
-const allowedOriginsSetting =
-  process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
-
+const allowedOriginsSetting = process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
 const allowedOrigins = allowedOriginsSetting
   ? allowedOriginsSetting.split(",").map((o) => o.trim())
   : [
@@ -31,19 +26,27 @@ const allowedOrigins = allowedOriginsSetting
           ]),
     ];
 
+const hasWildcard = allowedOrigins.includes("*");
+
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+    if (hasWildcard) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(null, false);
     }
   },
   methods: ["GET", "POST"],
-  credentials: true,
+  // When wildcard is configured, disallow credentials to prevent unsafe CORS configuration
+  credentials: !hasWildcard,
 };
+
+const app = express();
+const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: corsOptions,
