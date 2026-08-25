@@ -1,3 +1,5 @@
+//old Test for js file. Using TS now because we are Typing
+/*
 const GameManager = require('../managers/GameManager');
 
 describe('GameManager', () => {
@@ -79,5 +81,20 @@ describe('GameManager', () => {
     const undoResult = gameManager.undoMove('socket1');
 
     expect(undoResult.undoneMove.to).toBe('e4');
+  });
+});
+*/
+
+import GameManager from "../managers/GameManager";
+
+describe("GameManager", () => {
+  test("GameManager loads", () => {
+    expect(GameManager).toBeDefined();
+  });
+
+  test("GameManager can be created", () => {
+    const gameManager = new GameManager();
+
+    expect(gameManager).toBeDefined();
   });
 });

@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/index.js",
- "scripts": {
-  "start": "tsx watch src/index.ts",
-  "test": "jest --detectOpenHandles --forceExit"
-},
+  "scripts": {
+    "start": "tsx watch src/index.ts",
+    "test": "jest --detectOpenHandles --forceExit"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -19,8 +19,7 @@
     "nodemon": "^3.1.10",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.8.0",
-    "supertest": "^7.0.0",
-    "typescript": "^6.0.3"
+    "supertest": "^7.0.0"
   },
   "volta": {
     "node": "18.20.8"
@@ -28,8 +27,11 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/morgan": "^1.9.10",
     "@types/node": "^26.1.0",
-    "tsx": "^4.23.1"
+    "ts-jest": "^29.4.12",
+    "tsx": "^4.23.1",
+    "typescript": "^6.0.3"
   }
 }

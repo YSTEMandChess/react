@@ -277,8 +277,7 @@ const registerSocketHandlers = (socket, io, stockfish) => {
         const socketId = gameSocket;
 
         const game = gameManager.getGameById(socketId) as GameInstance;
-        console.log("this is the socketid", socket.id);
-        console.log("this is the stockfishID", stockfish.id);
+
         console.log(
           "this is the gamesocket id that stockfish should be supposedly savign to get back to the game",
           socketId,

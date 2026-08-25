@@ -213,7 +213,6 @@ class GameManager {
    */
   makeMove(uuid, moveFrom, moveTo, promotion) {
     const game = this.getGameById(uuid);
-    console.log("trying this", uuid, moveFrom, moveTo, promotion);
     if (!game) {
       throw new Error("Game not found for this socket!");
     }
@@ -223,9 +222,6 @@ class GameManager {
       to: moveTo,
       ...(promotion ? { promotion } : {}),
     };
-    console.log("got this far 3");
-    console.log(game.boardState);
-    console.log(game ?? "yes");
 
     let moveResult;
 
@@ -234,7 +230,6 @@ class GameManager {
     } catch (err) {
       throw err;
     }
-    console.log("got this far 4");
 
     const moveStr = promotion
       ? `${move.from} -> ${move.to} (${promotion})`
@@ -294,7 +289,6 @@ class GameManager {
         at: Date.now(),
       });
     }
-    console.log("got this far 6");
 
     return {
       game,
