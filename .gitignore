@@ -11,8 +11,8 @@ dist
 node_modules
 
 #environment
-react-ystemandchess/environment.prod.ts
-react-ystemandchess/environment.ts
+react-ystemandchess/src/environments/environment.js
+react-ystemandchess/src/environments/environment.prod.js
 environment.php
 .env
 environment.*.local
@@ -59,4 +59,10 @@ testem.log
 # System Files
 .DS_Store*
 Thumbs.db
+<<<<<<< HEAD
+
+.prettierrc
+mise.toml
+=======
 middlewareNode/config/production.json
+>>>>>>> origin/main

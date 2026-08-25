@@ -252,10 +252,14 @@ app.post('/api/analyze', async (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  console.log(`Client connected ${socket.id}`);
+  console.log("A user connected:", socket.id);
+
+  socket.onAny((event, ...args) => {
+    console.log("SERVER RECEIVED:", event, args);
+  });
+
   initializeSocket(socket);
 });
-
 const PORT = process.env.PORT || 8080;
 
 server.listen(PORT, () => {

@@ -124,6 +124,23 @@ const mockSocket = {
   clearHighlights: jest.fn(),
 };
 
+const renderPuzzles = () =>
+  render(
+    <MemoryRouter>
+      <Puzzles />
+    </MemoryRouter>
+  );
+
+const renderPuzzlesWithTheme = async (theme = "fork") => {
+  renderPuzzles();
+
+  fireEvent.click(screen.getByTestId(`puzzle-theme-${theme}`));
+
+  await waitFor(() => {
+    expect(screen.getByTestId("chess-board-container")).toBeInTheDocument();
+  });
+};
+
 describe("Puzzles Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -227,11 +244,7 @@ describe("Puzzles Component", () => {
       return Promise.reject(new Error(`Unhandled fetch: ${url}`));
     }) as jest.Mock;
 
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme();
 
     // Board is always rendered; invalid FEN means the puzzle won't start
     // but the board container is still present showing the start position.
@@ -275,50 +288,31 @@ describe("Puzzles Component", () => {
       return Promise.reject(new Error(`Unhandled fetch: ${url}`));
     }) as jest.Mock;
 
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme();
 
     // Board is always rendered, showing the start position while no puzzle is loaded.
     expect(screen.getByTestId("chess-board-container")).toBeInTheDocument();
     expect(screen.queryByText(/Loading puzzle.../i)).not.toBeInTheDocument();
   });
 
-  test("renders board immediately with no loading text", () => {
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+  test("renders puzzle theme selection before the board", () => {
+    renderPuzzles();
 
-    // Board is always present; pieces are hidden via CSS until the first FEN arrives.
-    expect(screen.getByTestId("chess-board-container")).toBeInTheDocument();
+    expect(screen.getByText("Choose what you want to practice")).toBeInTheDocument();
+    expect(screen.getByTestId("puzzle-theme-fork")).toBeInTheDocument();
+    expect(screen.queryByTestId("chess-board-container")).not.toBeInTheDocument();
     expect(screen.queryByText(/Loading puzzle.../i)).not.toBeInTheDocument();
   });
 
   test("renders Puzzles page", async () => {
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByTestId("chess-board-container")).toBeInTheDocument();
-    });
+    await renderPuzzlesWithTheme();
 
     expect(screen.getByTestId("next-puzzle-button")).toBeInTheDocument();
     expect(screen.getByTestId("hint-button")).toBeInTheDocument();
   });
 
   test("renders chess board when puzzle is loaded", async () => {
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme();
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
@@ -328,11 +322,7 @@ describe("Puzzles Component", () => {
   test("calls startNewPuzzle if connected and status is empty", async () => {
     (useChessSocket as jest.Mock).mockReturnValue(mockSocket);
 
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme();
 
     await waitFor(() => {
       expect(mockSocket.startNewPuzzle).toHaveBeenCalled();
@@ -340,11 +330,7 @@ describe("Puzzles Component", () => {
   });
 
   test("handle 'Get New Puzzle' button click", async () => {
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme();
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
@@ -357,11 +343,7 @@ describe("Puzzles Component", () => {
   });
 
   test("handle 'Show Hint' button click", async () => {
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme();
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
@@ -376,11 +358,7 @@ describe("Puzzles Component", () => {
   });
 
   test("handles player move correctly", async () => {
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme();
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
@@ -402,11 +380,7 @@ describe("Puzzles Component", () => {
 
   test("drag and drop interaction triggers move callbacks", async () => {
     jest.useFakeTimers();
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme("promotion");
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
     });
@@ -465,11 +439,7 @@ describe("Puzzles Component", () => {
       return Promise.reject(new Error(`Unhandled fetch: ${url}`));
     }) as jest.Mock;
 
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme("promotion");
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
@@ -548,11 +518,7 @@ describe("Puzzles Component", () => {
       return Promise.reject(new Error(`Unhandled fetch: ${url}`));
     }) as jest.Mock;
 
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme("promotion");
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
@@ -621,11 +587,7 @@ describe("Puzzles Component", () => {
       return Promise.reject(new Error(`Unhandled fetch: ${url}`));
     }) as jest.Mock;
 
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme("promotion");
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
@@ -694,11 +656,7 @@ describe("Puzzles Component", () => {
       return Promise.reject(new Error(`Unhandled fetch: ${url}`));
     }) as jest.Mock;
 
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme("promotion");
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
@@ -720,11 +678,7 @@ describe("Puzzles Component", () => {
 
   test("puzzle completion flow shows success modal and loads next puzzle", async () => {
     jest.useFakeTimers();
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme();
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
     });
@@ -766,11 +720,7 @@ describe("Puzzles Component", () => {
       return disconnectedSocket;
     });
 
-    render(
-      <MemoryRouter>
-        <Puzzles />
-      </MemoryRouter>
-    );
+    await renderPuzzlesWithTheme();
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();
@@ -800,6 +750,7 @@ describe("Puzzles Component", () => {
         <Puzzles />
       </MemoryRouter>
     );
+    fireEvent.click(screen.getByTestId("puzzle-theme-fork"));
 
     await waitFor(() => {
       expect(screen.getByTestId("chess-board-mock")).toBeInTheDocument();

@@ -1,3 +1,6 @@
+//simplified usechessoscket for puzzle / Games
+//TODO: simplified version needs to be implemented for Lessons
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import {
@@ -7,10 +10,9 @@ import {
   GameConfig,
   GameMode,
   PlayerColor,
-} from "../../../../../core/types/chess";
-import type { GameMetaData } from "../../../../engine/SelectGame";
-import type { PuzzleMetaData } from "../../../../puzzles/Puzzles";
-
+} from "../../core/types/chess";
+import { GameMetaData } from "../types/gamemetadata";
+import { PuzzleMetaData } from "../types/puzzlemetadata";
 /*
     socket.on('disconnect', () => {
       setConnected(false);

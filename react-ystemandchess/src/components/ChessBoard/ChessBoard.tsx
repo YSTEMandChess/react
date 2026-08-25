@@ -80,13 +80,21 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
     // Internal chess engine for move validation and UI hints (grey dots)
     // This is kept in sync with the authoritative FEN prop from parent/socket
     const gameRef = useRef<Chess>(new Chess());
+    const start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    // UI state
     const [internalHighlights, setInternalHighlights] = useState<string[]>([]);
     const [lessonIndex, setLessonIndex] = useState<number>(0);
     const [isShaking, setIsShaking] = useState<boolean>(false);
     const [orientation, setOrientationState] = useState<"white" | "black">(propOrientation);
-    const [boardPosition, setBoardPosition] = useState<string>(fen || "start");
+    // Helper to check if a FEN is shorthand for the starting position
+    const isStartFen = (f?: string): boolean => {
+      if (!f) return true;
+      const t = f.trim().toLowerCase();
+      return t === "start" || t === start_fen;
+    };
+    const [boardPosition, setBoardPosition] = useState<string>(
+      fen && !isStartFen(fen) ? fen : start_fen
+    );
     const [boardWidth, setBoardWidth] = useState(600);
     const [greySquares, setGreySquares] = useState<string[]>([]);
 
@@ -111,9 +119,9 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       setOrientationState(propOrientation);
     }, [propOrientation]);
 
-    // Always keep gameRef.current in sync with the authoritative FEN prop
+        // Always keep gameRef.current in sync with the authoritative FEN prop
     useEffect(() => {
-      if (fen) {
+      if (fen && !isStartFen(fen)) {
         try {
           const normalized = normalizeFen(fen);
           const currentFen = gameRef.current.fen();
@@ -125,13 +133,9 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
           }
         } catch (err) {
           console.error("ChessBoard: Invalid FEN from props:", fen, err);
-          // On error, try to reset to a valid state
-          try {
+          // On error, reset to a valid starting position
             gameRef.current = new Chess();
-            setBoardPosition("start");
-          } catch {
-            // Last resort fallback
-          }
+            setBoardPosition(start_fen);
         }
       }
     }, [fen]);
@@ -206,6 +210,9 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       sourceSquare: string;
       targetSquare: string;
     }) => {
+      // If they drop it on the same square, snap it back!
+      if (sourceSquare === targetSquare) return "snapback";
+
       try {
         // Ignore if board is disabled
         if (disabled) {
@@ -286,7 +293,11 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
 
       const pieceColor = piece.startsWith('w') ? 'white' : 'black';
 
-      if (mode === "lesson" || mode === "puzzle") {
+      if (mode === "puzzle") {
+        return pieceColor === orientation;
+      }
+
+      if (mode === "lesson") {
         return true;
       }
 
@@ -355,7 +366,7 @@ const ChessBoard = forwardRef<ChessBoardRef, ChessBoardProps>(
       >
         <Chessboard
           width={boardWidth}
-          position={boardPosition}
+          position={boardPosition || start_fen}
           onDrop={handleDrop}
           orientation={orientation}
           squareStyles={squareStyles()}
