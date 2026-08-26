@@ -1,0 +1,191 @@
+name: Temporary CI/CD
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  ci:
+    name: Test and Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+          cache-dependency-path: |
+            middlewareNode/package-lock.json
+            chessServer/package-lock.json
+            stockfishServer/package-lock.json
+            react-ystemandchess/package-lock.json
+
+      # Middleware
+      - name: Install middleware dependencies
+        working-directory: middlewareNode
+        run: npm ci
+
+      - name: Build middleware
+        working-directory: middlewareNode
+        run: npm run build --if-present
+
+      # ChessServer
+      - name: Install ChessServer dependencies
+        working-directory: chessServer
+        run: npm ci
+
+      - name: Build ChessServer
+        working-directory: chessServer
+        run: npm run build --if-present
+
+      - name: Test ChessServer
+        working-directory: chessServer
+        run: npm test -- --runInBand
+
+      # StockfishServer
+      - name: Install StockfishServer dependencies
+        working-directory: stockfishServer
+        run: npm ci
+
+      - name: Build StockfishServer
+        working-directory: stockfishServer
+        run: npm run build --if-present
+
+      - name: Test StockfishServer
+        working-directory: stockfishServer
+        run: npm test -- --runInBand
+
+      # React frontend
+      - name: Install React dependencies
+        working-directory: react-ystemandchess
+        run: npm ci
+
+      - name: Test React frontend
+        working-directory: react-ystemandchess
+        run: CI=true npm test -- --watchAll=false
+
+      - name: Build React production bundle
+        working-directory: react-ystemandchess
+        env:
+          REACT_APP_MIDDLEWARE_URL: ${{ secrets.MIDDLEWARE_URL || 'https://ystemandchess.com/middleware' }}
+          REACT_APP_STOCKFISH_SERVER_URL: ${{ secrets.STOCKFISH_URL || 'https://ystemandchess.com/stockfishserver' }}
+          REACT_APP_CHESS_SERVER_URL: ${{ secrets.CHESS_SERVER || 'https://ystemandchess.com/chessserver' }}
+          REACT_APP_AGORA_APP_ID: ${{ secrets.APP_ID || '' }}
+        run: CI=false npm run build
+
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Docker image tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA::12}" >> "$GITHUB_ENV"
+
+      - name: Build middleware image
+        run: |
+          docker build \
+            -t ystem-middleware:${IMAGE_TAG} \
+            ./middlewareNode
+
+      - name: Build ChessServer image
+        run: |
+          docker build \
+            -t ystem-chessserver:${IMAGE_TAG} \
+            ./chessServer
+
+      - name: Build StockfishServer image
+        run: |
+          docker build \
+            -t ystem-stockfishserver:${IMAGE_TAG} \
+            ./stockfishServer
+
+      - name: Build React image
+        run: |
+          docker build \
+            --build-arg REACT_APP_MIDDLEWARE_URL="${{ secrets.MIDDLEWARE_URL || 'https://ystemandchess.com/middleware' }}" \
+            --build-arg REACT_APP_STOCKFISH_SERVER_URL="${{ secrets.STOCKFISH_URL || 'https://ystemandchess.com/stockfishserver' }}" \
+            --build-arg REACT_APP_CHESS_SERVER_URL="${{ secrets.CHESS_SERVER || 'https://ystemandchess.com/chessserver' }}" \
+            --build-arg REACT_APP_AGORA_APP_ID="${{ secrets.APP_ID || '' }}" \
+            -t ystem-frontend:${IMAGE_TAG} \
+            ./react-ystemandchess
+
+      - name: Verify Docker images
+        run: |
+          docker image inspect ystem-middleware:${IMAGE_TAG} >/dev/null
+          docker image inspect ystem-chessserver:${IMAGE_TAG} >/dev/null
+          docker image inspect ystem-stockfishserver:${IMAGE_TAG} >/dev/null
+          docker image inspect ystem-frontend:${IMAGE_TAG} >/dev/null
+
+          echo "All Docker images built successfully."
+
+  deployment-readiness:
+    name: Deployment Readiness
+    runs-on: ubuntu-latest
+    needs:
+      - ci
+      - docker-build
+
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate production Compose configuration
+        env:
+          TAG: temporary
+          MIDDLEWARE_URL: http://middleware:8000
+          CORS_ORIGIN: https://ystemandchess.com
+          MONGO_URI: mongodb://placeholder
+          INDEX_KEY: placeholder
+          SESSION_SECRET: placeholder
+          AZURE_STORAGE_ACCOUNT: placeholder
+          AZURE_STORAGE_KEY: placeholder
+          AZURE_STORAGE_CONTAINER: placeholder
+          AZURE_STORAGE_REGION: placeholder
+          AGORA_APP_ID: placeholder
+          appID: placeholder
+          AGORA_UID: placeholder
+          AGORA_CUSTOMER_ID: placeholder
+          AGORA_CUSTOMER_CERT: placeholder
+          BASEPATH: /
+          GOOGLE_CLIENT_ID: placeholder
+          GOOGLE_CLIENT_SECRET: placeholder
+          GOOGLE_REDIRECT_URI: https://example.com
+          GOOGLE_REFRESH_TOKEN: placeholder
+          EMAIL_USER: placeholder@example.com
+          SENDER_EMAIL: placeholder@example.com
+        run: |
+          docker compose \
+            -f deploy/prod/docker-compose.yml \
+            config >/dev/null
+
+          echo "Production Compose configuration is valid."
+
+      - name: Mark release as ready
+        run: |
+          echo "======================================"
+          echo "CI/CD VALIDATION COMPLETE"
+          echo "======================================"
+          echo "Tests passed."
+          echo "Production frontend build passed."
+          echo "Docker images built successfully."
+          echo "Production Compose configuration validated."
+          echo ""
+          echo "Azure deployment is intentionally disabled"
+          echo "until the production Azure target is confirmed."
