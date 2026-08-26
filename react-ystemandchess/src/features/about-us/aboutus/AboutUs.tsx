@@ -73,7 +73,7 @@ const AboutUs = () => {
             </div>
 
             {/* Description Section */}
-            <div className="bg-gray-50 p-8 rounded-lg text-center mt-5">
+            <div className="bg-light p-8 rounded-lg text-center mt-5">
                 <p className="text-sm md:text-base lg:text-lg text-muted max-w-3xl mx-auto mb-5 leading-relaxed">
                     Our team of dedicated educators, developers, and industry professionals works tirelessly
                     to bring students the most relevant and impactful educational content. We believe in
