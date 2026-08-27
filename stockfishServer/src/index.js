@@ -1,10 +1,15 @@
 require("dotenv").config();
 
+const validateEnvironment = require("./validateEnvironment");
+validateEnvironment();
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const initializeSocket = require("./managers/socket");
+
+const isProduction = process.env.NODE_ENV === "production";
 
 const allowedOriginsSetting = process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
 const allowedOrigins = allowedOriginsSetting
@@ -12,9 +17,13 @@ const allowedOrigins = allowedOriginsSetting
   : [
       "https://ystemandchess.com",
       "https://www.ystemandchess.com",
-      "http://localhost:3000",
-      "http://localhost:3002",
-      "http://localhost:4200",
+      ...(isProduction
+        ? []
+        : [
+            "http://localhost:3000",
+            "http://localhost:3002",
+            "http://localhost:4200",
+          ]),
     ];
 
 const hasWildcard = allowedOrigins.includes("*");
@@ -28,7 +37,7 @@ const corsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error(`Origin ${origin} not allowed by CORS`));
+      callback(null, false);
     }
   },
   methods: ["GET", "POST"],

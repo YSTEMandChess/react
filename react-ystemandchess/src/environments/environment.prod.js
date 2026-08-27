@@ -1,12 +1,28 @@
+// Production environment config.
+//
+// Create React App injects REACT_APP_* variables at build time.
+// Production builds must provide all service URLs explicitly.
+
+const requiredProductionEnv = (name) => {
+        const value = process.env[name];
+
+        if (process.env.NODE_ENV === 'production' && !value) {
+                throw new Error(`Missing required production environment variable: ${name}`);
+        }
+
+        return value || '';
+};
+
 export const environment = {
-	production: false,
-	agora: {
-		appId: '6c368b93b82a4b3e9fb8e57da830f2a4',
-	},
-	urls: {
-		middlewareURL: 'http://localhost/middleware/',
-		stockfishServerURL: 'http://localhost/stockfishserver/',
-		chessClientURL: 'http://localhost/chessclient/',
-		chessServer: 'http://localhost/chessserver/',
-	},
+        production: true,
+        agora: {
+                appId: process.env.REACT_APP_AGORA_APP_ID || '',
+        },
+        urls: {
+                // No trailing slash. Consumers append their own route paths.
+                middlewareURL: requiredProductionEnv('REACT_APP_MIDDLEWARE_URL'),
+                stockfishServerURL: requiredProductionEnv('REACT_APP_STOCKFISH_SERVER_URL'),
+                chessServerURL: requiredProductionEnv('REACT_APP_CHESS_SERVER_URL'),
+        },
+        productionType: 'production',
 };
