@@ -6,23 +6,40 @@ const REQUIRED_PRODUCTION_VARS = [
 ];
 
 function validateEnvironment() {
-  if (process.env.NODE_ENV !== "production") {
-    return;
+  const isProd = process.env.NODE_ENV === "production";
+  const isTest = process.env.NODE_ENV === "test";
+
+  if (isProd) {
+    const missing = REQUIRED_PRODUCTION_VARS.filter((name) => {
+      const value = process.env[name];
+      return !value || !value.trim();
+    });
+
+    if (missing.length > 0) {
+      console.error(
+        `[boot] Missing required production environment variables: ${missing.join(", ")}`
+      );
+      process.exit(1);
+    }
+    console.log("[boot] Required production environment variables validated");
   }
 
-  const missing = REQUIRED_PRODUCTION_VARS.filter((name) => {
-    const value = process.env[name];
-    return !value || !value.trim();
-  });
+  // Diagnostics and warnings across non-test environments
+  if (!isTest) {
+    const indexKey = (process.env.INDEX_KEY || "").trim();
+    if (!indexKey && !isProd) {
+      console.warn(
+        "[boot] WARNING: INDEX_KEY is empty. User login JWT signing will fail unless INDEX_KEY is set in .env"
+      );
+    }
 
-  if (missing.length > 0) {
-    console.error(
-      `[boot] Missing required production environment variables: ${missing.join(", ")}`
-    );
-    process.exit(1);
+    const aiKey = (process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || "").trim();
+    if (!aiKey) {
+      console.warn(
+        "[boot] NOTE: Neither GEMINI_API_KEY nor OPENAI_API_KEY is set. AI Tutor and Stockfish feedback routes will run in offline rule-based fallback mode."
+      );
+    }
   }
-
-  console.log("[boot] Required production environment variables validated");
 }
 
 module.exports = validateEnvironment;
