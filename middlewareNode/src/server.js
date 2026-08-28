@@ -1,4 +1,13 @@
 // Main server configuration for the Node.js middleware API
+
+// Load local environment variables before importing modules that read config.
+require("dotenv").config();
+
+// Validate production configuration before db.js, passport.js, or other
+// modules can call config.get().
+const validateEnvironment = require("./config/validateEnvironment");
+validateEnvironment();
+
 const express = require("express");
 const session = require("express-session");
 const connectDB = require("./config/db");
@@ -33,7 +42,24 @@ require("./scheduler/activitiesScheduler.js");
 require("./scheduler/analyticsSummaryScheduler.js");
 
 // Enable CORS for cross-origin requests
-app.use(cors(config.get("corsOptions")));
+const configuredCorsOrigin = config.get("corsOptions.origin");
+
+const allowedOrigins = String(configuredCorsOrigin || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
+    },
+  })
+);
 
 // Connect to MongoDB database
 connectDB();
@@ -44,7 +70,11 @@ app.use(express.json({ extended: false }));
 // Configure session middleware
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "dev-secret-change-in-prod",
+    secret:
+      process.env.SESSION_SECRET ||
+      (process.env.NODE_ENV !== "production"
+        ? "dev-secret-change-in-prod"
+        : undefined),
     resave: false,
     saveUninitialized: false,
   })
