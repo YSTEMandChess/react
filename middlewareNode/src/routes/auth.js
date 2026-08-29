@@ -88,9 +88,14 @@ router.post(
       }
 
       //Sign the jwt
+      const signingKey =
+        process.env.INDEX_KEY ||
+        config.get("indexKey") ||
+        "development-jwt-secret-key";
+
       jwt.sign(
         payload,
-        config.get("indexKey"),
+        signingKey,
         { expiresIn: 360000 },
         function (err, token) {
           if (err) throw err;
