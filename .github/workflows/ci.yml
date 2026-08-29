@@ -32,6 +32,10 @@ jobs:
         run: npm run build --if-present
         working-directory: ./middlewareNode
 
+      - name: Test middlewareNode
+        run: npm test
+        working-directory: ./middlewareNode
+
       # chessServer
       - name: Install dependencies (chessServer)
         run: npm ci
@@ -67,16 +71,24 @@ jobs:
         run: CI=false npm run build --if-present
         working-directory: ./react-ystemandchess
         env:
-          # These are read by src/environments/environment.prod.js, which is
-          # what the app actually imports (via src/environments/index.js).
-          # The previous "Create environment file" step wrote to
-          # src/core/environments/environment.ts, a path nothing in the app
-          # imports, so these secrets never reached the built app.
           REACT_APP_MIDDLEWARE_URL: ${{ secrets.MIDDLEWARE_URL || 'https://ystemandchess.com/middleware' }}
           REACT_APP_STOCKFISH_SERVER_URL: ${{ secrets.STOCKFISH_URL || 'https://ystemandchess.com/stockfishserver' }}
           REACT_APP_CHESS_SERVER_URL: ${{ secrets.CHESS_SERVER || 'https://ystemandchess.com/chessserver' }}
+          REACT_APP_CHESS_CLIENT_URL: ${{ secrets.CHESS_CLIENT || 'https://ystemandchess.com/chessclient' }}
           REACT_APP_AGORA_APP_ID: ${{ secrets.APP_ID || '' }}
 
       - name: Test react-ystemandchess
-        run: npm test
+        run: CI=true npm test
         working-directory: ./react-ystemandchess
+
+      - name: Verify PR commit authorship
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=50 || true
+          AUTHORS=$(git log --format='%an' origin/${{ github.base_ref }}..HEAD | sort -u)
+          AUTHOR_COUNT=$(echo "$AUTHORS" | grep -v '^$' | wc -l)
+          echo "Commit authors on branch: $AUTHORS"
+          if [ "$AUTHOR_COUNT" -gt 1 ]; then
+            echo "ERROR: Branch contains commits by multiple authors ($AUTHOR_COUNT). Squash or rebase to keep PR authorship clean."
+            exit 1
+          fi
