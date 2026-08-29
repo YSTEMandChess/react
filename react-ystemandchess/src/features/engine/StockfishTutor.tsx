@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useCookies } from 'react-cookie';
 import { environment } from '../../environments';
 import styles from './StockfishTutor.module.scss';
 import { CoachMascot, CoachExpression } from '../../components/animations/CoachMascot/CoachMascot';
@@ -916,12 +917,16 @@ const getAiFeedbackForMove = async (
   moveUci: string,
   bestMove?: string | null,
   score?: number | null,
-  hangingPieceThreat?: string | null
+  hangingPieceThreat?: string | null,
+  token?: string
 ): Promise<Analysis> => {
   try {
     const response = await fetch(`${environment.urls.middlewareURL}/chat/chess-feedback`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
       body: JSON.stringify({
         fenBefore,
         fenAfter,
@@ -957,6 +962,7 @@ const getAiFeedbackForMove = async (
 };
 
 const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter, moveUci, uciHistory, onRequestGotoFen }) => {
+  const [cookies] = useCookies(['login']);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   // store the previous turn's matchPoints so we can compute decrement relative to that
@@ -1126,7 +1132,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                                       finalExplanation = ensureEarlySidePawnEnforcement(finalExplanation, moveUci, fenBefore, fenAfter, prevMatchPoints) || finalExplanation;
                                       setAnalysis(finalExplanation);
                                       const hangingThreat = detectHangingPiece(fenBefore, fenAfter);
-                                      const finalExplanationWithAi = finalExplanation ? await getAiFeedbackForMove(finalExplanation, fenBefore, fenAfter, moveUci || '', sfResult.bestMove, typeof sfResult.score === 'number' ? sfResult.score : null, hangingThreat) : null;
+                                      const finalExplanationWithAi = finalExplanation ? await getAiFeedbackForMove(finalExplanation, fenBefore, fenAfter, moveUci || '', sfResult.bestMove, typeof sfResult.score === 'number' ? sfResult.score : null, hangingThreat, cookies.login) : null;
 
                                       if (cancelled) return;
                                       if (finalExplanationWithAi) enforceHangingPowerPieceBlunder(finalExplanationWithAi, fenBefore, fenAfter);
@@ -1179,7 +1185,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
                             enforceEarlySidePawnBlunder(norm, moveUci, fenBefore);
                             const finalNorm = ensureEarlySidePawnEnforcement(norm, moveUci, fenBefore, fenAfter, prevMatchPoints) || null;
                             const hangingThreat = detectHangingPiece(fenBefore, fenAfter);
-                            const finalNormWithAi = finalNorm ? await getAiFeedbackForMove(finalNorm, fenBefore, fenAfter, moveUci || '', null, norm.score ?? null, hangingThreat) : null;
+                            const finalNormWithAi = finalNorm ? await getAiFeedbackForMove(finalNorm, fenBefore, fenAfter, moveUci || '', null, norm.score ?? null, hangingThreat, cookies.login) : null;
                             if (cancelled) return;
                             if (finalNormWithAi) enforceHangingPowerPieceBlunder(finalNormWithAi, fenBefore, fenAfter);
                             setAnalysis(finalNormWithAi);
@@ -1275,7 +1281,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
             enforceEarlySidePawnBlunder(norm, moveUci, fenBefore);
             const finalNorm = ensureEarlySidePawnEnforcement(norm, moveUci, fenBefore, fenAfter, prevMatchPoints) || null;
             const hangingThreat = detectHangingPiece(fenBefore, fenAfter);
-            const finalNormWithAi = finalNorm ? await getAiFeedbackForMove(finalNorm, fenBefore, fenAfter, moveUci || '', null, norm.score ?? null, hangingThreat) : null;
+            const finalNormWithAi = finalNorm ? await getAiFeedbackForMove(finalNorm, fenBefore, fenAfter, moveUci || '', null, norm.score ?? null, hangingThreat, cookies.login) : null;
             if (cancelled) return;
             if (finalNormWithAi) enforceHangingPowerPieceBlunder(finalNormWithAi, fenBefore, fenAfter);
             setAnalysis(finalNormWithAi);
@@ -1428,7 +1434,7 @@ const StockfishTutor: React.FC<Props> = ({ enabled, trigger, fenBefore, fenAfter
             // Fetch AI feedback for the server analysis path using the final rating
             const hangingThreat = detectHangingPiece(fenBefore, fenAfter);
             if (parsed) {
-              parsed = await getAiFeedbackForMove(parsed, fenBefore, fenAfter, moveUci || '', engineBest, typeof engineScore === 'number' ? engineScore : null, hangingThreat);
+              parsed = await getAiFeedbackForMove(parsed, fenBefore, fenAfter, moveUci || '', engineBest, typeof engineScore === 'number' ? engineScore : null, hangingThreat, cookies.login);
               if (cancelled) return;
               enforceHangingPowerPieceBlunder(parsed, fenBefore, fenAfter);
             }
