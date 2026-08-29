@@ -5,7 +5,7 @@
  * Uses Nodemailer with Gmail to deliver reset links.
  */
 
-import { environment } from "../../../../environments/environment";
+import { environment } from "../../../../environments";
 const nodemailer = require('nodemailer');
 
 // Configure email transporter with Gmail credentials
