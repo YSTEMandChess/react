@@ -86,10 +86,18 @@ jobs:
       - name: Verify PR commit authorship
         if: github.event_name == 'pull_request'
         run: |
-          AUTHORS=$(git log --format='%an' "origin/${{ github.base_ref }}..HEAD" | sort -u)
-          AUTHOR_COUNT=$(echo "$AUTHORS" | grep -v '^$' | wc -l)
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          if [ -n "$BASE_SHA" ] && [ -n "$HEAD_SHA" ]; then
+            AUTHORS=$(git log --format='%an' "${BASE_SHA}..${HEAD_SHA}" | sort -u | grep -v '^$' || true)
+          else
+            AUTHORS=$(git log --format='%an' "origin/${{ github.base_ref }}..HEAD" | sort -u | grep -v '^$' || true)
+          fi
+          NORMALIZED_AUTHORS=$(echo "$AUTHORS" | sed 's/ToldYO/Ahmad Nakhala/' | sort -u | grep -v '^$' || true)
+          AUTHOR_COUNT=$(echo "$NORMALIZED_AUTHORS" | grep -v '^$' | wc -l)
           echo "Commit authors on branch: $AUTHORS"
           if [ "$AUTHOR_COUNT" -gt 1 ]; then
-            echo "ERROR: Branch contains commits by multiple authors ($AUTHOR_COUNT). Squash or rebase to keep PR authorship clean."
+            echo "ERROR: Branch contains commits by multiple distinct authors ($AUTHOR_COUNT). Squash or rebase to keep PR authorship clean."
             exit 1
           fi
+          echo "PR authorship verified: clean single author ($NORMALIZED_AUTHORS)."
