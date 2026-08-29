@@ -16,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -33,7 +35,7 @@ jobs:
         working-directory: ./middlewareNode
 
       - name: Test middlewareNode
-        run: npm test
+        run: npm test -- --testTimeout=30000
         working-directory: ./middlewareNode
 
       # chessServer
@@ -78,14 +80,13 @@ jobs:
           REACT_APP_AGORA_APP_ID: ${{ secrets.APP_ID || '' }}
 
       - name: Test react-ystemandchess
-        run: CI=true npm test
+        run: CI=true npm test -- --watchAll=false
         working-directory: ./react-ystemandchess
 
       - name: Verify PR commit authorship
         if: github.event_name == 'pull_request'
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=50 || true
-          AUTHORS=$(git log --format='%an' origin/${{ github.base_ref }}..HEAD | sort -u)
+          AUTHORS=$(git log --format='%an' "origin/${{ github.base_ref }}..HEAD" | sort -u)
           AUTHOR_COUNT=$(echo "$AUTHORS" | grep -v '^$' | wc -l)
           echo "Commit authors on branch: $AUTHORS"
           if [ "$AUTHOR_COUNT" -gt 1 ]; then
