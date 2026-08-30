@@ -23,6 +23,11 @@ export const environment = {
                 middlewareURL: requiredProductionEnv('REACT_APP_MIDDLEWARE_URL'),
                 stockfishServerURL: requiredProductionEnv('REACT_APP_STOCKFISH_SERVER_URL'),
                 chessServerURL: requiredProductionEnv('REACT_APP_CHESS_SERVER_URL'),
+                // Optional, not required: only gates the "open board" button in
+                // PlayStudent.tsx, which already handles an empty value gracefully.
+                // Unlike the three URLs above, a missing value here shouldn't take
+                // down the whole app for every visitor.
+                chessClientURL: process.env.REACT_APP_CHESS_CLIENT_URL || '',
         },
         productionType: 'production',
 };
