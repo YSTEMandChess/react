@@ -1,7 +1,14 @@
+const crypto = require("crypto");
+
+// For local development environments without an explicit INDEX_KEY / JWT_SECRET in .env,
+// generate a random ephemeral key at boot so server startup and dev login succeed safely
+// without committing a forgeable signing secret literal to version control.
+const ephemeralSecret = crypto.randomBytes(32).toString("hex");
+
 module.exports = {
   mongoURI: process.env.MONGO_URI || "mongodb://localhost:27017/ystem_dev",
-  jwtSecret: process.env.JWT_SECRET || "development-jwt-secret-key",
-  indexKey: process.env.INDEX_KEY || "development-jwt-secret-key",
+  jwtSecret: process.env.JWT_SECRET || ephemeralSecret,
+  indexKey: process.env.INDEX_KEY || ephemeralSecret,
 
   corsOptions: {
     origin: process.env.CORS_ORIGIN || "http://localhost:3000",

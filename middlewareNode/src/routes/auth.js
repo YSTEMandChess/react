@@ -90,8 +90,9 @@ router.post(
       //Sign the jwt
       const signingKey =
         process.env.INDEX_KEY ||
-        config.get("indexKey") ||
-        "development-jwt-secret-key";
+        (config.has("indexKey") ? config.get("indexKey") : null) ||
+        process.env.JWT_SECRET ||
+        (config.has("jwtSecret") ? config.get("jwtSecret") : null);
 
       jwt.sign(
         payload,
