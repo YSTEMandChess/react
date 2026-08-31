@@ -29,7 +29,7 @@ function validateEnvironment() {
     const indexKey = (process.env.INDEX_KEY || "").trim();
     if (!indexKey && !isProd) {
       console.warn(
-        "[boot] WARNING: INDEX_KEY is empty. User login JWT signing will fail unless INDEX_KEY is set in .env"
+        "[boot] WARNING: INDEX_KEY is empty in environment. An ephemeral secret was generated for this session; JWT tokens will not persist across server restarts."
       );
     }
 
