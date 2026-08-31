@@ -164,7 +164,10 @@ const ChatWidget = () => {
     setCoachExpression('thinking');
     try {
       const response = await fetch(`${environment.urls.middlewareURL}/chat/session/${sessionId}/end`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          ...(cookies.login ? { Authorization: `Bearer ${cookies.login}` } : {}),
+        }
       });
       if (response.ok) {
         const data = await response.json();
@@ -191,7 +194,10 @@ const ChatWidget = () => {
     if (sessionId) {
       try {
         await fetch(`${environment.urls.middlewareURL}/chat/session/${sessionId}/end`, {
-          method: 'POST'
+          method: 'POST',
+          headers: {
+            ...(cookies.login ? { Authorization: `Bearer ${cookies.login}` } : {}),
+          }
         });
       } catch (err) {
         console.error("Error ending previous session on topic change:", err);
@@ -215,7 +221,8 @@ const ChatWidget = () => {
       const response = await fetch(`${environment.urls.middlewareURL}/chat/message`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(cookies.login ? { Authorization: `Bearer ${cookies.login}` } : {}),
         },
         body: JSON.stringify({ sessionId, message: userMsg })
       });
