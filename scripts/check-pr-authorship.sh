@@ -15,7 +15,7 @@ echo "$AUTHORS"
 
 if [ "$AUTHOR_COUNT" -gt 1 ]; then
   echo "ERROR: Branch contains commits by $AUTHOR_COUNT different authors."
-  echo "Expected exactly 1 author to prevent unreviewed code absorption."
+  echo "Base your branch on the upstream PR branch or wait for it to land on main to keep PR authorship clean."
   exit 1
 fi
 
