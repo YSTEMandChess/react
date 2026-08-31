@@ -97,7 +97,7 @@ jobs:
           AUTHOR_COUNT=$(echo "$NORMALIZED_AUTHORS" | grep -v '^$' | wc -l)
           echo "Commit authors on branch: $AUTHORS"
           if [ "$AUTHOR_COUNT" -gt 1 ]; then
-            echo "ERROR: Branch contains commits by multiple distinct authors ($AUTHOR_COUNT). Squash or rebase to keep PR authorship clean."
+            echo "ERROR: Branch contains commits by multiple distinct authors ($AUTHOR_COUNT). Base your branch on the upstream PR branch or wait for it to land on main to keep PR authorship clean."
             exit 1
           fi
           echo "PR authorship verified: clean single author ($NORMALIZED_AUTHORS)."
