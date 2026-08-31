@@ -39,6 +39,7 @@ docker build \
   --build-arg REACT_APP_MIDDLEWARE_URL="${REACT_APP_MIDDLEWARE_URL}" \
   --build-arg REACT_APP_STOCKFISH_SERVER_URL="${REACT_APP_STOCKFISH_SERVER_URL}" \
   --build-arg REACT_APP_CHESS_SERVER_URL="${REACT_APP_CHESS_SERVER_URL}" \
+  --build-arg REACT_APP_CHESS_CLIENT_URL="${REACT_APP_CHESS_CLIENT_URL}" \
   --build-arg REACT_APP_AGORA_APP_ID="${REACT_APP_AGORA_APP_ID}" \
   -t "ystemandchess:${TAG}" \
   react-ystemandchess
