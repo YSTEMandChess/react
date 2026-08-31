@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatWidget.scss';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments';
 import { useCookies } from 'react-cookie';
 import { CoachMascot, CoachExpression } from '../animations/CoachMascot/CoachMascot';
 
@@ -116,31 +116,13 @@ const ChatWidget = () => {
     setTopic(selectedTopic);
     setCoachExpression('thinking');
     try {
-      let resolvedUserId = "5f8f8c44b54764421b7156e0"; // Static fallback
-      if (cookies.login) {
-        try {
-          const payload = JSON.parse(atob(cookies.login.split('.')[1]));
-          const username = payload.username;
-          if (username) {
-            const userRes = await fetch(`${environment.urls.middlewareURL}/user/getUser?username=${encodeURIComponent(username)}`, {
-              headers: { 'Authorization': `Bearer ${cookies.login}` }
-            });
-            if (userRes.ok) {
-              const userData = await userRes.json();
-              if (userData && userData._id) {
-                resolvedUserId = userData._id;
-              }
-            }
-          }
-        } catch (jwtErr) {
-          console.error("Failed to decode token or resolve user ID:", jwtErr);
-        }
-      }
-
       const response = await fetch(`${environment.urls.middlewareURL}/chat/session`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: resolvedUserId, topic: selectedTopic })
+        headers: {
+          'Content-Type': 'application/json',
+          ...(cookies.login ? { Authorization: `Bearer ${cookies.login}` } : {}),
+        },
+        body: JSON.stringify({ topic: selectedTopic })
       });
       if (response.ok) {
         const data = await response.json();
@@ -182,7 +164,10 @@ const ChatWidget = () => {
     setCoachExpression('thinking');
     try {
       const response = await fetch(`${environment.urls.middlewareURL}/chat/session/${sessionId}/end`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          ...(cookies.login ? { Authorization: `Bearer ${cookies.login}` } : {}),
+        }
       });
       if (response.ok) {
         const data = await response.json();
@@ -209,7 +194,10 @@ const ChatWidget = () => {
     if (sessionId) {
       try {
         await fetch(`${environment.urls.middlewareURL}/chat/session/${sessionId}/end`, {
-          method: 'POST'
+          method: 'POST',
+          headers: {
+            ...(cookies.login ? { Authorization: `Bearer ${cookies.login}` } : {}),
+          }
         });
       } catch (err) {
         console.error("Error ending previous session on topic change:", err);
@@ -233,7 +221,8 @@ const ChatWidget = () => {
       const response = await fetch(`${environment.urls.middlewareURL}/chat/message`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(cookies.login ? { Authorization: `Bearer ${cookies.login}` } : {}),
         },
         body: JSON.stringify({ sessionId, message: userMsg })
       });

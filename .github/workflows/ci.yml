@@ -5,6 +5,10 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  # Lets this workflow be run manually against any branch (Actions tab ->
+  # "Run workflow", or `gh workflow run`), without needing to push/PR to
+  # main first. Doesn't change push/pull_request behavior at all.
+  workflow_dispatch: {}
 
 jobs:
   build:
@@ -12,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -26,6 +32,10 @@ jobs:
 
       - name: Build middlewareNode
         run: npm run build --if-present
+        working-directory: ./middlewareNode
+
+      - name: Test middlewareNode
+        run: npm test -- --testTimeout=30000
         working-directory: ./middlewareNode
 
       # chessServer
@@ -59,32 +69,35 @@ jobs:
         run: npm ci
         working-directory: ./react-ystemandchess
 
-      - name: Create environment file
-        run: |
-          mkdir -p src/core/environments
-          cat <<EOF > src/core/environments/environment.ts
-          export const environment = {
-            production: false,
-            agora: {
-              appId: '${{ secrets.APP_ID }}',
-            },
-            email: {
-              user: '${{ secrets.EMAIL_USER || '' }}',
-              pass: '${{ secrets.EMAIL_PASS || '' }}'
-            },
-            urls: {
-              middlewareURL: '${{ secrets.MIDDLEWARE_URL }}',
-              stockFishURL: '${{ secrets.STOCKFISH_URL }}',
-              chessServer: '${{ secrets.CHESS_SERVER }}',
-            },
-          };
-          EOF
-        working-directory: ./react-ystemandchess
-
       - name: Build react-ystemandchess
         run: CI=false npm run build --if-present
         working-directory: ./react-ystemandchess
+        env:
+          REACT_APP_MIDDLEWARE_URL: ${{ secrets.MIDDLEWARE_URL || 'https://ystemandchess.com/middleware' }}
+          REACT_APP_STOCKFISH_SERVER_URL: ${{ secrets.STOCKFISH_URL || 'https://ystemandchess.com/stockfishserver' }}
+          REACT_APP_CHESS_SERVER_URL: ${{ secrets.CHESS_SERVER || 'https://ystemandchess.com/chessserver' }}
+          REACT_APP_CHESS_CLIENT_URL: ${{ secrets.CHESS_CLIENT || 'https://ystemandchess.com/chessclient' }}
+          REACT_APP_AGORA_APP_ID: ${{ secrets.APP_ID || '' }}
 
       - name: Test react-ystemandchess
-        run: npm test
+        run: CI=true npm test -- --watchAll=false
         working-directory: ./react-ystemandchess
+
+      - name: Verify PR commit authorship
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          if [ -n "$BASE_SHA" ] && [ -n "$HEAD_SHA" ]; then
+            AUTHORS=$(git log --format='%an' "${BASE_SHA}..${HEAD_SHA}" | sort -u | grep -v '^$' || true)
+          else
+            AUTHORS=$(git log --format='%an' "origin/${{ github.base_ref }}..HEAD" | sort -u | grep -v '^$' || true)
+          fi
+          NORMALIZED_AUTHORS=$(echo "$AUTHORS" | sed 's/ToldYO/Ahmad Nakhala/' | sort -u | grep -v '^$' || true)
+          AUTHOR_COUNT=$(echo "$NORMALIZED_AUTHORS" | grep -v '^$' | wc -l)
+          echo "Commit authors on branch: $AUTHORS"
+          if [ "$AUTHOR_COUNT" -gt 1 ]; then
+            echo "ERROR: Branch contains commits by multiple distinct authors ($AUTHOR_COUNT). Base your branch on the upstream PR branch or wait for it to land on main to keep PR authorship clean."
+            exit 1
+          fi
+          echo "PR authorship verified: clean single author ($NORMALIZED_AUTHORS)."

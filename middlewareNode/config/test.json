@@ -1,0 +1,30 @@
+{
+  "mongoURI": "mongodb://localhost:27017/ystem_test",
+  "jwtSecret": "test-jwt-secret-key",
+  "indexKey": "test-jwt-secret-key",
+  "corsOptions": {
+    "origin": "http://localhost:3000"
+  },
+  "email": {
+    "user": "test@example.com",
+    "pass": "testpassword"
+  },
+  "user": "test@example.com",
+  "senderEmail": "test@example.com",
+  "clientId": "test-client-id",
+  "clientSecret": "test-client-secret",
+  "redirectUri": "http://localhost:8000/auth/callback",
+  "refreshToken": "test-refresh-token",
+  "basepath": "http://localhost:3000",
+  "azureStorageAccount": "",
+  "azureStorageKey": "",
+  "azureContainer": "",
+  "azureStorageRegion": "1",
+  "appID": "",
+  "uid": "0",
+  "customerId": "",
+  "customerCertificate": "",
+  "server": {
+    "port": 8000
+  }
+}
