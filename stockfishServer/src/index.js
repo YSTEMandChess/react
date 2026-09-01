@@ -6,6 +6,18 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const initializeSocket = require("./managers/socket");
 
+// Defense-in-depth: any future unhandled failure crashes loudly, with a clear
+// log line, instead of silently taking down the process with no diagnostics.
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception, shutting down:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection, shutting down:', reason);
+  process.exit(1);
+});
+
 const allowedOriginsSetting = process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
 const allowedOrigins = allowedOriginsSetting
   ? allowedOriginsSetting.split(",").map((o) => o.trim())
@@ -138,6 +150,8 @@ app.post('/api/analyze', async (req, res) => {
         emit: (event, payload) => {
           if (event === 'evaluation-complete') {
             resolve(payload);
+          } else if (event === 'session-error') {
+            reject(new Error(payload.error));
           }
         },
       };
