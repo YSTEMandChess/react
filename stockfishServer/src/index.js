@@ -6,17 +6,56 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const initializeSocket = require("./managers/socket");
 
+// Defense-in-depth: any future unhandled failure crashes loudly, with a clear
+// log line, instead of silently taking down the process with no diagnostics.
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception, shutting down:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection, shutting down:', reason);
+  process.exit(1);
+});
+
+const allowedOriginsSetting = process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
+const allowedOrigins = allowedOriginsSetting
+  ? allowedOriginsSetting.split(",").map((o) => o.trim())
+  : [
+      "https://ystemandchess.com",
+      "https://www.ystemandchess.com",
+      "http://localhost:3000",
+      "http://localhost:3002",
+      "http://localhost:4200",
+    ];
+
+const hasWildcard = allowedOrigins.includes("*");
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (hasWildcard) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
+  methods: ["GET", "POST"],
+  // When wildcard is configured, disallow credentials to prevent unsafe CORS configuration
+  credentials: !hasWildcard,
+};
+
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
+  cors: corsOptions,
 });
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get("/health", (req, res) => {
@@ -111,6 +150,8 @@ app.post('/api/analyze', async (req, res) => {
         emit: (event, payload) => {
           if (event === 'evaluation-complete') {
             resolve(payload);
+          } else if (event === 'session-error') {
+            reject(new Error(payload.error));
           }
         },
       };

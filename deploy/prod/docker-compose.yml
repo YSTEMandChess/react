@@ -78,8 +78,6 @@ services:
       - ysc-net
     expose:
       - '8000'
-    volumes:
-      - ../middleware:/var/www/html 
 
   ystemandchess:
     image: ystemandchess:${TAG}
