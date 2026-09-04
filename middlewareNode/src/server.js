@@ -49,15 +49,19 @@ const allowedOrigins = String(configuredCorsOrigin || "")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+const hasWildcard = allowedOrigins.includes("*");
+
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+      if (!origin || hasWildcard || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
       return callback(null, false);
     },
+    // When wildcard is configured, disallow credentials to prevent unsafe CORS configuration
+    credentials: !hasWildcard,
   })
 );
 
