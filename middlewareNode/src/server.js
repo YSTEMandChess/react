@@ -47,7 +47,17 @@ const configuredCorsOrigin = config.get("corsOptions.origin");
 const allowedOrigins = String(configuredCorsOrigin || "")
   .split(",")
   .map((origin) => origin.trim())
-  .filter(Boolean);
+  .filter(Boolean)
+  .map((origin) => {
+    if (origin !== "*" && origin.endsWith("/")) {
+      const normalized = origin.slice(0, -1);
+      console.warn(
+        `CORS: "${origin}" has a trailing slash, which never matches a browser's Origin header — using "${normalized}" instead`
+      );
+      return normalized;
+    }
+    return origin;
+  });
 
 const hasWildcard = allowedOrigins.includes("*");
 

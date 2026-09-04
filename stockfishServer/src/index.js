@@ -24,7 +24,7 @@ process.on('unhandledRejection', (reason) => {
 const isProduction = process.env.NODE_ENV === "production";
 
 const allowedOriginsSetting = process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
-const allowedOrigins = allowedOriginsSetting
+const allowedOrigins = (allowedOriginsSetting
   ? allowedOriginsSetting.split(",").map((o) => o.trim())
   : [
       "https://ystemandchess.com",
@@ -36,7 +36,17 @@ const allowedOrigins = allowedOriginsSetting
             "http://localhost:3002",
             "http://localhost:4200",
           ]),
-    ];
+    ]
+).map((origin) => {
+  if (origin !== "*" && origin.endsWith("/")) {
+    const normalized = origin.slice(0, -1);
+    console.warn(
+      `CORS: "${origin}" has a trailing slash, which never matches a browser's Origin header — using "${normalized}" instead`
+    );
+    return normalized;
+  }
+  return origin;
+});
 
 const hasWildcard = allowedOrigins.includes("*");
 
