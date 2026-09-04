@@ -44,7 +44,7 @@ docker build \
   -t "ystemandchess:${TAG}" \
   react-ystemandchess
 build_image "chessServer" "chessserver:${TAG}"
-build_image "middlewareNode" "middlewarenode"
+build_image "middlewareNode" "middlewarenode:${TAG}"
 build_image "stockfishServer" "stockfishserver:${TAG}"
 
 echo "=========================================="
