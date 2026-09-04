@@ -49,6 +49,7 @@ const corsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.warn(`CORS: rejected origin ${origin}`);
       callback(null, false);
     }
   },

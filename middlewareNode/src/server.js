@@ -58,6 +58,7 @@ app.use(
         return callback(null, true);
       }
 
+      console.warn(`CORS: rejected origin ${origin}`);
       return callback(null, false);
     },
     // When wildcard is configured, disallow credentials to prevent unsafe CORS configuration
