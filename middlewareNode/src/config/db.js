@@ -270,7 +270,11 @@ const connectDB = async () => {
     await mongoose.connect(db, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 1000,
+      // Production has no fallback (a failure here calls process.exit(1)),
+      // so it gets a longer timeout to ride out a network blip or an Atlas
+      // cold-start during deploy. Dev/test fail fast to the in-memory
+      // fallback below.
+      serverSelectionTimeoutMS: IS_PRODUCTION ? 10000 : 1000,
     });
     console.log("MongoDB Connected...");
     await ensureIndexes();
