@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import "./LeaderboardModal.scss";
-import { ReactComponent as LeaderboardIcon } from "../../../../assets/images/student/leaderboard_sidebar_icon.svg";
+import LeaderboardIcon from "../../../../assets/images/student/leaderboard_sidebar_icon.svg?react";
 import { environment } from "../../../../environments/environment";
 
 import rank1Img from "../../../../assets/images/student/Leaderboard_rank_1.svg";
