@@ -5,6 +5,7 @@ import { useChessSocket } from "../../lessons/piece-lessons/lesson-overlay/hooks
 import { environment } from "../../../environments/environment";
 import { Move } from "../../../core/types/chess";
 import { v4 as uuidv4 } from "uuid";
+import ChatWidget from '../../../components/ChatWidget/ChatWidget';
 
 const Student = () => {
   const chessBoardRef = useRef<ChessBoardRef>(null);
@@ -100,6 +101,7 @@ const Student = () => {
       {!socket.connected && (
         <p style={{ color: "red" }}>Disconnected from server</p>
       )}
+      <ChatWidget />
     </div>
   );
 };

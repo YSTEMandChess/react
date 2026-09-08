@@ -32,6 +32,14 @@ const ActivitiesSchema = new Schema({
             completed: {
                 type: Boolean,     // Whether user has completed this activity today
                 required: true,
+            },
+            taskId: {
+                type: String,      // Stable identifier from activityCatalog, decoupled from display name
+                required: true,
+            },
+            route: {
+                type: String,      // Frontend route to navigate to in order to complete this task
+                required: true,
             }
         }],
         required: true,

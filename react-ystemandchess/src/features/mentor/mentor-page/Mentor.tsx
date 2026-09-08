@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./Mentor.scss";
 import LogoLineBr from "../../../assets/images/LogoLineBreak.png";
 import cabbageImg from "../../../assets/images/mission-image.png";
@@ -7,6 +8,7 @@ import teacher from "../../../assets/images/teaching.png";
 import makeADifference from "../../../assets/images/difference.png";
 
 const Mentor = () => {
+  const navigate = useNavigate();
   return (
     <main className="board-container" role="main">
       <section className="flex-container" role="region" aria-label="Application Section" tabIndex={0}>
@@ -15,7 +17,7 @@ const Mentor = () => {
           <p>
             Your time and talent can make a real difference in people's lives.
           </p>
-          <button className="apply-button" aria-label="Apply Button" tabIndex={0}>Apply Now</button>
+          <button className="apply-button" aria-label="Apply Button" tabIndex={0} onClick={() => navigate("/signup/mentor")}>Apply Now</button>
         </div>
         <div className="image-content">
           <img src={cabbageImg} alt="Cabbage" />
@@ -35,7 +37,7 @@ const Mentor = () => {
         <img src={teacher} alt="Teaching and Learning" />
       </section>
 
-      <button className="apply-button" aria-label="Apply Button" >Apply Now</button>
+      <button className="apply-button" aria-label="Apply Button" onClick={() => navigate("/signup/mentor")}>Apply Now</button>
     </main>
   );
 };

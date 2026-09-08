@@ -40,11 +40,15 @@ const startRecording = async (meetingID) => {
       cname: meetingID,
       clientRequest: {
         storageConfig: {
-          secretKey: config.get("awsSecretKey"),
-          region: 1,
-          accessKey: config.get("awsAccessKey"),
-          bucket: "ystemandchess-meeting-recordings",
-          vendor: 1,
+          // Azure Blob Storage (Agora vendor code 5). For Azure, Agora uses the
+          // storage account name as accessKey, the account key as secretKey, and
+          // the container name as bucket. region is the Azure region code and
+          // depends on where the storage account lives, so it is env-driven.
+          vendor: 5,
+          region: Number(config.get("azureStorageRegion")),
+          accessKey: config.get("azureStorageAccount"),
+          secretKey: config.get("azureStorageKey"),
+          bucket: config.get("azureContainer"),
         },
         recordingConfig: {
           audioProfile: 1,

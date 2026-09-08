@@ -50,6 +50,7 @@ const NavBar = () => {
   // State variables for managing dropdown menu visibility
   const [mobileMenuDropDown, setMobileMenuDropDown] = useState(false);
   const [aboutUsDropDown, setAboutUsDropDown] = useState(false);
+  const [signupDropDown, setSignupDropDown] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
 
   // Navigation and user state variables
@@ -59,6 +60,7 @@ const NavBar = () => {
 
   // Ref objects for managing click-outside behavior for dropdowns
   const aboutUsRef = useRef<any>(null);
+  const signupRef = useRef<any>(null);
   const profileDropdownRef = useRef<any>(null);
   const mobileMenuRef = useRef<any>(null);
   const hamburgerRef = useRef<any>(null);
@@ -72,6 +74,10 @@ const NavBar = () => {
     setAboutUsDropDown((prev) => !prev);
   };
 
+  const toggleSignup = () => {
+    setSignupDropDown((prev) => !prev);
+  };
+
   const profileToggleDropdown = () => {
     setProfileDropdown((prevDropdown) => !prevDropdown);
   };
@@ -80,6 +86,11 @@ const NavBar = () => {
       // Close "About Us" dropdown if click is outside its container
       if (aboutUsRef.current && !aboutUsRef.current.contains(event.target)) {
         setAboutUsDropDown(false);
+      }
+
+      // Close "Sign Up" dropdown if click is outside its container
+      if (signupRef.current && !signupRef.current.contains(event.target)) {
+        setSignupDropDown(false);
       }
       
       // Close mobile menu if click is outside both the menu and hamburger button
@@ -299,6 +310,16 @@ const NavBar = () => {
         Puzzles
       </Link>
 
+      {/* Analytics link — visible only to admin users */}
+      {role === "admin" && (
+        <Link
+          to="/analytics"
+          className="px-4 text-lg font-medium text-dark transition-colors hover:text-primary"
+        >
+          Analytics
+        </Link>
+      )}
+
       {/* Conditional rendering: Show login link only when user is not authenticated */}
       {!username && (
         <Link
@@ -307,6 +328,56 @@ const NavBar = () => {
         >
           Login
         </Link>
+      )}
+
+      {/* Sign Up dropdown with parent and mentor options, only when not authenticated */}
+      {!username && (
+        <div ref={signupRef} className="relative">
+          {/* Sign Up dropdown trigger button */}
+          <button
+            type="button"
+            onClick={toggleSignup}
+            className="flex items-center rounded-lg bg-accent px-5 py-2 text-lg font-semibold text-dark transition-transform hover:scale-105"
+            aria-haspopup="true"
+            aria-expanded={signupDropDown}
+            aria-controls="signup-menu"
+          >
+            Sign Up
+            {/* Dropdown indicator icon that changes based on menu state */}
+            <FontAwesomeIcon
+              icon={signupDropDown ? faCaretUp : faCaretDown}
+              className={`ml-2 ${signupDropDown ? "translate-y-[2px]" : "translate-y-[-1px]"}`}
+            />
+          </button>
+
+          {/* Sign Up dropdown menu content (conditionally rendered) */}
+          {signupDropDown && (
+            <motion.div
+              id="signup-menu"
+              className="absolute z-20 mt-3 w-48 rounded-md bg-light p-4 shadow-lg"
+              initial="parentInitial"
+              animate="parentAnimate"
+              variants={navbarVariants}
+            >
+              <div className="flex flex-col gap-3">
+                <Link
+                  to="/signup/parent"
+                  onClick={toggleSignup}
+                  className="text-base text-gray transition-colors hover:text-primary"
+                >
+                  Parent Signup
+                </Link>
+                <Link
+                  to="/signup/mentor"
+                  onClick={toggleSignup}
+                  className="text-base text-gray transition-colors hover:text-primary"
+                >
+                  Mentor Signup
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </div>
       )}
 
       {/* Conditional rendering: Show user profile dropdown when user is authenticated */}
@@ -341,7 +412,7 @@ const NavBar = () => {
                 <div className="flex flex-col gap-2">
                   {/* Dynamic profile link based on user role */}
                   <Link
-                    to={`/${role}-profile`}
+                    to={role === "parent" ? "/signup/parent/section" : `/${role}-profile`}
                     onClick={profileToggleDropdown}
                     className="text-base text-gray transition-colors hover:text-primary"
                   >
@@ -351,7 +422,7 @@ const NavBar = () => {
                   {/* Conditional link for parent users only */}
                   {role === "parent" && (
                     <Link
-                      to="/parent-add-student"
+                      to="/signup/parent/add-child"
                       onClick={profileToggleDropdown}
                       className="text-base text-gray transition-colors hover:text-primary"
                     >

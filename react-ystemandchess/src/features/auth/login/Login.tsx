@@ -2,6 +2,9 @@ import React from "react";
 import { useState } from 'react';
 import { environment } from "../../../environments/environment";
 import { useCookies } from 'react-cookie';
+import stemmy from "../../../assets/images/StreakProgressAssets/stemmy.svg";
+import stemette from "../../../assets/images/StreakProgressAssets/stemette.svg";
+import treesGroup from "../../../assets/images/Trees-Group.png";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -88,7 +91,7 @@ const Login = () => {
             console.log(payload["role"]);
             break;
           case "parent":
-            window.location.pathname = "/parent";
+            window.location.pathname = "/signup/parent/section";
             break;
           case "mentor":
             window.location.pathname = "/mentor-profile";
@@ -114,7 +117,21 @@ const Login = () => {
     }`;
 
   return (
-    <div className="min-h-[71vh] flex flex-col items-center justify-center px-4 py-12">
+    <div className="relative min-h-[71vh] flex flex-col items-center justify-center px-4 py-12 overflow-x-hidden">
+      <img
+        src={treesGroup}
+        alt=""
+        aria-hidden="true"
+        className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 w-[36rem] xl:w-[40rem] h-auto pointer-events-none"
+      />
+
+      <img
+        src={stemmy}
+        alt=""
+        aria-hidden="true"
+        className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-72 xl:w-80 h-auto pointer-events-none translate-x-[10%]"
+      />
+
       <h1 className="text-3xl font-bold text-dark mb-6 text-center">Login</h1>
 
       {loginError && (
@@ -124,11 +141,23 @@ const Login = () => {
       )}
 
       <form
-        className="w-full max-w-sm bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-6"
+        className="relative w-full max-w-sm bg-light rounded-2xl border-2 border-dark shadow-md p-8 flex flex-col gap-6"
         aria-label="Login Form"
         aria-busy={isLoading}
         onSubmit={submitLogin}
       >
+        <img
+          src={stemette}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 translate-x-full w-60 h-auto"
+        />
+        <img
+          src={stemmy}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute top-14 -left-24 -translate-y-1/2 w-24 h-auto"
+        />
         <div className="flex flex-col gap-1.5">
           <label htmlFor="username" id="username-label" className="text-sm font-bold text-dark">
             Username
@@ -187,12 +216,6 @@ const Login = () => {
         className="mt-6 flex flex-wrap justify-center gap-6 text-sm font-bold"
         aria-label="Account Options"
       >
-        <a
-          href="/signup"
-          className="text-dark border-b-2 border-transparent hover:border-dark transition-colors"
-        >
-          Create a new account
-        </a>
         <a
           href="/reset-password"
           className="text-dark border-b-2 border-transparent hover:border-dark transition-colors"

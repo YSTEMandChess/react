@@ -12,9 +12,12 @@ export function useTimeTracking(piece: string, cookies: any) {
   	useEffect(() => {
 		startRecording();
 
-		window.addEventListener("beforeunload", handleUnloadRef.current);
+		// Use an indirection so the listener always calls the most-recent version
+		// of handleUnloadRef.current (which captures the latest state via closure).
+		const handleUnload = () => handleUnloadRef.current();
+		window.addEventListener("beforeunload", handleUnload);
 		return () => {
-	  		window.removeEventListener("beforeunload", handleUnloadRef.current);
+	  		window.removeEventListener("beforeunload", handleUnload);
 	  		handleUnloadRef.current();
 		};
   	}, []);

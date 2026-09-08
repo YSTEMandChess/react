@@ -44,17 +44,28 @@ class GameManager {
         const studentColor = role === "student" ? "black" : "white";
         const mentorColor = role === "student" ? "white" : "black";
 
+        const studentPlayer = {
+            username: student,
+            id: role === "student" ? socketId : null,
+            color: studentColor
+        };
+        const mentorPlayer = {
+            username: mentor,
+            id: role === "mentor" ? socketId : null,
+            color: mentorColor
+        };
+
         const newGame = {
-            student: {
-                username: student,
-                id: role === "student" ? socketId : null,
-                color: studentColor
-            },
-            mentor: {
-                username: mentor,
-                id: role === "mentor" ? socketId : null,
-                color: mentorColor
-            },
+            student: studentPlayer,
+            mentor: mentorPlayer,
+            // Role-neutral view of the SAME two player objects (same references,
+            // so mutating game.student also updates game.players[0]). Lets shared
+            // logic — outcome detection, resignation — work for both
+            // mentor-vs-student and student-vs-student games without caring which
+            // slot is which. See student-vs-student-design.md §5a.
+            players: [studentPlayer, mentorPlayer],
+            gameId: null,
+            isPvp: false,
             boardState: board,
             pastStates: []
         };
@@ -69,7 +80,92 @@ class GameManager {
     }
 
     /**
-     * 
+     * Creates or joins a student-vs-student (PvP) game, keyed by a shared
+     * gameId issued by the middleware when a challenge is accepted.
+     *
+     * Both players are students, so there is no student/mentor asymmetry here.
+     * The two internal slots are still named `student`/`mentor` so that all the
+     * existing machinery (makeMove, broadcastBoardState, relayToOpponent, …)
+     * keeps working unchanged; `game.players` is the role-neutral accessor and
+     * `game.isPvp` marks that the slot NAMES carry no meaning in this game.
+     * See student-vs-student-design.md §5a.
+     *
+     * The challenger takes white. Whichever client connects first creates the
+     * game; the second joins it by gameId. Reconnecting with the same username
+     * reclaims the original seat and color rather than creating a new game.
+     *
+     * Each seat also carries the joining client's `credentials` (bearer token).
+     * The result report at game end is sent to the middleware as one of the two
+     * players, and resign/disconnect endings are triggered by a socket event
+     * that carries no body — so the token has to be captured at join time.
+     *
+     * @param {Object} param0 - Contains gameId, challenger, opponent, username, socketId, credentials
+     * @returns {Object} Game object, assigned color, and new game status
+     */
+    createOrJoinPvpGame({ gameId, challenger, opponent, username, socketId, credentials }) {
+        if (!gameId) {
+            throw new Error("A gameId is required to join a student-vs-student game!");
+        }
+        if (!challenger || !opponent) {
+            throw new Error("Both challenger and opponent usernames are required!");
+        }
+        if (challenger === opponent) {
+            throw new Error("A student cannot challenge themselves!");
+        }
+        if (username !== challenger && username !== opponent) {
+            throw new Error("You are not a player in this game!");
+        }
+
+        const game = this.getGameByGameId(gameId);
+
+        // Game already exists — take (or reclaim) our seat.
+        if (game) {
+            const seat = game.players.find((p) => p.username === username);
+            if (!seat) {
+                throw new Error("You are not a player in this game!");
+            }
+            seat.id = socketId;
+            if (credentials) seat.credentials = credentials;
+            return { game, color: seat.color, newGame: false };
+        }
+
+        // First player in creates the game; both seats are known upfront from
+        // the accepted challenge, so the opponent's seat just waits for a socket.
+        const board = new Chess();
+        const challengerPlayer = {
+            username: challenger,
+            id: username === challenger ? socketId : null,
+            credentials: username === challenger ? credentials : null,
+            color: "white"
+        };
+        const opponentPlayer = {
+            username: opponent,
+            id: username === opponent ? socketId : null,
+            credentials: username === opponent ? credentials : null,
+            color: "black"
+        };
+
+        const newGame = {
+            student: challengerPlayer,
+            mentor: opponentPlayer,
+            players: [challengerPlayer, opponentPlayer],
+            gameId,
+            isPvp: true,
+            boardState: board,
+            pastStates: []
+        };
+
+        this.ongoingGames.push(newGame);
+
+        return {
+            game: newGame,
+            color: username === challenger ? "white" : "black",
+            newGame: true
+        };
+    }
+
+    /**
+     *
      * @param {Object} param0 - Contains student, mentor, role, socketId
      * @returns {Object} Game object, assigned color, and new game status
      */
@@ -221,13 +317,24 @@ class GameManager {
         }
         //console.log(activityEvents);
         //console.log('student info',game.student);
-        return { 
+
+        // Detect game-over so the result can be recorded for the leaderboard.
+        // See documentation/student-vs-student-design.md §6.
+        const outcome = this.detectOutcome(game);
+        // Latch the game as finished so a later disconnect/resign on the same
+        // game can't emit a second "gameover" and report the result twice.
+        if (outcome.over) {
+            game.isOver = true;
+        }
+
+        return {
                 result: {
                             boardState: board.fen(),
                             move: moveResult,
                             studentId: game.student.id,
                             mentorId: game.mentor.id,
                             studentUsername: game.student.username,
+                            outcome,
                         },
                 activityEvents: activityEvents
         };
@@ -426,14 +533,105 @@ class GameManager {
     }
 
     /**
+     * Inspects the board after a move and reports whether the game is over.
+     * Works for both mentor-vs-student and student-vs-student games because it
+     * resolves the winner from color, not from the student/mentor slot names.
+     *
+     * chess.js (^1.0.0-beta.8) exposes camelCase status helpers; after a
+     * successful move, board.turn() is the side to move NEXT — i.e. the side
+     * that was just checkmated is the loser.
+     * @param {Object} game
+     * @returns {Object} { over, reason?, winnerUsername?, loserUsername? }
+     */
+    detectOutcome(game) {
+        const board = game.boardState;
+        if (board.isCheckmate()) {
+            const loserColorChar = board.turn(); // 'w' | 'b' — side to move is mated
+            const loser = this.playerByColorChar(game, loserColorChar);
+            const winner = this.playerByColorChar(game, loserColorChar === "w" ? "b" : "w");
+            return {
+                over: true,
+                reason: "checkmate",
+                winnerUsername: winner.username,
+                loserUsername: loser.username,
+            };
+        }
+        if (
+            board.isStalemate() ||
+            board.isThreefoldRepetition() ||
+            board.isInsufficientMaterial() ||
+            board.isDraw()
+        ) {
+            return { over: true, reason: "draw" };
+        }
+        return { over: false };
+    }
+
+    /**
+     * Records a resignation (or a disconnect treated as a forfeit): the resigning
+     * player loses, the other wins. Returns the same outcome shape as a checkmate
+     * so callers can emit "gameover" and report the result identically.
+     * @param {*} socketId - the resigning player's socket
+     * @param {string} [reason] - "resign" (default) or "disconnect"
+     * @returns {Object|null} { game, outcome } or null if no game / no opponent
+     */
+    resign(socketId, reason = "resign") {
+        const game = this.getGameBySocketId(socketId);
+        if (!game) {
+            return null;
+        }
+        // Already decided (by checkmate, an earlier resign, or a forfeit) —
+        // don't emit a second gameover or award the winner twice.
+        if (game.isOver) {
+            return null;
+        }
+        game.isOver = true;
+        const loser = game.players.find((p) => p.id === socketId);
+        const winner = game.players.find((p) => p.id !== socketId);
+        // If the opponent never joined there's nobody to award — just end it.
+        if (!loser || !winner || !winner.username) {
+            return { game, outcome: { over: true, reason } };
+        }
+        return {
+            game,
+            outcome: {
+                over: true,
+                reason,
+                winnerUsername: winner.username,
+                loserUsername: loser.username,
+            },
+        };
+    }
+
+    /**
+     * Returns the player (student or mentor slot) whose color matches the given
+     * first character ('w' | 'b').
+     * @param {Object} game
+     * @param {string} colorChar
+     * @returns {Object} player object
+     */
+    playerByColorChar(game, colorChar) {
+        return game.players.find((p) => p.color.charAt(0) === colorChar);
+    }
+
+    /**
      * Finds the game using socket ID.
-     * @param {*} socketId 
-     * @returns 
+     * @param {*} socketId
+     * @returns
      */
     getGameBySocketId(socketId) {
         return this.ongoingGames.find(
             (game) => game.student.id === socketId || game.mentor.id === socketId
         );
+    }
+
+    /**
+     * Finds a game by its shared gameId (student-vs-student games only).
+     * @param {string} gameId
+     * @returns {Object|undefined}
+     */
+    getGameByGameId(gameId) {
+        return this.ongoingGames.find((game) => game.gameId && game.gameId === gameId);
     }
 }
 

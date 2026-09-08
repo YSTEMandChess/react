@@ -13,22 +13,36 @@ const server = http.createServer(app);
 // Add logging functionaility to the server
 app.use(morgan("dev")); // dev -> preset format
 
+const allowedOriginsSetting = process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGINS;
+const allowedOrigins = allowedOriginsSetting
+  ? allowedOriginsSetting.split(",").map((o) => o.trim())
+  : [
+      "https://ystemandchess.com",
+      "https://www.ystemandchess.com",
+      "http://localhost:3000",
+      "http://localhost:3002",
+      "http://localhost:4200",
+    ];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
+  methods: ["GET", "POST"],
+  credentials: true,
+};
+
 // Apply CORS middleware to handle cross-origin requests
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST"],
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 
 // Initialize Socket.IO with CORS configuration
 const io = socketIo(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
+  cors: corsOptions,
 });
 
 // Register socket event handlers upon client connection

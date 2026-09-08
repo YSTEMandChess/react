@@ -14,14 +14,17 @@
  */
 
 import React, { useEffect, useState, useMemo } from "react";
+import { useCookies } from "react-cookie";
 import "./BadgesModal.scss";
 import { getBadgeCatalog, getUserBadges } from "../../../../core/services/badgesApi";
 
 /**
  * BadgesModal component - displays user's badge achievements
  * @param {Function} onClose - Callback to close the modal
+ * @param {string} username - Username to fetch earned badges for (must match the JWT)
  */
-const BadgesModal = ({ onClose }: { onClose: () => void }) => {
+const BadgesModal = ({ onClose, username }: { onClose: () => void; username: string }) => {
+  const [cookies] = useCookies(['login']);
   const [catalog, setCatalog] = useState<any[]>([]);
   const [earnedIds, setEarnedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +40,7 @@ const BadgesModal = ({ onClose }: { onClose: () => void }) => {
       try {
         const [badges, earned] = await Promise.all([
           getBadgeCatalog(),
-          getUserBadges("teststudent") // replace with dynamic userId later if needed
+          getUserBadges(username, cookies.login)
         ]);
         setCatalog(badges);
         setEarnedIds(earned.map((b: any) => b.badgeId));
@@ -45,7 +48,8 @@ const BadgesModal = ({ onClose }: { onClose: () => void }) => {
         setLoading(false);
       }
     })();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username]);
 
   const badgeList = useMemo(() => {
     return catalog.map(b => ({

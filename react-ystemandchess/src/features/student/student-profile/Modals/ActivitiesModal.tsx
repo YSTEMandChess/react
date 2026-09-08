@@ -15,6 +15,7 @@
  */
 
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./ActivitiesModal.scss";
 import { ReactComponent as GrowthBox } from "../../../../assets/images/ActivitiesAssets/growth_box.svg";
 import { ReactComponent as WaterMeter } from "../../../../assets/images/ActivitiesAssets/water_meter.svg";
@@ -35,17 +36,18 @@ import { parseActivities } from "../../../../core/utils/activityNames";
  * @param {string} username - Username to fetch activities for
  */
 const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username: string }) => {
+  const navigate = useNavigate();
+
   // Close modal only when clicking the background overlay (not child elements)
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
-    
+
   const [cookies] = useCookies(['login']);
   const [activities, setActivities] = useState(null);
   const [loading, setLoading] = useState(true);
-  
 
   const fetchActivities = async () => {
     try {
@@ -58,14 +60,18 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
         },
       })
       const json = await response.json();
-      const data = json.activities.activities;
+      // json.activities can be null for an account with no seeded
+      // Activities document — fall back to an empty list instead of
+      // throwing and leaving the modal stuck in a permanent loading state.
+      const data = json.activities?.activities || [];
       const activityNames = parseActivities(data);
       setActivities(activityNames);
-      setLoading(false);
     } catch (err) {
       console.error("Error fetching activities:", err);
+      setActivities([]);
+    } finally {
+      setLoading(false);
     }
-    
   }
   useEffect(() => {
       fetchActivities()
@@ -112,17 +118,26 @@ const ActivitiesModal = ({ onClose, username }: { onClose: () => void; username:
               {activities.map((activity, idx) => {
                 //Use activity.completed to change visual for complete or incomplete task
                 return (
-                  <button className="activity-button" key={idx}>
+                  <button 
+                    className={`activity-button ${activity.completed ? 'completed' : ''}`} 
+                    key={idx}
+                    onClick={() => {
+                      // Only route if the task isn't completed yet
+                      if (!activity.completed) {
+                        onClose(); // Close the modal overlay first
+                        // If you ever need to pass the specific task ID to the next page:
+                        navigate(`${activity.route}?taskId=${activity.id}`);
+                        // navigate(activity.route);
+                      }
+                    }}
+                  >
                     <span className="label">Daily Activity</span><br />
-                    <span className="action">{activity.name}</span>
-                    {activity.completed ? <div>t</div> : <div>f</div>}
-
+                    <span className="action">{activity.displayName}</span>
+                    {activity.completed ? <div className="status-icon">✅</div> : <div className="status-icon">⏳</div>}
                   </button>
                   //check completed status, display conditional, then complete task in puzzles to check
                 )
-              }
-              
-              )}
+              })}
             </div>
           </div>
         </div>
