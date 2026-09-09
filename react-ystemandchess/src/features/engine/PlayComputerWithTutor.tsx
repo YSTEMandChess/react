@@ -4,7 +4,7 @@ import { Chess as ChessClass } from 'chess.js';
 import { io } from 'socket.io-client';
 import { Move } from '../../core/types/chess';
 import ChessBoard, { ChessBoardRef } from '../../components/ChessBoard/ChessBoard';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments';
 import StockfishTutor from './StockfishTutor';
 import styles from './PlayComputer.module.scss';
 
