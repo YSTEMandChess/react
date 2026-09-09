@@ -54,6 +54,10 @@ module.exports = {
           '25%': { transform: 'translateX(-5px)' },
           '75%': { transform: 'translateX(5px)' },
         },
+        'typing-dots': {
+          '0%, 80%, 100%': { transform: 'scale(0)', opacity: '0.3' },
+          '40%': { transform: 'scale(1)', opacity: '1' },
+        },
         'gentle-breathe': {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-4px)' },
@@ -90,6 +94,7 @@ module.exports = {
         'modal-in': 'modal-in 0.15s ease-out',
         'fade-out': 'fade-out 0.4s ease 2.1s forwards',
         'shake': 'shake 0.5s ease',
+        'typing-dots': 'typing-dots 1.4s infinite ease-in-out both',
         'gentle-breathe-2': 'gentle-breathe 2s ease-in-out infinite',
         'gentle-breathe-3': 'gentle-breathe 3s ease-in-out infinite',
         'gentle-breathe-4': 'gentle-breathe 4s ease-in-out infinite',

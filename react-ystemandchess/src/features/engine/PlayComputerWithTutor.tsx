@@ -5,8 +5,8 @@ import { io } from 'socket.io-client';
 import { Move } from '../../core/types/chess';
 import ChessBoard, { ChessBoardRef } from '../../components/ChessBoard/ChessBoard';
 import { environment } from '../../environments/environment';
+import { cn } from '../../core/utils/cn';
 import StockfishTutor from './StockfishTutor';
-import styles from './PlayComputer.module.scss';
 
 // Normalize chess.js named export to local constructor
 const Chess: any = ChessClass;
@@ -395,68 +395,75 @@ const PlayComputerWithTutor: React.FC = () => {
   }, [gotoPlySimple, fen]);
 
   return (
-    <div className={styles.playComputerContainer}>
-      <div className={styles.header}><h1>Play vs Computer (with Tutor)</h1></div>
+    <div className="flex min-h-[calc(100vh-100px)] w-full flex-col items-center justify-center bg-[#e2f0d9] px-4 py-10 font-sans">
+      <div className="mb-4 text-2xl font-extrabold text-[#1F1F1F]">Play vs Computer (with Tutor)</div>
 
       {showSettings ? (
-        <div className={styles.settingsPanel}>
-          <h2>Game Settings</h2>
-          <div className={styles.setting}>
-            <label>Play as</label>
-            <div className={styles.colorButtons}>
-              <button className={playerColor === 'white' ? styles.active : ''} onClick={() => setPlayerColor('white')}>White</button>
-              <button className={playerColor === 'black' ? styles.active : ''} onClick={() => setPlayerColor('black')}>Black</button>
+        <div className="w-full max-w-[520px] rounded-[24px] border-[3px] border-[#1F1F1F] bg-white p-10 shadow-[6px_6px_0_rgba(31,31,31,0.15)]">
+          <h2 className="mb-6 text-center text-2xl font-extrabold text-[#1F1F1F]">Game Settings</h2>
+          <div className="mb-6 w-full">
+            <label className="mb-3 block text-[16px] font-bold uppercase tracking-[0.5px] text-slate-600">Play as</label>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                className={cn('rounded-2xl border-[3px] border-[#1F1F1F] outline outline-[3px] outline-[#1F1F1F] bg-white px-4 py-4 text-lg font-extrabold text-[#1F1F1F] transition-all hover:-translate-y-0.5', playerColor === 'white' && 'border-[#7FCC26] outline-[#7FCC26]')}
+                onClick={() => setPlayerColor('white')}
+              >
+                White
+              </button>
+              <button
+                className={cn('rounded-2xl border-[3px] border-[#1F1F1F] outline outline-[3px] outline-[#1F1F1F] bg-[#1F1F1F] px-4 py-4 text-lg font-extrabold text-white transition-all hover:-translate-y-0.5', playerColor === 'black' && 'border-[#7FCC26] outline-[#7FCC26]')}
+                onClick={() => setPlayerColor('black')}
+              >
+                Black
+              </button>
             </div>
-            <div style={{ marginTop: 8, fontSize: 12, color: '#6b7280' }}>
+            <div className="mt-2 text-xs text-slate-500">
               <div>fenHistory: {fenHistory.length} entries; uciHistory: {uciHistoryArr.length} entries</div>
-              {navDebug && (<div style={{ marginTop: 6 }}>{navDebug}</div>)}
+              {navDebug && <div className="mt-1">{navDebug}</div>}
             </div>
           </div>
-          <div className={styles.setting}>
-            <label>Difficulty</label>
-            <div className={styles.difficultyButtons}>
-              <button className={difficulty === 1 ? styles.active : ''} onClick={() => setDifficulty(1)}>Easy</button>
-              <button className={difficulty === 5 ? styles.active : ''} onClick={() => setDifficulty(5)}>Medium</button>
-              <button className={difficulty === 10 ? styles.active : ''} onClick={() => setDifficulty(10)}>Hard</button>
-              <button className={difficulty === 15 ? styles.active : ''} onClick={() => setDifficulty(15)}>Expert</button>
-              <button className={difficulty === 20 ? styles.active : ''} onClick={() => setDifficulty(20)}>Master</button>
+          <div className="mb-6 w-full">
+            <label className="mb-3 block text-[16px] font-bold uppercase tracking-[0.5px] text-slate-600">Difficulty</label>
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+              {[1,5,10,15,20].map((value) => (
+                <button
+                  key={value}
+                  className={cn('rounded-xl border-[2px] border-[#1F1F1F] outline outline-2 outline-[#1F1F1F] bg-white px-2 py-3 text-sm font-bold text-[#1F1F1F] transition-all hover:-translate-y-0.5', difficulty === value && 'bg-[#7FCC26]')}
+                  onClick={() => setDifficulty(value as Difficulty)}
+                >
+                  {value === 1 ? 'Easy' : value === 5 ? 'Medium' : value === 10 ? 'Hard' : value === 15 ? 'Expert' : 'Master'}
+                </button>
+              ))}
             </div>
           </div>
-          <button className={styles.startButton} onClick={startSession} disabled={!connected}>{connected ? 'Start Game' : 'Connecting...'}</button>
+          <button className="mt-2 w-full rounded-2xl border-[3px] border-[#1F1F1F] bg-[#7FCC26] px-0 py-4 text-[20px] font-extrabold text-[#1F1F1F] shadow-[4px_4px_0_#1F1F1F] transition-all hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#1F1F1F] disabled:cursor-not-allowed disabled:opacity-50" onClick={startSession} disabled={!connected}>{connected ? 'Start Game' : 'Connecting...'}</button>
         </div>
       ) : (
         <>
-          <div className={styles.controls}>
-            <button onClick={undoMove} disabled={moveHistory.length < 2 || isThinking}>Undo</button>
-            <button onClick={resetGame} disabled={isThinking}>Reset</button>
-            <button onClick={newGame}>New Game</button>
-            <button onClick={() => chessBoardRef.current?.flip()}>Flip Board</button>
+          <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
+            <button className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-[#1F1F1F] shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40" onClick={undoMove} disabled={moveHistory.length < 2 || isThinking}>Undo</button>
+            <button className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-[#1F1F1F] shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40" onClick={resetGame} disabled={isThinking}>Reset</button>
+            <button className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-[#1F1F1F] shadow-sm transition hover:-translate-y-0.5" onClick={newGame}>New Game</button>
+            <button className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-[#1F1F1F] shadow-sm transition hover:-translate-y-0.5" onClick={() => chessBoardRef.current?.flip()}>Flip Board</button>
           </div>
 
-          {/* Simple connection/status panel to aid debugging when opponent doesn't move */}
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
-            <div style={{ fontSize: 13 }}>Socket: <strong>{connected ? 'Connected' : 'Disconnected'}</strong></div>
-            <div style={{ fontSize: 13 }}>Session: <strong>{sessionStarted ? 'Started' : 'Stopped'}</strong></div>
-            <div style={{ fontSize: 13 }}>Engine: <strong>{isThinking ? 'Thinking...' : 'Idle'}</strong></div>
-            <button onClick={() => {
-              // attempt a lightweight reconnect
-              try {
-                if (socketRef.current && socketRef.current.disconnect) socketRef.current.disconnect();
-              } catch (e) {}
-              try { socketRef.current = io(environment.urls.stockfishServerURL, { transports: ['websocket'], reconnection: true }); } catch (e) { console.error('Reconnect failed', e); }
-            }}>Reconnect</button>
+          <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-slate-700">
+            <div>Socket: <strong>{connected ? 'Connected' : 'Disconnected'}</strong></div>
+            <div>Session: <strong>{sessionStarted ? 'Started' : 'Stopped'}</strong></div>
+            <div>Engine: <strong>{isThinking ? 'Thinking...' : 'Idle'}</strong></div>
+            <button className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-[#1F1F1F]" onClick={() => { try { if (socketRef.current && socketRef.current.disconnect) socketRef.current.disconnect(); } catch (e) {} try { socketRef.current = io(environment.urls.stockfishServerURL, { transports: ['websocket'], reconnection: true }); } catch (e) { console.error('Reconnect failed', e); } }}>Reconnect</button>
           </div>
 
-          <div className={styles.statusBarFixed}>{gameStatus && (<div className={`${styles.statusMessage} ${styles.check}`}>{gameStatus}</div>)}</div>
+          {gameStatus && <div className="mb-3 w-full max-w-[800px] rounded-lg border-[1.5px] border-[#FC8181] bg-[#FFF5F5] px-3 py-2 text-center text-sm font-bold text-[#C53030]">{gameStatus}</div>}
 
-          <div className={styles.chessAndTutor} style={{ display: 'flex', gap: 12 }}>
-            <div className={styles.chessboardContainer}>
+          <div className="flex w-full max-w-[1200px] flex-wrap items-start justify-center gap-4">
+            <div className="min-w-0 flex-1 rounded-[20px] border-2 border-[#1F1F1F] bg-white p-3">
               <ChessBoard mode="engine" ref={chessBoardRef} fen={fen} orientation={playerColor} highlightSquares={highlightSquares} onMove={handleMove} disabled={isThinking || gameStatus.includes('wins') || gameStatus === 'Draw!'} />
             </div>
 
-            <div className={styles.tutorWrapper} style={{ width: 360 }}>
-              <div style={{ marginBottom: 8 }}>
-                <label><input type="checkbox" checked={tutorEnabled} onChange={(e) => setTutorEnabled(e.target.checked)} /> Show Tutor</label>
+            <div className="w-[360px] max-w-full rounded-[20px] border-2 border-[#1F1F1F] bg-white p-4">
+              <div className="mb-2 text-sm font-bold text-slate-700">
+                <label className="inline-flex items-center gap-2"><input type="checkbox" checked={tutorEnabled} onChange={(e) => setTutorEnabled(e.target.checked)} /> Show Tutor</label>
               </div>
               <StockfishTutor
                 enabled={tutorEnabled}
@@ -470,33 +477,31 @@ const PlayComputerWithTutor: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ marginTop: 8, fontSize: 12, color: '#333' }}>
+          <div className="mt-4 text-[12px] text-slate-700">
             <div>Parent fen prop: {fen}</div>
             <div>ChessBoard internal fen: {chessBoardRef.current ? (() => { try { return chessBoardRef.current.getFen(); } catch (e) { return 'n/a'; } })() : 'ref null'}</div>
           </div>
 
-          <div className={styles.moveHistory}>
-            <h3>Move History</h3>
-            <div className={styles.moves} ref={movesContainerRef}>
+          <div className="mt-4 w-full max-w-[1200px] rounded-[20px] border-2 border-[#1F1F1F] bg-white p-4">
+            <h3 className="mb-3 text-lg font-extrabold text-[#1F1F1F]">Move History</h3>
+            <div className="flex max-h-[220px] flex-col gap-2 overflow-y-auto pr-1.5" ref={movesContainerRef}>
               {moveHistory.reduce((acc: JSX.Element[], move, idx) => {
                 const moveNumber = Math.floor(idx / 2) + 1; const isWhiteMove = idx % 2 === 0;
                 if (isWhiteMove) {
                   acc.push(
-                    <div key={idx} className={styles.movePair}>
-                      <span className={styles.moveNumber}>{moveNumber}.</span>
-                      <button type="button" draggable={false} aria-label={`Jump to move ${moveNumber} white`} className={styles.whiteMove} onMouseDown={() => handleHistoryClick(idx)} onClick={() => handleHistoryClick(idx)}>{move}</button>
-                      {/* View: prefer the position after opponent's reply (fenHistory[idx+2]) if it exists, otherwise fenHistory[idx+1] */}
-                      <button type="button" draggable={false} className={styles.viewButton} onClick={() => {
+                    <div key={idx} className="grid grid-cols-[32px_1fr_1fr_1fr] items-center gap-2">
+                      <span className="text-right text-[13px] font-extrabold text-[#7FCC26]">{moveNumber}.</span>
+                      <button type="button" draggable={false} aria-label={`Jump to move ${moveNumber} white`} className="rounded-lg border border-[#1F1F1F] bg-white px-3 py-1.5 font-mono text-[13px] font-bold text-[#1F1F1F] transition-all hover:-translate-y-0.5" onMouseDown={() => handleHistoryClick(idx)} onClick={() => handleHistoryClick(idx)}>{move}</button>
+                      <button type="button" draggable={false} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[12px] font-bold text-[#1F1F1F]" onClick={() => {
                         const fenAfterOpponent = fenHistory[idx + 2];
                         const fenAfter = fenAfterOpponent || fenHistory[idx + 1];
-                        // If we have fenAfter, try to highlight the last UCI (opponent move if present)
                         const uciIndex = fenAfterOpponent ? idx + 1 : idx;
                         handleGotoFen(fenAfter, uciHistoryArr[uciIndex] && uciHistoryArr[uciIndex].length >= 4 ? [uciHistoryArr[uciIndex].slice(0,2), uciHistoryArr[uciIndex].slice(2,4)] : undefined);
                       }}>View</button>
                       {moveHistory[idx + 1] && (
                         <>
-                          <button type="button" draggable={false} aria-label={`Jump to move ${moveNumber} black`} className={styles.blackMove} onMouseDown={() => handleHistoryClick(idx + 1)} onClick={() => handleHistoryClick(idx + 1)}>{moveHistory[idx + 1]}</button>
-                          <button type="button" draggable={false} className={styles.viewButton} onClick={() => {
+                          <button type="button" draggable={false} aria-label={`Jump to move ${moveNumber} black`} className="rounded-lg border border-[#1F1F1F] bg-[#1F1F1F] px-3 py-1.5 font-mono text-[13px] font-bold text-white transition-all hover:-translate-y-0.5" onMouseDown={() => handleHistoryClick(idx + 1)} onClick={() => handleHistoryClick(idx + 1)}>{moveHistory[idx + 1]}</button>
+                          <button type="button" draggable={false} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[12px] font-bold text-[#1F1F1F]" onClick={() => {
                             const fenAfterB = fenHistory[idx + 2] || fenHistory[idx + 1];
                             const uciIdxB = fenHistory[idx + 2] ? idx + 1 : idx;
                             handleGotoFen(fenAfterB, uciHistoryArr[uciIdxB] && uciHistoryArr[uciIdxB].length >= 4 ? [uciHistoryArr[uciIdxB].slice(0,2), uciHistoryArr[uciIdxB].slice(2,4)] : undefined);
@@ -514,12 +519,12 @@ const PlayComputerWithTutor: React.FC = () => {
       )}
 
       {showGameEndModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowGameEndModal(false)}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2>{gameEndMessage}</h2>
-            <div className={styles.modalButtons}>
-              <button onClick={() => { setShowGameEndModal(false); newGame(); }} className={styles.primaryButton}>New Game</button>
-              <button onClick={() => setShowGameEndModal(false)} className={styles.secondaryButton}>Close</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1F1F]/40 p-4 backdrop-blur-sm" onClick={() => setShowGameEndModal(false)}>
+          <div className="w-full max-w-[380px] rounded-[24px] border-[3px] border-[#1F1F1F] bg-white p-10 text-center shadow-[8px_8px_0_#1F1F1F]" onClick={(e) => e.stopPropagation()}>
+            <h2 className="mb-6 text-[24px] font-black text-[#1F1F1F]">{gameEndMessage}</h2>
+            <div className="flex gap-3">
+              <button className="flex-1 rounded-xl border-2 border-[#1F1F1F] bg-[#7FCC26] px-0 py-3 font-extrabold text-[#1F1F1F] shadow-[2px_2px_0_#1F1F1F] transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_#1F1F1F]" onClick={() => { setShowGameEndModal(false); newGame(); }}>New Game</button>
+              <button className="flex-1 rounded-xl border-2 border-slate-200 bg-white px-0 py-3 font-bold text-slate-600 transition-all hover:border-[#1F1F1F] hover:text-[#1F1F1F]" onClick={() => setShowGameEndModal(false)}>Close</button>
             </div>
           </div>
         </div>
@@ -529,4 +534,3 @@ const PlayComputerWithTutor: React.FC = () => {
 };
 
 export default PlayComputerWithTutor;
-
