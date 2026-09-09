@@ -32,6 +32,10 @@ jobs:
         run: npm run build --if-present
         working-directory: ./middlewareNode
 
+      - name: Test middlewareNode
+        run: npm test
+        working-directory: ./middlewareNode
+
       # chessServer
       - name: Install dependencies (chessServer)
         run: npm ci
