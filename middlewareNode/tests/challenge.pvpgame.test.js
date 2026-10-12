@@ -88,6 +88,48 @@ describe("POST /challenge/:id/accept — persists a PvpGame", () => {
     const docs = await PvpGame.find({ gameId });
     expect(docs).toHaveLength(1);
   });
+
+  test("a database failure leaves the challenge pending so acceptance can be retried", async () => {
+    const created = await request(app)
+      .post("/challenge")
+      .set("x-test-user", "alice")
+      .send({ fromUsername: "alice", toUsername: "bob" });
+
+    const challengeId = created.body.challengeId;
+    const PvpGame = require("../src/models/PvpGame");
+    const createSpy = jest
+      .spyOn(PvpGame, "create")
+      .mockRejectedValueOnce(new Error("database unavailable"));
+
+    try {
+      const failedAccept = await request(app)
+        .post(`/challenge/${challengeId}/accept`)
+        .set("x-test-user", "bob");
+
+      expect(failedAccept.status).toBe(500);
+
+      const statusAfterFailure = await request(app)
+        .get(`/challenge/${challengeId}`)
+        .set("x-test-user", "alice");
+
+      expect(statusAfterFailure.status).toBe(200);
+      expect(statusAfterFailure.body.status).toBe("pending");
+
+      const retry = await request(app)
+        .post(`/challenge/${challengeId}/accept`)
+        .set("x-test-user", "bob");
+
+      expect(retry.status).toBe(200);
+      expect(retry.body.gameId).toBe(created.body.gameId);
+
+      const docs = await PvpGame.find({ gameId: created.body.gameId });
+      expect(docs).toHaveLength(1);
+      expect(docs[0].white).toBe("alice");
+      expect(docs[0].black).toBe("bob");
+    } finally {
+      createSpy.mockRestore();
+    }
+  });
 });
 
 describe("GET /challenge/game/:gameId", () => {

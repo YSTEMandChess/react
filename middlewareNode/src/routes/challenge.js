@@ -159,7 +159,6 @@ router.post('/:id/accept', requireAuth, async (req, res) => {
     if (challenge.status !== 'pending') {
         return res.status(409).json({ error: `Challenge already ${challenge.status}` });
     }
-    challenge.status = 'accepted';
 
     try {
         await PvpGame.create({
@@ -177,6 +176,8 @@ router.post('/:id/accept', requireAuth, async (req, res) => {
             return res.status(500).json({ error: 'Server error' });
         }
     }
+
+    challenge.status = 'accepted';
 
     return res.status(200).json({
         gameId: challenge.gameId,
