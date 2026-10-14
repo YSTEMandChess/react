@@ -1,6 +1,10 @@
 const axios = require("axios");
 const config = require("config");
 
+// pairUp holds its pairing lock while recording starts, so a hung Agora call
+// must not stall matchmaking for everyone.
+const AGORA_TIMEOUT_MS = 8000;
+
 /**
  * Starts an Agora cloud recording session for a meeting
  * @param {string} meetingID - The meeting/channel ID to record
@@ -28,6 +32,7 @@ const startRecording = async (meetingID) => {
         "Content-type": "application/json;charset=utf-8",
       },
       auth,
+      timeout: AGORA_TIMEOUT_MS,
     });
     if (!data) {
       return "Could not start recording. Server Error";
@@ -102,6 +107,7 @@ const startRecording = async (meetingID) => {
         "Content-type": "application/json;charset=utf-8",
       },
       auth,
+      timeout: AGORA_TIMEOUT_MS,
     });
     if (!secondResponse) {
       return "Could not start recording. Server error.";
@@ -147,6 +153,7 @@ const stopRecording = async (meetingID, resourceId, sid) => {
         "Content-type": "application/json;charset=utf-8",
       },
       auth,
+      timeout: AGORA_TIMEOUT_MS,
     });
 
     if (!response) {

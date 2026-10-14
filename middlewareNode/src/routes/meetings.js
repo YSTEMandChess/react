@@ -37,6 +37,8 @@ const { startRecording, stopRecording } = require("../utils/recordings");
 // State variable to prevent concurrent pairing operations
 var isBusy = false;
 
+const NO_MEETING = "There are no current meetings with this user.";
+
 /**
  * GET /meetings/singleRecording
  * 
@@ -277,16 +279,16 @@ router.post("/pairUp", passport.authenticate("jwt", { session: false }), async (
     //Get a first person in queue from either waitingMentors or waitingStudents collection
     let waitingQueue;
     if (role === "student") {
-      Justueue = await waitingMentors.findOne(
+      waitingQueue = await waitingMentors.findOne(
         {},
         {},
-        { sort: { created_at: 1 } },
+        { sort: { requestedGameAt: 1 } },
       );
     } else if (role === "mentor") {
       waitingQueue = await waitingStudents.findOne(
         {},
         {},
-        { sort: { created_at: 1 } },
+        { sort: { requestedGameAt: 1 } },
       );
     } else {
       return res
@@ -315,54 +317,67 @@ router.post("/pairUp", passport.authenticate("jwt", { session: false }), async (
       !isBusy
     ) {
       isBusy = true; //Change state to busy to complete query
+      try {
+        //Re-check under the lock: a concurrent pairUp from the other side may
+        //have paired these two users while we were reading the queue above.
+        const stillFree =
+          (await inMeeting(role, username)) === NO_MEETING &&
+          (await inMeeting(role === "student" ? "mentor" : "student", waitingQueue.username)) ===
+            NO_MEETING;
+        if (!stillFree) {
+          return res.status(200).json("Ok");
+        }
 
-      //Set information for ease of access and less redundant meeting creation code
-      if (role === "student") {
-        studentInfo.username = username;
-        studentInfo.firstName = firstName;
-        studentInfo.lastName = lastName;
-        mentorInfo.username = waitingQueue.username;
-        mentorInfo.firstName = waitingQueue.firstName;
-        mentorInfo.lastName = waitingQueue.lastName;
-      } else {
-        mentorInfo.username = username;
-        mentorInfo.firstName = firstName;
-        mentorInfo.lastName = lastName;
-        studentInfo.username = waitingQueue.username;
-        studentInfo.firstName = waitingQueue.firstName;
-        studentInfo.lastName = waitingQueue.lastName;
+        //Set information for ease of access and less redundant meeting creation code
+        if (role === "student") {
+          studentInfo.username = username;
+          studentInfo.firstName = firstName;
+          studentInfo.lastName = lastName;
+          mentorInfo.username = waitingQueue.username;
+          mentorInfo.firstName = waitingQueue.firstName;
+          mentorInfo.lastName = waitingQueue.lastName;
+        } else {
+          mentorInfo.username = username;
+          mentorInfo.firstName = firstName;
+          mentorInfo.lastName = lastName;
+          studentInfo.username = waitingQueue.username;
+          studentInfo.firstName = waitingQueue.firstName;
+          studentInfo.lastName = waitingQueue.lastName;
+        }
+        const meetingId = uuidv4(); //Generate a random meetingId
+
+        //Recording is best-effort: if Agora cloud recording is not configured or
+        //fails, the live session still goes ahead, just without a recording.
+        const recordingInfo = await startRecording(meetingId);
+        const isRecording = recordingInfo && typeof recordingInfo === "object";
+        if (!isRecording) {
+          console.warn(`pairUp: recording not started for meeting ${meetingId}: ${recordingInfo}`);
+        }
+
+        const uniquePassword = uuidv4(); //Generated a random password for the meeting
+
+        //Create the meeting with all the required fields
+        //Save the meeting
+        await meetings.create({
+          meetingId: meetingId,
+          password: uniquePassword,
+          studentUsername: studentInfo.username,
+          studentFirstName: studentInfo.firstName,
+          studentLastName: studentInfo.lastName,
+          mentorUsername: mentorInfo.username,
+          mentorFirstName: mentorInfo.firstName,
+          mentorLastName: mentorInfo.lastName,
+          CurrentlyOngoing: true,
+          resourceId: isRecording ? recordingInfo.resourceId : undefined,
+          sid: isRecording ? recordingInfo.sid : undefined,
+          meetingStartTime: new Date(),
+        });
+
+        await deleteUser("student", studentInfo.username); //Remove user from the waitingStudents collection
+        await deleteUser("mentor", mentorInfo.username); //Remove user from the waitingMentors collection
+      } finally {
+        isBusy = false; //Always release the lock, or no one could ever pair again
       }
-      const meetingId = uuidv4(); //Generate a random meetingId
-
-      const recordingInfo = await startRecording(meetingId); //Create and start the recording for the mentor and student
-
-      //Error checking to see if a meeting was able to be created
-      if (recordingInfo === "Could not start recording. Server error.") {
-        return res.status(400).json(recordingInfo);
-      }
-
-      const uniquePassword = uuidv4(); //Generated a random password for the meeting
-
-      //Create the meeting with all the required fields
-      //Save the meeting
-      await meetings.create({
-        meetingId: meetingId,
-        password: uniquePassword,
-        studentUsername: studentInfo.username,
-        studentFirstName: studentInfo.firstName,
-        studentLastName: studentInfo.lastName,
-        mentorUsername: mentorInfo.username,
-        mentorFirstName: mentorInfo.firstName,
-        mentorLastName: mentorInfo.lastName,
-        CurrentlyOngoing: true,
-        resourceId: recordingInfo.resourceId,
-        sid: recordingInfo.sid,
-        meetingStartTime: new Date(),
-      });
-
-      await deleteUser("student", studentInfo.username); //Remove user from the waitingStudents collection
-      await deleteUser("mentor", mentorInfo.username); //Remove user from the waitingMentors collection
-      isBusy = false; //Set state to not busy
     }
     return res.status(200).json("Ok");
   } catch (error) {
@@ -398,12 +413,15 @@ router.put("/endMeeting", passport.authenticate("jwt", { session: false }), asyn
       return res.status(400).json("You are currently not in a meeting!");
     }
 
-    //Stop the agora recording
-    const stopResponse = await stopRecording(
-      currMeeting.meetingId,
-      currMeeting.resourceId,
-      currMeeting.sid,
-    );
+    //Stop the agora recording (only if one was started at pairUp)
+    const stopResponse =
+      currMeeting.resourceId && currMeeting.sid
+        ? await stopRecording(
+            currMeeting.meetingId,
+            currMeeting.resourceId,
+            currMeeting.sid,
+          )
+        : null;
 
     //Error checking to ensure the recording was stopped
     // if (stopResponse === "Could not stop recording. Server error.") {
@@ -498,16 +516,11 @@ const inMeeting = async (role, username) => {
 //Async function to delete a user from the waitingStudents or waitingMentors collection
 // changes by riken start
 const deleteUser = async (role, username) => {
+  // deleteMany: a double-clicked Join or a refresh mid-search can queue a user twice
   if (role === "student") {
-    const user = await waitingStudents.findOne({ username: username });
-    if (user != null) {
-      user.delete();
-    }
+    await waitingStudents.deleteMany({ username: username });
   } else if (role === "mentor") {
-    const mentor = await waitingMentors.findOne({ username: username });
-    if (mentor != null) {
-      mentor.delete();
-    }
+    await waitingMentors.deleteMany({ username: username });
   }
   //   await waitingStudents.findOneAndDelete(
   //     {
