@@ -3,17 +3,17 @@ import { useCookies } from "react-cookie";
 import { environment } from "../../environments";
 
 /**
- * useMeeting — drives the mentor⇄student live-lesson lifecycle against the
+ * useMeeting — drives the mentor⇄student live-session lifecycle against the
  * existing middleware /meetings endpoints. This is the React port of the meeting
  * side of the legacy Angular play page.
  *
- * Recording is NOT started here: the server starts cloud recording automatically
- * inside POST /meetings/pairUp (startRecording) and stops it in
- * PUT /meetings/endMeeting (stopRecording). The client only drives the lifecycle:
+ * Recording is NOT started here: the server starts cloud recording (best-effort)
+ * inside POST /meetings/pairUp and stops it in PUT /meetings/endMeeting.
+ * The client only drives the lifecycle:
  *
  *   idle ── startLesson ─▶ searching ──(paired)──▶ in-meeting ── endLesson ─▶ ended
- *                            │
- *                            └── cancelSearch ─▶ idle
+ *                            │                       │  └─ other side ends ─▶ ended
+ *                            └── cancelSearch ─▶ idle └─ leave ─▶ idle (can rejoin)
  *
  * Pairing: both sides join their queue (POST /queue) and poll POST /pairUp; whoever
  * calls pairUp while the opposite queue is non-empty creates the meeting. We also
@@ -21,7 +21,8 @@ import { environment } from "../../environments";
  */
 
 const MIDDLEWARE = environment.urls.middlewareURL;
-const POLL_MS = 2500;
+export const PAIR_POLL_MS = 2500;
+export const END_POLL_MS = 5000;
 const NO_MEETING = "There are no current meetings with this user.";
 
 export type MeetingState = "idle" | "searching" | "in-meeting" | "ended";
@@ -45,6 +46,8 @@ export function useMeeting({
   const [state, setState] = useState<MeetingState>("idle");
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // An ongoing meeting we are not connected to (after a refresh, or after Leave).
+  const [hasOngoingMeeting, setHasOngoingMeeting] = useState(false);
 
   const auth = useCallback(
     (extra?: RequestInit): RequestInit => ({
@@ -58,10 +61,11 @@ export function useMeeting({
     [token],
   );
 
-  // GET /inMeeting → the meeting if we're in one, else null.
+  // GET /inMeeting → the meeting if we're in one, else null. Throws on a failed
+  // request so a transient server error is never mistaken for "meeting over".
   const checkInMeeting = useCallback(async (): Promise<Meeting | null> => {
     const res = await fetch(`${MIDDLEWARE}/meetings/inMeeting`, auth());
-    if (!res.ok) return null;
+    if (!res.ok) throw new Error(`inMeeting failed: ${res.status}`);
     const data = await res.json();
     if (!data || data === NO_MEETING || !Array.isArray(data) || data.length === 0) {
       return null;
@@ -74,51 +78,96 @@ export function useMeeting({
     };
   }, [auth]);
 
-  // On mount: if we're already in a meeting (e.g. after a refresh), resume it.
+  // On mount: note an ongoing meeting so the UI can offer to rejoin it. We don't
+  // auto-join — that would switch the camera on without the user asking.
   useEffect(() => {
     if (!enabled || !token) return;
     let cancelled = false;
-    (async () => {
-      const m = await checkInMeeting().catch(() => null);
-      if (!cancelled && m) {
-        setMeeting(m);
-        setState("in-meeting");
-      }
-    })();
+    checkInMeeting()
+      .then((m) => {
+        if (!cancelled) setHasOngoingMeeting(!!m);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
   }, [enabled, token, checkInMeeting]);
 
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
   // Poll while searching: attempt to pair, then see if a meeting now exists.
-  const poll = useRef<() => void>(() => {});
-  poll.current = async () => {
+  // One poll at a time, and a poll that finishes after the user cancelled
+  // must not drag them into a call.
+  const isPolling = useRef(false);
+  const pollPair = useRef<() => void>(() => {});
+  pollPair.current = async () => {
+    if (isPolling.current) return;
+    isPolling.current = true;
     try {
       // Fire pairUp (creates the meeting if the opposite queue has someone).
       await fetch(`${MIDDLEWARE}/meetings/pairUp`, auth({ method: "POST" })).catch(
         () => {},
       );
       const m = await checkInMeeting();
-      if (m) {
+      if (m && stateRef.current === "searching") {
         setMeeting(m);
         setState("in-meeting");
       }
     } catch {
       /* transient; keep polling */
+    } finally {
+      isPolling.current = false;
     }
   };
 
   useEffect(() => {
     if (state !== "searching") return;
-    poll.current();
-    const id = setInterval(() => poll.current(), POLL_MS);
+    pollPair.current();
+    const id = setInterval(() => pollPair.current(), PAIR_POLL_MS);
     return () => clearInterval(id);
   }, [state]);
+
+  // Poll while in a meeting: notice when the other side ends it.
+  useEffect(() => {
+    if (state !== "in-meeting") return;
+    const id = setInterval(async () => {
+      try {
+        if ((await checkInMeeting()) === null) {
+          setMeeting(null);
+          setHasOngoingMeeting(false);
+          setState("ended");
+        }
+      } catch {
+        /* transient; keep the call up */
+      }
+    }, END_POLL_MS);
+    return () => clearInterval(id);
+  }, [state, checkInMeeting]);
+
+  // Leaving the page mid-search must drop us from the queue, or the other side
+  // could be paired with someone who is no longer there.
+  const authRef = useRef(auth);
+  authRef.current = auth;
+  useEffect(() => {
+    const dequeueIfSearching = () => {
+      if (stateRef.current !== "searching") return;
+      fetch(
+        `${MIDDLEWARE}/meetings/dequeue`,
+        authRef.current({ method: "DELETE", keepalive: true }),
+      ).catch(() => {});
+    };
+    window.addEventListener("pagehide", dequeueIfSearching);
+    return () => {
+      window.removeEventListener("pagehide", dequeueIfSearching);
+      dequeueIfSearching();
+    };
+  }, []);
 
   const startLesson = useCallback(async () => {
     setError(null);
     try {
-      // If somehow already in a meeting, jump straight in.
+      // Already in a meeting (rejoin after Leave or a refresh): jump straight in.
       const existing = await checkInMeeting();
       if (existing) {
         setMeeting(existing);
@@ -131,31 +180,54 @@ export function useMeeting({
         setError(typeof msg === "string" ? msg : "Could not join the queue.");
         return;
       }
+      setHasOngoingMeeting(false);
       setState("searching");
     } catch {
-      setError("Network error joining the queue.");
+      setError("Network error joining the session. Please try again.");
     }
   }, [auth, checkInMeeting]);
 
   const cancelSearch = useCallback(async () => {
+    setState("idle");
     await fetch(`${MIDDLEWARE}/meetings/dequeue`, auth({ method: "DELETE" })).catch(
       () => {},
     );
-    setState("idle");
   }, [auth]);
 
-  const endLesson = useCallback(async () => {
-    await fetch(`${MIDDLEWARE}/meetings/endMeeting`, auth({ method: "PUT" })).catch(
-      () => {},
-    );
+  // Drop out of the call but keep the meeting open so either side can rejoin.
+  const leave = useCallback(() => {
     setMeeting(null);
-    setState("ended");
-  }, [auth]);
-
-  const reset = useCallback(() => {
-    setError(null);
+    setHasOngoingMeeting(true);
     setState("idle");
   }, []);
 
-  return { state, meeting, error, role, startLesson, cancelSearch, endLesson, reset };
+  // End the meeting for both sides (stops the recording server-side).
+  const endLesson = useCallback(async () => {
+    setError(null);
+    const res = await fetch(
+      `${MIDDLEWARE}/meetings/endMeeting`,
+      auth({ method: "PUT" }),
+    ).catch(() => null);
+    // 4xx means the meeting is already over (ended by the other side, or the
+    // server ended it but failed a follow-up step) — only retry on 5xx/network.
+    if (!res || res.status >= 500) {
+      setError("Could not end the session. Please try again.");
+      return;
+    }
+    setMeeting(null);
+    setHasOngoingMeeting(false);
+    setState("ended");
+  }, [auth]);
+
+  return {
+    state,
+    meeting,
+    error,
+    role,
+    hasOngoingMeeting,
+    startLesson,
+    cancelSearch,
+    leave,
+    endLesson,
+  };
 }

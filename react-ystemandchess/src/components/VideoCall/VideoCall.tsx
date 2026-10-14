@@ -1,7 +1,6 @@
-import { useEffect, useRef } from "react";
-import { IAgoraRTCRemoteUser } from "agora-rtc-sdk-ng";
 import { environment } from "../../environments";
 import { useAgoraCall } from "./useAgoraCall";
+import RemoteVideo from "./RemoteVideo";
 
 /**
  * VideoCall — reusable two-way Agora video panel with mic/camera/screen controls.
@@ -19,18 +18,6 @@ type Props = {
   channel: string;
   uid?: string | number | null;
   className?: string;
-};
-
-/** Plays a single remote peer's camera (or shared screen) into its own tile. */
-const RemoteVideo = ({ user }: { user: IAgoraRTCRemoteUser }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (user.videoTrack && ref.current) user.videoTrack.play(ref.current);
-    return () => {
-      user.videoTrack?.stop();
-    };
-  }, [user, user.videoTrack]);
-  return <div ref={ref} className="h-full w-full rounded-md bg-black" />;
 };
 
 const ctrlBtn = "rounded-md px-3 py-2 text-sm font-semibold shadow";

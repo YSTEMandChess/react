@@ -16,6 +16,7 @@ import AgoraRTC, {
  *
  * Controls (React-only; these never existed in the old app):
  *   - toggleMic / toggleCam — mute audio / turn the camera off, in place.
+ *   - toggleSpeaker — silence the other side's audio locally (they're unaffected).
  *   - startScreenShare / stopScreenShare — share the screen WHILE keeping the
  *     camera on, via a second Agora client that joins the same channel with its
  *     own uid. That second publisher would otherwise echo back to us, so we
@@ -39,9 +40,11 @@ export type AgoraCall = {
   // controls
   micOn: boolean;
   camOn: boolean;
+  speakerOn: boolean;
   isScreenSharing: boolean;
   toggleMic: () => Promise<void>;
   toggleCam: () => Promise<void>;
+  toggleSpeaker: () => void;
   startScreenShare: () => Promise<void>;
   stopScreenShare: () => Promise<void>;
 };
@@ -70,11 +73,15 @@ export function useAgoraCall({
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  // Read by the user-published handler, so peers who join later honour it.
+  const speakerOnRef = useRef(true);
+  const [speakerOn, setSpeakerOn] = useState(true);
 
   useEffect(() => {
     if (!enabled || !appId || !channel) return;
 
     let cancelled = false;
+    setError(null);
     const client = AgoraRTC.createClient({ mode: "rtc", codec: "h264" });
     clientRef.current = client;
 
@@ -94,7 +101,10 @@ export function useAgoraCall({
       } catch {
         return;
       }
-      if (mediaType === "audio") user.audioTrack?.play();
+      if (mediaType === "audio") {
+        user.audioTrack?.setVolume(speakerOnRef.current ? 100 : 0);
+        user.audioTrack?.play();
+      }
       syncRemotes();
     };
 
@@ -121,6 +131,9 @@ export function useAgoraCall({
         await client.publish([micTrack, camTrack]);
         setJoined(true);
       } catch (err: any) {
+        // A cleanup that ran mid-join (unmount, StrictMode re-run) aborts the
+        // join on purpose — that is not an error the user should see.
+        if (cancelled) return;
         setError(err?.message || "Failed to join the video call.");
       }
     })();
@@ -154,8 +167,19 @@ export function useAgoraCall({
       setIsScreenSharing(false);
       setMicOn(true);
       setCamOn(true);
+      speakerOnRef.current = true;
+      setSpeakerOn(true);
     };
   }, [appId, channel, token, uid, enabled]);
+
+  const toggleSpeaker = useCallback(() => {
+    const next = !speakerOnRef.current;
+    speakerOnRef.current = next;
+    clientRef.current?.remoteUsers.forEach((u) =>
+      u.audioTrack?.setVolume(next ? 100 : 0),
+    );
+    setSpeakerOn(next);
+  }, []);
 
   const toggleMic = useCallback(async () => {
     const track = micTrackRef.current;
@@ -191,14 +215,26 @@ export function useAgoraCall({
 
   const startScreenShare = useCallback(async () => {
     if (isScreenSharing || !appId || !channel) return;
+    // The call this share belongs to; if it is torn down (Leave) while we are
+    // still awaiting the picker or the join, the share must clean itself up.
+    const mainClient = clientRef.current;
+    const isStale = () => clientRef.current !== mainClient || !mainClient;
+    const sClient = AgoraRTC.createClient({ mode: "rtc", codec: "h264" });
+    let screenTrack: ILocalVideoTrack | null = null;
+    const discard = () => {
+      screenTrack?.stop();
+      screenTrack?.close();
+      sClient.leave().catch(() => {});
+    };
     try {
-      const sClient = AgoraRTC.createClient({ mode: "rtc", codec: "h264" });
       // A distinct uid so our main client can identify (and ignore) our screen.
       const screenUid = Math.floor(Math.random() * 900000) + 100000;
       screenUidRef.current = screenUid;
       await sClient.join(appId, channel, token ?? null, screenUid);
+      if (isStale()) return discard();
 
-      const screenTrack = await AgoraRTC.createScreenVideoTrack({}, "disable");
+      screenTrack = await AgoraRTC.createScreenVideoTrack({}, "disable");
+      if (isStale()) return discard();
       screenClientRef.current = sClient;
       screenTrackRef.current = screenTrack;
 
@@ -211,7 +247,10 @@ export function useAgoraCall({
       await sClient.publish(screenTrack);
       setIsScreenSharing(true);
     } catch (err: any) {
-      // User cancelling the share picker throws here — treat as a no-op.
+      // User cancelling the share picker throws here — treat as a no-op, but
+      // the already-joined screen client must still leave the channel.
+      discard();
+      if (isStale()) return;
       screenUidRef.current = null;
       screenClientRef.current = null;
       screenTrackRef.current = null;
@@ -230,9 +269,11 @@ export function useAgoraCall({
     error,
     micOn,
     camOn,
+    speakerOn,
     isScreenSharing,
     toggleMic,
     toggleCam,
+    toggleSpeaker,
     startScreenShare,
     stopScreenShare,
   };
