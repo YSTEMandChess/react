@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
 import { SetPermissionLevel } from '../../../globals';
 import { useCookies } from 'react-cookie';
-import { environment } from "../../../environments/environment";
+import { environment } from "../../../environments";
 import { useNavigate } from "react-router";
 import StatsChart from "./StatsChart";
 import Puzzles from "../../puzzles/Puzzles";
@@ -13,7 +13,7 @@ import ActivitiesModal from "./Modals/ActivitiesModal";
 import BadgesModal from "./Modals/BadgesModal";
 import LeaderboardModal from "./Modals/LeaderboardModal";
 import Confetti from "../../../components/animations/Confetti/Confetti";
-
+import ChatWidget from '../../../components/ChatWidget/ChatWidget';
 import { ReactComponent as StreakIcon } from "../../../assets/images/student/streak_button.svg";
 import { ReactComponent as ActivitiesIcon } from "../../../assets/images/student/activities_button.svg";
 import { ReactComponent as BadgesIcon } from "../../../assets/images/student/badges_button.svg";
@@ -689,10 +689,11 @@ const NewStudentProfile = ({ userPortraitSrc }: any) => {
     </section>
 
     {/* Modals */}
-    {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} />}
+    {activeModal === "streak" && <StreakModal onClose={() => setActiveModal(null)} username={username} />}
     {activeModal === "activities" && <ActivitiesModal onClose={() => setActiveModal(null)} username={username} />}
     {activeModal === "badges" && <BadgesModal onClose={() => setActiveModal(null)} username={username} />}
     {activeModal === "leaderboard" && <LeaderboardModal onClose={() => setActiveModal(null)} />}
+    <ChatWidget />
   </main>
 );
 };

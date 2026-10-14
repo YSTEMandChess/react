@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import "./LeaderboardModal.scss";
 import { ReactComponent as LeaderboardIcon } from "../../../../assets/images/student/leaderboard_sidebar_icon.svg";
-import { environment } from "../../../../environments/environment";
+import { environment } from "../../../../environments";
 
 import rank1Img from "../../../../assets/images/student/Leaderboard_rank_1.svg";
 import rank2Img from "../../../../assets/images/student/Leaderboard_rank_2.svg";
@@ -27,7 +28,13 @@ type Row = {
   rank: number;
   name: string;
   school: string;
-  /** Engagement score — time, streak, activities, badges. */
+  /**
+   * Currency ledger standing (lifetime currency earned from engaging
+   * actions — lessons, puzzles, etc.), not spendable balance. See
+   * middlewareNode/src/routes/leaderboard.js and services/ledgerService.js.
+   * Previously a weighted time/streak/activities/badges formula; replaced
+   * by the currency rollout plan.
+   */
   score: number;
   /**
    * Student-vs-student chess score, kept as its own column on purpose.
@@ -42,6 +49,7 @@ type Row = {
 const EMPTY_CHESS_RECORD: ChessRecord = { wins: 0, draws: 0, losses: 0, gamesPlayed: 0 };
 
 const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
+  const navigate = useNavigate();
   const [cookies] = useCookies(['login']);
 
   // --- UI STATE ---
@@ -62,6 +70,13 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Navigates to the student's inventory/backpack screen. Closes this modal
+  // first, matching how ActivitiesModal hands off to another page.
+  const handleGoToBackpack = () => {
+    onClose();
+    navigate("/student-inventory");
+  };
 
   // Close modal logic
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -186,7 +201,7 @@ const LeaderboardModal: React.FC<Props> = ({ onClose }) => {
 
         <header className="lb-header">
           <div className="lb-heading">
-            <button className="lb-backpill" type="button">Go To<br />Backpack</button>
+            <button className="lb-backpill" type="button" onClick={handleGoToBackpack}>Go To<br />Backpack</button>
             <h2 className="lb-title">Leaderboard</h2>
           </div>
           <LeaderboardIcon className="lb-crown-img" aria-hidden />

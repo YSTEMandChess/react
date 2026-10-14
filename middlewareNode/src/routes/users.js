@@ -33,6 +33,8 @@ const { getAvatarUrl, getBlobServiceClient, AVATAR_CONTAINER } = require("../uti
 const { MongoClient } = require("mongodb");
 const config = require("config");
 
+const mongoose = require("mongoose");
+
 // Cache database client to prevent repeated connections
 let cachedClient = null;
 
@@ -41,6 +43,9 @@ let cachedClient = null;
  * @returns {MongoDB.Db} Database instance
  */
 async function getDb() {
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    return mongoose.connection.db;
+  }
   if (!cachedClient) {
     cachedClient = new MongoClient(config.get("mongoURI"));
     await cachedClient.connect();
@@ -338,7 +343,8 @@ const updatePassword = async (body) => {
 
 // @route GET /user/mentorless/:keyword
 // @desc for getting the mentorless students whose username matches keyword.
-router.get("/mentorless", async (req, res) => {
+// @access Private with JWT Authentication
+router.get("/mentorless", passport.authenticate("jwt", { session: false }), async (req, res) => {
   const keyword = req.query.keyword || ""; // get the keyword
   try {
     const db = await getDb();
@@ -456,7 +462,7 @@ router.get(
   }
 );
 
-router.get("/getStudent", async (req, res) => {
+router.get("/getStudent", passport.authenticate("jwt", { session: false }), async (req, res) => {
   const keyword = req.query.keyword || "";
 
   try {
@@ -512,7 +518,7 @@ router.post("/verifyRole", async (req, res) => {
   }
 });
 
-router.get("/getUser", async (req, res) => {
+router.get("/getUser", passport.authenticate("jwt", { session: false }), async (req, res) => {
   const username = req.query.username || "";
   try {
     const user = await users.findOne({ username }).select("-password");
@@ -525,34 +531,19 @@ router.get("/getUser", async (req, res) => {
   }
 });
 
-// @route   PUT /user/updateHighScore
-// @desc    Update the user's highest streak or dash score if they beat their record
-// @access  Public with jwt Authentication
-router.put("/updateHighScore", passport.authenticate("jwt", { session: false }), async (req, res) => {
-  try {
-    const { streakScore, dashScore } = req.body;
-    const db = await getDb();
-    const usersCollection = db.collection("users");
-
-    const updateFields = {};
-    
-    // Mongoose $max operator ensures it ONLY updates if the new score is higher than the old one!
-    if (streakScore !== undefined) updateFields.highestStreak = parseInt(streakScore);
-    if (dashScore !== undefined) updateFields.highestDashScore = parseInt(dashScore);
-
-    if (Object.keys(updateFields).length === 0) return res.status(400).json("No scores provided");
-
-    const result = await usersCollection.updateOne(
-      { username: req.user.username },
-      { $max: updateFields } 
-    );
-
-    res.status(200).json({ message: "High scores checked and updated successfully" });
-  } catch (error) {
-    console.error("Error updating high score:", error);
-    res.status(500).json("Server error");
-  }
-});
+// PUT /user/updateHighScore was removed here (currency rollout Rev. 2,
+// change 6 — "Close PUT /user/updateHighScore"). It wrote client-supplied
+// streakScore/dashScore straight into highestStreak/highestDashScore under
+// $max with no server-side recomputation, so any authenticated student
+// could post an arbitrary number and have it accepted as long as it beat
+// their stored record. Confirmed via a repo-wide search that nothing in
+// react-ystemandchess calls this endpoint and nothing reads
+// highestStreak/highestDashScore anywhere except this route — it was not
+// surfaced in any gamified view, so removal (not a server-authoritative
+// rewrite) is the correct fix rather than hardening a dead endpoint.
+// highestStreak/highestDashScore remain on the User schema for now (not a
+// data migration); a future pass can drop them once confirmed nothing
+// else depends on the stored values.
 
 /**
  * PUT /user/profile

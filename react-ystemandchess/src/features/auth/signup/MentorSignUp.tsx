@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { environment } from "../../../environments/environment";
+import { environment } from "../../../environments";
 import AuthLayout from "./AuthLayout";
 import stemmyVine from "../../../assets/images/ActivitiesAssets/stemmy.svg";
 
@@ -102,12 +102,11 @@ const MentorSignUp = () => {
         return;
       }
 
-      const loginResponse = await fetch(
-        `${environment.urls.middlewareURL}/auth/login?username=${encodeURIComponent(
-          formData.username
-        )}&password=${encodeURIComponent(formData.password)}`,
-        { method: "POST" }
-      );
+      const loginResponse = await fetch(`${environment.urls.middlewareURL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: formData.username, password: formData.password }),
+      });
 
       if (!loginResponse.ok) {
         setErrors((prev) => ({ ...prev, general: "Account created. Please log in to continue." }));
@@ -139,7 +138,6 @@ const MentorSignUp = () => {
       links={[
         { label: "About Us", to: "/about-us" },
         { label: "Our Mission", to: "/mission" },
-        { label: "Online Expansion", to: "/online-expansion" },
       ]}
     >
       <h1 className="text-3xl font-bold text-dark mb-6 text-center">Mentor Sign Up</h1>

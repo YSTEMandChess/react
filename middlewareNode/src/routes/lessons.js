@@ -19,6 +19,9 @@ const jwt = require('jsonwebtoken');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
+const mongoose = require("mongoose");
+const { emitLessonCompleted } = require("../services/currencyEvents");
+
 // Cache database client to prevent repeated connections
 let cachedClient = null;
 
@@ -27,6 +30,9 @@ let cachedClient = null;
  * @returns {MongoDB.Db} Database instance
  */
 async function getDb() {
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    return mongoose.connection.db;
+  }
   if (!cachedClient) {
     cachedClient = new MongoClient(config.get("mongoURI"));
     await cachedClient.connect();
@@ -289,6 +295,16 @@ router.get(
 
         // check if changes have been made in db
         if (updateResult.modifiedCount > 0) {
+          // Currency rollout: emit only on a genuine forward-progress
+          // write, never on the 304 branch below — a request re-sending
+          // an already-completed lesson number must not earn currency
+          // twice. eventId is deterministic per (user, piece, lessonNum),
+          // so even a client retry of this exact successful request can't
+          // double-emit; see services/currencyEvents.js. Guests (the else
+          // branch below) never emit — there's no account to credit.
+          emitLessonCompleted({ userId: req.user._id, piece, lessonNum }).catch((err) => {
+            console.error("currencyEvents: failed to emit lesson.completed:", err.message);
+          });
           res.status(200).json("Lesson progress updated");
         } else {
           res.status(304).json("No changes made");
