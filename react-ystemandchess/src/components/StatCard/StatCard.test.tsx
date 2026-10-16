@@ -16,9 +16,23 @@ describe("StatCard", () => {
     expect(card).toHaveClass(size === "sm" ? "p-2" : "p-4");
   });
 
-  it("falls back to default variant and sm size", () => {
+  it("falls back to default variant, sm size, and vertical layout", () => {
     const { container } = render(<StatCard icon="🔥" value={5} label="Wins" />);
-    expect(container.firstChild).toHaveClass("bg-light", "p-2");
+    expect(container.firstChild).toHaveClass("bg-light", "p-2", "flex-col");
+  });
+
+  it("supports a horizontal layout", () => {
+    const { container } = render(
+      <StatCard icon="🔥" value={5} label="Wins" layout="horizontal" />
+    );
+    const card = container.firstChild as HTMLElement;
+    expect(card).toHaveClass("flex-row");
+    expect(card).not.toHaveClass("flex-col");
+  });
+
+  it("uses font size tokens for the label", () => {
+    render(<StatCard icon="🔥" value={5} label="Wins" />);
+    expect(screen.getByText("Wins")).toHaveClass("text-3xs");
   });
 
   it("merges className without breaking variants", () => {
