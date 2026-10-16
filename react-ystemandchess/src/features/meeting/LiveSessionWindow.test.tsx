@@ -83,13 +83,12 @@ describe("LiveSessionWindow", () => {
     expect(screen.getByRole("button", { name: "Mute" })).toBeInTheDocument();
   });
 
-  test("shows a call error", () => {
-    const base = makeSession();
+  test("shows why the video cannot connect", () => {
     renderWithSession(
       <LiveSessionWindow />,
-      makeSession({ call: { ...base.call, error: "Permission denied" } }),
+      makeSession({ videoError: "Could not get access to the video call." }),
     );
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Permission denied");
+    expect(screen.getByRole("alert")).toHaveTextContent("Could not get access to the video call.");
   });
 });

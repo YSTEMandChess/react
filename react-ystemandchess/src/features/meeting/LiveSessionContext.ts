@@ -14,6 +14,8 @@ export type LiveSession = {
   hasOngoingMeeting: boolean;
   meetingError: string | null;
   isVideoConfigured: boolean;
+  /** Why the video can't connect (credentials or Agora), if it can't. */
+  videoError: string | null;
   call: AgoraCall;
   peerCamera?: IAgoraRTCRemoteUser;
   peerScreen?: IAgoraRTCRemoteUser;

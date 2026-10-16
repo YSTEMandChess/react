@@ -27,6 +27,7 @@ export function makeSession(overrides: Partial<LiveSession> = {}): LiveSession {
     hasOngoingMeeting: false,
     meetingError: null,
     isVideoConfigured: true,
+    videoError: null,
     call,
     joinSession: jest.fn(() => Promise.resolve()),
     cancelSearch: jest.fn(() => Promise.resolve()),

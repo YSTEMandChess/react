@@ -37,8 +37,16 @@ const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
 const LiveSessionWindow = () => {
-  const { role, peerRole, isVideoConfigured, call, peerCamera, leaveSession, endSession } =
-    useLiveSession();
+  const {
+    role,
+    peerRole,
+    isVideoConfigured,
+    videoError,
+    call,
+    peerCamera,
+    leaveSession,
+    endSession,
+  } = useLiveSession();
   const [isMinimized, setIsMinimized] = useState(false);
   const [isConfirmingEnd, setIsConfirmingEnd] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -134,9 +142,9 @@ const LiveSessionWindow = () => {
             </div>
           </div>
 
-          {call.error && (
+          {videoError && (
             <p role="alert" className="bg-redLight px-3 py-1.5 text-xs text-red">
-              {call.error}
+              {videoError}
             </p>
           )}
 

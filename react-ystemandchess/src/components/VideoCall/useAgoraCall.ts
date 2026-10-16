@@ -28,6 +28,9 @@ type Options = {
   channel: string;
   token?: string | null;
   uid?: string | number | null;
+  /** Fixed uid/token for the screen-share client (server-issued); random/`token` if omitted. */
+  screenUid?: number | null;
+  screenToken?: string | null;
   enabled?: boolean;
 };
 
@@ -54,6 +57,8 @@ export function useAgoraCall({
   channel,
   token = null,
   uid = null,
+  screenUid = null,
+  screenToken = null,
   enabled = true,
 }: Options): AgoraCall {
   const clientRef = useRef<IAgoraRTCClient | null>(null);
@@ -228,9 +233,9 @@ export function useAgoraCall({
     };
     try {
       // A distinct uid so our main client can identify (and ignore) our screen.
-      const screenUid = Math.floor(Math.random() * 900000) + 100000;
-      screenUidRef.current = screenUid;
-      await sClient.join(appId, channel, token ?? null, screenUid);
+      const shareUid = screenUid ?? Math.floor(Math.random() * 900000) + 100000;
+      screenUidRef.current = shareUid;
+      await sClient.join(appId, channel, screenToken ?? token ?? null, shareUid);
       if (isStale()) return discard();
 
       screenTrack = await AgoraRTC.createScreenVideoTrack({}, "disable");
@@ -259,7 +264,7 @@ export function useAgoraCall({
         setError(err?.message || "Could not start screen sharing.");
       }
     }
-  }, [appId, channel, token, isScreenSharing, stopScreenShare]);
+  }, [appId, channel, token, screenUid, screenToken, isScreenSharing, stopScreenShare]);
 
   return {
     localVideoRef,

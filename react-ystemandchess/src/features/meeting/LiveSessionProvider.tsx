@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { environment } from "../../environments";
 import { useAgoraCall } from "../../components/VideoCall";
 import { useMeeting } from "./useMeeting";
+import { useAgoraCredentials } from "./useAgoraCredentials";
 import LiveSessionContext, { CAMERA_UID, LiveSession, SessionRole } from "./LiveSessionContext";
 import LiveSessionWindow from "./LiveSessionWindow";
 
@@ -16,9 +17,10 @@ import LiveSessionWindow from "./LiveSessionWindow";
  *   - <LiveSessionWindow />  floats over the page while connected (rendered here)
  *   - <SharedScreenView />   shows the other side's shared screen, if any
  *
- * Camera UIDs mirror the Angular client (mentor 123, student 456) so a mentor
- * still on the Angular app and a student on React land on the same channel.
- * Any other uid in the channel is the peer's screen-share publisher.
+ * Join credentials (app id, uids, and tokens when the Agora project has an App
+ * Certificate) come from the server once the meeting exists, so the call only
+ * starts after they arrive. Camera UIDs mirror the Angular client (mentor 123,
+ * student 456); any other uid in the channel is the peer's screen share.
  */
 
 // environment.js is untyped JS; the appId lives at environment.agora.appId.
@@ -34,12 +36,20 @@ const LiveSessionProvider = ({
   const meeting = useMeeting({ role });
   const peerRole: SessionRole = role === "mentor" ? "student" : "mentor";
   const isConnected = meeting.state === "in-meeting" && !!meeting.meeting;
+  const { credentials, error: credentialsError } = useAgoraCredentials(
+    isConnected ? meeting.meeting!.meetingId : null,
+  );
+  // The server's app id must win: tokens are only valid for the app they were signed for.
+  const appId = credentials?.appId || APP_ID;
 
   const call = useAgoraCall({
-    appId: APP_ID,
-    channel: meeting.meeting?.meetingId ?? "",
-    uid: CAMERA_UID[role],
-    enabled: isConnected,
+    appId,
+    channel: credentials?.channel ?? "",
+    token: credentials?.token ?? null,
+    uid: credentials?.uid ?? CAMERA_UID[role],
+    screenUid: credentials?.screenUid ?? null,
+    screenToken: credentials?.screenToken ?? null,
+    enabled: isConnected && !!credentials,
   });
 
   const peerUid = CAMERA_UID[peerRole];
@@ -52,7 +62,8 @@ const LiveSessionProvider = ({
     meetingState: meeting.state,
     hasOngoingMeeting: meeting.hasOngoingMeeting,
     meetingError: meeting.error,
-    isVideoConfigured: !!APP_ID,
+    isVideoConfigured: !!appId,
+    videoError: credentialsError ?? call.error,
     call,
     peerCamera,
     peerScreen,

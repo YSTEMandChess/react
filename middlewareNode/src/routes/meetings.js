@@ -33,6 +33,7 @@ const movesList = require("../models/moves");
 const undoPermission = require("../models/undoPermission");
 const users = require("../models/users");
 const { startRecording, stopRecording } = require("../utils/recordings");
+const { CAMERA_UID, buildRtcCredentials } = require("../utils/agoraTokens");
 
 // State variable to prevent concurrent pairing operations
 var isBusy = false;
@@ -224,6 +225,30 @@ router.get("/inMeeting", passport.authenticate("jwt", { session: false }), async
       "something went wrong while executing /inMeeting api",
       error.message,
     );
+    res.status(500).json("Server error");
+  }
+});
+
+// @route   GET /meetings/agoraToken
+// @desc    GET Agora RTC credentials (camera + screen-share tokens) for the
+//          caller's own ongoing meeting. The channel is never taken from the
+//          request, so a user can only get into a meeting they are part of.
+// @access  Public with jwt Authentication
+router.get("/agoraToken", passport.authenticate("jwt", { session: false }), async (req, res) => {
+  try {
+    const { role, username } = req.user;
+    if (!CAMERA_UID[role]) {
+      return res.status(400).json("You must be a mentor or student to join a session.");
+    }
+
+    const ongoing = await inMeeting(role, username);
+    if (!Array.isArray(ongoing) || ongoing.length === 0) {
+      return res.status(404).json("You are currently not in a meeting!");
+    }
+
+    res.status(200).json(buildRtcCredentials(ongoing[0].meetingId, role));
+  } catch (error) {
+    console.error("something went wrong while executing /agoraToken api", error.message);
     res.status(500).json("Server error");
   }
 });

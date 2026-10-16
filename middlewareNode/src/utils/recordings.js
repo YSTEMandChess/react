@@ -1,5 +1,6 @@
 const axios = require("axios");
 const config = require("config");
+const { buildRecorderToken } = require("./agoraTokens");
 
 // pairUp holds its pairing lock while recording starts, so a hung Agora call
 // must not stall matchmaking for everyone.
@@ -44,6 +45,8 @@ const startRecording = async (meetingID) => {
       uid,
       cname: meetingID,
       clientRequest: {
+        // Required when the Agora project has an App Certificate enabled.
+        token: buildRecorderToken(meetingID, uid),
         storageConfig: {
           // Azure Blob Storage (Agora vendor code 5). For Azure, Agora uses the
           // storage account name as accessKey, the account key as secretKey, and
