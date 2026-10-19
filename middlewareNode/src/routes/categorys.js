@@ -11,6 +11,8 @@
 
 const express = require("express");
 const router = express.Router();
+const crypto = require("crypto");
+const { check, validationResult } = require("express-validator");
 const categorys = require("../models/categorys");
 
 /**
