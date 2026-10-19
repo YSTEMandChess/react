@@ -103,6 +103,9 @@ router.post('/:id/accept', requireAuth, (req, res) => {
         return res.status(409).json({ error: `Challenge already ${challenge.status}` });
     }
     const acceptedChallenge = challengeStore.accept(challenge.id);
+    if (!acceptedChallenge) {
+        return res.status(404).json({ error: 'Challenge not found or expired' });
+    }
     return res.status(200).json({
         gameId: acceptedChallenge.gameId,
         challenger: acceptedChallenge.fromUsername,
