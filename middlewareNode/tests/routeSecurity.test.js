@@ -48,6 +48,8 @@ jest.mock("../src/models/puzzles");
 jest.mock("../src/models/categorys");
 jest.mock("../src/services/currencyEvents", () => ({
   emitChatMilestone: jest.fn().mockResolvedValue(undefined),
+  emitLessonCompleted: jest.fn().mockResolvedValue(undefined),
+  emitPuzzleSolved: jest.fn().mockResolvedValue(undefined),
 }));
 
 const express = require("express");
@@ -277,7 +279,7 @@ describe("Security Audit Regression: Role & Ownership Authorization (403 Forbidd
     expect(res.body.error).toMatch(/cannot access another user's sessions/i);
   });
 
-  test("POST /chat/session/:sessionId/end emits a chat milestone after completion", async () => {
+  test("POST /chat/session/:sessionId/end completes an empty session without a chat milestone", async () => {
     mockAuthUser = { _id: "u1", username: "student1", role: "student" };
   
     const session = {
@@ -291,6 +293,43 @@ describe("Security Audit Regression: Role & Ownership Authorization (403 Forbidd
     ChatSession.findById.mockResolvedValue(session);
     ChatMessage.find.mockReturnValue({
       sort: jest.fn().mockResolvedValue([]),
+    });
+  
+    const fetchSpy = jest
+      .spyOn(global, "fetch")
+      .mockRejectedValue(new Error("Test: skip external LLM request"));
+  
+    try {
+      const res = await request(app).post("/chat/session/session-123/end");
+  
+      expect(res.status).toBe(200);
+      expect(session.status).toBe("completed");
+      expect(session.save).toHaveBeenCalledTimes(1);
+  
+      expect(emitChatMilestone).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  test("POST /chat/session/:sessionId/end emits a chat milestone after sufficient engagement", async () => {
+    mockAuthUser = { _id: "u1", username: "student1", role: "student" };
+  
+    const session = {
+      _id: "session-123",
+      userId: "u1",
+      topic: "algebra",
+      status: "active",
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+  
+    ChatSession.findById.mockResolvedValue(session);
+    ChatMessage.find.mockReturnValue({
+      sort: jest.fn().mockResolvedValue([
+        { role: "user", content: "What is algebra?" },
+        { role: "assistant", content: "Algebra uses symbols." },
+        { role: "user", content: "Can you give me an example?" },
+      ]),
     });
   
     const fetchSpy = jest

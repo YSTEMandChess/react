@@ -12,6 +12,7 @@ const { detectCrisis, getCrisisResponse } = require('../utils/guardrails');
 const passport = require('passport');
 const Guardrail = require('../models/Guardrail');
 const requireAuth = require('../middleware/requireAuth');
+const currencyEventLimiter = require('../middleware/currencyEventLimiter');
 const { isLocalEnvironment } = require('../config/validateEnvironment');
 const { emitChatMilestone } = require('../services/currencyEvents');
 
@@ -243,7 +244,7 @@ router.get('/educator/session/:sessionId/transcript', authorizeTutorAdmin, async
 });
 
 // 1. Create a new session
-router.post('/session', requireAuth, async (req, res) => {
+router.post('/session', requireAuth, currencyEventLimiter, async (req, res) => {
   try {
     let { userId, topic } = req.body;
     if (!userId && req.user) {
@@ -642,7 +643,7 @@ router.post('/message', requireAuth, rateLimiter, async (req, res) => {
 });
 
 // 5. End session and generate summary/actions
-router.post('/session/:sessionId/end', requireAuth, async (req, res) => {
+router.post('/session/:sessionId/end', requireAuth, currencyEventLimiter, async (req, res) => {
   try {
     const { sessionId } = req.params;
     const session = await ChatSession.findById(sessionId);
@@ -715,14 +716,20 @@ router.post('/session/:sessionId/end', requireAuth, async (req, res) => {
 
     session.status = 'completed';
     await session.save();
-
-    emitChatMilestone({
-      userId: session.userId,
-      sessionId: session._id,
-      topic: session.topic,
-    }).catch((err) => {
-      console.error('currencyEvents: failed to emit chat.milestone:', err.message);
-    });
+    
+    const studentMessageCount = messages.filter(
+      (message) => message.role === 'user'
+    ).length;
+    
+    if (studentMessageCount >= 2) {
+      emitChatMilestone({
+        userId: session.userId,
+        sessionId: session._id,
+        topic: session.topic,
+      }).catch((err) => {
+        console.error('currencyEvents: failed to emit chat.milestone:', err.message);
+      });
+    }
 
     res.json({ session });
   } catch (error) {
